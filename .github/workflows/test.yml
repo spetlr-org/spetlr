@@ -11,12 +11,11 @@ on:
       - master
 
 jobs:
-  build:
+  unit_test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python: [3.8, 3.9]
-
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
@@ -28,7 +27,9 @@ jobs:
       - name: Run Tox
         # Run tox using the version of Python in `PATH`
         run: tox -e py
-      # now publish to test
+  publish_to_test:
+    runs-on: ubuntu-latest
+    steps:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip

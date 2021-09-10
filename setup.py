@@ -4,7 +4,7 @@ with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='atd-dataplatform',
+    name='atc-dataplatform',
     author='ATC.Net',
     author_email='atcnet.org@gmail.com',
     description='A common set of python libraries for DataBricks',

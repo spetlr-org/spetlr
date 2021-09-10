@@ -1,11 +1,11 @@
 name: Test
 
 on:
-  push:
-    branches:
-      - main
-      - master
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
     branches:
       - main
       - master

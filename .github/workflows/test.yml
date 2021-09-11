@@ -8,7 +8,9 @@ on:
       - reopened
     branches:
       - main
-      - master
+  push:
+    branches:
+      - "!main"
 
 jobs:
   unit_test:
@@ -28,4 +30,29 @@ jobs:
         # Run tox using the version of Python in `PATH`
         run: tox -e py
 
+  version_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Extract current version
+        run: |
+          python setup.py develop
+          python -c"import atc; print(f'::set-output name=VERSION::{atc.__version__}')"
+        id: head_checkout
+      - name: Checkout latest main version
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      - name: Extract main version
+        run: |
+          python setup.py develop
+          python -c"import atc; print(f'::set-output name=VERSION::{atc.__version__}')"
+        id: main_checkout
+      - name: Verify version has been updated
+        run: |
+          [ "${{steps.head_checkout.outputs.VERSION}}" != "${{steps.main_checkout.outputs.VERSION}}" ]
 

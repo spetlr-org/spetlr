@@ -8,6 +8,9 @@ on:
       - reopened
     branches:
       - main
+  push:
+    branches:
+      - "!main"
 
 jobs:
   unit_test:

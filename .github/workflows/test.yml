@@ -43,7 +43,7 @@ jobs:
       - name: Checkout latest main version
         uses: actions/checkout@v2
         with:
-          ref: origin/main
+          ref: main
       - name: Extract main version
         run: |
           python setup.py develop

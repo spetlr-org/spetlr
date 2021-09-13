@@ -34,7 +34,7 @@ setuptools.setup(
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.8',
-    # install_requires=['Pillow'],
+    install_requires=['pyspark'],
     extras_require={
         'dev': ['check-manifest'],
         # 'test': ['coverage'],

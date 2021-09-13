@@ -34,7 +34,11 @@ setuptools.setup(
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.8',
-    install_requires=['pyspark'],
+    install_requires=[
+        'pyspark',
+        'pyyaml',
+        'sqlparse'
+    ],
     extras_require={
         'dev': ['check-manifest'],
         # 'test': ['coverage'],

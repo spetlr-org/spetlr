@@ -5,7 +5,7 @@ import atc
 
 class TestSparkImport(unittest.TestCase):
     def test_spark(self):
-        Spark = atc.Spark
+        Spark = atc.spark
 
 
 if __name__ == "__main__":

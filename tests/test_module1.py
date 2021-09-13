@@ -5,9 +5,7 @@ import io
 from contextlib import redirect_stdout
 
 
-
 class TestSimple(unittest.TestCase):
-
     def test_hello(self):
         with io.StringIO() as buf, redirect_stdout(buf):
             atc.hello()
@@ -15,5 +13,5 @@ class TestSimple(unittest.TestCase):
             self.assertEqual("Hello from ATC.Net\n", buf.getvalue())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -9,7 +9,6 @@ Some standard options are pre-set, call configure with value=None to remove them
 # https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 
 
-
 from typing import Optional
 
 from pyspark.sql import SparkSession

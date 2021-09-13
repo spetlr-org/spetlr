@@ -18,7 +18,7 @@ class TestConfigMaster(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        ConfigMaster().reset(cls.old_config)
+        ConfigMaster().restore(cls.old_config)
 
     def test_config(self):
         config = ConfigMaster()
@@ -47,8 +47,20 @@ class TestConfigMaster(unittest.TestCase):
     def test_schema(self):
         config = ConfigMaster().set_debug()
         sql = config.get_sql("details")
-        print(sql)
+        # print(sql)
         self.assertTrue(sql.find("a int, b int") > 0)
+
+    def test_full_sql(self):
+        config = ConfigMaster().set_debug()
+        sqls = config.get_full_creation_sql("details")
+        self.assertEqual(2, len(sqls))
+        # for line in sqls:
+        #     print("  ", line)
+
+        sqls = config.get_full_creation_sql("db1")
+        self.assertEqual(3, len(sqls))
+        # for line in sqls:
+        #     print("  ", line)
 
 
 if __name__ == "__main__":

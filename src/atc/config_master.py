@@ -231,10 +231,14 @@ class ConfigMaster(metaclass=Singleton):
 
     def _get_nested_resources(self, resource_package: str):
         for resource in importlib.resources.contents(resource_package):
+            if str(resource).startswith("__"):
+                continue
             with importlib.resources.path(resource_package, resource) as resource_path:
                 if os.path.isdir(resource_path):
                     for root, dirs, files in os.walk(resource_path):
                         for file in files:
+                            if str(file).startswith("__"):
+                                continue
                             yield os.path.join(root, file)
                 else:
                     yield resource_path

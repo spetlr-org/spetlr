@@ -28,7 +28,7 @@ class TableDetails:
         format: str = None,
         sql_schema: str = None,
         alias: TableAlias = None,
-        create_statement:str = None,
+        create_statement: str = None,
     ):
         self.name = name or ""
         self.path = path or ""
@@ -77,23 +77,24 @@ class ConfigMaster(metaclass=Singleton):
     """
     Single point of contact for all configurations regarding tables, paths and databases.
     """
-    table_details:Dict[str,TableDetails]
-    state:States
-    ID:str
+
+    table_details: Dict[str, TableDetails]
+    state: States
+    ID: str
 
     def __init__(self):
         self.reset()
 
-    def reset(self, other:ConfigMaster=None)->ConfigMaster:
+    def reset(self, other: ConfigMaster = None) -> ConfigMaster:
         old_self = copy.deepcopy(self)
         if other:
             self.table_details = other.table_details
             self.state = other.state
             self.ID = other.ID
         else:
-            self.table_details={}
+            self.table_details = {}
             self.state = States.RELEASE
-            self.ID = "_"+uuid.uuid4().hex
+            self.ID = "_" + uuid.uuid4().hex
         return old_self
 
     def set_debug(self) -> ConfigMaster:
@@ -131,7 +132,7 @@ class ConfigMaster(metaclass=Singleton):
         return self
 
     def _construct_replacement_dict(self):
-        d={}
+        d = {}
         d.update(self.table_details)
         if self.state == States.RELEASE:
             d["ID"] = ""
@@ -139,12 +140,12 @@ class ConfigMaster(metaclass=Singleton):
             d["ID"] = self.ID
         return d
 
-    def get_name(self, key:str)->str:
+    def get_name(self, key: str) -> str:
         d = self._construct_replacement_dict()
         obj = self._get_dealiassed_object(key)
         return obj.name.format(**d)
 
-    def _get_dealiassed_object(self, key:str):
+    def _get_dealiassed_object(self, key: str):
         obj = self.table_details[key]
         while obj.alias:
             if self.state == States.RELEASE:
@@ -153,16 +154,15 @@ class ConfigMaster(metaclass=Singleton):
                 obj = self.table_details[obj.alias.debug]
         return obj
 
-    def get_path(self, key:str)->str:
+    def get_path(self, key: str) -> str:
         d = self._construct_replacement_dict()
         obj = self._get_dealiassed_object(key)
         return obj.path.format(**d)
 
-    def get_sql(self, key:str)->str:
+    def get_sql(self, key: str) -> str:
         d = self._construct_replacement_dict()
         obj = self._get_dealiassed_object(key)
         return obj.create_statement.format(**d)
-
 
     def _get_details_from_sql(self, sql: str) -> TableDetails:
         sql = self._remove_sql_comment_lines(sql)
@@ -194,7 +194,9 @@ class ConfigMaster(metaclass=Singleton):
         # the schema will always be a parenthesis that starts right after the name
         sql_schema_token_candidate = clean_tree[clean_tree.index(table_name_token) + 1]
         if isinstance(sql_schema_token_candidate, sqlparse.sql.Parenthesis):
-            table_sql_schema = str(sql_schema_token_candidate).strip().strip("()").strip()
+            table_sql_schema = (
+                str(sql_schema_token_candidate).strip().strip("()").strip()
+            )
         else:
             table_sql_schema = None
 
@@ -204,10 +206,12 @@ class ConfigMaster(metaclass=Singleton):
         ][0]
         table_path = clean_tree[clean_tree.index(path_token) + 1].value.strip('"')
 
-        return TableDetails(name=table_name,
-                            path=table_path,
-                            sql_schema=table_sql_schema,
-                            create_statement=sql)
+        return TableDetails(
+            name=table_name,
+            path=table_path,
+            sql_schema=table_sql_schema,
+            create_statement=sql,
+        )
 
     @staticmethod
     def _remove_sql_comment_lines(sql: str) -> str:

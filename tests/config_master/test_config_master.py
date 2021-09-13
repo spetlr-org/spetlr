@@ -4,15 +4,17 @@ from atc import ConfigMaster
 
 
 class TestConfigMaster(unittest.TestCase):
-    old_config:ConfigMaster
+    old_config: ConfigMaster
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.old_config = ConfigMaster().reset()
 
-        (ConfigMaster()
-         .extras_from("tests.config_master.extras")
-         .sql_from("tests.config_master.sql")
-         )
+        (
+            ConfigMaster()
+            .extras_from("tests.config_master.extras")
+            .sql_from("tests.config_master.sql")
+        )
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -24,29 +26,29 @@ class TestConfigMaster(unittest.TestCase):
 
     def test_name(self):
         config = ConfigMaster().set_debug()
-        name=config.get_name('table_id1')
+        name = config.get_name("table_id1")
         self.assertTrue(name.startswith("my_db1_"))
         self.assertTrue(name.endswith(".tbl1"))
 
         config.set_release()
-        name=config.get_name('table_id1')
-        self.assertEqual("my_db1.tbl1",name)
+        name = config.get_name("table_id1")
+        self.assertEqual("my_db1.tbl1", name)
 
     def test_alias(self):
         config = ConfigMaster().set_release()
-        name = config.get_name('details')
-        self.assertEqual("my_db1.tbl1",name)
+        name = config.get_name("details")
+        self.assertEqual("my_db1.tbl1", name)
 
         config.set_debug()
-        name = config.get_name('details')
+        name = config.get_name("details")
         self.assertTrue(name.startswith("my_db1_"))
         self.assertTrue(name.endswith(".details"))
 
     def test_schema(self):
         config = ConfigMaster().set_debug()
-        sql = config.get_sql('details')
+        sql = config.get_sql("details")
         print(sql)
-        self.assertTrue(sql.find("a int, b int")>0)
+        self.assertTrue(sql.find("a int, b int") > 0)
 
 
 if __name__ == "__main__":

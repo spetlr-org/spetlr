@@ -1,0 +1,8 @@
+eh1:
+  path: /mnt/foo/bar{ENV}/foobar
+  format: avro
+
+details:
+  alias:
+    release: table_id1
+    debug: details_debug

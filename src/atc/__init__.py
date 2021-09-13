@@ -1,5 +1,8 @@
-__version__ = "0.1.4"
+"""
+A common set of python libraries for DataBricks.
+See https://github.com/atc-net/atc-dataplatform for details
+"""
+__version__ = "0.1.5"
 
-from atc.module1 import *
-
-import atc.Spark as Spark
+from .spark import Spark
+from .config_master import ConfigMaster

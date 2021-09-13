@@ -1,3 +1,5 @@
 __version__ = "0.1.3"
 
-from .module1 import *
+from atc.module1 import *
+
+import atc.Spark as Spark

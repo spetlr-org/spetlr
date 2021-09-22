@@ -35,7 +35,6 @@ setuptools.setup(
     ],
     python_requires='>=3.8',
     install_requires=[
-        'databricks-connect',
         'pyyaml',
         'sqlparse',
         'more_itertools'

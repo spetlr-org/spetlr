@@ -10,6 +10,12 @@ class SchemaExtractionError(Exception):
     pass
 
 
+__debug = True
+
+def log(*args, **kwargs):
+    if __debug:
+        print(*args, **kwargs)
+
 def get_schema(sql: str) -> t.StructType:
     sql = sql.strip()
     # step 1: clean up the code
@@ -50,10 +56,12 @@ def get_schema(sql: str) -> t.StructType:
     struct = t.StructType([])
     try:
         while True:
+            log("Looking at next field:")
             name = _get_identifier(it)
+            log(f"got name {name}")
             _peek_skip_space(it)
             data_type = _get_data_type(it)
-            # print(f"got name: {name}, type: {data_type}")
+            log(f"got name: {name}, type: {data_type}")
             struct.add(name, data_type)
             c = _peek_skip_space(it)
             if next(it) == ",":
@@ -78,6 +86,7 @@ def _flatten(it: peekable):
 
 def _get_data_type(it: peekable) -> t.DataType:
     type_name = _get_data_type_name(it).upper()
+    log(f"Type name is {type_name}")
     simples = dict(
         BOOLEAN=t.BooleanType(),
         BYTE=t.ByteType(),
@@ -202,7 +211,7 @@ def _get_data_type_name(it: peekable) -> str:
     name = []
     _peek_skip_space(it)
 
-    while it.peek() in string.ascii_letters:
+    while it.peek(";") in string.ascii_letters:
         name.append(next(it))
 
     name = "".join(name).strip()

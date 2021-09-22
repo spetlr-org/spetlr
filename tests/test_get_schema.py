@@ -21,7 +21,8 @@ class TestGetSchema(unittest.TestCase):
                 >,
             d timestamp,
             m map<int,string>,
-            p decimal(10,3)
+            p decimal(10,3),
+            final string
         )
         """
         )
@@ -56,6 +57,8 @@ class TestGetSchema(unittest.TestCase):
                     t.StructField(
                         "m", t.MapType(t.IntegerType(), t.StringType(), True), True
                     ),
+                    t.StructField("p", t.DecimalType(10,3), True),
+                    t.StructField("final", t.StringType(), True),
                 ]
             ),
             struct,

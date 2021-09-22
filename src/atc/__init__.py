@@ -1,5 +1,3 @@
-__version__ = "0.1.4"
-
-from atc.module1 import *
+__version__ = "0.1.7"
 
 import atc.Spark as Spark

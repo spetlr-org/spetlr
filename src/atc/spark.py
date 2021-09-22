@@ -1,0 +1,58 @@
+"""
+Obtain a singleton spark instance.
+Add configuration options using the method Spark.configure.
+Obtain the instance by calling Spark.get()
+Some standard options are pre-set, call configure with value=None to remove them.
+"""
+
+# This class uses module level singleton pattern as suggested by method5 of
+# https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+
+
+from typing import Optional
+
+from pyspark.sql import SparkSession
+
+
+class Spark:
+    """
+    A class singleton to get a valid Spark session
+    """
+
+    _spark: Optional[SparkSession] = None
+    _configurations = {
+        "spark.sql.autoBroadcastJoinThreshold": -1,
+        "spark.sql.session.timeZone": "Etc/UTC",
+        "spark.driver.extraJavaOptions": "-Duser.timezone=UTC",
+        "spark.executor.extraJavaOptions": "-Duser.timezone=UTC",
+    }
+
+    @classmethod
+    def config(cls, key, value=None) -> None:
+        """
+        :param key: The spark configuration key
+        :param value: The value to set.
+            If the value is missing or None, the configurarion will be removed
+        :return:
+        """
+        if cls._spark is not None:
+            raise Exception("Configuration method called after spark session build.")
+        if value is not None:
+            cls._configurations[key] = value
+        else:
+            if key in cls._configurations:
+                del cls._configurations[key]
+
+    @classmethod
+    def get(cls) -> SparkSession:
+        """
+        :return:
+        The current spark session.
+        """
+        if cls._spark is not None:
+            return cls._spark
+        builder = SparkSession.builder
+        for key, value in cls._configurations.items():
+            builder = builder.config(key, value)
+        cls._spark = builder.getOrCreate()
+        return cls._spark

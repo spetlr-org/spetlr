@@ -37,7 +37,8 @@ setuptools.setup(
     install_requires=[
         'pyspark',
         'pyyaml',
-        'sqlparse'
+        'sqlparse',
+        'more_itertools'
     ],
     extras_require={
         'dev': ['check-manifest'],

@@ -35,7 +35,7 @@ setuptools.setup(
     ],
     python_requires='>=3.8',
     install_requires=[
-        'pyspark',
+        'databricks-connect',
         'pyyaml',
         'sqlparse',
         'more_itertools'

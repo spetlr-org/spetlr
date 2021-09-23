@@ -10,7 +10,7 @@ class SchemaExtractionError(Exception):
     pass
 
 
-__debug = True
+__debug = False
 
 def log(*args, **kwargs):
     if __debug:

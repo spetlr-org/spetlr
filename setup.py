@@ -43,10 +43,10 @@ setuptools.setup(
         'dev': ['check-manifest'],
         # 'test': ['coverage'],
     },
-    # entry_points={
-    #     'console_scripts': [  # This can provide executable scripts
-    #         'run=atc:main',
-    # You can execute `run` in bash to run `main()` in src/atc/__init__.py
-    #     ],
-    # },
+    entry_points={
+        'console_scripts': [
+            # see explanation in file:
+            'python3=atc.alias:python3',
+        ],
+    },
 )

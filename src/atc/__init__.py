@@ -7,3 +7,4 @@ __version__ = "0.1.12"
 from atc import spark
 from atc import sql
 from atc.config_master.config_master import ConfigMaster
+from atc import functions

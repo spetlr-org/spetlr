@@ -26,6 +26,12 @@ class Spark:
         "spark.driver.extraJavaOptions": "-Duser.timezone=UTC",
         "spark.executor.extraJavaOptions": "-Duser.timezone=UTC",
     }
+    _master=None
+
+    @classmethod
+    def master(cls,master:str):
+        cls._master = master
+        return cls
 
     @classmethod
     def config(cls, key, value=None) -> None:
@@ -42,6 +48,8 @@ class Spark:
         else:
             if key in cls._configurations:
                 del cls._configurations[key]
+        return cls
+
 
     @classmethod
     def get(cls) -> SparkSession:
@@ -52,6 +60,8 @@ class Spark:
         if cls._spark is not None:
             return cls._spark
         builder = SparkSession.builder
+        if cls._master is not None:
+            builder = builder.master(cls._master)
         for key, value in cls._configurations.items():
             builder = builder.config(key, value)
         cls._spark = builder.getOrCreate()

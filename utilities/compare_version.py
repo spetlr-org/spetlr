@@ -1,3 +1,9 @@
+"""
+This script will compare the version as set in the currently installed 'atc' package,
+to the versions of TestPyPi and PyPi repositories, using their rest APIs.
+Only if the current version is higher, will this script return with zero (error free)
+return code.
+"""
 import json
 import sys
 from urllib.request import urlopen
@@ -18,19 +24,19 @@ def main():
     if not (version > test_pypi_version):
         print(
             f"Current version {atc.__version__}"
-            f" is not ahead of TestPyPi's {pypi['info']['version']}"
+            f" is not ahead of TestPyPi's {test_pypi['info']['version']}"
         )
-        sys.exit(1)
+        return 1
     if not (version > pypi_version):
         print(
             f"Current version {atc.__version__}"
             f" is not ahead of PyPi's {pypi['info']['version']}"
         )
-        sys.exit(1)
+        return 1
 
     print(f"Version is newer than published versions.")
-    sys.exit(0)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

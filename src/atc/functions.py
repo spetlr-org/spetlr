@@ -26,18 +26,23 @@ def drop_table_cascade(DataBaseName,TableName):
 
     #Check if table exists 
     if Spark.get()._jsparkSession.catalog().tableExists(DataBaseName, TableName):
+
+        #### GET PATH - Idea 1 ###
         # #Collect file path
         # file_name = spark.read.table(f"{DataBaseName}.{TableName}").select(F.input_file_name()).take(1)
         # #Collect parent 
         # table_path=str(Path(file_name).parent)
+        ##########################
 
+        #### GET PATH - Idea 2 ###
         table_path=str(Spark.get().sql(f"DESCRIBE DETAIL {DataBaseName}.{TableName}").collect()[0]["location"])
+        ##########################
 
         if table_path is None:
             raise Exception(f"Table path is NONE.")
          
-        Spark.get().sql(f"DROP TABLE IF EXISTS {DataBaseName}.{TableName}") # Remove hive table        
-        init_dbutils(Spark.get()).fs.rm(table_path, recurse=True)           # Remove files in table
+        Spark.get().sql(f"DROP TABLE IF EXISTS {DataBaseName}.{TableName}") # Remove table        
+        init_dbutils(Spark.get()).fs.rm(table_path, recurse=True)           # Remove files associated with table
 
     else:
         raise Exception(f"The table {DataBaseName}.{TableName} not found.")

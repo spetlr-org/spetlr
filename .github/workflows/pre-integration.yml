@@ -1,4 +1,4 @@
-name: Pre-Integarion
+name: Pre-Integration
 
 on:
   pull_request:
@@ -27,19 +27,5 @@ jobs:
         run: python setup.py develop
       - name: Run Tests
         run: python -m pytest tests/
-
-  version_check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.8"
-      - name: Install test requirements
-        run: pip install -r test_requirements.txt
-      - name: Install the package
-        run: python setup.py develop
       - name: Run version check
-        run: python .github/utilities/compare_version.py
-
+        run: python utilities/compare_version.py

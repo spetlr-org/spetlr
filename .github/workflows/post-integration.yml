@@ -1,10 +1,14 @@
-name: Release
+name: Post-Integration
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - '!stable'
+      - '!release'
 
 jobs:
-  release:
+  test_release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -25,7 +29,8 @@ jobs:
         run: python utilities/compare_version.py
       - name: Build
         run: python setup.py sdist bdist_wheel
-      - name: Publish distribution 📦 to PyPI
+      - name: Publish distribution 📦 to TestPyPI
         uses: pypa/gh-action-pypi-publish@master
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/

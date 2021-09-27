@@ -8,6 +8,21 @@ However, installing pyspark as part of our installer gave issues when
 other versions of pyspark were needed. Hence we took out the dependency
 from our installer.
 
+## Testing
+
+To run the tests you will need these dependencies
+ - Java 8
+ - `pip install -r test_requirements.txt`
+
+Then, execute tests by running
+
+    python setup.py develop
+    pytest tests
+
+If these tests don't pass, PRs will not be accepted. If you add features,
+please include tests for these features
+
+
 ### General Project Info
 [![Github top language](https://img.shields.io/github/languages/top/atc-net/atc-dataplatform)](https://github.com/atc-net/atc-dataplatform)
 [![Github stars](https://img.shields.io/github/stars/atc-net/atc-dataplatform)](https://github.com/atc-net/atc-dataplatform)

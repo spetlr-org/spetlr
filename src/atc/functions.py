@@ -13,36 +13,48 @@ from pathlib import Path
 # https://stackoverflow.com/questions/49785108/spark-streaming-with-python-how-to-add-a-uuid-column/50095755
 uuid = udf(lambda: str(_uuid.uuid4()), StringType()).asNondeterministic()  # noqa
 
+
 def init_dbutils(spark):
     try:
         from pyspark.dbutils import DBUtils
+
         dbutils = DBUtils(spark)
     except ImportError:
         import IPython
+
         dbutils = IPython.get_ipython().user_ns["dbutils"]
     return dbutils
 
-def drop_table_cascade(DataBaseName,TableName):
 
-    #Check if table exists 
+def drop_table_cascade(DataBaseName, TableName):
+
+    # Check if table exists
     if Spark.get()._jsparkSession.catalog().tableExists(DataBaseName, TableName):
 
         #### GET PATH - Idea 1 ###
         # #Collect file path
         # file_name = spark.read.table(f"{DataBaseName}.{TableName}").select(F.input_file_name()).take(1)
-        # #Collect parent 
+        # #Collect parent
         # table_path=str(Path(file_name).parent)
         ##########################
 
         #### GET PATH - Idea 2 ###
-        table_path=str(Spark.get().sql(f"DESCRIBE DETAIL {DataBaseName}.{TableName}").collect()[0]["location"])
+        table_path = str(
+            Spark.get()
+            .sql(f"DESCRIBE DETAIL {DataBaseName}.{TableName}")
+            .collect()[0]["location"]
+        )
         ##########################
 
         if table_path is None:
             raise Exception(f"Table path is NONE.")
-         
-        Spark.get().sql(f"DROP TABLE IF EXISTS {DataBaseName}.{TableName}") # Remove table        
-        init_dbutils(Spark.get()).fs.rm(table_path, recurse=True)           # Remove files associated with table
+
+        Spark.get().sql(
+            f"DROP TABLE IF EXISTS {DataBaseName}.{TableName}"
+        )  # Remove table
+        init_dbutils(Spark.get()).fs.rm(
+            table_path, recurse=True
+        )  # Remove files associated with table
 
     else:
         raise Exception(f"The table {DataBaseName}.{TableName} not found.")

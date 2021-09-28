@@ -26,10 +26,10 @@ class Spark:
         "spark.driver.extraJavaOptions": "-Duser.timezone=UTC",
         "spark.executor.extraJavaOptions": "-Duser.timezone=UTC",
     }
-    _master=None
+    _master = None
 
     @classmethod
-    def master(cls,master:str):
+    def master(cls, master: str):
         cls._master = master
         return cls
 
@@ -49,7 +49,6 @@ class Spark:
             if key in cls._configurations:
                 del cls._configurations[key]
         return cls
-
 
     @classmethod
     def get(cls) -> SparkSession:

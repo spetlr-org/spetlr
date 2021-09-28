@@ -12,9 +12,11 @@ class SchemaExtractionError(Exception):
 
 __debug = False
 
+
 def log(*args, **kwargs):
     if __debug:
         print(*args, **kwargs)
+
 
 def get_schema(sql: str) -> t.StructType:
     sql = sql.strip()

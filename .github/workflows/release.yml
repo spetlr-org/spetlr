@@ -16,13 +16,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install setuptools wheel twine
-      - name: Install test requirements
-        run: pip install -r test_requirements.txt
-      - name: Install the package
-        run: python setup.py develop
-      - name: Run version check
-        # running this version check is very quick and ensures smooth publishing.
-        run: python utilities/compare_version.py
       - name: Build
         run: python setup.py sdist bdist_wheel
       - name: Publish distribution 📦 to PyPI

@@ -10,7 +10,7 @@ import compare_version
 
 
 def pre_commit():
-    compare_version.main()
+    sys.exit(compare_version.main())
 
 
 def install():
@@ -43,6 +43,7 @@ actions = {
 
 def main():
     install()
+
 
 if __name__ == "__main__":
     main()

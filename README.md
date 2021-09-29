@@ -8,7 +8,22 @@ However, installing pyspark as part of our installer gave issues when
 other versions of pyspark were needed. Hence we took out the dependency
 from our installer.
 
+## Installation
+
+Get it from PyPi 
+[![PyPI version](https://badge.fury.io/py/atc-dataplatform.svg)](https://pypi.org/project/atc-dataplatform/)
+
+    pip install atc-dataplatform
+
 ## Development Notes
+
+To prepare for development please install these additional requirements:
+ - Java 8
+ - `pip install -r test_requirements.txt`
+
+Then install the package locally
+
+    python setup.py develop
 
 ### Git Hooks
 
@@ -20,13 +35,8 @@ The hooks will help you catch problems locally instead of having to wait for the
 
 ### Testing
 
-To run the tests you will need these dependencies
- - Java 8
- - `pip install -r test_requirements.txt`
+After installing the dev-requirements, execute tests by running
 
-Then, execute tests by running
-
-    python setup.py develop
     pytest tests
 
 If these tests don't pass, PRs will not be accepted. If you add features,

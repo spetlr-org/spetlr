@@ -8,6 +8,13 @@ However, installing pyspark as part of our installer gave issues when
 other versions of pyspark were needed. Hence we took out the dependency
 from our installer.
 
+## Installation
+
+Get it from PyPi 
+[![PyPI version](https://badge.fury.io/py/atc-dataplatform.svg)](https://pypi.org/project/atc-dataplatform/)
+
+    pip install atc-dataplatform
+
 ## Development Notes
 
 ### Git Hooks

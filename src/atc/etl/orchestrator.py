@@ -1,6 +1,6 @@
 from .extractor import Extractor, DelegatingExtractor
 from .loader import Loader
-from .transformer import Transformer, DelegatingTransformer
+from .transformer import Transformer
 
 
 class Orchestrator:
@@ -15,13 +15,13 @@ class Orchestrator:
     def execute(self):
         df = self.extractor.read()
         df = self.transformer.process(df)
-        self.loader.save(df)
+        return self.loader.save(df)
 
 
 class MultipleExtractOrchestrator:
     def __init__(self,
                  extractor: DelegatingExtractor,
-                 transformer: DelegatingTransformer,
+                 transformer: Transformer,
                  loader: Loader):
         self.loader = loader
         self.transformer = transformer
@@ -29,8 +29,8 @@ class MultipleExtractOrchestrator:
 
     def execute(self):
         dataset = self.extractor.read()
-        df = self.transformer.process(dataset)
-        self.loader.save(df)
+        df = self.transformer.process_many(dataset)
+        return self.loader.save(df)
 
 
 class OrchestratorFactory:
@@ -40,6 +40,6 @@ class OrchestratorFactory:
 
     @staticmethod
     def create_for_multiple_sources(extractor: DelegatingExtractor,
-                                    transformer: DelegatingTransformer,
+                                    transformer: Transformer,
                                     loader: Loader) -> MultipleExtractOrchestrator:
         return MultipleExtractOrchestrator(extractor, transformer, loader)

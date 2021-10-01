@@ -25,7 +25,7 @@ class DelegatingExtractorTests(unittest.TestCase):
             self.assertIsInstance(df, DataFrame)
 
     def test_read_returns_dictionary_with_extractors_type_name_as_keys(self):
-        for x in range(1,3):
+        for x in range(1, 3):
             for df in self.dataset.get(f'Extractor{x}'):
                 self.assertIsNotNone(df)
 

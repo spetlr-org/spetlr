@@ -12,7 +12,7 @@ class Extractor:
         pass
 
 
-class DelegatingExtractor(Extractor):
+class DelegatingExtractor:
     def __init__(self, inner_extractors: [Extractor]):
         super().__init__()
         self.inner_extractors = inner_extractors

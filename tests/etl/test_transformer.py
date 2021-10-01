@@ -27,21 +27,6 @@ class DelegatingTransformerTests(unittest.TestCase):
         self.assertIsInstance(self.df, DataFrame)
 
 
-class Transformer1(Transformer):
-    def process(self, df):
-        return df
-
-
-class Transformer2(Transformer):
-    def process(self, df):
-        return df
-
-
-class Transformer3(Transformer):
-    def process(self, df):
-        return df
-
-
 def create_dataframe():
     return Spark.get().createDataFrame(
         Spark.get().sparkContext.parallelize([
@@ -53,3 +38,27 @@ def create_dataframe():
             StructField("id", IntegerType(), False),
             StructField("text", StringType(), False)
         ]))
+
+
+class Transformer1(Transformer):
+    def process_many(self, dataset: {}) -> DataFrame:
+        pass
+
+    def process(self, df):
+        return df
+
+
+class Transformer2(Transformer):
+    def process_many(self, dataset: {}) -> DataFrame:
+        pass
+
+    def process(self, df):
+        return df
+
+
+class Transformer3(Transformer):
+    def process_many(self, dataset: {}) -> DataFrame:
+        pass
+
+    def process(self, df):
+        return df

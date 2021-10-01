@@ -15,7 +15,7 @@ class MultipleExtractOrchestratorTests(unittest.TestCase):
     def test_execute_invokes_transformer_process(self):
         sut = self._create_sut()
         sut.execute()
-        sut.transformer.process.assert_called_once()
+        sut.transformer.process_many.assert_called_once()
 
     def test_execute_invokes_loader_save(self):
         sut = self._create_sut()

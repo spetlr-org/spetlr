@@ -28,3 +28,6 @@ class DelegatingTransformer(Transformer):
         for transformer in self.inner_transformers:
             df = transformer.process(df)
         return df
+
+    def process_many(self, dataset: {}) -> DataFrame:
+        raise NotImplementedError

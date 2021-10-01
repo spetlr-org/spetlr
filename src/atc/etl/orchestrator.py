@@ -1,9 +1,18 @@
+from abc import abstractmethod
+
 from .extractor import Extractor, DelegatingExtractor
 from .loader import Loader
 from .transformer import Transformer, DelegatingTransformer
 
 
-class Orchestrator:
+class OrchestratorBase:
+
+    @abstractmethod
+    def execute(self):
+        pass
+
+
+class Orchestrator(OrchestratorBase):
     def __init__(self,
                  extractor: Extractor,
                  transformer: Transformer,
@@ -18,7 +27,19 @@ class Orchestrator:
         return self.loader.save(df)
 
 
-class MultipleExtractOrchestrator:
+class NoTransformOrchestrator(OrchestratorBase):
+    def __init__(self,
+                 extractor: Extractor,
+                 loader: Loader):
+        self.loader = loader
+        self.extractor = extractor
+
+    def execute(self):
+        df = self.extractor.read()
+        return self.loader.save(df)
+
+
+class MultipleExtractOrchestrator(OrchestratorBase):
     def __init__(self,
                  extractor: DelegatingExtractor,
                  transformer: Transformer,
@@ -33,7 +54,7 @@ class MultipleExtractOrchestrator:
         return self.loader.save(df)
 
 
-class MultipleTransformOrchestrator:
+class MultipleTransformOrchestrator(OrchestratorBase):
     def __init__(self,
                  extractor: Extractor,
                  transformer: DelegatingTransformer,
@@ -50,17 +71,24 @@ class MultipleTransformOrchestrator:
 
 class OrchestratorFactory:
     @staticmethod
-    def create(extractor: Extractor, transformer: Transformer, loader: Loader) -> Orchestrator:
+    def create(extractor: Extractor,
+               transformer: Transformer,
+               loader: Loader) -> OrchestratorBase:
         return Orchestrator(extractor, transformer, loader)
 
     @staticmethod
     def create_for_multiple_sources(extractor: DelegatingExtractor,
                                     transformer: Transformer,
-                                    loader: Loader) -> MultipleExtractOrchestrator:
+                                    loader: Loader) -> OrchestratorBase:
         return MultipleExtractOrchestrator(extractor, transformer, loader)
 
     @staticmethod
     def create_for_multiple_transformers(extractor: Extractor,
                                          transformer: DelegatingTransformer,
-                                         loader: Loader) -> MultipleTransformOrchestrator:
+                                         loader: Loader) -> OrchestratorBase:
         return MultipleTransformOrchestrator(extractor, transformer, loader)
+
+    @staticmethod
+    def create_with_no_transformers(extractor: Extractor,
+                                    loader: Loader) -> OrchestratorBase:
+        return NoTransformOrchestrator(extractor, loader)

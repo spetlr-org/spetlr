@@ -43,8 +43,8 @@ class MultipleTransformOrchestrator:
         self.extractor = extractor
 
     def execute(self):
-        dataset = self.extractor.read()
-        df = self.transformer.process_many(dataset)
+        df = self.extractor.read()
+        df = self.transformer.process(df)
         return self.loader.save(df)
 
 

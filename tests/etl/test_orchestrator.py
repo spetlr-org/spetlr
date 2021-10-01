@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from atc import Orchestrator, OrchestratorFactory
+from atc.etl import Orchestrator, OrchestratorFactory
 
 
 class OrchestratorTests(unittest.TestCase):

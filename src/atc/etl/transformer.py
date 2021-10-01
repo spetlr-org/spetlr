@@ -9,6 +9,10 @@ class Transformer:
 
     @abstractmethod
     def process(self, df: DataFrame) -> DataFrame:
+        return df
+
+    @abstractmethod
+    def process_many(self, dataset: {}) -> DataFrame:
         pass
 
 
@@ -17,6 +21,10 @@ class DelegatingTransformer(Transformer):
         super().__init__()
         self.inner_transformers = inner_transformers
 
-    @abstractmethod
-    def process(self, dataset: {}) -> DataFrame:
-        pass
+    def get_transformers(self) -> [Transformer]:
+        return self.inner_transformers
+
+    def process(self, df: DataFrame) -> DataFrame:
+        for transformer in self.inner_transformers:
+            df = transformer.process(df)
+        return df

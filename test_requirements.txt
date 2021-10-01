@@ -1,5 +1,3 @@
 pyspark
 packaging
 pytest
-PyYAML
-sqlparse

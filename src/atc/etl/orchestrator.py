@@ -35,11 +35,11 @@ class MultipleExtractOrchestrator:
 
 class OrchestratorFactory:
     @staticmethod
-    def create(extractor: Extractor, transformer: Transformer, loader: Loader):
+    def create(extractor: Extractor, transformer: Transformer, loader: Loader) -> Orchestrator:
         return Orchestrator(extractor, transformer, loader)
 
     @staticmethod
     def create_for_multiple_sources(extractor: DelegatingExtractor,
                                     transformer: DelegatingTransformer,
-                                    loader: Loader):
+                                    loader: Loader) -> MultipleExtractOrchestrator:
         return MultipleExtractOrchestrator(extractor, transformer, loader)

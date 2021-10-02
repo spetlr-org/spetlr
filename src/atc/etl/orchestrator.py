@@ -1,8 +1,6 @@
-from abc import abstractmethod
-
 from .extractor import Extractor, DelegatingExtractor
-from .transformer import Transformer, DelegatingTransformer, MultiInputTransformer
 from .loader import Loader
+from .transformer import Transformer, DelegatingTransformer, MultiInputTransformer
 
 
 class Orchestrator:

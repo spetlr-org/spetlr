@@ -18,4 +18,4 @@ class MultipleExtractOrchestratorTests(unittest.TestCase):
 
     @staticmethod
     def _create_sut():
-        return OrchestratorFactory.create_with_no_transformers(MagicMock(), MagicMock())
+        return OrchestratorFactory.create_for_raw_ingestion(MagicMock(), MagicMock())

@@ -69,6 +69,6 @@ class OrchestratorFactory:
         return MultipleTransformOrchestrator(extractor, DelegatingTransformer(transformers), loader)
 
     @staticmethod
-    def create_with_no_transformers(extractor: Extractor,
-                                    loader: Loader) -> NoTransformOrchestrator:
+    def create_for_raw_ingestion(extractor: Extractor,
+                                 loader: Loader) -> NoTransformOrchestrator:
         return NoTransformOrchestrator(extractor, loader)

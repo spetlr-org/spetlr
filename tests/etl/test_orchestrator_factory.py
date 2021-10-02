@@ -17,6 +17,6 @@ class OrchestratorFactoryTests(unittest.TestCase):
         sut = OrchestratorFactory.create_for_multiple_transformers(MagicMock(), MagicMock(), MagicMock())
         self.assertIsNotNone(sut)
 
-    def test_create_with_no_transformers_returns_not_none(self):
-        sut = OrchestratorFactory.create_with_no_transformers(MagicMock(), MagicMock())
+    def test_create_for_raw_ingestion_returns_not_none(self):
+        sut = OrchestratorFactory.create_for_raw_ingestion(MagicMock(), MagicMock())
         self.assertIsNotNone(sut)

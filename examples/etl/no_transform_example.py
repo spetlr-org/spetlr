@@ -27,8 +27,8 @@ class NoopLoader(Loader):
         return df
 
 
-print('ETL Orchestrator with no transformer')
-etl = OrchestratorFactory.create_with_no_transformers(GuitarExtractor(), NoopLoader())
+print('ETL Orchestrator with no transformations')
+etl = OrchestratorFactory.create_for_raw_ingestion(GuitarExtractor(), NoopLoader())
 result = etl.execute()
 result.printSchema()
 result.show()

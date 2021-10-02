@@ -11,6 +11,10 @@ class MultipleTransformOrchestratorTests(unittest.TestCase):
         sut.execute()
         sut.extractor.read.assert_called_once()
 
+    def test_inner_transformer_is_delegating_transformer(self):
+        sut = self._create_sut_with_mocks()
+        self.assertIsInstance(sut.transformer, DelegatingTransformer)
+
     def test_execute_invokes_inner_transformer_process(self):
         sut = self._create_sut_with_mocks()
         sut.execute()
@@ -25,5 +29,5 @@ class MultipleTransformOrchestratorTests(unittest.TestCase):
     @staticmethod
     def _create_sut_with_mocks() -> MultipleTransformOrchestrator:
         return OrchestratorFactory.create_for_multiple_transformers(MagicMock(),
-                                                                    DelegatingTransformer([MagicMock(), MagicMock(), MagicMock()]),
+                                                                    [MagicMock(), MagicMock(), MagicMock()],
                                                                     MagicMock())

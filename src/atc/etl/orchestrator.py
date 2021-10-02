@@ -1,27 +1,12 @@
 from abc import abstractmethod
 
 from .extractor import Extractor, DelegatingExtractor
-from .transformer import Transformer, DelegatingTransformer
+from .transformer import Transformer, DelegatingTransformer, MultiInputTransformer
 from .loader import Loader
 
 
-class OrchestratorBase:
-    def __init__(self,
-                 extractor: Extractor,
-                 loader: Loader,
-                 transformer: Transformer = None):
-        self.extractor = extractor
-        self.loader = loader
-        self.transformer = transformer
-
-    @abstractmethod
-    def execute(self):
-        pass
-
-
-class Orchestrator(OrchestratorBase):
+class Orchestrator:
     def __init__(self, extractor: Extractor, transformer: Transformer, loader: Loader):
-        super().__init__(extractor, loader, transformer)
         self.loader = loader
         self.transformer = transformer
         self.extractor = extractor
@@ -32,9 +17,8 @@ class Orchestrator(OrchestratorBase):
         return self.loader.save(df)
 
 
-class NoTransformOrchestrator(OrchestratorBase):
+class NoTransformOrchestrator:
     def __init__(self, extractor: Extractor, loader: Loader):
-        super().__init__(extractor, loader)
         self.loader = loader
         self.extractor = extractor
 
@@ -43,9 +27,8 @@ class NoTransformOrchestrator(OrchestratorBase):
         return self.loader.save(df)
 
 
-class MultipleExtractOrchestrator(OrchestratorBase):
-    def __init__(self, extractor: DelegatingExtractor, transformer: Transformer, loader: Loader):
-        super().__init__(extractor, loader, transformer)
+class MultipleExtractOrchestrator:
+    def __init__(self, extractor: DelegatingExtractor, transformer: MultiInputTransformer, loader: Loader):
         self.loader = loader
         self.transformer = transformer
         self.extractor = extractor
@@ -56,9 +39,8 @@ class MultipleExtractOrchestrator(OrchestratorBase):
         return self.loader.save(df)
 
 
-class MultipleTransformOrchestrator(OrchestratorBase):
+class MultipleTransformOrchestrator:
     def __init__(self, extractor: Extractor, transformer: DelegatingTransformer, loader: Loader):
-        super().__init__(extractor, loader, transformer)
         self.loader = loader
         self.transformer = transformer
         self.extractor = extractor
@@ -77,21 +59,16 @@ class OrchestratorFactory:
         return Orchestrator(extractor, transformer, loader)
 
     @staticmethod
-    def create_for_multiple_sources(extractor: DelegatingExtractor,
-                                    transformer: Transformer,
+    def create_for_multiple_sources(extractors: [Extractor],
+                                    transformer: MultiInputTransformer,
                                     loader: Loader) -> MultipleExtractOrchestrator:
-        return MultipleExtractOrchestrator(extractor, transformer, loader)
+        return MultipleExtractOrchestrator(DelegatingExtractor(extractors), transformer, loader)
 
     @staticmethod
     def create_for_multiple_transformers(extractor: Extractor,
-                                         transformer: DelegatingTransformer,
+                                         transformers: [Transformer],
                                          loader: Loader) -> MultipleTransformOrchestrator:
-        return MultipleTransformOrchestrator(extractor, transformer, loader)
-
-    @staticmethod
-    def create_with_no_transformers(extractor: Extractor,
-                                    loader: Loader) -> NoTransformOrchestrator:
-        return NoTransformOrchestrator(extractor, loader)
+        return MultipleTransformOrchestrator(extractor, DelegatingTransformer(transformers), loader)
 
     @staticmethod
     def create_with_no_transformers(extractor: Extractor,

@@ -24,8 +24,6 @@ class MultipleExtractOrchestratorTests(unittest.TestCase):
 
     @staticmethod
     def _create_sut():
-        return OrchestratorFactory.create_for_multiple_sources(DelegatingExtractor([MagicMock(),
-                                                                                    MagicMock(),
-                                                                                    MagicMock()]),
+        return OrchestratorFactory.create_for_multiple_sources([MagicMock(), MagicMock(), MagicMock()],
                                                                MagicMock(),
                                                                MagicMock())

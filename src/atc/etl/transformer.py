@@ -4,13 +4,12 @@ from pyspark.sql import DataFrame
 
 
 class Transformer:
-    def __init__(self):
-        pass
-
     @abstractmethod
     def process(self, df: DataFrame) -> DataFrame:
         return df
 
+
+class MultiInputTransformer:
     @abstractmethod
     def process_many(self, dataset: {}) -> DataFrame:
         pass
@@ -28,6 +27,3 @@ class DelegatingTransformer(Transformer):
         for transformer in self.inner_transformers:
             df = transformer.process(df)
         return df
-
-    def process_many(self, dataset: {}) -> DataFrame:
-        raise NotImplementedError

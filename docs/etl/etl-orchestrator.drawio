@@ -13,7 +13,7 @@
                 <mxCell id="15" value="" style="edgeStyle=orthogonalEdgeStyle;curved=0;rounded=1;sketch=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#457B9D;strokeWidth=3;fillColor=#A8DADC;fontColor=#1D3557;" parent="1" source="2" target="3" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="2" value="&lt;b style=&quot;font-size: 16px&quot;&gt;Job&lt;br&gt;Notebook&lt;/b&gt;" style="aspect=fixed;html=1;points=[];align=center;image;fontSize=12;image=img/lib/mscae/Databricks.svg;fillColor=#A8DADC;strokeColor=#457B9D;labelBackgroundColor=none;" parent="1" vertex="1">
+                <mxCell id="2" value="&lt;b style=&quot;font-size: 16px&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Job&lt;br&gt;Notebook&lt;/font&gt;&lt;/b&gt;" style="aspect=fixed;html=1;points=[];align=center;image;fontSize=12;image=img/lib/mscae/Databricks.svg;fillColor=#A8DADC;strokeColor=#457B9D;labelBackgroundColor=#ffffff;labelBorderColor=#FFFFFF;" parent="1" vertex="1">
                     <mxGeometry x="220" y="30" width="85" height="81.6" as="geometry"/>
                 </mxCell>
                 <mxCell id="11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#F1FAEE;strokeColor=#457B9D;fontColor=#1D3557;strokeWidth=3;" parent="1" source="3" target="7" edge="1">

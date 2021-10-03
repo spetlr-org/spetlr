@@ -21,7 +21,7 @@ class DelegatingExtractor(Extractor):
     def get_extractors(self) -> List[Extractor]:
         return self.inner_extractors
 
-    def read(self) -> dict:
+    def read(self) -> Dict[str, DataFrame]:
         dataset = {}
         for extractor in self.inner_extractors:
             dataset[type(extractor).__name__] = extractor.read()

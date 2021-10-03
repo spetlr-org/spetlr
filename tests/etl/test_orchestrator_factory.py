@@ -20,3 +20,7 @@ class OrchestratorFactoryTests(unittest.TestCase):
     def test_create_for_raw_ingestion_returns_not_none(self):
         sut = OrchestratorFactory.create_for_raw_ingestion(MagicMock(), MagicMock())
         self.assertIsNotNone(sut)
+
+    def test_create_for_multiple_destinations_returns_not_none(self):
+        sut = OrchestratorFactory.create_for_multiple_destinations(MagicMock(), MagicMock(), MagicMock())
+        self.assertIsNotNone(sut)

@@ -1,3 +1,5 @@
+from typing import List
+
 from .extractor import Extractor, DelegatingExtractor
 from .loader import Loader
 from .transformer import Transformer, DelegatingTransformer, MultiInputTransformer
@@ -57,14 +59,14 @@ class OrchestratorFactory:
         return Orchestrator(extractor, transformer, loader)
 
     @staticmethod
-    def create_for_multiple_sources(extractors: [Extractor],
+    def create_for_multiple_sources(extractors: List[Extractor],
                                     transformer: MultiInputTransformer,
                                     loader: Loader) -> MultipleExtractOrchestrator:
         return MultipleExtractOrchestrator(DelegatingExtractor(extractors), transformer, loader)
 
     @staticmethod
     def create_for_multiple_transformers(extractor: Extractor,
-                                         transformers: [Transformer],
+                                         transformers: List[Transformer],
                                          loader: Loader) -> MultipleTransformOrchestrator:
         return MultipleTransformOrchestrator(extractor, DelegatingTransformer(transformers), loader)
 

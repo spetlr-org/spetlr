@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from atc.etl import OrchestratorFactory, DelegatingExtractor
+from atc.etl import OrchestratorFactory
 
 
 class MultipleExtractOrchestratorTests(unittest.TestCase):

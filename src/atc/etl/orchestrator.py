@@ -1,7 +1,7 @@
 from typing import List
 
 from .extractor import Extractor, DelegatingExtractor
-from .loader import Loader
+from .loader import Loader, DelegatingLoader
 from .transformer import Transformer, DelegatingTransformer, MultiInputTransformer
 
 
@@ -51,6 +51,18 @@ class MultipleTransformOrchestrator:
         return self.loader.save(df)
 
 
+class MultipleLoaderOrchestrator:
+    def __init__(self, extractor: Extractor, transformer: Transformer, loader: DelegatingLoader):
+        self.loader = loader
+        self.transformer = transformer
+        self.extractor = extractor
+
+    def execute(self):
+        df = self.extractor.read()
+        df = self.transformer.process(df)
+        return self.loader.save(df)
+
+
 class OrchestratorFactory:
     @staticmethod
     def create(extractor: Extractor,
@@ -74,3 +86,9 @@ class OrchestratorFactory:
     def create_for_raw_ingestion(extractor: Extractor,
                                  loader: Loader) -> NoTransformOrchestrator:
         return NoTransformOrchestrator(extractor, loader)
+
+    @staticmethod
+    def create_for_multiple_destinations(extractor: Extractor,
+                                         transformer: Transformer,
+                                         loader: List[Loader]) -> MultipleLoaderOrchestrator:
+        return MultipleLoaderOrchestrator(extractor, transformer, DelegatingLoader(loader))

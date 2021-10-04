@@ -10,7 +10,7 @@ init_file_path = "src/atc/__init__.py"
 
 
 def main():
-    version = int(check_output(["git", "rev-list", "--count", "HEAD"]).decode().strip())
+    version = int(check_output(["git", "rev-list", "--merges", "--count", "HEAD"]).decode().strip())
     conts = open(init_file_path).read()
     new_conts = re.sub(
         r'__version__\s+=\s+"(\d+)\.(\d+)\.\w+"',

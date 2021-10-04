@@ -1,26 +1,65 @@
 import unittest
 from unittest.mock import MagicMock
 
-from atc.etl import OrchestratorFactory
+from atc.etl import Orchestration, MultiInputTransformer
 
 
 class OrchestratorFactoryTests(unittest.TestCase):
 
     def test_create_returns_not_none(self):
-        self.assertIsNotNone(OrchestratorFactory.create(MagicMock(), MagicMock(), MagicMock()))
+        sut = (Orchestration
+                .extract_from(MagicMock())
+                .transform_with(MagicMock())
+                .load_into(MagicMock())
+               .build())
+        self.assertIsNotNone(sut)
+        self.assertEqual("SingleOrchestrator",type(sut).__name__)
 
     def test_create_for_multiple_sources_returns_not_none(self):
-        sut = OrchestratorFactory.create_for_multiple_sources(MagicMock(), MagicMock(), MagicMock())
-        self.assertIsNotNone(sut)
+        class MyMultiInputTransformer(MultiInputTransformer):
+            pass
+        sut = (Orchestration
+                .extract_from(MagicMock())
+                .extract_from(MagicMock())
+                .extract_from(MagicMock())
+                .extract_from(MagicMock())
+                .transform_with(MyMultiInputTransformer())
+                .load_into(MagicMock())
+               .build())
+        self.assertIsNotNone(sut
+
+        )
+        self.assertEqual("MultipleExtractOrchestrator",type(sut).__name__)
 
     def test_create_for_multiple_transformers_returns_not_none(self):
-        sut = OrchestratorFactory.create_for_multiple_transformers(MagicMock(), MagicMock(), MagicMock())
+        sut = (
+            Orchestration
+                .extract_from(MagicMock())
+                .transform_with(MagicMock())
+                .transform_with(MagicMock())
+                .transform_with(MagicMock())
+                .load_into(MagicMock)
+            .build()
+        )
         self.assertIsNotNone(sut)
+        self.assertEqual("MultipleTransformOrchestrator", type(sut).__name__)
 
     def test_create_for_raw_ingestion_returns_not_none(self):
-        sut = OrchestratorFactory.create_for_raw_ingestion(MagicMock(), MagicMock())
+        sut = (
+            Orchestration
+                .extract_from(MagicMock())
+                .load_into(MagicMock())
+            .build()
+        )
         self.assertIsNotNone(sut)
+        self.assertEqual("NoTransformOrchestrator",type(sut).__name__)
 
     def test_create_for_multiple_destinations_returns_not_none(self):
-        sut = OrchestratorFactory.create_for_multiple_destinations(MagicMock(), MagicMock(), MagicMock())
+        sut = (Orchestration
+               .extract_from(MagicMock())
+               .transform_with(MagicMock())
+               .load_into(MagicMock())
+               .load_into(MagicMock())
+               .build())
         self.assertIsNotNone(sut)
+        self.assertEqual("MultipleLoaderOrchestrator",type(sut).__name__)

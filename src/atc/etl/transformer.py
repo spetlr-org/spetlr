@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List
+from typing import List, Dict
 
 from pyspark.sql import DataFrame
 
@@ -12,7 +12,7 @@ class Transformer:
 
 class MultiInputTransformer:
     @abstractmethod
-    def process_many(self, dataset: {}) -> DataFrame:
+    def process_many(self, dataset: Dict[str, DataFrame]) -> DataFrame:
         pass
 
 

@@ -2,7 +2,7 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Transformer, Loader, OrchestratorFactory, MultiInputTransformer
+from atc.etl import Extractor, Transformer, Loader, Orchestration
 from atc.spark import Spark
 
 
@@ -38,9 +38,12 @@ class NoopLoader(Loader):
 
 
 print('ETL Orchestrator using multiple transformers')
-etl = OrchestratorFactory.create_for_multiple_transformers(GuitarExtractor(),
-                                                           [IntegerColumnTransformer('id'), IntegerColumnTransformer('year')],
-                                                           NoopLoader())
+etl = (Orchestration
+       .extract_from(GuitarExtractor())
+       .transform_with(IntegerColumnTransformer('id'))
+       .transform_with(IntegerColumnTransformer('year'))
+       .load_into(NoopLoader())
+       .build())
 result = etl.execute()
 result.printSchema()
 result.show()

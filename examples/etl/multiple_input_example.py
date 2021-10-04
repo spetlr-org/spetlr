@@ -2,7 +2,7 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, StringType
 
-from atc.etl import Extractor, Loader, OrchestratorFactory, MultiInputTransformer
+from atc.etl import Extractor, Loader, MultiInputTransformer, Orchestration
 from atc.spark import Spark
 
 
@@ -50,9 +50,12 @@ class NoopLoader(Loader):
 
 
 print('ETL Orchestrator using multiple extractors')
-etl = OrchestratorFactory.create_for_multiple_sources([AmericanGuitarExtractor(), JapaneseGuitarExtractor()],
-                                                      CountryOfOriginTransformer(),
-                                                      NoopLoader())
+etl = (Orchestration
+       .extract_from(AmericanGuitarExtractor())
+       .extract_from(JapaneseGuitarExtractor())
+       .transform_with(CountryOfOriginTransformer())
+       .load_into(NoopLoader())
+       .build())
 result = etl.execute()
 result.printSchema()
 result.show()

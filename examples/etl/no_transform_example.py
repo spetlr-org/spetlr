@@ -1,7 +1,7 @@
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, StringType
 
-from atc.etl import Extractor, Loader, OrchestratorFactory
+from atc.etl import Extractor, Loader, Orchestration
 from atc.spark import Spark
 
 
@@ -28,7 +28,10 @@ class NoopLoader(Loader):
 
 
 print('ETL Orchestrator with no transformations')
-etl = OrchestratorFactory.create_for_raw_ingestion(GuitarExtractor(), NoopLoader())
+etl = (Orchestration
+       .extract_from(GuitarExtractor())
+       .load_into(NoopLoader())
+       .build())
 result = etl.execute()
 result.printSchema()
 result.show()

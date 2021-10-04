@@ -6,24 +6,35 @@ This module contains components for implementing elegant ETL operations using th
 
 ## OETL
 
-Short for **Orchestrated Extract-Transform-Load** is pattern that takes the ideas behind variations of the Model-View-Whatever design pattern
+Short for **Orchestrated Extract-Transform-Load** is pattern that takes the ideas behind variations of the 
+Model-View-Whatever design pattern
 
 ![Orchestrated ETL](etl-orchestrator.png)
 
-The **Orchestrator** is responsible for conducting the interactions between the **Extractor** -> **Transformer** -> **Loader**. 
-The **Ochestrator** reads data from the **Extractor** then uses the result as a parameter to calling the **Transformer** and saves the transformed result into the **Loader**. The **Transformer** can be optional as there are scenarios where data transformation is not needed (i.e. raw data ingestion to a landing zone)
+The **Orchestrator** is responsible for conducting the interactions between the 
+**Extractor** -> **Transformer** -> **Loader**.
 
-Each layer may have a single or multiple implementations, and this is handled by different implementations of the **Ochestrator**
+The **Ochestrator** reads data from the **Extractor** then uses the result as a parameter to calling the **Transformer**
+and saves the transformed result into the **Loader**. The **Transformer** can be optional as there are scenarios where 
+data transformation is not needed (i.e. raw data ingestion to a landing zone)
 
-## OrchestratorFactory
+Each layer may have a single or multiple implementations, and this is handled by different implementations of the 
+**Ochestrator**
 
-This library provides a common simple implementation and base classes for implementing the OETL design pattern. To simplify object construction, we provide the `OrchestratorFactory` class under `atc.etl`
+## Orchestration Fluent Interface
+
+This library provides common simple implementations and base classes for implementing the OETL design pattern. 
+To simplify object construction, we provide the **Orchestration** fluent interface from `atc.etl`
 
 ```python
-def create(extractor: Extractor, transformer: Transformer, loader: Loader):
-def create_for_raw_ingestion(extractor: Extractor, loader: Loader):
-def create_for_multiple_sources(extractors: [Extractor], transformer: MultiInputTransformer, loader: Loader):
-def create_for_multiple_transformers(extractor: Extractor, transformers: [Transformer], loader: Loader):
+from atc.etl import Extractor, Transformer, Loader, Orchestration
+
+(Orchestration
+    .extract_from(Extractor())
+    .transform_with(Transformer())
+    .load_into(Loader())
+    .build()
+    .execute())
 ```
 
 ## Usage examples:
@@ -37,7 +48,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 import pyspark.sql.functions as f
 
-from atc.etl import Extractor, Transformer, Loader, OrchestratorFactory, DelegatingTransformer
+from atc.etl import Extractor, Transformer, Loader, Orchestration
 from atc.spark import Spark
 
 
@@ -77,7 +88,11 @@ class NoopLoader(Loader):
 
 
 print('ETL Orchestrator using a single simple transformer')
-etl = OrchestratorFactory.create(GuitarExtractor(), BasicTransformer(), NoopLoader())
+etl = (Orchestration
+       .extract_from(GuitarExtractor())
+       .transform_with(BasicTransformer())
+       .load_into(NoopLoader())
+       .build())
 result = etl.execute()
 result.printSchema()
 result.show()
@@ -120,7 +135,7 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Transformer, Loader, OrchestratorFactory, MultiInputTransformer
+from atc.etl import Extractor, Transformer, Loader, Orchestration
 from atc.spark import Spark
 
 
@@ -156,20 +171,25 @@ class NoopLoader(Loader):
 
 
 print('ETL Orchestrator using multiple transformers')
-etl = OrchestratorFactory.create_for_multiple_transformers(GuitarExtractor(),
-                                                           [IntegerColumnTransformer('id'), IntegerColumnTransformer('year')],
-                                                           NoopLoader())
+etl = (Orchestration
+       .extract_from(GuitarExtractor())
+       .transform_with(IntegerColumnTransformer('id'))
+       .transform_with(IntegerColumnTransformer('year'))
+       .load_into(NoopLoader())
+       .build())
 result = etl.execute()
 result.printSchema()
 result.show()
-
 ```
 
 ### Example-3
 
-There are scenarios that you might have to ingest data from multiple data sources and merge them into a single dataframe. Here's an example of have multiple `Extractor` implementation encapsulated in an instance of `DelegatingExtractor` and applying transformations using the `MultiInputTransformer`
+There are scenarios that you might have to ingest data from multiple data sources and merge them into a 
+single dataframe. Here's an example of have multiple `Extractor` implementation encapsulated in an instance of 
+`DelegatingExtractor` and applying transformations using the `MultiInputTransformer`
 
-The `read()` function in `DelegatingExtractor` will return a dictionary that uses the type name of the `Extractor` as the key, and a `DataFrame` as its value
+The `read()` function in `DelegatingExtractor` will return a dictionary that uses the type name of the `Extractor` 
+as the key, and a `DataFrame` as its value
 
 `MultiInputTransformer` provides the function `process_many(dataset: {})` and returns a single `DataFrame`
 
@@ -178,7 +198,7 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, StringType
 
-from atc.etl import Extractor, Loader, OrchestratorFactory, MultiInputTransformer
+from atc.etl import Extractor, Loader, MultiInputTransformer, Orchestration
 from atc.spark import Spark
 
 
@@ -226,9 +246,12 @@ class NoopLoader(Loader):
 
 
 print('ETL Orchestrator using multiple extractors')
-etl = OrchestratorFactory.create_for_multiple_sources([AmericanGuitarExtractor(), JapaneseGuitarExtractor()],
-                                                      CountryOfOriginTransformer(),
-                                                      NoopLoader())
+etl = (Orchestration
+       .extract_from(AmericanGuitarExtractor())
+       .extract_from(JapaneseGuitarExtractor())
+       .transform_with(CountryOfOriginTransformer())
+       .load_into(NoopLoader())
+       .build())
 result = etl.execute()
 result.printSchema()
 result.show()
@@ -262,34 +285,37 @@ Here's an example of data raw ingestion without applying any transformations
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, StringType
 
-from atc.etl import Extractor, Loader, OrchestratorFactory
+from atc.etl import Extractor, Loader, Orchestration
 from atc.spark import Spark
 
 
 class GuitarExtractor(Extractor):
-  def read(self) -> DataFrame:
-    return Spark.get().createDataFrame(
-      Spark.get().sparkContext.parallelize([
-        ('1', 'Fender', 'Telecaster', '1950'),
-        ('2', 'Gibson', 'Les Paul', '1959'),
-        ('3', 'Ibanez', 'RG', '1987')
-      ]),
-      StructType([
-        StructField('id', StringType()),
-        StructField('brand', StringType()),
-        StructField('model', StringType()),
-        StructField('year', StringType()),
-      ]))
+    def read(self) -> DataFrame:
+        return Spark.get().createDataFrame(
+            Spark.get().sparkContext.parallelize([
+                ('1', 'Fender', 'Telecaster', '1950'),
+                ('2', 'Gibson', 'Les Paul', '1959'),
+                ('3', 'Ibanez', 'RG', '1987')
+            ]),
+            StructType([
+                StructField('id', StringType()),
+                StructField('brand', StringType()),
+                StructField('model', StringType()),
+                StructField('year', StringType()),
+            ]))
 
 
 class NoopLoader(Loader):
-  def save(self, df: DataFrame) -> DataFrame:
-    df.write.format('noop').mode('overwrite').save()
-    return df
+    def save(self, df: DataFrame) -> DataFrame:
+        df.write.format('noop').mode('overwrite').save()
+        return df
 
 
-print('ETL Orchestrator with no transformer')
-etl = OrchestratorFactory.create_for_raw_ingestion(GuitarExtractor(), NoopLoader())
+print('ETL Orchestrator with no transformations')
+etl = (Orchestration
+       .extract_from(GuitarExtractor())
+       .load_into(NoopLoader())
+       .build())
 result = etl.execute()
 result.printSchema()
 result.show()
@@ -304,7 +330,7 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Transformer, Loader, OrchestratorFactory
+from atc.etl import Extractor, Transformer, Loader, Orchestration
 from atc.spark import Spark
 
 
@@ -350,9 +376,12 @@ class NoopGoldLoader(Loader):
 
 
 print('ETL Orchestrator using multiple loaders')
-etl = OrchestratorFactory.create_for_multiple_destinations(GuitarExtractor(),
-                                                           BasicTransformer(),
-                                                           [NoopSilverLoader(), NoopGoldLoader()])
+etl = (Orchestration
+       .extract_from(GuitarExtractor())
+       .transform_with(BasicTransformer())
+       .load_into(NoopSilverLoader())
+       .load_into(NoopGoldLoader())
+       .build())
 result = etl.execute()
 result.printSchema()
 result.show()

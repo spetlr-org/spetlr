@@ -1,10 +1,10 @@
 """
 This script will compare the version as set in the currently installed 'atc' package,
-to the versions of TestPyPi and PyPi repositories, using their rest APIs.
-Only if the current version is higher, will this script return with zero (error free)
+to the versions of TestPyPi and PyPi repositories, using their APIs.
+Only if the current version is different, will this script return with zero (error free)
 return code.
 """
-import json
+import re
 import sys
 from urllib.request import urlopen
 
@@ -12,31 +12,35 @@ from packaging.version import parse
 
 import atc
 
-# check for existence of committed version: https://test.pypi.org/pypi/atc-dataplatform/0.1.18pre1/json
 
 def main():
-    pypi = json.load(urlopen("https://pypi.org/pypi/atc-dataplatform/json"))
-    pypi_version = parse(pypi["info"]["version"])
-    test_pypi = json.load(urlopen("https://test.pypi.org/pypi/atc-dataplatform/json"))
-    test_pypi_version = parse(test_pypi["info"]["version"])
+    pypi = get_versions("https://pypi.org/simple/", "atc-dataplatform")
+    pypi_test = get_versions("https://test.pypi.org/simple/", "atc-dataplatform")
 
     version = parse(atc.__version__)
 
-    if not (version > test_pypi_version):
-        print(
-            f"Current version {atc.__version__}"
-            f" is not ahead of TestPyPi's {test_pypi['info']['version']}"
-        )
+    if version in pypi_test:
+        print(f"Current version {atc.__version__} already exists in TestPyPi")
         return 1
-    if not (version > pypi_version):
-        print(
-            f"Current version {atc.__version__}"
-            f" is not ahead of PyPi's {pypi['info']['version']}"
-        )
+    if version in pypi:
+        print(f"Current version {atc.__version__} already exists in PyPi")
         return 1
 
-    print(f"Version is newer than published versions.")
+    print(f"Version is different from published versions.")
     return 0
+
+
+def get_versions(repo: str, package: str):
+    """The interface https://pypi.org/simple/<package>/ is the one that pip
+    uses to get versions. The problem with the interface
+    "https://pypi.org/pypi/atc-dataplatform/json" is that it does not show
+    pre-releases."""
+    document = urlopen(repo + package + "/").read().decode()
+    vers = []
+    for match in re.findall(package + r"-(\d+\.\d+\.\d+\w+)\.tar\.gz", document):
+        vers.append(parse(match))
+    vers.sort()
+    return vers
 
 
 if __name__ == "__main__":

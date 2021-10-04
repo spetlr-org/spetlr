@@ -27,5 +27,3 @@ jobs:
         run: python setup.py develop
       - name: Run Tests
         run: python -m pytest tests/
-      - name: Run version check
-        run: python utilities/compare_version.py

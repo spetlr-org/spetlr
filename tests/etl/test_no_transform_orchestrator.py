@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from atc.etl import OrchestratorFactory
+from atc.etl import Orchestration, Orchestrator
 
 
 class MultipleExtractOrchestratorTests(unittest.TestCase):
@@ -17,5 +17,9 @@ class MultipleExtractOrchestratorTests(unittest.TestCase):
         sut.loader.save.assert_called_once()
 
     @staticmethod
-    def _create_sut():
-        return OrchestratorFactory.create_for_raw_ingestion(MagicMock(), MagicMock())
+    def _create_sut()->Orchestrator:
+        return (Orchestration
+                .extract_from(MagicMock())
+                .load_into(MagicMock())
+                .build()
+                )

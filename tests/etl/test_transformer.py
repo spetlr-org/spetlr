@@ -1,9 +1,10 @@
 import unittest
+from unittest.mock import MagicMock
 
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import DelegatingTransformer, Transformer
+from atc.etl import Transformer, Orchestration
 from atc.spark import Spark
 
 
@@ -17,7 +18,17 @@ class DelegatingTransformerTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.sut = sut = DelegatingTransformer([Transformer1(), Transformer2(), Transformer3()])
+
+        orch = (Orchestration
+                .extract_from(MagicMock())
+                .transform_with(Transformer1())
+                .transform_with(Transformer2())
+                .transform_with(Transformer3())
+                .load_into(MagicMock())
+                .build()
+                )
+
+        cls.sut = sut = orch.transformer
         cls.df = sut.process(create_dataframe())
 
     def test_get_transformers_returns_not_none(self):

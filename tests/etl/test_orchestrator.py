@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from atc.etl import OrchestratorFactory, Orchestrator
+from atc.etl import Orchestration, Orchestrator
 
 
 class OrchestratorTests(unittest.TestCase):
@@ -23,6 +23,9 @@ class OrchestratorTests(unittest.TestCase):
 
     @staticmethod
     def _create_sut() -> Orchestrator:
-        return OrchestratorFactory.create(MagicMock(),
-                                          MagicMock(),
-                                          MagicMock())
+        return (Orchestration
+                .extract_from(MagicMock())
+                .transform_with(MagicMock())
+                .load_into(MagicMock())
+                .build()
+                )

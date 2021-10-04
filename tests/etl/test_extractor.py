@@ -1,9 +1,10 @@
 import unittest
+from unittest.mock import MagicMock
 
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import DelegatingExtractor, Extractor
+from atc.etl import Extractor, Orchestration, MultiInputTransformer
 from atc.spark import Spark
 
 
@@ -11,7 +12,17 @@ class DelegatingExtractorTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.sut = sut = DelegatingExtractor([Extractor1(), Extractor2(), Extractor3()])
+        class MyMultiInputTransformer(MultiInputTransformer):
+            pass
+        orch = (Orchestration
+                .extract_from(Extractor1())
+                .extract_from(Extractor2())
+                .extract_from(Extractor3())
+                .transform_with(MyMultiInputTransformer())
+                .load_into(MagicMock())
+                .build()
+                )
+        cls.sut = sut = orch.extractor
         cls.dataset = sut.read()
 
     def test_get_extractors_returns_not_none(self):

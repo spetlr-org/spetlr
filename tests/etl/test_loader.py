@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from atc.etl import DelegatingLoader, Loader
+from atc.etl import Loader, Orchestration
 
 
 class LoaderTests(unittest.TestCase):
@@ -14,20 +14,30 @@ class DelegatingLoaderTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.sut = sut = DelegatingLoader([MagicMock(), MagicMock(), MagicMock()])
+        cls.sut = sut = cls.create_sut()
         cls.df = sut.save(MagicMock())
 
+    @staticmethod
+    def create_sut():
+        orch = (Orchestration
+                .extract_from(MagicMock())
+                .transform_with(MagicMock())
+                .load_into(MagicMock())
+                .load_into(MagicMock())
+                .load_into(MagicMock())
+                .build()
+                )
+        return orch.loader
+
     def test_get_loaders_returns_not_none(self):
-        sut = DelegatingLoader([MagicMock(), MagicMock(), MagicMock()])
-        sut.save(MagicMock())
-        self.assertIsNotNone(sut.get_loaders())
+        self.sut.save(MagicMock())
+        self.assertIsNotNone(self.sut.get_loaders())
 
     def test_save_returns_not_none(self):
-        sut = DelegatingLoader([MagicMock(), MagicMock(), MagicMock()])
-        self.assertIsNotNone(sut.save(MagicMock()))
+        self.assertIsNotNone(self.sut.save(MagicMock()))
 
     def test_save_returns_dataframe(self):
-        sut = DelegatingLoader([MagicMock(), MagicMock(), MagicMock()])
+        sut = self.create_sut()
         sut.save(MagicMock())
-        for e in self.sut.inner_loaders:
+        for e in sut.inner_loaders:
             e.save.assert_called_once()

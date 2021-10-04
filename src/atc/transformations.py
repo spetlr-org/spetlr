@@ -13,6 +13,29 @@ def join_time_series_dataframes(
     idColumns: List[str],
     stateColumn: str,
 ) -> DataFrame:
+    """
+    Join changing states from two dataframes acording to time as follows.
+
+    df1     df2     df
+    --              --
+    |               |
+    |               s1
+    |       --      --
+    s1      s3      s3
+    |       --      --
+    |               s1
+    |       --      --
+    --      s4      s4
+    |       --      --
+    |               s2
+    |       --      --
+    s2      s3      s3
+    |       --      --
+    |               s2
+    |               |
+    --              --
+    
+    """
 
     # Rename columns to differantiate the two dataframes
     for column in dfPrimary.columns:

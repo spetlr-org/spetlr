@@ -12,6 +12,7 @@ from packaging.version import parse
 
 import atc
 
+# check for existence of committed version: https://test.pypi.org/pypi/atc-dataplatform/0.1.18pre1/json
 
 def main():
     pypi = json.load(urlopen("https://pypi.org/pypi/atc-dataplatform/json"))

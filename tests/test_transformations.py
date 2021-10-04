@@ -24,26 +24,26 @@ class TestFunctions(unittest.TestCase):
         ]
 
         df2Data = [
-            (1, datetime(year=2020, month=1, day=1, hour=6),  datetime(year=2020, month=1, day=1, hour=8), "state3"),
+            (1, datetime(year=2020, month=1, day=1, hour=6),  datetime(year=2020, month=1, day=1, hour=8),  "state3"),
             (1, datetime(year=2020, month=1, day=1, hour=10), datetime(year=2020, month=1, day=1, hour=12), "state3"),
-            (1, datetime(year=2020, month=1, day=1, hour=20), datetime(year=2020, month=1, day=2, hour=4), "state4"),
-            (1, datetime(year=2020, month=1, day=2, hour=6),  datetime(year=2020, month=1, day=2, hour=8), "state3"),
+            (1, datetime(year=2020, month=1, day=1, hour=20), datetime(year=2020, month=1, day=2, hour=4),  "state4"),
+            (1, datetime(year=2020, month=1, day=2, hour=6),  datetime(year=2020, month=1, day=2, hour=8),  "state3"),
             (1, datetime(year=2020, month=1, day=2, hour=10), datetime(year=2020, month=1, day=2, hour=12), "state3"),
         ]
 
         dfExpectedData = [
-            (1, datetime(year=2020, month=1, day=1, hour=0),  datetime(year=2020, month=1, day=1, hour=6), "state1"),
-            (1, datetime(year=2020, month=1, day=1, hour=6),  datetime(year=2020, month=1, day=1, hour=8), "state3"),
+            (1, datetime(year=2020, month=1, day=1, hour=0),  datetime(year=2020, month=1, day=1, hour=6),  "state1"),
+            (1, datetime(year=2020, month=1, day=1, hour=6),  datetime(year=2020, month=1, day=1, hour=8),  "state3"),
             (1, datetime(year=2020, month=1, day=1, hour=8),  datetime(year=2020, month=1, day=1, hour=10), "state1"),
             (1, datetime(year=2020, month=1, day=1, hour=10), datetime(year=2020, month=1, day=1, hour=12), "state3"),
             (1, datetime(year=2020, month=1, day=1, hour=12), datetime(year=2020, month=1, day=1, hour=20), "state1"),
-            (1, datetime(year=2020, month=1, day=1, hour=20), datetime(year=2020, month=1, day=2, hour=4), "state4"),
-            (1, datetime(year=2020, month=1, day=2, hour=4),  datetime(year=2020, month=1, day=2, hour=6), "state2"),
-            (1, datetime(year=2020, month=1, day=2, hour=6),  datetime(year=2020, month=1, day=2, hour=8), "state3"),
+            (1, datetime(year=2020, month=1, day=1, hour=20), datetime(year=2020, month=1, day=2, hour=4),  "state4"),
+            (1, datetime(year=2020, month=1, day=2, hour=4),  datetime(year=2020, month=1, day=2, hour=6),  "state2"),
+            (1, datetime(year=2020, month=1, day=2, hour=6),  datetime(year=2020, month=1, day=2, hour=8),  "state3"),
             (1, datetime(year=2020, month=1, day=2, hour=8),  datetime(year=2020, month=1, day=2, hour=10), "state2"),
             (1, datetime(year=2020, month=1, day=2, hour=10), datetime(year=2020, month=1, day=2, hour=12), "state3"),
-            (1, datetime(year=2020, month=1, day=2, hour=12), datetime(year=2020, month=1, day=3, hour=0), "state2"),
-            (1, datetime(year=2020, month=1, day=3, hour=0),  datetime(year=2020, month=1, day=4, hour=0), "state1")
+            (1, datetime(year=2020, month=1, day=2, hour=12), datetime(year=2020, month=1, day=3, hour=0),  "state2"),
+            (1, datetime(year=2020, month=1, day=3, hour=0),  datetime(year=2020, month=1, day=4, hour=0),  "state1")
         ]
 
         # Construct dataframes
@@ -51,14 +51,19 @@ class TestFunctions(unittest.TestCase):
         df2 = spark.createDataFrame(df2Data, dfSchema)
         dfExpected = spark.createDataFrame(dfExpectedData, dfSchema)
 
-        dfReturn = join_time_series_dataframes(dfPrimary=df1,
-                                                  dfSecondary=df2,
-                                                  startTimeColumnName="StartTimestamp",
-                                                  endTimeColumnName="EndTimestamp",
-                                                  idColumns=["Id"],
-                                                  stateColumn="State")
+        dfReturn = join_time_series_dataframes(
+            dfPrimary=df1,
+            dfSecondary=df2,
+            startTimeColumnName="StartTimestamp",
+            endTimeColumnName="EndTimestamp",
+            idColumns=["Id"],
+            stateColumn="State",
+        )
 
-        self.assertEqual(dfExpected.orderBy("StartTimestamp").collect(), dfReturn.orderBy("StartTimestamp").collect())
+        self.assertEqual(
+            dfExpected.orderBy("StartTimestamp").collect(),
+            dfReturn.orderBy("StartTimestamp").collect(),
+        )
 
 if __name__ == "__main__":
     unittest.main()

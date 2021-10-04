@@ -16,7 +16,7 @@ def join_time_series_dataframes(
     """
     Join changing states from two dataframes acording to time as follows.
 
-    df1     df2     df
+    dfPri   dfSec   df
     --              --
     |               |
     |               s1
@@ -34,10 +34,14 @@ def join_time_series_dataframes(
     |               s2
     |               |
     --              --
-    
+            --
+            s5
+            --
+
+
     """
 
-    # Rename columns to differantiate the two dataframes
+    # Rename columns to differentiate the two dataframes 
     for column in dfPrimary.columns:
         dfPrimary = dfPrimary.withColumnRenamed(column, f"dfPri_{column}")
 
@@ -46,7 +50,14 @@ def join_time_series_dataframes(
 
     # Create join expection
     idMatchString = " AND ".join([f"dfPri_{column} = dfSec_{column}" for column in idColumns])
-    timeMatchString = f"((dfSec_{startTimeColumnName} >= dfPri_{startTimeColumnName} AND dfSec_{startTimeColumnName} < dfPri_{endTimeColumnName}) OR (dfSec_{endTimeColumnName} >= dfPri_{startTimeColumnName} AND dfSec_{endTimeColumnName} < dfPri_{endTimeColumnName}))"
+    timeMatchString = (
+        f"( \
+            (dfSec_{startTimeColumnName} >= dfPri_{startTimeColumnName} \
+                AND dfSec_{startTimeColumnName} < dfPri_{endTimeColumnName}) \
+            OR (dfSec_{endTimeColumnName} >= dfPri_{startTimeColumnName} \
+                AND dfSec_{endTimeColumnName} < dfPri_{endTimeColumnName})\
+        )"
+    )
     joinExpr = F.expr(f"{idMatchString} AND {timeMatchString}")
 
     # Outer join the two dataframes acording to timestamp to get all matches over time
@@ -59,7 +70,7 @@ def join_time_series_dataframes(
         + [f"dfSec_{column}" for column in [startTimeColumnName, endTimeColumnName, stateColumn]]
     )
 
-    # Create state id to use for groupings becouse value can change back to same value
+    # Create state id to use for groupings because value can change back to same value
     window = Window.partitionBy(idColumns).orderBy(f"dfPri_{startTimeColumnName}")
     df_join = df_join.withColumn(
         "dfPri_StateGroupId",
@@ -73,6 +84,7 @@ def join_time_series_dataframes(
 
     # Fix start and end timestamps when multiple states in secondary dataframe match primary dataframe
     window = Window.partitionBy(idColumns + ["dfPri_StateGroupId"]).orderBy(f"dfPri_{startTimeColumnName}", f"dfSec_{startTimeColumnName}")
+        #endtime
     df_join = df_join.withColumn(
         f"dfPri_{endTimeColumnName}",
         F.when(
@@ -80,6 +92,7 @@ def join_time_series_dataframes(
             F.col(f"dfSec_{endTimeColumnName}"),
         ).otherwise(F.col(f"dfPri_{endTimeColumnName}")),
     )
+        #start time
     df_join = df_join.withColumn(
         f"dfPri_{startTimeColumnName}",
         F.when(
@@ -88,8 +101,11 @@ def join_time_series_dataframes(
         ).otherwise(F.col(f"dfPri_{startTimeColumnName}")),
     )
 
-    # Generating three time segements, one with the state from the primary dataframe, one with the state from the secondary dataframe and one with the rest of primary dataframe.
-    # Correcting the end timestamps acording to if there are a matching element in seconday dataframe
+    # Generating three time segements: 
+    #   - One with the state from the primary dataframe
+    #   - One with the state from the secondary dataframe 
+    #   - One with the rest of primary dataframe
+    # Correcting the end timestamps according to if there is a matching element in secondary dataframe
     df_join = df_join.withColumn(
         "StartTimeDfPri1", F.col(f"dfPri_{startTimeColumnName}")
     )
@@ -104,9 +120,14 @@ def join_time_series_dataframes(
     df_join = df_join.withColumn(
         "StartTimeDfSec", F.col(f"dfSec_{startTimeColumnName}")
     )
-    df_join = df_join.withColumn("EndTimeDfSec", F.col(f"dfSec_{endTimeColumnName}"))
+    df_join = df_join.withColumn(
+        "EndTimeDfSec", F.col(f"dfSec_{endTimeColumnName}")
+        )
 
-    df_join = df_join.withColumn("StartTimeDfPri2", F.col(f"dfSec_{endTimeColumnName}"))
+    df_join = df_join.withColumn(
+        "StartTimeDfPri2", F.col(f"dfSec_{endTimeColumnName}")
+        )
+        
     df_join = df_join.withColumn(
         "EndTimeDfPri2",
         F.when(
@@ -115,27 +136,26 @@ def join_time_series_dataframes(
         ).otherwise(None),
     )
 
-    # Collecting segments of timestamps into lists
-    df_join = df_join.withColumn(
-        "DfPri1",
-        F.when(
-            F.col("StartTimeDfPri1") < F.col("EndTimeDfPri1"),
-            F.array(F.col("StartTimeDfPri1"), F.col("EndTimeDfPri1")),
-        ).otherwise(F.array(F.lit(None), F.lit(None))),
-    )
-    df_join = df_join.withColumn(
-        "DfSec",
-        F.when(
-            F.col("StartTimeDfSec") < F.col("EndTimeDfSec"),
-            F.array(F.col("StartTimeDfSec"), F.col("EndTimeDfSec")),
-        ).otherwise(F.array(F.lit(None), F.lit(None))),
-    )
-    df_join = df_join.withColumn(
-        "DfPri2",
-        F.when(
-            F.col("StartTimeDfPri2") < F.col("EndTimeDfPri2"),
-            F.array(F.col("StartTimeDfPri2"), F.col("EndTimeDfPri2")),
-        ).otherwise(F.array(F.lit(None), F.lit(None))),
+    # Collecting segments of timestamps into three lists 
+    df_join = (df_join.
+        withColumn("DfPri1",
+            F.when(
+                F.col("StartTimeDfPri1") < F.col("EndTimeDfPri1"),
+                F.array(F.col("StartTimeDfPri1"), F.col("EndTimeDfPri1")),
+            ).otherwise(F.array(F.lit(None), F.lit(None))),
+        )
+        .withColumn("DfSec",
+            F.when(
+                F.col("StartTimeDfSec") < F.col("EndTimeDfSec"),
+                F.array(F.col("StartTimeDfSec"), F.col("EndTimeDfSec")),
+            ).otherwise(F.array(F.lit(None), F.lit(None))),
+        )
+        .withColumn("DfPri2",
+            F.when(
+                F.col("StartTimeDfPri2") < F.col("EndTimeDfPri2"),
+                F.array(F.col("StartTimeDfPri2"), F.col("EndTimeDfPri2")),
+            ).otherwise(F.array(F.lit(None), F.lit(None))),
+        )
     )
 
     # Unpivot dataframe to move timestamp segemnts from columns to rows
@@ -144,10 +164,12 @@ def join_time_series_dataframes(
     )
     df_join_unpivot = df_join.selectExpr(*unpivot_columnn_select)
 
-    # Extract timestamp from unpivot data column
-    df_join_unpivot = df_join_unpivot.withColumn(startTimeColumnName, F.col("data")[0])
-    df_join_unpivot = df_join_unpivot.withColumn(endTimeColumnName, F.col("data")[1])
-    df_join_unpivot = df_join_unpivot.drop("data")
+    # Extract two timestamps from unpivot data column 
+    df_join_unpivot = (
+        df_join_unpivot.withColumn(startTimeColumnName, F.col("data")[0])
+                       .withColumn(endTimeColumnName, F.col("data")[1])
+                       .drop("data")
+    )
 
     # Remove rows where start time and end time is null
     df_join_unpivot = df_join_unpivot.where(

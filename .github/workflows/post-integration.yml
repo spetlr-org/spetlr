@@ -17,7 +17,9 @@ jobs:
         with:
           python-version: "3.8"
       - name: Manipulate version
-        run: python ./utilities/manipulate_version.py
+        run: |
+          pip install packaging
+          python ./utilities/manipulate_version.py
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip

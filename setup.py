@@ -1,17 +1,24 @@
 import setuptools
+import re
 
 with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = fh.read()
 
+def get_version():
+    with open("src/atc/__init__.py") as f:
+        return re.search(r'__version__\s+=\s+"(\d+\.\d+\.\w+)"', f.read()).group(1)
+
 setuptools.setup(
     name='atc-dataplatform',
     author='ATC.Net',
+    version=get_version(),
     author_email='atcnet.org@gmail.com',
     description='A common set of python libraries for DataBricks',
     keywords='databricks, pyspark',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/atc-net/atc-dataplatform',
+    license_files=["LICENSE"],
     project_urls={
         'Documentation': 'https://github.com/atc-net/atc-dataplatform',
         'Bug Reports':
@@ -28,12 +35,13 @@ setuptools.setup(
         'Topic :: Software Development :: Build Tools',
 
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.7',
     install_requires=[
         'pyyaml',
         'sqlparse',

@@ -11,7 +11,7 @@ def join_time_series_dataframes(
     startTimeColumnName: str,
     endTimeColumnName: str,
     idColumns: List[str],
-    stateColumn: str,
+    stateColumn: str
 ) -> DataFrame:
     """
     Join changing states from two dataframes acording to time as follows.

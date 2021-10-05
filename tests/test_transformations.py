@@ -12,15 +12,16 @@ class TestFunctions(unittest.TestCase):
 
         dfSchema = T.StructType([
             T.StructField("Id", T.LongType(), True),
+            T.StructField("Name", T.StringType(), True),
             T.StructField("StartTimestamp", T.TimestampType(), True),
             T.StructField("EndTimestamp", T.TimestampType(), True),
             T.StructField("State", T.StringType(), True)
         ])
 
         df1Data = [
-            (1, datetime(year=2020, month=1, day=1, hour=0), datetime(year=2020, month=1, day=2, hour=0), "state1"),
-            (1, datetime(year=2020, month=1, day=2, hour=0), datetime(year=2020, month=1, day=3, hour=0), "state2"),
-            (1, datetime(year=2020, month=1, day=3, hour=0), datetime(year=2020, month=1, day=4, hour=0), "state1")
+            (1, "TestName", datetime(year=2020, month=1, day=1, hour=0), datetime(year=2020, month=1, day=2, hour=0), "state1"),
+            (1, "TestName", datetime(year=2020, month=1, day=2, hour=0), datetime(year=2020, month=1, day=3, hour=0), "state2"),
+            (1, "TestName", datetime(year=2020, month=1, day=3, hour=0), datetime(year=2020, month=1, day=4, hour=0), "state1")
         ]
 
         df2Data = [
@@ -32,18 +33,18 @@ class TestFunctions(unittest.TestCase):
         ]
 
         dfExpectedData = [
-            (1, datetime(year=2020, month=1, day=1, hour=0),  datetime(year=2020, month=1, day=1, hour=6),  "state1"),
-            (1, datetime(year=2020, month=1, day=1, hour=6),  datetime(year=2020, month=1, day=1, hour=8),  "state3"),
-            (1, datetime(year=2020, month=1, day=1, hour=8),  datetime(year=2020, month=1, day=1, hour=10), "state1"),
-            (1, datetime(year=2020, month=1, day=1, hour=10), datetime(year=2020, month=1, day=1, hour=12), "state3"),
-            (1, datetime(year=2020, month=1, day=1, hour=12), datetime(year=2020, month=1, day=1, hour=20), "state1"),
-            (1, datetime(year=2020, month=1, day=1, hour=20), datetime(year=2020, month=1, day=2, hour=4),  "state4"),
-            (1, datetime(year=2020, month=1, day=2, hour=4),  datetime(year=2020, month=1, day=2, hour=6),  "state2"),
-            (1, datetime(year=2020, month=1, day=2, hour=6),  datetime(year=2020, month=1, day=2, hour=8),  "state3"),
-            (1, datetime(year=2020, month=1, day=2, hour=8),  datetime(year=2020, month=1, day=2, hour=10), "state2"),
-            (1, datetime(year=2020, month=1, day=2, hour=10), datetime(year=2020, month=1, day=2, hour=12), "state3"),
-            (1, datetime(year=2020, month=1, day=2, hour=12), datetime(year=2020, month=1, day=3, hour=0),  "state2"),
-            (1, datetime(year=2020, month=1, day=3, hour=0),  datetime(year=2020, month=1, day=4, hour=0),  "state1")
+            (1, "TestName", datetime(year=2020, month=1, day=1, hour=0),  datetime(year=2020, month=1, day=1, hour=6),  "state1"),
+            (1, "TestName", datetime(year=2020, month=1, day=1, hour=6),  datetime(year=2020, month=1, day=1, hour=8),  "state3"),
+            (1, "TestName", datetime(year=2020, month=1, day=1, hour=8),  datetime(year=2020, month=1, day=1, hour=10), "state1"),
+            (1, "TestName", datetime(year=2020, month=1, day=1, hour=10), datetime(year=2020, month=1, day=1, hour=12), "state3"),
+            (1, "TestName", datetime(year=2020, month=1, day=1, hour=12), datetime(year=2020, month=1, day=1, hour=20), "state1"),
+            (1, "TestName", datetime(year=2020, month=1, day=1, hour=20), datetime(year=2020, month=1, day=2, hour=4),  "state4"),
+            (1, "TestName", datetime(year=2020, month=1, day=2, hour=4),  datetime(year=2020, month=1, day=2, hour=6),  "state2"),
+            (1, "TestName", datetime(year=2020, month=1, day=2, hour=6),  datetime(year=2020, month=1, day=2, hour=8),  "state3"),
+            (1, "TestName", datetime(year=2020, month=1, day=2, hour=8),  datetime(year=2020, month=1, day=2, hour=10), "state2"),
+            (1, "TestName", datetime(year=2020, month=1, day=2, hour=10), datetime(year=2020, month=1, day=2, hour=12), "state3"),
+            (1, "TestName", datetime(year=2020, month=1, day=2, hour=12), datetime(year=2020, month=1, day=3, hour=0),  "state2"),
+            (1, "TestName", datetime(year=2020, month=1, day=3, hour=0),  datetime(year=2020, month=1, day=4, hour=0),  "state1")
         ]
 
         # Construct dataframes

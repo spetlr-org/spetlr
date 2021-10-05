@@ -3,7 +3,7 @@ A common set of python libraries for DataBricks.
 See https://github.com/atc-net/atc-dataplatform for details
 """
 
-__version__ = "0.2.x"
+__version__ = "0.3.x"
 
 from atc import spark
 from atc import sql

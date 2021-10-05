@@ -10,7 +10,8 @@ def cleanup_sql(sql: str) -> str:
         line = line.strip()
         if line.startswith("--"):
             continue
-        if (loc := line.find("--")) >= 0:
+        loc = line.find("--")
+        if loc >= 0:
             line = line[:loc]
         lines.append(line)
     sql = (" ".join(lines)).strip()
@@ -18,17 +19,17 @@ def cleanup_sql(sql: str) -> str:
 
 
 def sql_is_table(sql: str) -> bool:
-    if (s := "CREATE TABLE") == sql[: len(s)].upper() or (
-        s := "CREATE EXTERNAL TABLE"
-    ) == sql[: len(s)].upper():
+    ct = "CREATE TABLE"
+    cet = "CREATE EXTERNAL TABLE"
+    if ct == sql[: len(ct)].upper() or cet == sql[: len(cet)].upper():
         return True
     return False
 
 
 def sql_is_db(sql: str) -> bool:
-    if (s := "CREATE DATABASE") == sql[: len(s)].upper() or (
-        s := "CREATE SCHEMA"
-    ) == sql[: len(s)].upper():
+    cd = "CREATE DATABASE"
+    cs = "CREATE SCHEMA"
+    if cd == sql[: len(cd)].upper() or cs == sql[: len(cs)].upper():
         return True
     return False
 

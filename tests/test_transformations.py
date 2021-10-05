@@ -10,7 +10,7 @@ class TestFunctions(unittest.TestCase):
     def test_join_time_series_dataframes(self):
         spark = Spark.master("local[*]").get()
 
-        dfSchema = T.StructType([
+        df1Schema = T.StructType([
             T.StructField("Id", T.LongType(), True),
             T.StructField("Name", T.StringType(), True),
             T.StructField("StartTimestamp", T.TimestampType(), True),
@@ -18,11 +18,20 @@ class TestFunctions(unittest.TestCase):
             T.StructField("State", T.StringType(), True)
         ])
 
+        
+
         df1Data = [
             (1, "TestName", datetime(year=2020, month=1, day=1, hour=0), datetime(year=2020, month=1, day=2, hour=0), "state1"),
             (1, "TestName", datetime(year=2020, month=1, day=2, hour=0), datetime(year=2020, month=1, day=3, hour=0), "state2"),
             (1, "TestName", datetime(year=2020, month=1, day=3, hour=0), datetime(year=2020, month=1, day=4, hour=0), "state1")
         ]
+
+        df2Schema = T.StructType([
+            T.StructField("Id", T.LongType(), True),
+            T.StructField("StartTimestamp", T.TimestampType(), True),
+            T.StructField("EndTimestamp", T.TimestampType(), True),
+            T.StructField("State", T.StringType(), True)
+        ])
 
         df2Data = [
             (1, datetime(year=2020, month=1, day=1, hour=6),  datetime(year=2020, month=1, day=1, hour=8),  "state3"),
@@ -48,9 +57,9 @@ class TestFunctions(unittest.TestCase):
         ]
 
         # Construct dataframes
-        df1 = spark.createDataFrame(df1Data, dfSchema)
-        df2 = spark.createDataFrame(df2Data, dfSchema)
-        dfExpected = spark.createDataFrame(dfExpectedData, dfSchema)
+        df1 = spark.createDataFrame(df1Data, df1Schema)
+        df2 = spark.createDataFrame(df2Data, df2Schema)
+        dfExpected = spark.createDataFrame(dfExpectedData, df1Schema)
 
         dfReturn = join_time_series_dataframes(
             dfPrimary=df1,

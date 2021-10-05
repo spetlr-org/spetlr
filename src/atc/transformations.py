@@ -68,6 +68,7 @@ def join_time_series_dataframes(
         [F.col(f"dfPri_{column}").alias(column) for column in idColumns]
         + [f"dfPri_{column}" for column in [startTimeColumnName, endTimeColumnName, stateColumn]]
         + [f"dfSec_{column}" for column in [startTimeColumnName, endTimeColumnName, stateColumn]]
+        + [F.col(f"dfPri_{column}").alias(column) for column in dfPrimary.columns if column not in [startTimeColumnName, endTimeColumnName, stateColumn]+idColumns] 
     )
 
     # Create state id to use for groupings because value can change back to same value
@@ -160,7 +161,7 @@ def join_time_series_dataframes(
 
     # Unpivot dataframe to move timestamp segemnts from columns to rows
     unpivot_columnn_select = (
-        idColumns + [f"dfPri_{stateColumn}", f"dfSec_{stateColumn}", "stack(3, 'DfPri1', DfPri1, 'DfSec', DfSec, 'DfPri2', DfPri2) as (type, data)"]
+        idColumns + [[f"dfPri_{column}" for column in dfPrimary.columns if column not in {startTimeColumnName, endTimeColumnName, stateColumn}], f"dfPri_{stateColumn}", f"dfSec_{stateColumn}", "stack(3, 'DfPri1', DfPri1, 'DfSec', DfSec, 'DfPri2', DfPri2) as (type, data)"]
     )
     df_join_unpivot = df_join.selectExpr(*unpivot_columnn_select)
 

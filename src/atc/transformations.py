@@ -41,12 +41,14 @@ def join_time_series_dataframes(
 
     """
 
-    # Rename columns to differentiate the two dataframes 
-    for column in dfPrimary.columns:
-        dfPrimary = dfPrimary.withColumnRenamed(column, f"dfPri_{column}")
+    # Rename columns to differentiate the two dataframes
+    dfPrimary_join = dfPrimary
+    for column in dfPrimary_join.columns:
+        dfPrimary_join = dfPrimary_join.withColumnRenamed(column, f"dfPri_{column}")
 
-    for column in dfSecondary.columns:
-        dfSecondary = dfSecondary.withColumnRenamed(column, f"dfSec_{column}")
+    dfSecondary_join = dfSecondary
+    for column in dfSecondary_join.columns:
+        dfSecondary_join = dfSecondary_join.withColumnRenamed(column, f"dfSec_{column}")
 
     # Create join expection
     idMatchString = " AND ".join([f"dfPri_{column} = dfSec_{column}" for column in idColumns])
@@ -61,7 +63,7 @@ def join_time_series_dataframes(
     joinExpr = F.expr(f"{idMatchString} AND {timeMatchString}")
 
     # Outer join the two dataframes acording to timestamp to get all matches over time
-    df_join = dfPrimary.join(dfSecondary, on=joinExpr, how="leftouter")
+    df_join = dfPrimary_join.join(dfSecondary_join, on=joinExpr, how="leftouter")
 
     # Select data after join to remove duplicated id columns
     df_join = df_join.select(

@@ -2,14 +2,15 @@
 
 Functions in atc-dataplatform:
 
-* [Drop table cascade](##drop-table-cascade)
+* [Drop table cascade](#drop-table-cascade)
 
-## Drop table cascade
+##Drop table cascade
 The function drops a databricks database table and deletes the directory associated with the table.
 
 
 ```python
-def drop_table_cascade(DBDotTableName: str) -> None
+def drop_table_cascade(DBDotTableName: str) -> None:    
+    ...
 ```
 Usage example: 
 ``` python

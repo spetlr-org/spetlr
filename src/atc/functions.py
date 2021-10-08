@@ -38,7 +38,7 @@ def drop_table_cascade(DBDotTableName: str) -> None:
 
     # Check if table exists
     if not Spark.get()._jsparkSession.catalog().tableExists(DBDotTableName):
-        raise NoTableException(f"The table {DBDotTableName} not found. Rembember syntax db.tablename.")
+        raise NoTableException(f"The table {DBDotTableName} not found. Remember syntax db.tablename.")
 
     # Get table path
     table_path = str(Spark.get().sql(f"DESCRIBE DETAIL {DBDotTableName}").collect()[0]["location"])

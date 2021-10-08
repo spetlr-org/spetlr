@@ -4,7 +4,7 @@ Functions in atc-dataplatform:
 
 * [Drop table cascade](#drop-table-cascade)
 
-##Drop table cascade
+## Drop table cascade
 The function drops a databricks database table and deletes the directory associated with the table.
 
 

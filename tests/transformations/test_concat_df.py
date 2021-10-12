@@ -45,9 +45,9 @@ def create_df1():
 def create_df2():
     return Spark.get().createDataFrame(
         Spark.get().sparkContext.parallelize([
-            ('1', 'Fender', 'Telecaster', 'Small'),
-            ('2', 'Gibson', 'Les Paul', 'Medium'),
-            ('3', 'Ibanez', 'RG', 'Large')
+            ('1', 'Fender', 'Stratocaster', 'Small'),
+            ('2', 'Gibson', 'Les Paul Junior', 'Medium'),
+            ('3', 'Ibanez', 'JPM', 'Large')
         ]),
         StructType([
             StructField('id', StringType()),
@@ -60,9 +60,9 @@ def create_df2():
 def create_df3():
     return Spark.get().createDataFrame(
         Spark.get().sparkContext.parallelize([
-            ('1', 'Fender', 'Telecaster', 'Brown'),
-            ('2', 'Gibson', 'Les Paul', 'Blue'),
-            ('3', 'Ibanez', 'RG', 'Black')
+            ('1', 'Fender', 'Jaguar', 'Brown'),
+            ('2', 'Gibson', 'EB', 'Blue'),
+            ('3', 'Ibanez', 'AE', 'Black')
         ]),
         StructType([
             StructField('id', StringType()),

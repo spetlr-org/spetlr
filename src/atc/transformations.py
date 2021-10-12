@@ -318,8 +318,19 @@ def merge_df_into_target(df: DataFrame,
 
 
 def concat_dfs(dfs: List[DataFrame]):
+    """
+       concat_dfs append dataframes on eachother and also append columns.
+            If columns has the exact same name, they will be converted to one column.
+
+       NB: The transformation does not perform dataframe joins.
+
+       :param p1: A list of spark dataframes
+
+       returns a dataframe
+
+       """
+
     # Check that the list of dataframe and each dataframe is not Nonetypes
-    global result
     if dfs is None:
         raise NoTableException(f"The table list of tables are None")
 

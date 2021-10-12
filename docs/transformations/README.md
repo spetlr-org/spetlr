@@ -7,10 +7,10 @@ Transformations in atc-dataplatform:
 ## Concatenate data frames
 The transformation unions dataframes by appending the dataframes on eachother and keep all columns.
 
-(like pd.concat)
-
-
 ```python
+from pyspark.sql import DataFrame
+from typing import List
+
 def concat_dfs(dfs: List[DataFrame]) -> DataFrame:   
     ...
 ```
@@ -75,4 +75,4 @@ The output is then:
 |Ibanez|  3|            JPM| Large|null|
 +------+---+---------------+------+----+
 ```
-See that the "size" and "year" columns is added to the dataframe consisting of the union of df1 and df2.
+See that the columns "brand", "id", "model", "size" (from df2) and "year" (from df1) are added to the dataframe consisting of the union of df1 and df2.

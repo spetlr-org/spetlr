@@ -1,0 +1,3 @@
+class NoTableException(Exception):
+    pass
+

@@ -1,9 +1,11 @@
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql import Window
-from logging import WARNING
+import warnings
 from typing import List
 import uuid
+from atc.atc_exceptions import NoTableException
+from atc.spark import Spark
 
 
 def join_time_series_dataframes(
@@ -231,11 +233,11 @@ def merge_df_into_target(df: DataFrame,
     any_null_keys = len(df.filter(" OR ".join(f"({col} is NULL)" for col in join_cols)).take(1))
 
     if any_null_keys:
-        log.warning("Null keys found in input dataframe. Rows will be discarded before load.")
+        warnings.warn("Null keys found in input dataframe. Rows will be discarded before load.")
         df = df.filter(" AND ".join(f"({col} is NOT NULL)" for col in join_cols))
 
     # Load data from the target table for the purpose of incremental load
-    #if not incremental_load:
+    # if not incremental_load:
     #    return df.write \
     #        .format(table_format) \
     #        .mode("overwrite") \
@@ -294,22 +296,65 @@ def merge_df_into_target(df: DataFrame,
     non_join_cols = [col for col in df.columns if col not in join_cols]
 
     merge_sql_statement = f"""
-    MERGE INTO {target_table_name} AS target
-	USING {temp_view_name} as source
-	ON
-	{" AND ".join(f"(source.{col} = target.{col})" for col in join_cols)}
-	WHEN MATCHED
-	THEN UPDATE -- update existing records
-	SET
-	{', '.join(f"target.{col} = source.{col}" for col in non_join_cols)}
-	WHEN NOT MATCHED
-	THEN INSERT -- insert new records
-	(
-	{', '.join(df.columns)}
-	)
-	VALUES
-	(
-	{', '.join(f"source.{col}" for col in df.columns)}
-	)
-	"""
+        MERGE INTO {target_table_name} AS target
+        USING {temp_view_name} as source
+        ON
+        {" AND ".join(f"(source.{col} = target.{col})" for col in join_cols)}
+        WHEN MATCHED
+        THEN UPDATE -- update existing records
+        SET
+        {', '.join(f"target.{col} = source.{col}" for col in non_join_cols)}
+        WHEN NOT MATCHED
+        THEN INSERT -- insert new records
+        (
+        {', '.join(df.columns)}
+        )
+        VALUES
+        (
+        {', '.join(f"source.{col}" for col in df.columns)}
+        )
+        """
     Spark.get().sql(merge_sql_statement)
+
+
+def concat_dfs(dfs: List[DataFrame]):
+    # Check that the list of dataframe and each dataframe is not Nonetypes
+    global result
+    if dfs is None:
+        raise NoTableException(f"The table list of tables are None")
+
+    for i, df in enumerate(dfs):
+        if df is None:
+            raise NoTableException(f"The {i}th table dataframe in the list is None.")
+
+    all_cols = []
+    dfs_updated = dfs
+
+    # Get all columns across all tables
+    for df in dfs:
+        all_cols = all_cols + df.columns
+
+    # Sort the columns
+    all_cols = sorted(list(set(all_cols)))
+
+    # Create a list to save missing columns for each dataframe
+    missing = []
+
+    # For each dataframe: Get missing columns and add them to the dataframe
+    for i, df in enumerate(dfs):
+        missing.append([col for col in all_cols if col not in df.columns])
+
+        for col in missing[i]:
+            dfs_updated[i] = dfs_updated[i].withColumn(col, F.lit(None))
+
+        # Select columns in correct order
+        dfs_updated[i] = dfs_updated[i].select(all_cols)
+
+    # Union the dataframes
+    for i, df in enumerate(dfs):
+        if i == 0:
+            result = df
+        else:
+            result = result.unionByName(df)
+
+    return result

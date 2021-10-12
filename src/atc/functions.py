@@ -6,6 +6,7 @@ from atc.spark import Spark
 from pyspark.sql.functions import udf
 from pyspark.sql.types import StringType
 import uuid as _uuid
+from atc.atc_exceptions import NoTableException
 
 # Pyspark uuid function implemented as recommended here
 # https://stackoverflow.com/questions/49785108/spark-streaming-with-python-how-to-add-a-uuid-column/50095755
@@ -20,10 +21,6 @@ def init_dbutils():
         import IPython
         dbutils = IPython.get_ipython().user_ns["dbutils"]
     return dbutils
-
-
-class NoTableException(Exception):
-    pass
 
 
 def drop_table_cascade(DBDotTableName: str) -> None:

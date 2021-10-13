@@ -111,9 +111,7 @@ class OrchestratorBuilder(Orchestrator):
 
     def extract_from(self, extractor: Extractor) -> "OrchestratorBuilder":
         if self.transformers or self.loaders:
-            raise OrchestratorBuilderException(
-                "Set all extractors first"
-            )
+            raise OrchestratorBuilderException("Set all extractors first")
         self.extractors.append(extractor)
         return self
 
@@ -123,9 +121,7 @@ class OrchestratorBuilder(Orchestrator):
                 "Set all extractors before the transformers"
             )
         if self.loaders:
-            raise OrchestratorBuilderException(
-                "Cannot add transformer after loader"
-            )
+            raise OrchestratorBuilderException("Cannot add transformer after loader")
         if len(self.extractors) > 1:
             if not isinstance(transformer, MultiInputTransformer):
                 raise OrchestratorBuilderException(
@@ -152,19 +148,27 @@ class OrchestratorBuilder(Orchestrator):
         lt = len(self.transformers)
         ll = len(self.loaders)
         if le == lt == ll == 1:
-            return SingleOrchestrator(self.extractors[0], self.transformers[0], self.loaders[0])
+            return SingleOrchestrator(
+                self.extractors[0], self.transformers[0], self.loaders[0]
+            )
         elif le > 1 and lt == ll == 1:
             return MultipleExtractOrchestrator(
-                DelegatingExtractor(self.extractors), self.transformers[0], self.loaders[0]
+                DelegatingExtractor(self.extractors),
+                self.transformers[0],
+                self.loaders[0],
             )
         elif lt > 1 and le == ll == 1:
             return MultipleTransformOrchestrator(
-                self.extractors[0], DelegatingTransformer(self.transformers), self.loaders[0]
+                self.extractors[0],
+                DelegatingTransformer(self.transformers),
+                self.loaders[0],
             )
         elif lt == 0 and le == ll == 1:
             return NoTransformOrchestrator(self.extractors[0], self.loaders[0])
-        elif le==lt==1 and ll>1:
-            return MultipleLoaderOrchestrator(self.extractors[0], self.transformers[0],DelegatingLoader(self.loaders))
+        elif le == lt == 1 and ll > 1:
+            return MultipleLoaderOrchestrator(
+                self.extractors[0], self.transformers[0], DelegatingLoader(self.loaders)
+            )
         else:
             raise LogicError(
                 f"No supported orchestrator for "

@@ -11,7 +11,6 @@ class Loader:
 
 
 class DelegatingLoader(Loader):
-
     def __init__(self, inner_loaders: List[Loader]):
         super().__init__()
         self.inner_loaders = inner_loaders

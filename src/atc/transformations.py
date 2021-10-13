@@ -250,7 +250,7 @@ def merge_df_into_target(df: DataFrame,
         return df.write \
             .format(table_format) \
             .mode("overwrite") \
-            .save(target_table_name)
+            .saveAsTable(target_table_name)  # Consider use .save instead
 
     # Find records that need to be updated in the target (happens seldom)
 
@@ -273,7 +273,7 @@ def merge_df_into_target(df: DataFrame,
           .join(df_target.alias("b"), on=join_cols, how="left")
           .filter(filter_string)
           .withColumn("is_new",
-                      F.when(f.col(f"{key_col}").isNull(), True)
+                      F.when(F.col(f"{key_col}").isNull(), True)
                       .otherwise(False))
           .select("a.*", "is_new")
           .cache()
@@ -287,7 +287,7 @@ def merge_df_into_target(df: DataFrame,
         return df.write \
             .format(table_format) \
             .mode("append") \
-            .save(target_table_name)
+            .saveAsTable(target_table_name)  # Consider use .save instead
 
     unique_id = uuid.uuid4().hex
     temp_view_name = f"source_{unique_id}"
@@ -303,16 +303,10 @@ def merge_df_into_target(df: DataFrame,
         WHEN MATCHED
         THEN UPDATE -- update existing records
         SET
-        {', '.join(f"target.{col} = source.{col}" for col in non_join_cols)}
+        *
         WHEN NOT MATCHED
         THEN INSERT -- insert new records
-        (
-        {', '.join(df.columns)}
-        )
-        VALUES
-        (
-        {', '.join(f"source.{col}" for col in df.columns)}
-        )
+        *
         """
     Spark.get().sql(merge_sql_statement)
 
@@ -348,15 +342,11 @@ def concat_dfs(dfs: List[DataFrame]):
     # Sort the columns
     all_cols = sorted(list(set(all_cols)))
 
-    # Create a list to save missing columns for each dataframe
-    missing = []
-
-    # For each dataframe: Get missing columns and add them to the dataframe
+    # For each dataframe: Add the columns from all_cols if the dataframe does not has it
     for i, df in enumerate(dfs):
-        missing.append([col for col in all_cols if col not in df.columns])
-
-        for col in missing[i]:
-            dfs_updated[i] = dfs_updated[i].withColumn(col, F.lit(None))
+        for col in all_cols:
+            if col not in df.columns:
+                dfs_updated[i] = dfs_updated[i].withColumn(col, F.lit(None))
 
         # Select columns in correct order
         dfs_updated[i] = dfs_updated[i].select(all_cols)

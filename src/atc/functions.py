@@ -16,9 +16,11 @@ uuid = udf(lambda: str(_uuid.uuid4()), StringType()).asNondeterministic()  # noq
 def init_dbutils():
     try:
         from pyspark.dbutils import DBUtils
+
         dbutils = DBUtils(Spark.get())
     except ImportError:
         import IPython
+
         dbutils = IPython.get_ipython().user_ns["dbutils"]
     return dbutils
 
@@ -35,10 +37,14 @@ def drop_table_cascade(DBDotTableName: str) -> None:
 
     # Check if table exists
     if not Spark.get()._jsparkSession.catalog().tableExists(DBDotTableName):
-        raise NoTableException(f"The table {DBDotTableName} not found. Remember syntax db.tablename.")
+        raise NoTableException(
+            f"The table {DBDotTableName} not found. Remember syntax db.tablename."
+        )
 
     # Get table path
-    table_path = str(Spark.get().sql(f"DESCRIBE DETAIL {DBDotTableName}").collect()[0]["location"])
+    table_path = str(
+        Spark.get().sql(f"DESCRIBE DETAIL {DBDotTableName}").collect()[0]["location"]
+    )
 
     if table_path is None:
         raise NoTableException(f"Table path is NONE.")

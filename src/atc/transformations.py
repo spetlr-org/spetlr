@@ -14,7 +14,7 @@ def join_time_series_dataframes(
     startTimeColumnName: str,
     endTimeColumnName: str,
     idColumns: List[str],
-    stateColumn: str
+    stateColumn: str,
 ) -> DataFrame:
     """
     Join changing states from two dataframes acording to time as follows.
@@ -54,15 +54,15 @@ def join_time_series_dataframes(
         dfSecondary_join = dfSecondary_join.withColumnRenamed(column, f"dfSec_{column}")
 
     # Create join expection
-    idMatchString = " AND ".join([f"dfPri_{column} = dfSec_{column}" for column in idColumns])
-    timeMatchString = (
-        f"( \
+    idMatchString = " AND ".join(
+        [f"dfPri_{column} = dfSec_{column}" for column in idColumns]
+    )
+    timeMatchString = f"( \
             (dfSec_{startTimeColumnName} >= dfPri_{startTimeColumnName} \
                 AND dfSec_{startTimeColumnName} < dfPri_{endTimeColumnName}) \
             OR (dfSec_{endTimeColumnName} >= dfPri_{startTimeColumnName} \
                 AND dfSec_{endTimeColumnName} < dfPri_{endTimeColumnName})\
         )"
-    )
     joinExpr = F.expr(f"{idMatchString} AND {timeMatchString}")
 
     # Outer join the two dataframes acording to timestamp to get all matches over time
@@ -71,10 +71,20 @@ def join_time_series_dataframes(
     # Select data after join to remove duplicated id columns
     df_join = df_join.select(
         [F.col(f"dfPri_{column}").alias(column) for column in idColumns]
-        + [f"dfPri_{column}" for column in [startTimeColumnName, endTimeColumnName, stateColumn]]
-        + [f"dfSec_{column}" for column in [startTimeColumnName, endTimeColumnName, stateColumn]]
-        + [F.col(f"dfPri_{column}").alias(column) for column in dfPrimary.columns if
-           column not in [startTimeColumnName, endTimeColumnName, stateColumn] + idColumns]
+        + [
+            f"dfPri_{column}"
+            for column in [startTimeColumnName, endTimeColumnName, stateColumn]
+        ]
+        + [
+            f"dfSec_{column}"
+            for column in [startTimeColumnName, endTimeColumnName, stateColumn]
+        ]
+        + [
+            F.col(f"dfPri_{column}").alias(column)
+            for column in dfPrimary.columns
+            if column
+            not in [startTimeColumnName, endTimeColumnName, stateColumn] + idColumns
+        ]
     )
 
     # Create state id to use for groupings because value can change back to same value
@@ -83,20 +93,25 @@ def join_time_series_dataframes(
         "dfPri_StateGroupId",
         F.sum(
             (
-                F.col(f"dfPri_{stateColumn}") != F.lag(F.col(f"dfPri_{stateColumn}")).over(window)
+                F.col(f"dfPri_{stateColumn}")
+                != F.lag(F.col(f"dfPri_{stateColumn}")).over(window)
             ).cast("int")
         ).over(window),
     )
     df_join = df_join.fillna({"dfPri_StateGroupId": 0})
 
     # Fix start and end timestamps when multiple states in secondary dataframe match primary dataframe
-    window = Window.partitionBy(idColumns + ["dfPri_StateGroupId"]).orderBy(f"dfPri_{startTimeColumnName}",
-                                                                            f"dfSec_{startTimeColumnName}")
+    window = Window.partitionBy(idColumns + ["dfPri_StateGroupId"]).orderBy(
+        f"dfPri_{startTimeColumnName}", f"dfSec_{startTimeColumnName}"
+    )
     # endtime
     df_join = df_join.withColumn(
         f"dfPri_{endTimeColumnName}",
         F.when(
-            (F.col(f"dfPri_{endTimeColumnName}") == F.lead(F.col(f"dfPri_{endTimeColumnName}")).over(window)),
+            (
+                F.col(f"dfPri_{endTimeColumnName}")
+                == F.lead(F.col(f"dfPri_{endTimeColumnName}")).over(window)
+            ),
             F.col(f"dfSec_{endTimeColumnName}"),
         ).otherwise(F.col(f"dfPri_{endTimeColumnName}")),
     )
@@ -104,7 +119,10 @@ def join_time_series_dataframes(
     df_join = df_join.withColumn(
         f"dfPri_{startTimeColumnName}",
         F.when(
-            (F.col(f"dfPri_{startTimeColumnName}") == F.lag(F.col(f"dfPri_{startTimeColumnName}")).over(window)),
+            (
+                F.col(f"dfPri_{startTimeColumnName}")
+                == F.lag(F.col(f"dfPri_{startTimeColumnName}")).over(window)
+            ),
             F.lag(F.col(f"dfSec_{endTimeColumnName}")).over(window),
         ).otherwise(F.col(f"dfPri_{startTimeColumnName}")),
     )
@@ -128,13 +146,9 @@ def join_time_series_dataframes(
     df_join = df_join.withColumn(
         "StartTimeDfSec", F.col(f"dfSec_{startTimeColumnName}")
     )
-    df_join = df_join.withColumn(
-        "EndTimeDfSec", F.col(f"dfSec_{endTimeColumnName}")
-    )
+    df_join = df_join.withColumn("EndTimeDfSec", F.col(f"dfSec_{endTimeColumnName}"))
 
-    df_join = df_join.withColumn(
-        "StartTimeDfPri2", F.col(f"dfSec_{endTimeColumnName}")
-    )
+    df_join = df_join.withColumn("StartTimeDfPri2", F.col(f"dfSec_{endTimeColumnName}"))
 
     df_join = df_join.withColumn(
         "EndTimeDfPri2",
@@ -145,42 +159,52 @@ def join_time_series_dataframes(
     )
 
     # Collecting segments of timestamps into three lists
-    df_join = (df_join.
-               withColumn("DfPri1",
-                          F.when(
-                              F.col("StartTimeDfPri1") < F.col("EndTimeDfPri1"),
-                              F.array(F.col("StartTimeDfPri1"), F.col("EndTimeDfPri1")),
-                          ).otherwise(F.array(F.lit(None), F.lit(None))),
-                          )
-               .withColumn("DfSec",
-                           F.when(
-                               F.col("StartTimeDfSec") < F.col("EndTimeDfSec"),
-                               F.array(F.col("StartTimeDfSec"), F.col("EndTimeDfSec")),
-                           ).otherwise(F.array(F.lit(None), F.lit(None))),
-                           )
-               .withColumn("DfPri2",
-                           F.when(
-                               F.col("StartTimeDfPri2") < F.col("EndTimeDfPri2"),
-                               F.array(F.col("StartTimeDfPri2"), F.col("EndTimeDfPri2")),
-                           ).otherwise(F.array(F.lit(None), F.lit(None))),
-                           )
-               )
+    df_join = (
+        df_join.withColumn(
+            "DfPri1",
+            F.when(
+                F.col("StartTimeDfPri1") < F.col("EndTimeDfPri1"),
+                F.array(F.col("StartTimeDfPri1"), F.col("EndTimeDfPri1")),
+            ).otherwise(F.array(F.lit(None), F.lit(None))),
+        )
+        .withColumn(
+            "DfSec",
+            F.when(
+                F.col("StartTimeDfSec") < F.col("EndTimeDfSec"),
+                F.array(F.col("StartTimeDfSec"), F.col("EndTimeDfSec")),
+            ).otherwise(F.array(F.lit(None), F.lit(None))),
+        )
+        .withColumn(
+            "DfPri2",
+            F.when(
+                F.col("StartTimeDfPri2") < F.col("EndTimeDfPri2"),
+                F.array(F.col("StartTimeDfPri2"), F.col("EndTimeDfPri2")),
+            ).otherwise(F.array(F.lit(None), F.lit(None))),
+        )
+    )
 
     # Unpivot dataframe to move timestamp segemnts from columns to rows
     unpivot_columnn_select = (
         idColumns
-        + [f"{column}" for column in dfPrimary.columns if
-           column not in [startTimeColumnName, endTimeColumnName, stateColumn] + idColumns]
-        + [f"dfPri_{stateColumn}", f"dfSec_{stateColumn}",
-           "stack(3, 'DfPri1', DfPri1, 'DfSec', DfSec, 'DfPri2', DfPri2) as (type, data)"]
+        + [
+            f"{column}"
+            for column in dfPrimary.columns
+            if column
+            not in [startTimeColumnName, endTimeColumnName, stateColumn] + idColumns
+        ]
+        + [
+            f"dfPri_{stateColumn}",
+            f"dfSec_{stateColumn}",
+            "stack(3, 'DfPri1', DfPri1, 'DfSec', DfSec, 'DfPri2', DfPri2) as (type, data)",
+        ]
     )
     df_join_unpivot = df_join.selectExpr(*unpivot_columnn_select)
 
     # Extract two timestamps from unpivot data column
     df_join_unpivot = (
         df_join_unpivot.withColumn(startTimeColumnName, F.col("data")[0])
-            .withColumn(endTimeColumnName, F.col("data")[1])
-            .drop("data")
+        .withColumn(endTimeColumnName, F.col("data")[1])
+        .drop("data")
     )
 
     # Remove rows where start time and end time is null
@@ -192,11 +216,13 @@ def join_time_series_dataframes(
     df_join_unpivot = df_join_unpivot.withColumn(
         "tempStateColumn",
         F.when(F.col("type") == "DfPri1", F.col(f"dfPri_{stateColumn}"))
-            .when(F.col("type") == "DfSec", F.col(f"dfSec_{stateColumn}"))
-            .when(F.col("type") == "DfPri2", F.col(f"dfPri_{stateColumn}"))
-            .otherwise(None)
+        .when(F.col("type") == "DfSec", F.col(f"dfSec_{stateColumn}"))
+        .when(F.col("type") == "DfPri2", F.col(f"dfPri_{stateColumn}"))
+        .otherwise(None),
     )
-    df_join_unpivot = df_join_unpivot.drop(f"dfPri_{stateColumn}", f"dfSec_{stateColumn}", "type")
+    df_join_unpivot = df_join_unpivot.drop(
+        f"dfPri_{stateColumn}", f"dfSec_{stateColumn}", "type"
+    )
     df_join_unpivot = df_join_unpivot.withColumnRenamed("tempStateColumn", stateColumn)
 
     df_join_unpivot = df_join_unpivot.dropDuplicates(
@@ -206,20 +232,22 @@ def join_time_series_dataframes(
     return df_join_unpivot
 
 
-def merge_df_into_target(df: DataFrame,
-                         table_name: str,
-                         database_name: str,
-                         join_cols: List[str],
-                         table_format: str = "Delta") -> None:
+def merge_df_into_target(
+    df: DataFrame,
+    table_name: str,
+    database_name: str,
+    join_cols: List[str],
+    table_format: str = "Delta",
+) -> None:
     """
 
-        Merges a databricks dataframe into a target database table
+    Merges a databricks dataframe into a target database table
 
-        :param p1: The dataframe
-        :param p2: The name of the table which the dataframe (p1) should be merged into
-        :param p3: The database name associated with the table
-        :param p4: A list of strings which tells which columns to join on
-        :param p5: The format of the table
+    :param p1: The dataframe
+    :param p2: The name of the table which the dataframe (p1) should be merged into
+    :param p3: The database name associated with the table
+    :param p4: A list of strings which tells which columns to join on
+    :param p5: The format of the table
 
     """
 
@@ -230,10 +258,14 @@ def merge_df_into_target(df: DataFrame,
         raise NoTableException(f"The table {target_table_name} not found.")
 
     # check null keys in our dataframe.
-    any_null_keys = len(df.filter(" OR ".join(f"({col} is NULL)" for col in join_cols)).take(1))
+    any_null_keys = len(
+        df.filter(" OR ".join(f"({col} is NULL)" for col in join_cols)).take(1)
+    )
 
     if any_null_keys:
-        warnings.warn("Null keys found in input dataframe. Rows will be discarded before load.")
+        warnings.warn(
+            "Null keys found in input dataframe. Rows will be discarded before load."
+        )
         df = df.filter(" AND ".join(f"({col} is NOT NULL)" for col in join_cols))
 
     # Load data from the target table for the purpose of incremental load
@@ -247,10 +279,11 @@ def merge_df_into_target(df: DataFrame,
 
     # If the target is empty, always do faster full load
     if len(df_target.take(1)) == 0:
-        return df.write \
-            .format(table_format) \
-            .mode("overwrite") \
-            .saveAsTable(target_table_name)  # Consider use .save instead
+        return (
+            df.write.format(table_format)
+            .mode("overwrite")
+            .saveAsTable(target_table_name)
+        )  # Consider use .save instead
 
     # Find records that need to be updated in the target (happens seldom)
 
@@ -263,31 +296,33 @@ def merge_df_into_target(df: DataFrame,
     for col, col_typ in df.dtypes:
         if col not in join_cols:
             if col_typ == "map":
-                filter_string += f" OR (CAST(a.{col} AS varchar) <> CAST(b.{col} AS varchar))"
+                filter_string += (
+                    f" OR (CAST(a.{col} AS varchar) <> CAST(b.{col} AS varchar))"
+                )
             else:
                 filter_string += f" OR (a.{col} <> b.{col})"
                 filter_string += f" OR (a.{col} IS NULL AND b.{col} IS NOT NULL)"
                 filter_string += f" OR (a.{col} IS NOT NULL AND b.{col} IS NULL)"
 
-    df = (df.alias("a")
-          .join(df_target.alias("b"), on=join_cols, how="left")
-          .filter(filter_string)
-          .withColumn("is_new",
-                      F.when(F.col(f"{key_col}").isNull(), True)
-                      .otherwise(False))
-          .select("a.*", "is_new")
-          .cache()
-          )
+    df = (
+        df.alias("a")
+        .join(df_target.alias("b"), on=join_cols, how="left")
+        .filter(filter_string)
+        .withColumn(
+            "is_new", F.when(F.col(f"{key_col}").isNull(), True).otherwise(False)
+        )
+        .select("a.*", "is_new")
+        .cache()
+    )
 
     # If merge is not required, the data can just be appended
-    merge_required = (len(df.filter(~ F.col("is_new")).take(1)) > 0)
+    merge_required = len(df.filter(~F.col("is_new")).take(1)) > 0
     df = df.drop("is_new")
 
     if not merge_required:
-        return df.write \
-            .format(table_format) \
-            .mode("append") \
-            .saveAsTable(target_table_name)  # Consider use .save instead
+        return (
+            df.write.format(table_format).mode("append").saveAsTable(target_table_name)
+        )  # Consider use .save instead
 
     unique_id = uuid.uuid4().hex
     temp_view_name = f"source_{unique_id}"
@@ -313,16 +348,16 @@ def merge_df_into_target(df: DataFrame,
 
 def concat_dfs(dfs: List[DataFrame]):
     """
-       concat_dfs append dataframes on eachother and also append columns.
-            If columns has the exact same name, they will be converted to one column.
+    concat_dfs append dataframes on eachother and also append columns.
+         If columns has the exact same name, they will be converted to one column.
 
-       NB: The transformation does not perform dataframe joins.
+    NB: The transformation does not perform dataframe joins.
 
-       :param p1: A list of spark dataframes
+    :param p1: A list of spark dataframes
 
-       returns a dataframe
+    returns a dataframe
 
-       """
+    """
 
     # Check that the list of dataframe and each dataframe is not Nonetypes
     if dfs is None:

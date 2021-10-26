@@ -96,7 +96,7 @@ from source to target columns. All column names are converted to lower case befo
 
 Given a dataframe `df`, this code renames all columns:
 ```
-df.show()
+>>> df.show()
 +----+-----+------+
 |inex|count|lables|
 +----+-----+------+

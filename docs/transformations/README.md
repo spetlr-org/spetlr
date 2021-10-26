@@ -89,6 +89,8 @@ To use, construct the `FuzzySelectTransfromer` with the following arguments:
 - `match_cutoff` A cutoff quality in the range [0,1] below which matches will not be accepted. 
   See [difflib arguments](https://docs.python.org/3/library/difflib.html#difflib.get_close_matches) for details.
 
+Under the hood, [difflib](https://docs.python.org/3/library/difflib.html) is used to find a suitable unique mapping
+from source to target columns. All column names are converted to lower case before matching.
 
 ### Example
 

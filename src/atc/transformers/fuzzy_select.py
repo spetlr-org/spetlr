@@ -7,7 +7,15 @@ from atc.atc_exceptions import AtcException
 from atc.etl.transformer import Transformer
 
 
-class NoFuzzyMatchException(AtcException):
+class FuzzySelectException(AtcException):
+    pass
+
+
+class NoMatchException(FuzzySelectException):
+    pass
+
+
+class NonUniqueException(AtcException):
     pass
 
 
@@ -32,15 +40,25 @@ class FuzzySelectTransformer(Transformer):
         mapping = dict()
         for col in self.columns:
             if not len(in_columns):
-                NoFuzzyMatchException("Not enough source columns to match from.")
+                NoMatchException("Not enough source columns to match from.")
 
             matches: List[str] = difflib.get_close_matches(
-                col.lower(), list(in_columns.keys()), n=1, cutoff=self.match_cutoff
+                col.lower(), list(in_columns.keys()), n=2, cutoff=self.match_cutoff
             )
 
             if not len(matches):
-                raise NoFuzzyMatchException(
-                    f"No suitable source column found for {col}"
+                raise NoMatchException(f"No suitable source column found for {col}")
+
+            if len(matches) > 1:
+                candidates = [
+                    (
+                        in_columns[match],
+                        difflib.SequenceMatcher(a=col.lower(), b=match).ratio(),
+                    )
+                    for match in matches
+                ]
+                raise NonUniqueException(
+                    f"No unique source column match for {col}: candidates: {candidates}"
                 )
 
             source_match = in_columns[matches[0]]

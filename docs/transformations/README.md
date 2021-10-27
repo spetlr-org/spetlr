@@ -92,6 +92,9 @@ To use, construct the `FuzzySelectTransfromer` with the following arguments:
 Under the hood, [difflib](https://docs.python.org/3/library/difflib.html) is used to find a suitable unique mapping
 from source to target columns. All column names are converted to lower case before matching.
 
+The association of target to source columns is required to be unique. If the algorithm identifies
+multiple matching source columns to a target name, an exception will be raised.
+
 ### Example
 
 Given a dataframe `df`, this code renames all columns:

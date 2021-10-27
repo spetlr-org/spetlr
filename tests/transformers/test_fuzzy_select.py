@@ -7,34 +7,40 @@ from pyspark.sql import types as t
 
 class FuzzySelectorTest(unittest.TestCase):
     def test_fuzzy1(self):
-        ft = FuzzySelectTransformer(
-            [
-                "unChanged",
-                "upperCase",
-                "idStringId",
-                "idStringABCProductId",
-                "misSpelled",
-            ]
+        target_columns = [
+            "unChanged",
+            "upperCase",
+            "idStringId",
+            "idStringABCProductId",
+            "misSpelled",
+        ]
+
+        in_columns = [
+            "unChanged",
+            "UpperCase",
+            "IDStringID",
+            "IDStringABCProductId",  # this column is similar enough to the one above
+            # that the standard match cutoff of 0.6 fails to associate it uniquely.
+            "miisSpolled",
+        ]
+
+        res = dict(zip(in_columns, target_columns))
+
+        self.assertRaises(
+            atc.transformers.fuzzy_select.NonUniqueException,
+            FuzzySelectTransformer(target_columns).find_best_mapping,
+            in_columns,
         )
 
-        d = ft.find_best_mapping(
-            [
-                "unChanged",
-                "UpperCase",
-                "IDStringID",
-                "IDStringABCProductId",
-                "miisSpolled",
-            ]
+        self.assertEqual(
+            FuzzySelectTransformer(
+                target_columns,
+                match_cutoff=0.8,  # a tighter similarity constraint allows a unique association
+            ).find_best_mapping(
+                in_columns,
+            ),
+            res,
         )
-
-        res = {
-            "unChanged": "unChanged",
-            "UpperCase": "upperCase",
-            "IDStringID": "idStringId",
-            "IDStringABCProductId": "idStringABCProductId",
-            "miisSpolled": "misSpelled",
-        }
-        self.assertEqual(d, res)
 
     def test_transform(self):
 

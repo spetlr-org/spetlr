@@ -80,11 +80,11 @@ See that the columns "brand", "id", "model", "size" (from df2) and "year" (from 
 
 ## Fuzzy Select Transformer
 
-The `FuzzySelectTransfromer` is an ETL transformer that can process a single dataframe. Its purpose is to help create
+The `FuzzySelectTransformer` is an ETL transformer that can process a single dataframe. Its purpose is to help create
 short concise select code that is somewhat insensitive to source columns that are misspelled 
 or use different capitalization.
 
-To use, construct the `FuzzySelectTransfromer` with the following arguments:
+To use, construct the `FuzzySelectTransformer` with the following arguments:
 - `columns` The list of column names in the final dataframe in order.
 - `match_cutoff` A cutoff quality in the range [0,1] below which matches will not be accepted. 
   See [difflib arguments](https://docs.python.org/3/library/difflib.html#difflib.get_close_matches) for details.

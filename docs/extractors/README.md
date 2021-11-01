@@ -8,7 +8,7 @@ Extractors in atc-dataplatform:
 ## Eventhub stream extractor
 This extractor reads data from an Azure eventhub and returns a structural streaming dataframe.
 
-Under the hood [spark eventhub](https://github.com/Azure/azure-event-hubs-spark) is used.
+Under the hood [spark azure eventhub](https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/PySpark/structured-streaming-pyspark.md) is used.
 
 ```python
 class EventhubStreamExtractor(Extractor):

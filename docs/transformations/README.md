@@ -3,6 +3,7 @@
 Transformations in atc-dataplatform:
 
 * [Concatenate dataframes](#concatenate-data-frames)
+* [Fuzzy select](#fuzzy-select-transformer)
 
 ## Concatenate data frames
 The transformation unions dataframes by appending the dataframes on eachother and keep all columns.
@@ -76,3 +77,42 @@ The output is then:
 +------+---+---------------+------+----+
 ```
 See that the columns "brand", "id", "model", "size" (from df2) and "year" (from df1) are added to the dataframe consisting of the union of df1 and df2.
+
+## Fuzzy Select Transformer
+
+The `FuzzySelectTransformer` is an ETL transformer that can process a single dataframe. Its purpose is to help create
+short concise select code that is somewhat insensitive to source columns that are misspelled 
+or use different capitalization.
+
+To use, construct the `FuzzySelectTransformer` with the following arguments:
+- `columns` The list of column names in the final dataframe in order.
+- `match_cutoff` A cutoff quality in the range [0,1] below which matches will not be accepted. 
+  See [difflib arguments](https://docs.python.org/3/library/difflib.html#difflib.get_close_matches) for details.
+
+Under the hood, [difflib](https://docs.python.org/3/library/difflib.html) is used to find a suitable unique mapping
+from source to target columns. All column names are converted to lower case before matching.
+
+The association of target to source columns is required to be unique. If the algorithm identifies
+multiple matching source columns to a target name, an exception will be raised.
+
+### Example
+
+Given a dataframe `df`, this code renames all columns:
+```
+>>> df.show()
++----+-----+------+
+|inex|count|lables|
++----+-----+------+
+|   1|    2|   foo|
+|   3|    4|   bar|
++----+-----+------+
+>>> from atc.transformers.fuzzy_select import FuzzySelectTransformer
+>>> ft = FuzzySelectTransformer(["Index", "Count", "Label"])
+>>> ft.process(df).show()
++-----+-----+-----+
+|Index|Count|Label|
++-----+-----+-----+
+|    1|    2|  foo|
+|    3|    4|  bar|
++-----+-----+-----+
+```

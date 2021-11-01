@@ -6,7 +6,9 @@ Extractors in atc-dataplatform:
 * [Eventhub stream extractor](#eventhub-stream-extractor)
 
 ## Eventhub stream extractor
-This extractor reads data from an Azure eventhub and returns a data stream.
+This extractor reads data from an Azure eventhub and returns a strctual streaming streaming dataframe.
+
+Under the hood [spark eventhub](https://github.com/Azure/azure-event-hubs-spark) is used.
 
 ```python
 class EventhubStreamExtractor(Extractor):
@@ -21,7 +23,7 @@ class EventhubStreamExtractor(Extractor):
     ...
 ```
 
-Usage example with connection string: 
+Usage example with connection string:
 ``` python
 eventhubStreamExtractor = EventhubStreamExtractor(
     consumerGroup="TestConsumerGroup",
@@ -30,7 +32,7 @@ eventhubStreamExtractor = EventhubStreamExtractor(
 )
 ```
 
-Usage example without connection string: 
+Usage example without connection string:
 ``` python
 eventhubStreamExtractor = EventhubStreamExtractor(
     consumerGroup="TestConsumerGroup",

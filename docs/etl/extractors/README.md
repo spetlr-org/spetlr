@@ -10,7 +10,14 @@ This extractor reads data from an Azure eventhub and returns a data stream.
 
 ```python
 class EventhubStreamExtractor(Extractor):
-    def __init__(self, consumerGroup: str, connectionString: str = None, namespace: str = None, eventhub: str = None, accessKeyName: str = None, accessKey: str = None, maxEventsPerTrigger: int = 10000):
+    def __init__(self, 
+                 consumerGroup: str,
+                 connectionString: str = None,
+                 namespace: str = None,
+                 eventhub: str = None,
+                 accessKeyName: str = None,
+                 accessKey: str = None,
+                 maxEventsPerTrigger: int = 10000):
     ...
 ```
 
@@ -66,18 +73,16 @@ class NoopLoader(Loader):
         return df
 
 
-print('ETL Orchestrator using a single simple transformer')
-eventhubStreamExtractor = EventhubStreamExtractor(
-    consumerGroup="TestConsumerGroup",
-    connectionString=dbutils.secrets.get(scope = "TestScope", key = "TestSecretConnectionString"),
-    maxEventsPerTrigger = 100000
-)
-
+print('ETL Orchestrator using EventhubStreamExtractor')
 etl = (Orchestration
-       .extract_from(eventhubStreamExtractor)
-       .transform_with(BasicTransformer())
-       .load_into(NoopLoader())
-       .build())
+        .extract_from(EventhubStreamExtractor(
+            consumerGroup="TestConsumerGroup",
+            connectionString=dbutils.secrets.get(scope = "TestScope", key = "TestSecretConnectionString"),
+            maxEventsPerTrigger = 100000
+        ))
+        .transform_with(BasicTransformer())
+        .load_into(NoopLoader())
+        .build())
 result = etl.execute()
 result.printSchema()
 result.show()

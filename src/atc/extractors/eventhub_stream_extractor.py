@@ -4,8 +4,10 @@ from atc.spark import Spark
 import json
 from pyspark.sql import DataFrame
 
+
 class InvalidEventhubStreamExtractorParameters(Exception):
     pass
+
 
 class EventhubStreamExtractor(Extractor):
     def __init__(
@@ -16,7 +18,7 @@ class EventhubStreamExtractor(Extractor):
         eventhub: str = None,
         accessKeyName: str = None,
         accessKey: str = None,
-        maxEventsPerTrigger: int = 10000
+        maxEventsPerTrigger: int = 10000,
     ):
         """
         :param consumerGroup: the eventhub consumerGroup to use for streaming
@@ -28,8 +30,15 @@ class EventhubStreamExtractor(Extractor):
         :param maxEventsPerTrigger: the number of events handled per mico trigger in stream
         """
 
-        if (connectionString is None and (namespace is None or eventhub is None or accessKeyName is None or accessKey is None)):
-            raise InvalidEventhubStreamExtractorParameters("Either connectionString or (namespace, eventhub, accessKeyName and accessKey) have to be supplied")
+        if connectionString is None and (
+            namespace is None
+            or eventhub is None
+            or accessKeyName is None
+            or accessKey is None
+        ):
+            raise InvalidEventhubStreamExtractorParameters(
+                "Either connectionString or (namespace, eventhub, accessKeyName and accessKey) have to be supplied"
+            )
 
         self.spark = Spark.get()
         self.consumerGroup = consumerGroup
@@ -58,7 +67,9 @@ class EventhubStreamExtractor(Extractor):
         print(f"Read eventhub data stream")
 
         config = {
-            "eventhubs.connectionString": self.spark.sparkContext._jvm.org.apache.spark.eventhubs.EventHubsUtils.encrypt(self.connectionString),
+            "eventhubs.connectionString": self.spark.sparkContext._jvm.org.apache.spark.eventhubs.EventHubsUtils.encrypt(
+                self.connectionString
+            ),
             "maxEventsPerTrigger": self.maxEventsPerTrigger,
             "eventhubs.consumerGroup": self.consumerGroup,
             "eventhubs.startingPosition": json.dumps(self.startingEventPosition),

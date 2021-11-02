@@ -8,7 +8,7 @@ Extractors in atc-dataplatform:
 ## Eventhub stream extractor
 This extractor reads data from an Azure eventhub and returns a structural streaming dataframe.
 
-Under the hood [spark azure eventhub](https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/PySpark/structured-streaming-pyspark.md) is used.
+Under the hood [spark azure eventhub](https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/PySpark/structured-streaming-pyspark.md) is used, and this [maven library](https://mvnrepository.com/artifact/com.microsoft.azure/azure-eventhubs-spark)
 
 ```python
 class EventhubStreamExtractor(Extractor):
@@ -44,9 +44,19 @@ eventhubStreamExtractor = EventhubStreamExtractor(
 )
 ```
 
+Usage example with defining start timestamp:
+``` python
+eventhubStreamExtractor = EventhubStreamExtractor(
+    consumerGroup="TestConsumerGroup",
+    connectionString="TestSecretConnectionString",
+    maxEventsPerTrigger = 100000,
+    startEnqueuedTime = datetime.utcnow()
+)
+```
+
 ### Example
 
-This section elaborates on how the `EventhubStreamExtractor` extractor works and to use it in the OETL pattern. 
+This section elaborates on how the `EventhubStreamExtractor` extractor works and how to use it in the OETL pattern. 
 
 ```python
 from pyspark.sql import DataFrame

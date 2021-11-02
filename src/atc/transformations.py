@@ -243,11 +243,11 @@ def merge_df_into_target(
 
     Merges a databricks dataframe into a target database table
 
-    :param p1: The dataframe
-    :param p2: The name of the table which the dataframe (p1) should be merged into
-    :param p3: The database name associated with the table
-    :param p4: A list of strings which tells which columns to join on
-    :param p5: The format of the table
+    :param df: The dataframe
+    :param table_name: The name of the table which the dataframe (p1) should be merged into
+    :param database_name: The database name associated with the table
+    :param join_cols: A list of strings which tells which columns to join on
+    :param table_format: The format of the table
 
     """
 
@@ -267,13 +267,6 @@ def merge_df_into_target(
             "Null keys found in input dataframe. Rows will be discarded before load."
         )
         df = df.filter(" AND ".join(f"({col} is NOT NULL)" for col in join_cols))
-
-    # Load data from the target table for the purpose of incremental load
-    # if not incremental_load:
-    #    return df.write \
-    #        .format(table_format) \
-    #        .mode("overwrite") \
-    #        .save(target_table_name)
 
     df_target = Spark.get().table(target_table_name)
 
@@ -328,8 +321,6 @@ def merge_df_into_target(
     temp_view_name = f"source_{unique_id}"
     df.createOrReplaceTempView(temp_view_name)
 
-    non_join_cols = [col for col in df.columns if col not in join_cols]
-
     merge_sql_statement = f"""
         MERGE INTO {target_table_name} AS target
         USING {temp_view_name} as source
@@ -353,7 +344,7 @@ def concat_dfs(dfs: List[DataFrame]):
 
     NB: The transformation does not perform dataframe joins.
 
-    :param p1: A list of spark dataframes
+    :param dfs: A list of spark dataframes
 
     returns a dataframe
 

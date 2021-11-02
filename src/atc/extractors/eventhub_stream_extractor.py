@@ -2,6 +2,7 @@ from atc.etl.extractor import Extractor
 from atc.spark import Spark
 
 import json
+from datetime import datetime
 from pyspark.sql import DataFrame
 
 
@@ -19,6 +20,7 @@ class EventhubStreamExtractor(Extractor):
         accessKeyName: str = None,
         accessKey: str = None,
         maxEventsPerTrigger: int = 10000,
+        startEnqueuedTime: datetime = None
     ):
         """
         :param consumerGroup: the eventhub consumerGroup to use for streaming
@@ -28,40 +30,40 @@ class EventhubStreamExtractor(Extractor):
         :param accessKeyName: the eventhub accessKeyName to use for streaming, can be ignored if connectionString is supplied
         :param accessKey: the eventhub accessKey to use for streaming, can be ignored if connectionString is supplied
         :param maxEventsPerTrigger: the number of events handled per mico trigger in stream
+        :param startEnqueuedTime: timestamp to define where stream starts, if None the stream wil start from the oldest event in eventhub
         """
 
-        if connectionString is None and (
-            namespace is None
-            or eventhub is None
-            or accessKeyName is None
-            or accessKey is None
-        ):
-            raise InvalidEventhubStreamExtractorParameters(
-                "Either connectionString or (namespace, eventhub, accessKeyName and accessKey) have to be supplied"
-            )
-
         self.spark = Spark.get()
-        self.consumerGroup = consumerGroup
-        self.connectionString = connectionString
-        self.namespace = namespace
-        self.eventhub = eventhub
-        self.accessKeyName = accessKeyName
-        self.accessKey = accessKey
-        self.maxEventsPerTrigger = maxEventsPerTrigger
 
         # If connectionString is missing, create it from namespace, eventhub, accessKeyName and accessKey
-        if self.connectionString is None:
-            self.connectionString = f"Endpoint=sb://{self.namespace}.servicebus.windows.net/{self.eventhub};EntityPath={self.eventhub};SharedAccessKeyName={self.accessKeyName};SharedAccessKey={self.accessKey}"
+        # Raise exeption is parameters are missing
+        if connectionString is None:
+            if namespace is None or eventhub is None or accessKeyName is None or accessKey is None:
+                raise InvalidEventhubStreamExtractorParameters(
+                    "Either connectionString or (namespace, eventhub, accessKeyName and accessKey) have to be supplied"
+                )
+
+            self.connectionString = f"Endpoint=sb://{namespace}.servicebus.windows.net/{eventhub};EntityPath={eventhub};SharedAccessKeyName={accessKeyName};SharedAccessKey={accessKey}"
+        else:
+            self.connectionString = connectionString
+
+        self.consumerGroup = consumerGroup
+        self.maxEventsPerTrigger = maxEventsPerTrigger
 
         # Define where to start eventhub stream
         # It can be done from offset, seqence number or timestamp
-        # Below setting will start stream from the beginning
         self.startingEventPosition = {
-            "offset": "-1",  # Start stream from beginning
+            "offset": None,  # not in use
             "seqNo": -1,  # not in use
             "enqueuedTime": None,  # not in use
             "isInclusive": True,
         }
+
+        if startEnqueuedTime:
+            self.startingEventPosition["enqueuedTime"] = startEnqueuedTime.strftime("%Y-%m-%dT%H:%M:%S.%fZ") # Start from timestamp
+        else:
+            # Default is to start from beginning of stream
+            self.startingEventPosition["offset"] = "-1" # Start stream from beginning
 
     def read(self) -> DataFrame:
         print(f"Read eventhub data stream")

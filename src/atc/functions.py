@@ -29,7 +29,7 @@ def drop_table_cascade(DBDotTableName: str) -> None:
     """
     drop_table_cascade drops a databricks database table and remove the files permanently
 
-    :param p1: db.tablename
+    :param DBDotTableName: db.tablename
 
     return None
 

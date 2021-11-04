@@ -30,7 +30,7 @@ def pre_commit():
     This pre-commit hook runs the black code formatter on all changed files
     that end in ".py"
     """
-    print("pre-commit hook")
+    print("atc-dataplatform pre-commit hook")
 
     # this command
     # $> git diff --cached --name-status

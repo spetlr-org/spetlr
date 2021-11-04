@@ -31,6 +31,13 @@ def pre_commit():
     that end in ".py"
     """
     print("pre-commit hook")
+
+    # this command
+    # $> git diff --cached --name-status
+    # results in an output like
+    # M       src/atc/formatting/git_hooks.py
+    # with one line per Modified, Deleted, or New file.
+    # we don't want to reformat deleted files, all others should be formatted.
     files_to_check = []
     for line in (
         subprocess.run(
@@ -39,7 +46,6 @@ def pre_commit():
         .stdout.decode()
         .splitlines()
     ):
-        print(line)
         diff, path = tuple(line.strip().split(maxsplit=2))
         if diff.strip().lower() == "d":
             continue
@@ -47,7 +53,9 @@ def pre_commit():
             continue
         files_to_check.append(path)
 
+    # first reformat all affected python files
     subprocess.run(["black", *files_to_check], check=True)
+    # now add all reformatted files back to be committed
     subprocess.run(["git", "add", *files_to_check], check=True)
 
 

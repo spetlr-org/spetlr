@@ -60,6 +60,10 @@ def pre_commit():
             continue
         files_to_check.append(path)
 
+    if not files_to_check:
+        print("  Nothing to do.")
+        return
+
     # first reformat all affected python files
     subprocess.run(["black", *files_to_check], check=True)
     # now add all reformatted files back to be committed
@@ -88,11 +92,15 @@ def install() -> None:
             print(f"Installing hook for '{command}'")
             f.write(
                 dedent(
-                    f"""
+                    rf"""
                     #!{sys.executable}
-                    from atc.formatting.git_hooks import actions
-                    actions[{repr(command)}]()
-                """
+                    try:
+                        from atc.formatting.git_hooks import actions
+                        actions[{repr(command)}]()
+                    except ModuleNotFoundError as e:
+                        import sys
+                        print(e,'\nsearch path was:\n-','\n- '.join(sys.path))
+                    """
                 ).strip()
             )
     print("Done installing hooks.")

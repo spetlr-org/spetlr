@@ -33,22 +33,29 @@ def pre_commit():
     print("atc-dataplatform pre-commit hook")
 
     # this command
-    # $> git diff --cached --name-status
+    # $> git diff --cached --name-only --diff-filter=d
     # results in an output like
-    # M       src/atc/formatting/git_hooks.py
-    # with one line per Modified, Deleted, or New file.
+    # src/atc/formatting/git_hooks.py
+    # with one line per Modified or New file, deleted files are excluded
     # we don't want to reformat deleted files, all others should be formatted.
     files_to_check = []
     for line in (
         subprocess.run(
-            ["git", "diff", "--cached", "--name-status"], capture_output=True
+            [
+                "git",
+                "diff",
+                "--cached",
+                # only show the names, one name per line
+                "--name-only",
+                # diff filter lowercase d means exclude deleted files
+                "--diff-filter=d",
+            ],
+            capture_output=True,
         )
         .stdout.decode()
         .splitlines()
     ):
-        diff, path = tuple(line.strip().split(maxsplit=2))
-        if diff.strip().lower() == "d":
-            continue
+        path = line.strip()
         if not path.endswith(".py"):
             continue
         files_to_check.append(path)

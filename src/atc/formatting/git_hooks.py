@@ -94,12 +94,21 @@ def install() -> None:
                 dedent(
                     rf"""
                     #!{sys.executable}
+                    import sys, subprocess
+                    if sys.executable != {repr(sys.executable)}:
+                        print("Changing interpreter")
+                        subprocess.run([{repr(sys.executable)}, __file__]+sys.argv[1:],check=True)
+                        sys.exit(0)
+
                     try:
                         from atc.formatting.git_hooks import actions
                         actions[{repr(command)}]()
                     except ModuleNotFoundError as e:
                         import sys
-                        print(e,'\nsearch path was:\n-','\n- '.join(sys.path))
+                        print(e)
+                        print('search path was:\n-', '\n- '.join(sys.path))
+                        print('interpreter:', sys.executable)
+
                     """
                 ).strip()
             )

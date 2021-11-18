@@ -58,7 +58,11 @@ df2 = Spark.get().createDataFrame(
 ```
 Concatenate (union) the two dataframes:
 ``` python
+ # ATC's "concat_dfs"
  result = concat_dfs([df1,df2])
+ 
+ # pyspark's unionByName
+ result = df1.unionByName(df2, allowMissingColumns=True)
 ```
 
 Print the dataframe:

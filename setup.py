@@ -41,7 +41,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.7",
-    install_requires=["pyyaml", "sqlparse", "more_itertools"],
+    install_requires=["pyyaml", "sqlparse", "deprecation"],
     extras_require={
         "dev": ["check-manifest"],
         # 'test': ['coverage'],

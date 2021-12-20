@@ -12,7 +12,7 @@ class TransformerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        transformer = Transformer1()
+        transformer = Transformer()
         cls.df = transformer.process(create_dataframe())
 
     def test_process_returns_dataframe(self):
@@ -23,7 +23,7 @@ class DelegatingTransformerTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.transformerList = [Transformer1(), Transformer2(), Transformer3()]
+        cls.transformerList = [Transformer(), Transformer(), Transformer()]
         cls.transformer = DelegatingTransformer(cls.transformerList)
         cls.df = cls.transformer.process(create_dataframe())
 
@@ -39,7 +39,7 @@ class MultiInputTransformerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        transformer = MultiInputTransformer1()
+        transformer = TestMultiInputTransformer()
         dataset = {
             "df1": create_dataframe(),
             "df2": create_dataframe()
@@ -54,7 +54,7 @@ class DelegatingMultiInputTransformerTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.transformerList = [MultiInputTransformer1(), Transformer1(), Transformer2(), Transformer3()]
+        cls.transformerList = [TestMultiInputTransformer(), Transformer(), Transformer(), Transformer()]
         cls.transformer = DelegatingMultiInputTransformer(cls.transformerList)
         dataset = {
             "df1": create_dataframe(),
@@ -69,6 +69,13 @@ class DelegatingMultiInputTransformerTests(unittest.TestCase):
         self.assertIsInstance(self.df, DataFrame)
 
 
+class TestMultiInputTransformer(MultiInputTransformer):
+    def process_many(self, dataset):
+        df1 = dataset["df1"]
+        df2 = dataset["df2"]
+        return df1.union(df2)
+
+
 def create_dataframe():
     return Spark.get().createDataFrame(
         Spark.get().sparkContext.parallelize([
@@ -81,25 +88,6 @@ def create_dataframe():
             StructField("text", StringType(), False)
         ]))
 
-class MultiInputTransformer1(MultiInputTransformer):
-    def process_many(self, dataset):
-        df1 = dataset["df1"]
-        df2 = dataset["df2"]
-        return df1.union(df2)
-
-class Transformer1(Transformer):
-    def process(self, df):
-        return df
-
-
-class Transformer2(Transformer):
-    def process(self, df):
-        return df
-
-
-class Transformer3(Transformer):
-    def process(self, df):
-        return df
 
 if __name__ == "__main__":
     unittest.main()

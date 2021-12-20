@@ -1,43 +1,50 @@
 import unittest
-from unittest.mock import MagicMock
 
-from atc.etl import Loader, Orchestration
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+
+from atc.etl import Loader, DelegatingLoader
+from atc.spark import Spark
 
 
 class LoaderTests(unittest.TestCase):
 
-    def test_process_returns_not_none(self):
-        self.assertIsNotNone(Loader().save(MagicMock()))
+    @classmethod
+    def setUpClass(cls):
+
+        cls.loader = Loader()
+        cls.df = create_dataframe()
+
+    def test_save_returns_dataframe(self):
+        self.assertEqual(self.loader.save(self.df), self.df)
 
 
 class DelegatingLoaderTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.sut = sut = cls.create_sut()
-        cls.df = sut.save(MagicMock())
+        cls.loaderList = [Loader(), Loader(), Loader()]
+        cls.loader = DelegatingLoader(cls.loaderList)
+        cls.df = create_dataframe()
 
-    @staticmethod
-    def create_sut():
-        orch = (Orchestration
-                .extract_from(MagicMock())
-                .transform_with(MagicMock())
-                .load_into(MagicMock())
-                .load_into(MagicMock())
-                .load_into(MagicMock())
-                .build()
-                )
-        return orch.loader
-
-    def test_get_loaders_returns_not_none(self):
-        self.sut.save(MagicMock())
-        self.assertIsNotNone(self.sut.get_loaders())
-
-    def test_save_returns_not_none(self):
-        self.assertIsNotNone(self.sut.save(MagicMock()))
+    def test_get_loaders(self):
+        self.assertEqual(self.loader.get_loaders(), self.loaderList)
 
     def test_save_returns_dataframe(self):
-        sut = self.create_sut()
-        sut.save(MagicMock())
-        for e in sut.inner_loaders:
-            e.save.assert_called_once()
+        self.assertEqual(self.loader.save(self.df), self.df)
+
+
+def create_dataframe():
+    return Spark.get().createDataFrame(
+        Spark.get().sparkContext.parallelize([
+            (1, '1'),
+            (2, '2'),
+            (3, '3')
+        ]),
+        StructType([
+            StructField("id", IntegerType(), False),
+            StructField("text", StringType(), False)
+        ]))
+
+
+if __name__ == "__main__":
+    unittest.main()

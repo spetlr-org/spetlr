@@ -5,7 +5,7 @@ from pyspark.sql.dataframe import DataFrame
 
 from .extractor import Extractor, DelegatingExtractor
 from .loader import Loader, DelegatingLoader
-from .transformer import Transformer, DelegatingTransformer, MultiInputTransformer
+from .transformer import Transformer, DelegatingTransformer, MultiInputTransformer, DelegatingMultiInputTransformer
 
 
 class Orchestration:
@@ -24,7 +24,7 @@ class LogicError(OrchestratorBuilderException):
 
 class Orchestrator:
     extractor: Union[Extractor, DelegatingExtractor]
-    transformer: Union[Transformer, DelegatingTransformer]
+    transformer: Union[Transformer, DelegatingTransformer, MultiInputTransformer, DelegatingMultiInputTransformer]
     loader: Union[Loader, DelegatingLoader]
 
     @abstractmethod
@@ -32,70 +32,45 @@ class Orchestrator:
         pass
 
 
-class SingleOrchestrator(Orchestrator):
-    def __init__(self, extractor: Extractor, transformer: Transformer, loader: Loader):
-        self.loader = loader
-        self.transformer = transformer
+class NoTransformOrchestrator(Orchestrator):
+    def __init__(self, extractor: Extractor, loader: Union[Loader, DelegatingLoader]):
         self.extractor = extractor
+        self.loader = loader
+
+    def execute(self) -> DataFrame:
+        df = self.extractor.read()
+        return self.loader.save(df)
+
+
+class SingleExtractorOrchestrator(Orchestrator):
+    def __init__(self,
+        extractor: Extractor,
+        transformer: Union[Transformer, DelegatingTransformer],
+        loader: Union[Loader, DelegatingLoader]
+    ):
+        self.extractor = extractor
+        self.transformer = transformer
+        self.loader = loader
 
     def execute(self) -> DataFrame:
         df = self.extractor.read()
         df = self.transformer.process(df)
         return self.loader.save(df)
 
-
-class NoTransformOrchestrator(Orchestrator):
-    def __init__(self, extractor: Extractor, loader: Loader):
-        self.loader = loader
-        self.extractor = extractor
-
-    def execute(self) -> DataFrame:
-        df = self.extractor.read()
-        return self.loader.save(df)
-
-
-class MultipleExtractOrchestrator(Orchestrator):
+class MultipleExtractorOrchestrator(Orchestrator):
     def __init__(
         self,
         extractor: DelegatingExtractor,
-        transformer: MultiInputTransformer,
-        loader: Loader,
+        transformer: Union[MultiInputTransformer, DelegatingMultiInputTransformer],
+        loader: Union[Loader, DelegatingLoader]
     ):
-        self.loader = loader
-        self.transformer = transformer
         self.extractor = extractor
+        self.transformer = transformer
+        self.loader = loader
 
     def execute(self) -> DataFrame:
         dataset = self.extractor.read()
         df = self.transformer.process_many(dataset)
-        return self.loader.save(df)
-
-
-class MultipleTransformOrchestrator(Orchestrator):
-    def __init__(
-        self, extractor: Extractor, transformer: DelegatingTransformer, loader: Loader
-    ):
-        self.loader = loader
-        self.transformer = transformer
-        self.extractor = extractor
-
-    def execute(self) -> DataFrame:
-        df = self.extractor.read()
-        df = self.transformer.process(df)
-        return self.loader.save(df)
-
-
-class MultipleLoaderOrchestrator(Orchestrator):
-    def __init__(
-        self, extractor: Extractor, transformer: Transformer, loader: DelegatingLoader
-    ):
-        self.loader = loader
-        self.transformer = transformer
-        self.extractor = extractor
-
-    def execute(self) -> DataFrame:
-        df = self.extractor.read()
-        df = self.transformer.process(df)
         return self.loader.save(df)
 
 
@@ -115,28 +90,21 @@ class OrchestratorBuilder(Orchestrator):
         self.extractors.append(extractor)
         return self
 
-    def transform_with(self, transformer: Transformer) -> "OrchestratorBuilder":
-        if not self.extractors:
-            raise OrchestratorBuilderException(
-                "Set all extractors before the transformers"
-            )
+    def transform_with(self, transformer: Union[Transformer, MultiInputTransformer]) -> "OrchestratorBuilder":
         if self.loaders:
-            raise OrchestratorBuilderException("Cannot add transformer after loader")
-        if len(self.extractors) > 1:
-            if not isinstance(transformer, MultiInputTransformer):
-                raise OrchestratorBuilderException(
-                    "Multiple extractors require a MultiInputTransformer"
-                )
-            if len(self.transformers):
-                raise OrchestratorBuilderException(
-                    "Multiple transformers for multiple spurces not currently supported."
-                )
+            raise OrchestratorBuilderException("Set all transformers before loaders")
+        if (len(self.extractors) > 1 and len(self.transformers) == 0 and not isinstance(transformer, MultiInputTransformer)):
+            raise OrchestratorBuilderException(
+                "Multiple extractors require first transfromer to be MultiInputTransformer"
+            )
+        if (len(self.extractors) == 1 and not isinstance(transformer, Transformer)):
+            raise OrchestratorBuilderException(
+                "Single extractors require transfromers to be Transformer not MultiInputTransformer"
+            )
         self.transformers.append(transformer)
         return self
 
     def load_into(self, loader: Loader) -> "OrchestratorBuilder":
-        if not self.extractors:
-            raise OrchestratorBuilderException("You need to set extractor(s) first.")
         self.loaders.append(loader)
         return self
 
@@ -144,31 +112,31 @@ class OrchestratorBuilder(Orchestrator):
         return self.build().execute()
 
     def build(self) -> Orchestrator:
+        # Calculate length for each extractors, transformers or loaders list
         le = len(self.extractors)
         lt = len(self.transformers)
         ll = len(self.loaders)
-        if le == lt == ll == 1:
-            return SingleOrchestrator(
-                self.extractors[0], self.transformers[0], self.loaders[0]
-            )
-        elif le > 1 and lt == ll == 1:
-            return MultipleExtractOrchestrator(
-                DelegatingExtractor(self.extractors),
-                self.transformers[0],
-                self.loaders[0],
-            )
-        elif lt > 1 and le == ll == 1:
-            return MultipleTransformOrchestrator(
-                self.extractors[0],
-                DelegatingTransformer(self.transformers),
-                self.loaders[0],
-            )
-        elif lt == 0 and le == ll == 1:
-            return NoTransformOrchestrator(self.extractors[0], self.loaders[0])
-        elif le == lt == 1 and ll > 1:
-            return MultipleLoaderOrchestrator(
-                self.extractors[0], self.transformers[0], DelegatingLoader(self.loaders)
-            )
+
+        if le == 0:
+            raise OrchestratorBuilderException("There have be at least one extractor")
+        if ll == 0:
+            raise OrchestratorBuilderException("There have be at least one loader")
+
+        # Create single or delegating oject verion of extractors, transformers or loaders based on count
+        extractorOject = self.extractors[0] if le == 1 else DelegatingExtractor(self.extractors)
+        if le == 1:
+            transformerOject = self.transformers[0] if lt == 1 else DelegatingTransformer(self.transformers)
+        if le > 1:
+            transformerOject = self.transformers[0] if lt == 1 else DelegatingMultiInputTransformer(self.transformers)
+        loaderOject = self.loaders[0] if ll == 1 else DelegatingLoader(self.loaders)
+
+        # Create Orchestrator types based on extractors, transformers or loaders count
+        if lt == 0:
+            return NoTransformOrchestrator(extractorOject, loaderOject)
+        elif le == 1:
+            return SingleExtractorOrchestrator(extractorOject, transformerOject, loaderOject)
+        elif le > 1:
+            return MultipleExtractorOrchestrator(extractorOject, transformerOject, loaderOject)
         else:
             raise LogicError(
                 f"No supported orchestrator for "

@@ -2,7 +2,7 @@ import unittest
 from typing import Dict
 from unittest.mock import MagicMock
 
-from atc.etl.orchestrator import OrchestratorBuilderException
+from atc.etl.orchestrator import OrchestratorBuilderException, LogicError
 from atc.etl import Orchestration, Transformer, MultiInputTransformer
 
 
@@ -162,6 +162,16 @@ class OrchestrationTests(unittest.TestCase):
                 Orchestration
                     .extract_from(MagicMock())
                     .transform_with(Transformer())
+                    .build()
+            )
+
+    def test_multi_extractors_with_no_transformer_exception(self):
+        with self.assertRaises(LogicError) as context:
+            sut = (
+                Orchestration
+                    .extract_from(MagicMock())
+                    .extract_from(MagicMock())
+                    .load_into(MagicMock())
                     .build()
             )
 

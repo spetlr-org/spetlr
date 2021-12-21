@@ -131,11 +131,11 @@ class OrchestratorBuilder(Orchestrator):
         loaderOject = self.loaders[0] if ll == 1 else DelegatingLoader(self.loaders)
 
         # Create Orchestrator types based on extractors, transformers or loaders count
-        if lt == 0:
+        if le == 1 and lt == 0:
             return NoTransformOrchestrator(extractorOject, loaderOject)
-        elif le == 1:
+        elif le == 1 and lt > 0:
             return SingleExtractorOrchestrator(extractorOject, transformerOject, loaderOject)
-        elif le > 1:
+        elif le > 1 and lt > 0:
             return MultipleExtractorOrchestrator(extractorOject, transformerOject, loaderOject)
         else:
             raise LogicError(

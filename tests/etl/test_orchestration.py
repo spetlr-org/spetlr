@@ -157,7 +157,7 @@ class OrchestrationTests(unittest.TestCase):
             )
 
     def test_no_loader_exception(self):
-        with self.assertRaises(OrchestratorBuilderException) as context:
+        with self.assertRaises(LogicError) as context:
             sut = (
                 Orchestration
                     .extract_from(MagicMock())

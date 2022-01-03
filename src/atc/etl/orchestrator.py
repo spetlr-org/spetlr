@@ -112,31 +112,27 @@ class OrchestratorBuilder(Orchestrator):
         return self.build().execute()
 
     def build(self) -> Orchestrator:
-        # Calculate length for each extractors, transformers or loaders list
         le = len(self.extractors)
         lt = len(self.transformers)
         ll = len(self.loaders)
+        
+        if le == 1 and lt == 0 and ll > 0:
+            extractorObject = self.extractors[0]
+            loaderObject = self.loaders[0] if ll == 1 else DelegatingLoader(self.loaders)
 
-        if le == 0:
-            raise OrchestratorBuilderException("There have be at least one extractor")
-        if ll == 0:
-            raise OrchestratorBuilderException("There have be at least one loader")
+            return NoTransformOrchestrator(extractorObject, loaderObject)
+        elif le == 1 and lt > 0 and ll > 0:
+            extractorObject = self.extractors[0]
+            transformerObject = self.transformers[0] if lt == 1 else DelegatingTransformer(self.transformers)
+            loaderObject = self.loaders[0] if ll == 1 else DelegatingLoader(self.loaders)
 
-        # Create single or delegating object verion of extractors, transformers or loaders based on count
-        extractorOject = self.extractors[0] if le == 1 else DelegatingExtractor(self.extractors)
-        if le == 1:
-            transformerOject = self.transformers[0] if lt == 1 else DelegatingTransformer(self.transformers)
-        if le > 1:
-            transformerOject = self.transformers[0] if lt == 1 else DelegatingMultiInputTransformer(self.transformers)
-        loaderOject = self.loaders[0] if ll == 1 else DelegatingLoader(self.loaders)
+            return SingleExtractorOrchestrator(extractorObject, transformerObject, loaderObject)
+        elif le > 1 and lt > 0 and ll > 0:
+            extractorObject = DelegatingExtractor(self.extractors)
+            transformerObject = self.transformers[0] if lt == 1 else DelegatingMultiInputTransformer(self.transformers)
+            loaderObject = self.loaders[0] if ll == 1 else DelegatingLoader(self.loaders)
 
-        # Create Orchestrator types based on extractors, transformers or loaders count
-        if le == 1 and lt == 0:
-            return NoTransformOrchestrator(extractorOject, loaderOject)
-        elif le == 1 and lt > 0:
-            return SingleExtractorOrchestrator(extractorOject, transformerOject, loaderOject)
-        elif le > 1 and lt > 0:
-            return MultipleExtractorOrchestrator(extractorOject, transformerOject, loaderOject)
+            return MultipleExtractorOrchestrator(extractorObject, transformerObject, loaderObject)
         else:
             raise LogicError(
                 f"No supported orchestrator for "

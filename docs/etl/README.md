@@ -6,7 +6,7 @@ This module contains components for implementing elegant ETL operations using th
 
 ## OETL
 
-Short for **Orchestrated Extract-Transform-Load** is pattern that takes the ideas behind variations of the 
+Short for **Orchestrated Extract-Transform-Load** is a pattern that takes the ideas behind variations of the 
 Model-View-Whatever design pattern
 
 ![Orchestrated ETL](etl-orchestrator.png)
@@ -18,8 +18,8 @@ The **Ochestrator** reads data from the **Extractor** then uses the result as a 
 and saves the transformed result into the **Loader**. The **Transformer** can be optional as there are scenarios where 
 data transformation is not needed (i.e. raw data ingestion to a landing zone)
 
-Each layer may have a single or multiple implementations, and this is handled by different implementations of the 
-**Ochestrator**
+Each layer may have a single or multiple implementations, and this is handled in the 
+**OrchestratorBuilder**
 
 ## Orchestration Fluent Interface
 
@@ -42,6 +42,9 @@ from atc.etl import Extractor, Transformer, Loader, Orchestration
 Here are some example usages and implementations of the ETL class provided
 
 ### Example-1
+
+Here's an example of reading data from a single location, transforming it once and saving to a single destination.
+This is the most simple elt case, and will be used as base for the below more complex examples.
 
 ```python
 from pyspark.sql import DataFrame
@@ -126,9 +129,8 @@ root
 
 ### Example-2
 
-Using the [code above](#Example-1) as reference, the transformation code can be improved to be more generic and reused for other operations. 
-Here's an example of implementing a `Transformer` that is reused to change the data type of a given column,
-where the column name is parameterized
+Here's an example of having multiple `Transformer` implementations that is reused to change the data type of a given column,
+where the column name is parameterized.
 
 ```python
 import pyspark.sql.functions as f
@@ -184,14 +186,13 @@ result.show()
 
 ### Example-3
 
-There are scenarios that you might have to ingest data from multiple data sources and merge them into a 
-single dataframe. Here's an example of have multiple `Extractor` implementation encapsulated in an instance of 
-`DelegatingExtractor` and applying transformations using the `MultiInputTransformer`
+Here's an example of having multiple `Extractor` implementations encapsulated in an instance of 
+`DelegatingExtractor` and applying transformations using the `MultiInputTransformer`.
 
 The `read()` function in `DelegatingExtractor` will return a dictionary that uses the type name of the `Extractor` 
-as the key, and a `DataFrame` as its value
+as the key, and a `DataFrame` as its value.
 
-`MultiInputTransformer` provides the function `process_many(dataset: {})` and returns a single `DataFrame`
+`MultiInputTransformer` provides the function `process_many(dataset: {})` and returns a single `DataFrame`.
 
 ```python
 import pyspark.sql.functions as f
@@ -279,7 +280,7 @@ root
 
 ### Example-4
 
-Here's an example of data raw ingestion without applying any transformations
+Here's an example of data raw ingestion without applying any transformations.
 
 ```python
 from pyspark.sql import DataFrame
@@ -323,7 +324,7 @@ result.show()
 
 ### Example-5
 
-Here's an example of writing the transformed data into multiple destinations
+Here's an example of having multiple `Loader` implementations that is writing the transformed data into multiple destinations.
 
 ```python
 import pyspark.sql.functions as f
@@ -378,6 +379,100 @@ class NoopGoldLoader(Loader):
 print('ETL Orchestrator using multiple loaders')
 etl = (Orchestration
        .extract_from(GuitarExtractor())
+       .transform_with(BasicTransformer())
+       .load_into(NoopSilverLoader())
+       .load_into(NoopGoldLoader())
+       .build())
+result = etl.execute()
+result.printSchema()
+result.show()
+```
+
+### Example-6
+
+Using [Example-2](#Example-2), [Example-3](#Example-3) and [Example-5](#Example-5) as reference,
+any combinations for single/multiple implementations of `Extractor`, `Transformer` or `Loader` can be created.
+
+Here's an example of having both multiple `Extractor`, `Transformer` and `Loader` implementations.
+
+It is important that the first transformer is a `MultiInputTransformer` when having multiple extractors.
+
+```python
+import pyspark.sql.functions as f
+from pyspark.sql import DataFrame
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+
+from atc.etl import Extractor, Transformer, Loader, Orchestration
+from atc.spark import Spark
+
+
+class AmericanGuitarExtractor(Extractor):
+    def read(self) -> DataFrame:
+        return Spark.get().createDataFrame(
+            Spark.get().sparkContext.parallelize([
+                ('1', 'Fender', 'Telecaster', '1950'),
+                ('2', 'Gibson', 'Les Paul', '1959')
+            ]),
+            StructType([
+                StructField('id', StringType()),
+                StructField('brand', StringType()),
+                StructField('model', StringType()),
+                StructField('year', StringType()),
+            ]))
+
+
+class JapaneseGuitarExtractor(Extractor):
+    def read(self) -> DataFrame:
+        return Spark.get().createDataFrame(
+            Spark.get().sparkContext.parallelize([
+                ('3', 'Ibanez', 'RG', '1987'),
+                ('4', 'Takamine', 'Pro Series', '1959')
+            ]),
+            StructType([
+                StructField('id', StringType()),
+                StructField('brand', StringType()),
+                StructField('model', StringType()),
+                StructField('year', StringType()),
+            ]))
+
+
+class CountryOfOriginTransformer(MultiInputTransformer):
+    def process_many(self, dataset: {}) -> DataFrame:
+        usa_df = dataset['AmericanGuitarExtractor'].withColumn('country', f.lit('USA'))
+        jap_df = dataset['JapaneseGuitarExtractor'].withColumn('country', f.lit('Japan'))
+        return usa_df.union(jap_df)
+
+
+class BasicTransformer(Transformer):
+    def process(self, df: DataFrame) -> DataFrame:
+        print('Current DataFrame schema')
+        df.printSchema()
+
+        df = df.withColumn('id', f.col('id').cast(IntegerType()))
+        df = df.withColumn('year', f.col('year').cast(IntegerType()))
+
+        print('New DataFrame schema')
+        df.printSchema()
+        return df
+
+
+class NoopSilverLoader(Loader):
+    def save(self, df: DataFrame) -> DataFrame:
+        df.write.format('noop').mode('overwrite').save()
+        return df
+
+
+class NoopGoldLoader(Loader):
+    def save(self, df: DataFrame) -> DataFrame:
+        df.write.format('noop').mode('overwrite').save()
+        return df
+
+
+print('ETL Orchestrator using multiple loaders')
+etl = (Orchestration
+       .extract_from(AmericanGuitarExtractor())
+       .extract_from(JapaneseGuitarExtractor())
+       .transform_with(CountryOfOriginTransformer())
        .transform_with(BasicTransformer())
        .load_into(NoopSilverLoader())
        .load_into(NoopGoldLoader())

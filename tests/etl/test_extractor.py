@@ -1,59 +1,68 @@
 import unittest
-from unittest.mock import MagicMock
 
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Orchestration, MultiInputTransformer
+from atc.etl import Extractor
+from atc.etl.extractor import DelegatingExtractor
 from atc.spark import Spark
+
+
+class ExtractorTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        
+        cls.df = create_dataframe()
+        cls.extractor = TestExtractor1(cls.df)
+
+    def test_read_returns_dataframe(self):
+        self.assertEqual(self.extractor.read(), self.df)
 
 
 class DelegatingExtractorTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        class MyMultiInputTransformer(MultiInputTransformer):
-            pass
-        orch = (Orchestration
-                .extract_from(Extractor1())
-                .extract_from(Extractor2())
-                .extract_from(Extractor3())
-                .transform_with(MyMultiInputTransformer())
-                .load_into(MagicMock())
-                .build()
-                )
-        cls.sut = sut = orch.extractor
-        cls.dataset = sut.read()
+        cls.df1 = create_dataframe()
+        cls.df2 = create_dataframe()
+        cls.df3 = create_dataframe()
+        cls.extractorList = [TestExtractor1(cls.df1), TestExtractor2(cls.df2), TestExtractor3(cls.df3)]
+        cls.extractor = DelegatingExtractor(cls.extractorList)
 
-    def test_get_extractors_returns_not_none(self):
-        self.assertIsNotNone(self.sut.get_extractors())
+    def test_get_loaders(self):
+        self.assertEqual(self.extractor.get_extractors(), self.extractorList)
 
-    def test_read_returns_dictionary_with_same_length_as_inner_extractors(self):
-        self.assertEqual(len(self.dataset), len(self.sut.get_extractors()))
+    def test_return_returns_dictionary_of_dataframes(self):
+        dataset = self.extractor.read()
 
-    def test_read_returns_dictionary_of_dataframes(self):
-        for df in self.dataset.values():
-            self.assertIsInstance(df, DataFrame)
-
-    def test_read_returns_dictionary_with_extractors_type_name_as_keys(self):
-        for x in range(1, 3):
-            for df in self.dataset.get(f'Extractor{x}'):
-                self.assertIsNotNone(df)
+        self.assertEqual(dataset.get(f'TestExtractor1'), self.df1)
+        self.assertEqual(dataset.get(f'TestExtractor2'), self.df2)
+        self.assertEqual(dataset.get(f'TestExtractor3'), self.df3)
 
 
-class Extractor1(Extractor):
+class TestExtractor1(Extractor):
+    def __init__(self, df: DataFrame):
+        self.df = df
+
     def read(self):
-        return create_dataframe()
+        return self.df
 
 
-class Extractor2(Extractor):
+class TestExtractor2(Extractor):
+    def __init__(self, df: DataFrame):
+        self.df = df
+
     def read(self):
-        return create_dataframe()
+        return self.df
 
 
-class Extractor3(Extractor):
+class TestExtractor3(Extractor):
+    def __init__(self, df: DataFrame):
+        self.df = df
+
     def read(self):
-        return create_dataframe()
+        return self.df
 
 
 def create_dataframe():
@@ -67,3 +76,7 @@ def create_dataframe():
             StructField("id", IntegerType(), False),
             StructField("text", StringType(), False)
         ]))
+
+
+if __name__ == "__main__":
+    unittest.main()

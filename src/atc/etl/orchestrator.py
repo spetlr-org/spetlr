@@ -122,7 +122,7 @@ class OrchestratorBuilder(Orchestrator):
         if ll == 0:
             raise OrchestratorBuilderException("There have be at least one loader")
 
-        # Create single or delegating oject verion of extractors, transformers or loaders based on count
+        # Create single or delegating object verion of extractors, transformers or loaders based on count
         extractorOject = self.extractors[0] if le == 1 else DelegatingExtractor(self.extractors)
         if le == 1:
             transformerOject = self.transformers[0] if lt == 1 else DelegatingTransformer(self.transformers)

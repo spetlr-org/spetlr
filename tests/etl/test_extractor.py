@@ -1,10 +1,9 @@
 import unittest
-from unittest.mock import MagicMock
 
-from pyspark.sql import DataFrame, dataframe
+from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Orchestration, MultiInputTransformer
+from atc.etl import Extractor
 from atc.etl.extractor import DelegatingExtractor
 from atc.spark import Spark
 
@@ -43,7 +42,7 @@ class DelegatingExtractorTests(unittest.TestCase):
 
 
 class TestExtractor1(Extractor):
-    def __init__(self, df: dataframe):
+    def __init__(self, df: DataFrame):
         self.df = df
 
     def read(self):
@@ -51,7 +50,7 @@ class TestExtractor1(Extractor):
 
 
 class TestExtractor2(Extractor):
-    def __init__(self, df: dataframe):
+    def __init__(self, df: DataFrame):
         self.df = df
 
     def read(self):
@@ -59,7 +58,7 @@ class TestExtractor2(Extractor):
 
 
 class TestExtractor3(Extractor):
-    def __init__(self, df: dataframe):
+    def __init__(self, df: DataFrame):
         self.df = df
 
     def read(self):

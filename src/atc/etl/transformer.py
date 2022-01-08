@@ -1,49 +1,30 @@
 from abc import abstractmethod
-from typing import List, Dict, Union
 
 from pyspark.sql import DataFrame
 
+from atc.etl.types import dataset_group, EtlBase
 
-class Transformer:
+
+class Transformer(EtlBase):
+    """If you only want to transform a single input dataframe,
+    implement `process`
+    if you want to transform a set of dataframes,
+    implement `process_many`
+
+    In regards to the etl step, the transformer CONSUMES the inputs
+    and ADDs the result of its transformation stage.
+    """
+
+    def etl(self, inputs: dataset_group) -> dataset_group:
+        if len(inputs) == 1:
+            for v in inputs.values():
+                return {type(self).__name__: self.process(v)}
+        return {type(self).__name__: self.process_many(inputs)}
+
     @abstractmethod
     def process(self, df: DataFrame) -> DataFrame:
         return df
 
-
-class MultiInputTransformer:
     @abstractmethod
-    def process_many(self, dataset: Dict[str, DataFrame]) -> DataFrame:
+    def process_many(self, datasets: dataset_group) -> DataFrame:
         pass
-
-
-class DelegatingTransformer(Transformer):
-    def __init__(self, inner_transformers: List[Transformer]):
-        super().__init__()
-        self.inner_transformers = inner_transformers
-
-    def get_transformers(self) -> List[Transformer]:
-        return self.inner_transformers
-
-    def process(self, df: DataFrame) -> DataFrame:
-        for transformer in self.inner_transformers:
-            df = transformer.process(df)
-        return df
-
-
-class DelegatingMultiInputTransformer(Transformer):
-    def __init__(self, inner_transformers: List[Union[Transformer, MultiInputTransformer]]):
-        super().__init__()
-        self.inner_transformers = inner_transformers
-
-    def get_transformers(self) -> List[Union[Transformer, MultiInputTransformer]]:
-        return self.inner_transformers
-
-    def process_many(self, dataset: Dict[str, DataFrame]) -> DataFrame:
-        for transformer in self.inner_transformers:
-            if isinstance(transformer, MultiInputTransformer):
-                df = transformer.process_many(dataset)
-            
-            if isinstance(transformer, Transformer):
-                df = transformer.process(df)
-        
-        return df

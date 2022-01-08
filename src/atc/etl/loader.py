@@ -1,24 +1,31 @@
 from abc import abstractmethod
-from typing import List
 
 from pyspark.sql import DataFrame
 
+from atc.etl.types import dataset_group, EtlBase
 
-class Loader:
+
+class Loader(EtlBase):
+    """
+    A loader is a data sink, which is indicated by the fact that
+    the save method has no return.
+
+    In regards to the etl step, a loader USES the input dataset(s)
+    and does not consume or change it.
+    """
+
+    def etl(self, inputs: dataset_group) -> dataset_group:
+        if len(inputs) == 1:
+            for k, v in inputs.items():
+                self.save(v)
+                return inputs
+        self.save_many(inputs)
+        return inputs
+
     @abstractmethod
-    def save(self, df: DataFrame) -> DataFrame:
-        return df
+    def save(self, df: DataFrame) -> None:
+        pass
 
-
-class DelegatingLoader(Loader):
-    def __init__(self, inner_loaders: List[Loader]):
-        super().__init__()
-        self.inner_loaders = inner_loaders
-
-    def get_loaders(self) -> List[Loader]:
-        return self.inner_loaders
-
-    def save(self, df: DataFrame) -> DataFrame:
-        for loader in self.inner_loaders:
-            loader.save(df)
-        return df
+    @abstractmethod
+    def save_many(self, datasets: dataset_group) -> None:
+        pass

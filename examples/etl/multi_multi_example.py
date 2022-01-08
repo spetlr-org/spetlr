@@ -6,14 +6,13 @@ from atc.etl import Extractor, Transformer, Loader, Orchestrator
 from atc.spark import Spark
 
 
-class GuitarExtractor(Extractor):
+class AmericanGuitarExtractor(Extractor):
     def read(self) -> DataFrame:
         return Spark.get().createDataFrame(
             Spark.get().sparkContext.parallelize(
                 [
                     ("1", "Fender", "Telecaster", "1950"),
                     ("2", "Gibson", "Les Paul", "1959"),
-                    ("3", "Ibanez", "RG", "1987"),
                 ]
             ),
             StructType(
@@ -25,6 +24,32 @@ class GuitarExtractor(Extractor):
                 ]
             ),
         )
+
+
+class JapaneseGuitarExtractor(Extractor):
+    def read(self) -> DataFrame:
+        return Spark.get().createDataFrame(
+            Spark.get().sparkContext.parallelize(
+                [("3", "Ibanez", "RG", "1987"), ("4", "Takamine", "Pro Series", "1959")]
+            ),
+            StructType(
+                [
+                    StructField("id", StringType()),
+                    StructField("brand", StringType()),
+                    StructField("model", StringType()),
+                    StructField("year", StringType()),
+                ]
+            ),
+        )
+
+
+class CountryOfOriginTransformer(Transformer):
+    def process_many(self, dataset: {}) -> DataFrame:
+        usa_df = dataset["AmericanGuitarExtractor"].withColumn("country", f.lit("USA"))
+        jap_df = dataset["JapaneseGuitarExtractor"].withColumn(
+            "country", f.lit("Japan")
+        )
+        return usa_df.union(jap_df)
 
 
 class BasicTransformer(Transformer):
@@ -41,19 +66,23 @@ class BasicTransformer(Transformer):
 
 
 class NoopSilverLoader(Loader):
-    def save(self, df: DataFrame) -> None:
+    def save(self, df: DataFrame) -> DataFrame:
         df.write.format("noop").mode("overwrite").save()
+        return df
 
 
 class NoopGoldLoader(Loader):
-    def save(self, df: DataFrame) -> None:
+    def save(self, df: DataFrame) -> DataFrame:
         df.write.format("noop").mode("overwrite").save()
+        return df
 
 
 print("ETL Orchestrator using multiple loaders")
 etl = (
     Orchestrator()
-    .extract_from(GuitarExtractor())
+    .extract_from(AmericanGuitarExtractor())
+    .extract_from(JapaneseGuitarExtractor())
+    .transform_with(CountryOfOriginTransformer())
     .transform_with(BasicTransformer())
     .load_into(NoopSilverLoader())
     .load_into(NoopGoldLoader())

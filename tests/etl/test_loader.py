@@ -25,7 +25,10 @@ class LoaderTests(unittest.TestCase):
         # assert that loader returns something:
         self.assertIs(input, result)
 
-        args = self.loader.save.call_args.args
+        args = self.loader.save.call_args[
+            0
+        ]  # the .args part became available in python 3.8
+        print(args)
         self.assertEqual(len(args), 1)
         self.assertIs(args[0], self.df)
 
@@ -33,7 +36,10 @@ class LoaderTests(unittest.TestCase):
 
         self.loader.etl({"myset1": self.df, "myset2": self.df})
 
-        args = self.loader.save_many.call_args.args
+        args = self.loader.save_many.call_args[
+            0
+        ]  # the .args part became available in python 3.8
+        print(args)
         self.assertEqual(len(args), 1)
         datasets = args[0]
         self.assertEqual(len(datasets), 2)

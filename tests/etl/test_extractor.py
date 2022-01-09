@@ -16,15 +16,15 @@ class ExtractorTests(unittest.TestCase):
     def setUpClass(cls):
 
         cls.df = create_dataframe()
-        cls.extractor = TestExtractor1(cls.df)
-        cls.keyed_extractor = TestExtractor2(cls.df)
-        cls.doubling_extractor = TestExtractor3()
+        cls.extractor = MyTestExtractor1(cls.df)
+        cls.keyed_extractor = MyTestExtractor2(cls.df)
+        cls.doubling_extractor = MyTestExtractor3()
 
     def test_read_returns_dataframe(self):
         self.assertEqual(self.extractor.read(), self.df)
 
     def test_dataset_names(self):
-        self.assertEqual(list(self.extractor.etl({}).keys()), ["TestExtractor1"])
+        self.assertEqual(list(self.extractor.etl({}).keys()), ["MyTestExtractor1"])
 
     def test_dataset_names_keyed(self):
         self.assertEqual(list(self.keyed_extractor.etl({}).keys()), ["mykey"])
@@ -35,13 +35,13 @@ class ExtractorTests(unittest.TestCase):
         for step in steps:
             datasets = step.etl(datasets)
 
-        self.assertEqual(set(datasets.keys()), {"TestExtractor1", "TestExtractor3"})
+        self.assertEqual(set(datasets.keys()), {"MyTestExtractor1", "MyTestExtractor3"})
         df1, df3 = list(datasets.values())
         self.assertIs(self.df, df1)
         self.assertIs(self.df, df3)
 
 
-class TestExtractor1(Extractor):
+class MyTestExtractor1(Extractor):
     def __init__(self, df: DataFrame):
         super().__init__()
         self.df = df
@@ -50,7 +50,7 @@ class TestExtractor1(Extractor):
         return self.df
 
 
-class TestExtractor2(Extractor):
+class MyTestExtractor2(Extractor):
     def __init__(self, df: DataFrame):
         super().__init__(dataset_key="mykey")
         self.df = df
@@ -59,7 +59,7 @@ class TestExtractor2(Extractor):
         return self.df
 
 
-class TestExtractor3(Extractor):
+class MyTestExtractor3(Extractor):
     """Doubles the input dataframe"""
 
     def read(self):

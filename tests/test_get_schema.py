@@ -9,9 +9,8 @@ class TestGetSchema(unittest.TestCase):
     def test_01_schema1(self):
         sql = dedent(
             r"""
-        (
             a int,
-            b int COMMENT "really?\" is that it?",
+            b int COMMENT "really? is that it?",
             c string,
             cplx struct< -- irrelevant comment
                 someId:string,
@@ -23,7 +22,7 @@ class TestGetSchema(unittest.TestCase):
             m map<int,string>,
             p decimal(10,3),
             final string
-        )
+
         """
         )
         struct = get_schema(sql)
@@ -31,7 +30,12 @@ class TestGetSchema(unittest.TestCase):
             t.StructType(
                 [
                     t.StructField("a", t.IntegerType(), True),
-                    t.StructField("b", t.IntegerType(), True),
+                    t.StructField(
+                        "b",
+                        t.IntegerType(),
+                        True,
+                        metadata={"comment": "really? is that it?"},
+                    ),
                     t.StructField("c", t.StringType(), True),
                     t.StructField(
                         "cplx",
@@ -57,11 +61,11 @@ class TestGetSchema(unittest.TestCase):
                     t.StructField(
                         "m", t.MapType(t.IntegerType(), t.StringType(), True), True
                     ),
-                    t.StructField("p", t.DecimalType(10,3), True),
+                    t.StructField("p", t.DecimalType(10, 3), True),
                     t.StructField("final", t.StringType(), True),
                 ]
-            ),
-            struct,
+            ).json(),
+            struct.json(),
         )
 
 

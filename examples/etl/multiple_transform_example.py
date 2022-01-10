@@ -29,6 +29,7 @@ class GuitarExtractor(Extractor):
 
 class IntegerColumnTransformer(Transformer):
     def __init__(self, col_name: str):
+        super().__init__()
         self.col_name = col_name
 
     def process(self, df: DataFrame) -> DataFrame:

@@ -1,6 +1,6 @@
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+from pyspark.sql.types import IntegerType
 
 from atc.etl import Extractor, Transformer, Loader, Orchestrator
 from atc.spark import Spark

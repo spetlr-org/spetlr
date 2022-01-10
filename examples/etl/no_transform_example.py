@@ -1,5 +1,4 @@
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, StructField, StringType
 
 from atc.etl import Extractor, Loader, Orchestrator
 from atc.spark import Spark
@@ -15,14 +14,7 @@ class GuitarExtractor(Extractor):
                     ("3", "Ibanez", "RG", "1987"),
                 ]
             ),
-            StructType(
-                [
-                    StructField("id", StringType()),
-                    StructField("brand", StringType()),
-                    StructField("model", StringType()),
-                    StructField("year", StringType()),
-                ]
-            ),
+            """id STRING, brand STRING, model STRING, year STRING""",
         )
 
 

@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 from pyspark.sql import DataFrame
 
-from atc.etl.types import dataset_group, EtlBase
+from .types import dataset_group, EtlBase
 
 
 class Extractor(EtlBase):
@@ -14,7 +14,7 @@ class Extractor(EtlBase):
     to the total set of datasets.
     """
 
-    def __init__(self, dataset_key=None):
+    def __init__(self, dataset_key: str = None):
         if dataset_key is None:
             dataset_key = type(self).__name__
         self.dataset_key = dataset_key
@@ -22,8 +22,8 @@ class Extractor(EtlBase):
 
     def etl(self, inputs: dataset_group) -> dataset_group:
         self.previous_extractions = inputs
-        newdf = self.read()
-        inputs[self.dataset_key] = newdf
+        new_df = self.read()
+        inputs[self.dataset_key] = new_df
         return inputs
 
     @abstractmethod

@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 from pyspark.sql import DataFrame
 
@@ -30,6 +30,5 @@ class Orchestrator:
             datasets = step.etl(datasets)
 
         if len(datasets) == 1:
-            for k, v in datasets.items():
-                return v
+            return next(iter(datasets.values()))
         raise AssertionError("Multiple datasets in play at the end of orchestration.")

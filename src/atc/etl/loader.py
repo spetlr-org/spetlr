@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 from pyspark.sql import DataFrame
 
-from atc.etl.types import dataset_group, EtlBase
+from .types import dataset_group, EtlBase
 
 
 class Loader(EtlBase):
@@ -16,9 +16,9 @@ class Loader(EtlBase):
 
     def etl(self, inputs: dataset_group) -> dataset_group:
         if len(inputs) == 1:
-            for k, v in inputs.items():
-                self.save(v)
-                return inputs
+            df = next(iter(inputs.values()))
+            self.save(df)
+            return inputs
         self.save_many(inputs)
         return inputs
 

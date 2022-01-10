@@ -48,7 +48,7 @@ This is the most simple elt case, and will be used as base for the below more co
 ```
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+from pyspark.sql.types import IntegerType
 
 from atc.etl import Extractor, Transformer, Loader, Orchestrator
 from atc.spark import Spark
@@ -167,6 +167,7 @@ class GuitarExtractor(Extractor):
 
 class IntegerColumnTransformer(Transformer):
     def __init__(self, col_name: str):
+        super().__init__()
         self.col_name = col_name
 
     def process(self, df: DataFrame) -> DataFrame:
@@ -304,7 +305,6 @@ Here's an example of data raw ingestion without applying any transformations.
 
 ```
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, StructField, StringType
 
 from atc.etl import Extractor, Loader, Orchestrator
 from atc.spark import Spark
@@ -320,14 +320,7 @@ class GuitarExtractor(Extractor):
                     ("3", "Ibanez", "RG", "1987"),
                 ]
             ),
-            StructType(
-                [
-                    StructField("id", StringType()),
-                    StructField("brand", StringType()),
-                    StructField("model", StringType()),
-                    StructField("year", StringType()),
-                ]
-            ),
+            """id STRING, brand STRING, model STRING, year STRING""",
         )
 
 

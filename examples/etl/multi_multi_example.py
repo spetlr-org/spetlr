@@ -66,15 +66,13 @@ class BasicTransformer(Transformer):
 
 
 class NoopSilverLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
+    def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
-        return df
 
 
 class NoopGoldLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
+    def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
-        return df
 
 
 print("ETL Orchestrator using multiple loaders")

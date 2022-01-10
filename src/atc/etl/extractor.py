@@ -1,28 +1,31 @@
 from abc import abstractmethod
 
 from pyspark.sql import DataFrame
-from typing import Dict, List
+
+from .types import dataset_group, EtlBase
 
 
-class Extractor:
-    def __init__(self):
-        pass
+class Extractor(EtlBase):
+    """In some cases extractors depend on other extractors,
+    for these situations, the datasets from previous steps
+    are accessible in the variable self.previous_extractions.
+
+    In regards to the etl step, the extractor ADDs its dataset
+    to the total set of datasets.
+    """
+
+    def __init__(self, dataset_key: str = None):
+        if dataset_key is None:
+            dataset_key = type(self).__name__
+        self.dataset_key = dataset_key
+        self.previous_extractions: dataset_group = {}
+
+    def etl(self, inputs: dataset_group) -> dataset_group:
+        self.previous_extractions = inputs
+        new_df = self.read()
+        inputs[self.dataset_key] = new_df
+        return inputs
 
     @abstractmethod
     def read(self) -> DataFrame:
         pass
-
-
-class DelegatingExtractor(Extractor):
-    def __init__(self, inner_extractors: List[Extractor]):
-        super().__init__()
-        self.inner_extractors = inner_extractors
-
-    def get_extractors(self) -> List[Extractor]:
-        return self.inner_extractors
-
-    def read(self) -> Dict[str, DataFrame]:
-        dataset = {}
-        for extractor in self.inner_extractors:
-            dataset[type(extractor).__name__] = extractor.read()
-        return dataset

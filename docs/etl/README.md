@@ -18,22 +18,21 @@ The **Ochestrator** reads data from the **Extractor** then uses the result as a 
 and saves the transformed result into the **Loader**. The **Transformer** can be optional as there are scenarios where 
 data transformation is not needed (i.e. raw data ingestion to a landing zone)
 
-Each layer may have a single or multiple implementations, and this is handled in the 
-**OrchestratorBuilder**
+Each layer may have a single or multiple implementations, and this is handled automatically in the 
+**Orchestrator**
 
 ## Orchestration Fluent Interface
 
 This library provides common simple implementations and base classes for implementing the OETL design pattern. 
-To simplify object construction, we provide the **Orchestration** fluent interface from `atc.etl`
+To simplify object construction, we provide the **Orchestrator** fluent interface from `atc.etl`
 
 ```python
-from atc.etl import Extractor, Transformer, Loader, Orchestration
+from atc.etl import Extractor, Transformer, Loader, Orchestrator
 
-(Orchestration
+(Orchestrator()
     .extract_from(Extractor())
     .transform_with(Transformer())
     .load_into(Loader())
-    .build()
     .execute())
 ```
 
@@ -46,59 +45,63 @@ Here are some example usages and implementations of the ETL class provided
 Here's an example of reading data from a single location, transforming it once and saving to a single destination.
 This is the most simple elt case, and will be used as base for the below more complex examples.
 
-```python
-from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+```
 import pyspark.sql.functions as f
+from pyspark.sql import DataFrame
+from pyspark.sql.types import IntegerType
 
-from atc.etl import Extractor, Transformer, Loader, Orchestration
+from atc.etl import Extractor, Transformer, Loader, Orchestrator
 from atc.spark import Spark
 
 
 class GuitarExtractor(Extractor):
     def read(self) -> DataFrame:
         return Spark.get().createDataFrame(
-            Spark.get().sparkContext.parallelize([
-                ('1', 'Fender', 'Telecaster', '1950'),
-                ('2', 'Gibson', 'Les Paul', '1959'),
-                ('3', 'Ibanez', 'RG', '1987')
-            ]),
-            StructType([
-                StructField('id', StringType()),
-                StructField('brand', StringType()),
-                StructField('model', StringType()),
-                StructField('year', StringType()),
-            ]))
+            Spark.get().sparkContext.parallelize(
+                [
+                    ("1", "Fender", "Telecaster", "1950"),
+                    ("2", "Gibson", "Les Paul", "1959"),
+                    ("3", "Ibanez", "RG", "1987"),
+                ]
+            ),
+            """
+            id STRING,
+            brand STRING,
+            model STRING,
+            year STRING
+            """,
+        )
 
 
 class BasicTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
-        print('Current DataFrame schema')
+        print("Current DataFrame schema")
         df.printSchema()
 
-        df = df.withColumn('id', f.col('id').cast(IntegerType()))
-        df = df.withColumn('year', f.col('year').cast(IntegerType()))
+        df = df.withColumn("id", f.col("id").cast(IntegerType()))
+        df = df.withColumn("year", f.col("year").cast(IntegerType()))
 
-        print('New DataFrame schema')
+        print("New DataFrame schema")
         df.printSchema()
         return df
 
 
 class NoopLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
-        df.write.format('noop').mode('overwrite').save()
-        return df
+    def save(self, df: DataFrame) -> None:
+        df.write.format("noop").mode("overwrite").save()
 
 
-print('ETL Orchestrator using a single simple transformer')
-etl = (Orchestration
-       .extract_from(GuitarExtractor())
-       .transform_with(BasicTransformer())
-       .load_into(NoopLoader())
-       .build())
+print("ETL Orchestrator using a single simple transformer")
+etl = (
+    Orchestrator()
+    .extract_from(GuitarExtractor())
+    .transform_with(BasicTransformer())
+    .load_into(NoopLoader())
+)
 result = etl.execute()
 result.printSchema()
 result.show()
+
 ```
 
 The code above produces the following output:
@@ -132,33 +135,39 @@ root
 Here's an example of having multiple `Transformer` implementations that is reused to change the data type of a given column,
 where the column name is parameterized.
 
-```python
+```
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Transformer, Loader, Orchestration
+from atc.etl import Extractor, Transformer, Loader, Orchestrator
 from atc.spark import Spark
 
 
 class GuitarExtractor(Extractor):
     def read(self) -> DataFrame:
         return Spark.get().createDataFrame(
-            Spark.get().sparkContext.parallelize([
-                ('1', 'Fender', 'Telecaster', '1950'),
-                ('2', 'Gibson', 'Les Paul', '1959'),
-                ('3', 'Ibanez', 'RG', '1987')
-            ]),
-            StructType([
-                StructField('id', StringType()),
-                StructField('brand', StringType()),
-                StructField('model', StringType()),
-                StructField('year', StringType()),
-            ]))
+            Spark.get().sparkContext.parallelize(
+                [
+                    ("1", "Fender", "Telecaster", "1950"),
+                    ("2", "Gibson", "Les Paul", "1959"),
+                    ("3", "Ibanez", "RG", "1987"),
+                ]
+            ),
+            StructType(
+                [
+                    StructField("id", StringType()),
+                    StructField("brand", StringType()),
+                    StructField("model", StringType()),
+                    StructField("year", StringType()),
+                ]
+            ),
+        )
 
 
 class IntegerColumnTransformer(Transformer):
     def __init__(self, col_name: str):
+        super().__init__()
         self.col_name = col_name
 
     def process(self, df: DataFrame) -> DataFrame:
@@ -167,95 +176,107 @@ class IntegerColumnTransformer(Transformer):
 
 
 class NoopLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
-        df.write.format('noop').mode('overwrite').save()
-        return df
+    def save(self, df: DataFrame) -> None:
+        df.write.format("noop").mode("overwrite").save()
 
 
-print('ETL Orchestrator using multiple transformers')
-etl = (Orchestration
-       .extract_from(GuitarExtractor())
-       .transform_with(IntegerColumnTransformer('id'))
-       .transform_with(IntegerColumnTransformer('year'))
-       .load_into(NoopLoader())
-       .build())
+print("ETL Orchestrator using multiple transformers")
+etl = (
+    Orchestrator()
+    .extract_from(GuitarExtractor())
+    .transform_with(IntegerColumnTransformer("id"))
+    .transform_with(IntegerColumnTransformer("year"))
+    .load_into(NoopLoader())
+)
 result = etl.execute()
 result.printSchema()
 result.show()
+
 ```
 
 ### Example-3
 
-Here's an example of having multiple `Extractor` implementations encapsulated in an instance of 
-`DelegatingExtractor` and applying transformations using the `MultiInputTransformer`.
+Here's an example of having multiple `Extractor` implementations and applying transformations using 
+the `process_many` method.
 
-The `read()` function in `DelegatingExtractor` will return a dictionary that uses the type name of the `Extractor` 
-as the key, and a `DataFrame` as its value.
+The `read()` function in `Extractor` will return a dictionary that uses the type name of the `Extractor` 
+as the key, and a `DataFrame` as its value, the used kan can be overridden in the constructor.
 
-`MultiInputTransformer` provides the function `process_many(dataset: {})` and returns a single `DataFrame`.
+`Transformer` provides the function `process_many(dataset: {})` and returns a single `DataFrame`.
 
-```python
+```
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, StringType
 
-from atc.etl import Extractor, Loader, MultiInputTransformer, Orchestration
+from atc.etl import Extractor, Loader, Orchestrator, Transformer
 from atc.spark import Spark
 
 
 class AmericanGuitarExtractor(Extractor):
     def read(self) -> DataFrame:
         return Spark.get().createDataFrame(
-            Spark.get().sparkContext.parallelize([
-                ('1', 'Fender', 'Telecaster', '1950'),
-                ('2', 'Gibson', 'Les Paul', '1959')
-            ]),
-            StructType([
-                StructField('id', StringType()),
-                StructField('brand', StringType()),
-                StructField('model', StringType()),
-                StructField('year', StringType()),
-            ]))
+            Spark.get().sparkContext.parallelize(
+                [
+                    ("1", "Fender", "Telecaster", "1950"),
+                    ("2", "Gibson", "Les Paul", "1959"),
+                ]
+            ),
+            StructType(
+                [
+                    StructField("id", StringType()),
+                    StructField("brand", StringType()),
+                    StructField("model", StringType()),
+                    StructField("year", StringType()),
+                ]
+            ),
+        )
 
 
 class JapaneseGuitarExtractor(Extractor):
+    def __init__(self):
+        super().__init__(dataset_key="japanese")
+
     def read(self) -> DataFrame:
         return Spark.get().createDataFrame(
-            Spark.get().sparkContext.parallelize([
-                ('3', 'Ibanez', 'RG', '1987'),
-                ('4', 'Takamine', 'Pro Series', '1959')
-            ]),
-            StructType([
-                StructField('id', StringType()),
-                StructField('brand', StringType()),
-                StructField('model', StringType()),
-                StructField('year', StringType()),
-            ]))
+            Spark.get().sparkContext.parallelize(
+                [("3", "Ibanez", "RG", "1987"), ("4", "Takamine", "Pro Series", "1959")]
+            ),
+            StructType(
+                [
+                    StructField("id", StringType()),
+                    StructField("brand", StringType()),
+                    StructField("model", StringType()),
+                    StructField("year", StringType()),
+                ]
+            ),
+        )
 
 
-class CountryOfOriginTransformer(MultiInputTransformer):
+class CountryOfOriginTransformer(Transformer):
     def process_many(self, dataset: {}) -> DataFrame:
-        usa_df = dataset['AmericanGuitarExtractor'].withColumn('country', f.lit('USA'))
-        jap_df = dataset['JapaneseGuitarExtractor'].withColumn('country', f.lit('Japan'))
+        usa_df = dataset["AmericanGuitarExtractor"].withColumn("country", f.lit("USA"))
+        jap_df = dataset["japanese"].withColumn("country", f.lit("Japan"))
         return usa_df.union(jap_df)
 
 
 class NoopLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
-        df.write.format('noop').mode('overwrite').save()
-        return df
+    def save(self, df: DataFrame) -> None:
+        df.write.format("noop").mode("overwrite").save()
 
 
-print('ETL Orchestrator using multiple extractors')
-etl = (Orchestration
-       .extract_from(AmericanGuitarExtractor())
-       .extract_from(JapaneseGuitarExtractor())
-       .transform_with(CountryOfOriginTransformer())
-       .load_into(NoopLoader())
-       .build())
+print("ETL Orchestrator using multiple extractors")
+etl = (
+    Orchestrator()
+    .extract_from(AmericanGuitarExtractor())
+    .extract_from(JapaneseGuitarExtractor())
+    .transform_with(CountryOfOriginTransformer())
+    .load_into(NoopLoader())
+)
 result = etl.execute()
 result.printSchema()
 result.show()
+
 ```
 
 The code above produces the following output:
@@ -282,110 +303,109 @@ root
 
 Here's an example of data raw ingestion without applying any transformations.
 
-```python
+```
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, StructField, StringType
 
-from atc.etl import Extractor, Loader, Orchestration
+from atc.etl import Extractor, Loader, Orchestrator
 from atc.spark import Spark
 
 
 class GuitarExtractor(Extractor):
     def read(self) -> DataFrame:
         return Spark.get().createDataFrame(
-            Spark.get().sparkContext.parallelize([
-                ('1', 'Fender', 'Telecaster', '1950'),
-                ('2', 'Gibson', 'Les Paul', '1959'),
-                ('3', 'Ibanez', 'RG', '1987')
-            ]),
-            StructType([
-                StructField('id', StringType()),
-                StructField('brand', StringType()),
-                StructField('model', StringType()),
-                StructField('year', StringType()),
-            ]))
+            Spark.get().sparkContext.parallelize(
+                [
+                    ("1", "Fender", "Telecaster", "1950"),
+                    ("2", "Gibson", "Les Paul", "1959"),
+                    ("3", "Ibanez", "RG", "1987"),
+                ]
+            ),
+            """id STRING, brand STRING, model STRING, year STRING""",
+        )
 
 
 class NoopLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
-        df.write.format('noop').mode('overwrite').save()
-        return df
+    def save(self, df: DataFrame) -> None:
+        df.write.format("noop").mode("overwrite").save()
 
 
-print('ETL Orchestrator with no transformations')
-etl = (Orchestration
-       .extract_from(GuitarExtractor())
-       .load_into(NoopLoader())
-       .build())
+print("ETL Orchestrator with no transformations")
+etl = Orchestrator().extract_from(GuitarExtractor()).load_into(NoopLoader())
 result = etl.execute()
 result.printSchema()
 result.show()
+
 ```
 
 ### Example-5
 
 Here's an example of having multiple `Loader` implementations that is writing the transformed data into multiple destinations.
 
-```python
+```
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Transformer, Loader, Orchestration
+from atc.etl import Extractor, Transformer, Loader, Orchestrator
 from atc.spark import Spark
 
 
 class GuitarExtractor(Extractor):
     def read(self) -> DataFrame:
         return Spark.get().createDataFrame(
-            Spark.get().sparkContext.parallelize([
-                ('1', 'Fender', 'Telecaster', '1950'),
-                ('2', 'Gibson', 'Les Paul', '1959'),
-                ('3', 'Ibanez', 'RG', '1987')
-            ]),
-            StructType([
-                StructField('id', StringType()),
-                StructField('brand', StringType()),
-                StructField('model', StringType()),
-                StructField('year', StringType()),
-            ]))
+            Spark.get().sparkContext.parallelize(
+                [
+                    ("1", "Fender", "Telecaster", "1950"),
+                    ("2", "Gibson", "Les Paul", "1959"),
+                    ("3", "Ibanez", "RG", "1987"),
+                ]
+            ),
+            StructType(
+                [
+                    StructField("id", StringType()),
+                    StructField("brand", StringType()),
+                    StructField("model", StringType()),
+                    StructField("year", StringType()),
+                ]
+            ),
+        )
 
 
 class BasicTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
-        print('Current DataFrame schema')
+        print("Current DataFrame schema")
         df.printSchema()
 
-        df = df.withColumn('id', f.col('id').cast(IntegerType()))
-        df = df.withColumn('year', f.col('year').cast(IntegerType()))
+        df = df.withColumn("id", f.col("id").cast(IntegerType()))
+        df = df.withColumn("year", f.col("year").cast(IntegerType()))
 
-        print('New DataFrame schema')
+        print("New DataFrame schema")
         df.printSchema()
         return df
 
 
 class NoopSilverLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
-        df.write.format('noop').mode('overwrite').save()
-        return df
+    def save(self, df: DataFrame) -> None:
+        df.write.format("noop").mode("overwrite").save()
 
 
 class NoopGoldLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
-        df.write.format('noop').mode('overwrite').save()
-        return df
+    def save(self, df: DataFrame) -> None:
+        df.write.format("noop").mode("overwrite").save()
 
 
-print('ETL Orchestrator using multiple loaders')
-etl = (Orchestration
-       .extract_from(GuitarExtractor())
-       .transform_with(BasicTransformer())
-       .load_into(NoopSilverLoader())
-       .load_into(NoopGoldLoader())
-       .build())
+print("ETL Orchestrator using multiple loaders")
+etl = (
+    Orchestrator()
+    .extract_from(GuitarExtractor())
+    .transform_with(BasicTransformer())
+    .load_into(NoopSilverLoader())
+    .load_into(NoopGoldLoader())
+)
 result = etl.execute()
 result.printSchema()
 result.show()
+
 ```
 
 ### Example-6
@@ -397,87 +417,96 @@ Here's an example of having both multiple `Extractor`, `Transformer` and `Loader
 
 It is important that the first transformer is a `MultiInputTransformer` when having multiple extractors.
 
-```python
+```
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Transformer, Loader, Orchestration
+from atc.etl import Extractor, Transformer, Loader, Orchestrator
 from atc.spark import Spark
 
 
 class AmericanGuitarExtractor(Extractor):
     def read(self) -> DataFrame:
         return Spark.get().createDataFrame(
-            Spark.get().sparkContext.parallelize([
-                ('1', 'Fender', 'Telecaster', '1950'),
-                ('2', 'Gibson', 'Les Paul', '1959')
-            ]),
-            StructType([
-                StructField('id', StringType()),
-                StructField('brand', StringType()),
-                StructField('model', StringType()),
-                StructField('year', StringType()),
-            ]))
+            Spark.get().sparkContext.parallelize(
+                [
+                    ("1", "Fender", "Telecaster", "1950"),
+                    ("2", "Gibson", "Les Paul", "1959"),
+                ]
+            ),
+            StructType(
+                [
+                    StructField("id", StringType()),
+                    StructField("brand", StringType()),
+                    StructField("model", StringType()),
+                    StructField("year", StringType()),
+                ]
+            ),
+        )
 
 
 class JapaneseGuitarExtractor(Extractor):
     def read(self) -> DataFrame:
         return Spark.get().createDataFrame(
-            Spark.get().sparkContext.parallelize([
-                ('3', 'Ibanez', 'RG', '1987'),
-                ('4', 'Takamine', 'Pro Series', '1959')
-            ]),
-            StructType([
-                StructField('id', StringType()),
-                StructField('brand', StringType()),
-                StructField('model', StringType()),
-                StructField('year', StringType()),
-            ]))
+            Spark.get().sparkContext.parallelize(
+                [("3", "Ibanez", "RG", "1987"), ("4", "Takamine", "Pro Series", "1959")]
+            ),
+            StructType(
+                [
+                    StructField("id", StringType()),
+                    StructField("brand", StringType()),
+                    StructField("model", StringType()),
+                    StructField("year", StringType()),
+                ]
+            ),
+        )
 
 
-class CountryOfOriginTransformer(MultiInputTransformer):
+class CountryOfOriginTransformer(Transformer):
     def process_many(self, dataset: {}) -> DataFrame:
-        usa_df = dataset['AmericanGuitarExtractor'].withColumn('country', f.lit('USA'))
-        jap_df = dataset['JapaneseGuitarExtractor'].withColumn('country', f.lit('Japan'))
+        usa_df = dataset["AmericanGuitarExtractor"].withColumn("country", f.lit("USA"))
+        jap_df = dataset["JapaneseGuitarExtractor"].withColumn(
+            "country", f.lit("Japan")
+        )
         return usa_df.union(jap_df)
 
 
 class BasicTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
-        print('Current DataFrame schema')
+        print("Current DataFrame schema")
         df.printSchema()
 
-        df = df.withColumn('id', f.col('id').cast(IntegerType()))
-        df = df.withColumn('year', f.col('year').cast(IntegerType()))
+        df = df.withColumn("id", f.col("id").cast(IntegerType()))
+        df = df.withColumn("year", f.col("year").cast(IntegerType()))
 
-        print('New DataFrame schema')
+        print("New DataFrame schema")
         df.printSchema()
         return df
 
 
 class NoopSilverLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
-        df.write.format('noop').mode('overwrite').save()
-        return df
+    def save(self, df: DataFrame) -> None:
+        df.write.format("noop").mode("overwrite").save()
 
 
 class NoopGoldLoader(Loader):
-    def save(self, df: DataFrame) -> DataFrame:
-        df.write.format('noop').mode('overwrite').save()
-        return df
+    def save(self, df: DataFrame) -> None:
+        df.write.format("noop").mode("overwrite").save()
 
 
-print('ETL Orchestrator using multiple loaders')
-etl = (Orchestration
-       .extract_from(AmericanGuitarExtractor())
-       .extract_from(JapaneseGuitarExtractor())
-       .transform_with(CountryOfOriginTransformer())
-       .transform_with(BasicTransformer())
-       .load_into(NoopSilverLoader())
-       .load_into(NoopGoldLoader())
-       .build())
+print("ETL Orchestrator using multiple loaders")
+etl = (
+    Orchestrator()
+    .extract_from(AmericanGuitarExtractor())
+    .extract_from(JapaneseGuitarExtractor())
+    .transform_with(CountryOfOriginTransformer())
+    .transform_with(BasicTransformer())
+    .load_into(NoopSilverLoader())
+    .load_into(NoopGoldLoader())
+)
 result = etl.execute()
 result.printSchema()
 result.show()
+
 ```

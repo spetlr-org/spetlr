@@ -3,90 +3,49 @@ import unittest
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Transformer, DelegatingTransformer, MultiInputTransformer, DelegatingMultiInputTransformer
+from atc.etl import Transformer
+from atc.etl.types import dataset_group
 from atc.spark import Spark
 
 
 class TransformerTests(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
 
-        transformer = Transformer()
-        cls.df = transformer.process(create_dataframe())
+        cls.transformer = TestTransformer()
+        cls.df = create_dataframe()
 
     def test_process_returns_dataframe(self):
-        self.assertIsInstance(self.df, DataFrame)
+        result = self.transformer.etl({"df": self.df})
+        self.assertEqual({"TestTransformer"}, set(result.keys()))
+        self.assertIs(list(result.values())[0], self.df)
+
+    def test_process_many(self):
+        result = self.transformer.etl({"df1": self.df, "df2": self.df})
+        self.assertEqual({"TestTransformer"}, set(result.keys()))
+        self.assertEqual(6, list(result.values())[0].count())
 
 
-class DelegatingTransformerTests(unittest.TestCase):
+class TestTransformer(Transformer):
+    def process(self, df: DataFrame) -> DataFrame:
+        return df
 
-    @classmethod
-    def setUpClass(cls):
-        cls.transformerList = [Transformer(), Transformer(), Transformer()]
-        cls.transformer = DelegatingTransformer(cls.transformerList)
-        cls.df = cls.transformer.process(create_dataframe())
-
-    def test_get_transformers(self):
-        self.assertEqual(self.transformer.get_transformers(), self.transformerList)
-
-    def test_process_returns_dataframe(self):
-        self.assertIsInstance(self.df, DataFrame)
-
-
-class MultiInputTransformerTests(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-
-        transformer = TestMultiInputTransformer()
-        dataset = {
-            "df1": create_dataframe(),
-            "df2": create_dataframe()
-        }
-        cls.df = transformer.process_many(dataset)
-
-    def test_process_returns_dataframe(self):
-        self.assertIsInstance(self.df, DataFrame)
-
-
-class DelegatingMultiInputTransformerTests(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.transformerList = [TestMultiInputTransformer(), Transformer(), Transformer(), Transformer()]
-        cls.transformer = DelegatingMultiInputTransformer(cls.transformerList)
-        dataset = {
-            "df1": create_dataframe(),
-            "df2": create_dataframe()
-        }
-        cls.df = cls.transformer.process_many(dataset)
-
-    def test_get_transformers(self):
-        self.assertEqual(self.transformer.get_transformers(), self.transformerList)
-
-    def test_process_returns_dataframe(self):
-        self.assertIsInstance(self.df, DataFrame)
-
-
-class TestMultiInputTransformer(MultiInputTransformer):
-    def process_many(self, dataset):
-        df1 = dataset["df1"]
-        df2 = dataset["df2"]
+    def process_many(self, datasets: dataset_group) -> DataFrame:
+        assert len(datasets) == 2
+        df1, df2 = list(datasets.values())
         return df1.union(df2)
 
 
 def create_dataframe():
     return Spark.get().createDataFrame(
-        Spark.get().sparkContext.parallelize([
-            (1, '1'),
-            (2, '2'),
-            (3, '3')
-        ]),
-        StructType([
-            StructField("id", IntegerType(), False),
-            StructField("text", StringType(), False)
-        ]))
+        Spark.get().sparkContext.parallelize([(1, "1"), (2, "2"), (3, "3")]),
+        StructType(
+            [
+                StructField("id", IntegerType(), False),
+                StructField("text", StringType(), False),
+            ]
+        ),
+    )
 
 
 if __name__ == "__main__":

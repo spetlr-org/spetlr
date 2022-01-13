@@ -36,6 +36,24 @@ from atc.etl import Extractor, Transformer, Loader, Orchestrator
     .execute())
 ```
 
+### Principles
+
+All ETL classes, **Orchestrator**, **Extractor**, **Transformer** and **Loader** are ETL objects.
+This means that they have a method `etl(self, inputs: dataset_group) -> dataset_group`
+(where `dataset_group = Dict[str, DataFrame]`) that transforms a set of import to a set of 
+outputs. The special properties of each type are
+ - **Extractor** always adds its result to the total set,
+ - **Transformer** consumes all inputs and adds a single result dataframe,
+ - **Loader** acts as a sink, while passing its input on to the next sink,
+
+The special case of the  **Orchestrator** is that it takes all its steps and executes them
+in sequence on its inputs. Running in the default `execute()` method, the inputs are empty,
+but an orchestrator can also be added as part of another orchestrator with the `step` method.
+
+For the most general case of a many to many transformation, implement your step by inheriting
+from the `EtlBase` class.
+
+
 ## Usage examples:
 
 Here are some example usages and implementations of the ETL class provided

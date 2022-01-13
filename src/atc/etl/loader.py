@@ -14,6 +14,9 @@ class Loader(EtlBase):
     and does not consume or change it.
     """
 
+    def __init__(self):
+        super().__init__()
+
     def etl(self, inputs: dataset_group) -> dataset_group:
         if len(inputs) == 1:
             df = next(iter(inputs.values()))

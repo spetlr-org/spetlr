@@ -11,12 +11,10 @@ Utilities in atc-dataplatform:
 
 The `DataframeCreator` is a helper class to assist in writing concise unittests.
 
-Unittest typically take a dataframe, often created with `spark.createDataFrame` and transform it.
-The function `createDataFrame` requires all data fields to be assigned a value, even if the 
-given unittest is only concerned with a small subset of them.
+Unittests typically take a dataframe, often created with `spark.createDataFrame` and transform it.
+The function `createDataFrame` requires all data fields to be assigned a value, even if the given unittest is only concerned with a small subset of them.
 
-This class allows the user to specify which columns she wants to give values for. 
-All other columns will be assigned *null* values.
+This class allows the user to specify which columns she wants to give values for. All other columns will be assigned *null* values.
 
 #### Usage:
 

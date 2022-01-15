@@ -3,7 +3,7 @@ import unittest
 from atc.spark import Spark
 from pyspark.sql import types
 
-from atc.utils.DataframeCreator import DataframeCreator
+from atc.utils import DataframeCreator
 
 
 class DataframeCreatorTest(unittest.TestCase):

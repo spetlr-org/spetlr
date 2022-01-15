@@ -1,8 +1,8 @@
 from collections import OrderedDict
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Any
 
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, Row
+from pyspark.sql.types import StructType, Row, ArrayType
 
 from atc.spark import Spark
 
@@ -22,33 +22,24 @@ class DataframeCreator:
 
     @classmethod
     def make(cls, schema: StructType, data: List[Tuple]) -> DataFrame:
-        rows = []
-        if data:
-            for data_row in data:
-                rows.append(cls._make_row(schema, data_row, columns=None))
-        return Spark.get().createDataFrame(rows, schema=schema)
+        return Spark.get().createDataFrame(data, schema=schema)
 
     @classmethod
-    def _extract_complete_column_set(cls, schema: StructType):
-        selection = []
-        for field in schema.fields:
-            if field.dataType == StructType:
-                selection.append(
-                    (field.name, cls._extract_complete_column_set(field.dataType))
-                )
-            else:
-                selection.append(field.name)
-        return selection
+    def _make_row_array(
+        cls, schema: ArrayType, data_row: List[Any], columns: List[_column_selection]
+    ) -> List[Any]:
+        element = schema.elementType
+        if isinstance(element, ArrayType):
+            return [cls._make_row_array(element, item, columns) for item in data_row]
+        elif isinstance(element, StructType):
+            return [cls._make_row(element, item, columns) for item in data_row]
+        else:
+            return data_row
 
     @classmethod
     def _make_row(
-        cls,
-        schema: StructType,
-        data_row: Tuple,
-        columns: List[_column_selection] = None,
+        cls, schema: StructType, data_row: Tuple, columns: List[_column_selection]
     ) -> Row:
-        if columns is None:
-            columns = cls._extract_complete_column_set(schema)
 
         schema_dict = {f.name: f.dataType for f in schema.fields}
         in_data = dict()
@@ -64,12 +55,17 @@ class DataframeCreator:
                 column_name = column[0]
                 column_schema_selection = column[1]
                 column_schema = schema_dict[column_name]
-                assert isinstance(column_schema, StructType)
-                in_data[column_name] = cls._make_row(
-                    column_schema, item, column_schema_selection
-                )
+                if isinstance(column_schema, StructType):
+                    in_data[column_name] = cls._make_row(
+                        column_schema, item, column_schema_selection
+                    )
+                else:
+                    assert isinstance(column_schema, ArrayType)
+                    in_data[column_name] = cls._make_row_array(
+                        column_schema, item, column_schema_selection
+                    )
 
-        # fix the order of the items in the row item while also given the row elements keys
+                    # fix the order of the items in the row item while also given the row elements keys
         kwargs = OrderedDict()
         for column in schema.names:
             if column in in_data:

@@ -19,13 +19,16 @@ class DataframeCreatorTest(unittest.TestCase):
                 name:STRING,
                 address:STRING
             >,
-            product_nos ARRAY<INTEGER>
+            product_nos ARRAY<STRUCT<
+                no:INTEGER,
+                name:STRING
+            >>
         """
         )
 
     def test_full_creation(self):
         df = DataframeCreator.make(
-            self.schema, [(1, 3.5, ("otto", "neverland"), [1, 2, 3])]
+            self.schema, [(1, 3.5, ("otto", "neverland"), [(1, "book")])]
         )
         df.show()
         rows = [row.asDict(True) for row in df.collect()]
@@ -35,7 +38,7 @@ class DataframeCreatorTest(unittest.TestCase):
                     Id=1,
                     measured=3.5,
                     customer=dict(name="otto", address="neverland"),
-                    product_nos=[1, 2, 3],
+                    product_nos=[dict(no=1, name="book")],
                 )
             ],
             rows,
@@ -44,10 +47,10 @@ class DataframeCreatorTest(unittest.TestCase):
     def test_partial_creation(self):
         df = DataframeCreator.make_partial(
             schema=self.schema,
-            columns=["Id", ("customer", ["name"])],
+            columns=["Id", ("customer", ["name"]), ("product_nos", ["no"])],
             data=[
-                (1, ("otto",)),
-                (2, ("max",)),
+                (1, ("otto",), [(1,), (2,)]),
+                (2, ("max",), []),
             ],
         )
         df.show()
@@ -58,13 +61,13 @@ class DataframeCreatorTest(unittest.TestCase):
                     Id=1,
                     measured=None,
                     customer=dict(name="otto", address=None),
-                    product_nos=None,
+                    product_nos=[dict(no=1, name=None), dict(no=2, name=None)],
                 ),
                 dict(
                     Id=2,
                     measured=None,
                     customer=dict(name="max", address=None),
-                    product_nos=None,
+                    product_nos=[],
                 ),
             ],
             rows,

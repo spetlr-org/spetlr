@@ -2,7 +2,61 @@
 
 Utilities in atc-dataplatform:
 
+* [Test Utilities](#test-utilities)
 * [Git Hooks](#git-hooks)
+
+## Test Utilities
+
+### DataframeCreator
+
+The `DataframeCreator` is a helper class to assist in writing concise unittests.
+
+Unittests typically take a dataframe, often created with `spark.createDataFrame` and transform it.
+The function `createDataFrame` requires all data fields to be assigned a value, even if the given unittest is only concerned with a small subset of them.
+
+This class allows the user to specify which columns she wants to give values for. All other columns will be assigned *null* values.
+
+#### Usage:
+
+```python3
+from atc.utils import DataframeCreator
+from pyspark.sql import types
+
+df = DataframeCreator.make_partial(
+            schema=types._parse_datatype_string("""
+                Id INTEGER,
+                measured DOUBLE,
+                customer STRUCT<
+                    name:STRING,
+                    address:STRING
+                >,
+                product_nos ARRAY<STRUCT<
+                    no:INTEGER,
+                    name:STRING
+                >>
+            """),
+            columns=[
+              "Id", 
+              # of the customer structure, only specify the name
+              ("customer", ["name"]),
+              # of the products array of structures, only specify the 'no' field in each row
+              ("product_nos", ["no"])
+            ],
+            data=[
+                (1, ("otto",), [(1,), (2,)]),
+                (2, ("max",), []),
+            ],
+        )
+df.show()
+```
+Result:
+```
+| Id|measured|    customer|         product_nos|
++---+--------+------------+--------------------+
+|  1|    null|{otto, null}|[{1, null}, {2, n...|
+|  2|    null| {max, null}|                  []|
++---+--------+------------+--------------------+
+```
 
 ## Git Hooks
 

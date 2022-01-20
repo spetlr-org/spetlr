@@ -40,6 +40,8 @@ class IntegerColumnTransformer(Transformer):
 class NoopLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator using multiple transformers")
@@ -50,6 +52,4 @@ etl = (
     .transform_with(IntegerColumnTransformer("year"))
     .load_into(NoopLoader())
 )
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()

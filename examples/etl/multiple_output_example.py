@@ -48,6 +48,8 @@ class NoopSilverLoader(Loader):
 class NoopGoldLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator using multiple loaders")
@@ -58,6 +60,4 @@ etl = (
     .load_into(NoopSilverLoader())
     .load_into(NoopGoldLoader())
 )
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()

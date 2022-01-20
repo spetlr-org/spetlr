@@ -24,8 +24,8 @@ class Loader(EtlBase):
 
     @abstractmethod
     def save(self, df: DataFrame) -> None:
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def save_many(self, datasets: dataset_group) -> None:
-        pass
+        raise NotImplementedError()

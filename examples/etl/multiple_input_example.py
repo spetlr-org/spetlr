@@ -56,6 +56,8 @@ class CountryOfOriginTransformer(Transformer):
 class NoopLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator using multiple extractors")
@@ -66,6 +68,4 @@ etl = (
     .transform_with(CountryOfOriginTransformer())
     .load_into(NoopLoader())
 )
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()

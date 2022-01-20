@@ -9,4 +9,4 @@ dataset_group = Dict[str, DataFrame]
 class EtlBase:
     @abstractmethod
     def etl(self, inputs: dataset_group) -> dataset_group:
-        pass
+        raise NotImplementedError()

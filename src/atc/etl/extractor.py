@@ -28,4 +28,4 @@ class Extractor(EtlBase):
 
     @abstractmethod
     def read(self) -> DataFrame:
-        pass
+        raise NotImplementedError()

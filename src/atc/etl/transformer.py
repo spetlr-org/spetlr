@@ -28,8 +28,8 @@ class Transformer(EtlBase):
 
     @abstractmethod
     def process(self, df: DataFrame) -> DataFrame:
-        return df
+        raise NotImplementedError()
 
     @abstractmethod
     def process_many(self, datasets: dataset_group) -> DataFrame:
-        pass
+        raise NotImplementedError()

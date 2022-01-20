@@ -21,10 +21,10 @@ class GuitarExtractor(Extractor):
 class NoopLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator with no transformations")
 etl = Orchestrator().extract_from(GuitarExtractor()).load_into(NoopLoader())
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()

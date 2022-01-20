@@ -24,11 +24,7 @@ class Orchestrator:
     transform_with = step
     load_into = step
 
-    def execute(self) -> DataFrame:
+    def execute(self) -> None:
         datasets: dataset_group = {}
         for step in self.steps:
             datasets = step.etl(datasets)
-
-        if len(datasets) == 1:
-            return next(iter(datasets.values()))
-        raise AssertionError("Multiple datasets in play at the end of orchestration.")

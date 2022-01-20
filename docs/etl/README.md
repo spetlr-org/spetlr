@@ -89,6 +89,8 @@ class BasicTransformer(Transformer):
 class NoopLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator using a single simple transformer")
@@ -98,9 +100,7 @@ etl = (
     .transform_with(BasicTransformer())
     .load_into(NoopLoader())
 )
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()
 
 ```
 
@@ -178,6 +178,8 @@ class IntegerColumnTransformer(Transformer):
 class NoopLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator using multiple transformers")
@@ -188,9 +190,7 @@ etl = (
     .transform_with(IntegerColumnTransformer("year"))
     .load_into(NoopLoader())
 )
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()
 
 ```
 
@@ -263,6 +263,8 @@ class CountryOfOriginTransformer(Transformer):
 class NoopLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator using multiple extractors")
@@ -273,9 +275,7 @@ etl = (
     .transform_with(CountryOfOriginTransformer())
     .load_into(NoopLoader())
 )
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()
 
 ```
 
@@ -327,13 +327,13 @@ class GuitarExtractor(Extractor):
 class NoopLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator with no transformations")
 etl = Orchestrator().extract_from(GuitarExtractor()).load_into(NoopLoader())
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()
 
 ```
 
@@ -392,6 +392,8 @@ class NoopSilverLoader(Loader):
 class NoopGoldLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator using multiple loaders")
@@ -402,9 +404,7 @@ etl = (
     .load_into(NoopSilverLoader())
     .load_into(NoopGoldLoader())
 )
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()
 
 ```
 
@@ -493,6 +493,8 @@ class NoopSilverLoader(Loader):
 class NoopGoldLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
 
 
 print("ETL Orchestrator using multiple loaders")
@@ -505,8 +507,6 @@ etl = (
     .load_into(NoopSilverLoader())
     .load_into(NoopGoldLoader())
 )
-result = etl.execute()
-result.printSchema()
-result.show()
+etl.execute()
 
 ```

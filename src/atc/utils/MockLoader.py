@@ -8,8 +8,8 @@ from atc.etl.types import dataset_group
 
 
 class MockLoader(Loader, MagicMock):
-    def __init__(self):
-        super(MagicMock, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(MagicMock, self).__init__(*args, **kwargs)
         self.saved: Dict[str, DataFrame] = {}
 
     def save(self, df: DataFrame) -> None:

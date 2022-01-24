@@ -15,7 +15,7 @@ class MockEtlTest(unittest.TestCase):
         cls.schema = types._parse_datatype_string(
             """
             Id INTEGER,
-            measured DOUBLE,
+            measured DOUBLE
         """
         )
 
@@ -33,3 +33,7 @@ class MockEtlTest(unittest.TestCase):
         o.load_into(load)
         o.execute()
         self.assertIs(df, load.getDf())
+
+    def test_mocking(self):
+        load = MockLoader()
+        load.hello.world.foo.bar()

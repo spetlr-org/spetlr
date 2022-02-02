@@ -1,17 +1,17 @@
 import unittest
 
+from atc.functions import get_unique_tempview_name
 from atc.transformations import merge_df_into_target
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 from atc.spark import Spark
 from pyspark.sql import DataFrame
-
 from atc.utils import DataframeCreator
 
 
 @unittest.skip("Current test pipeline does not support delta tables yet.")
 # This file should test the transformation "merge_df_into_target" in atc/transformations
 class MergeDfIntoTargetTest(unittest.TestCase):
-    db_name = "test"
+    db_name = "test" + get_unique_tempview_name()
     table_name = "testTarget"
 
     schema = StructType(
@@ -40,6 +40,7 @@ class MergeDfIntoTargetTest(unittest.TestCase):
         cls.create_database(cls.db_name)
         cls.create_test_table(cls.table_name, cls.db_name)
 
+    @classmethod
     def tearDownClass(cls) -> None:
         Spark.get().sql(f"drop database {cls.db_name} cascade")
 

@@ -54,3 +54,9 @@ def drop_table_cascade(DBDotTableName: str) -> None:
 
     # Remove table
     Spark.get().sql(f"DROP TABLE IF EXISTS {DBDotTableName}")
+
+
+def get_unique_tempview_name()->str:
+    unique_id = _uuid.uuid4().hex
+    temp_view_name = f"source_{unique_id}"
+    return temp_view_name

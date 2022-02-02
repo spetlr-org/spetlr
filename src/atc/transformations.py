@@ -5,6 +5,7 @@ import warnings
 from typing import List
 import uuid
 from atc.atc_exceptions import NoTableException
+from atc.functions import get_unique_tempview_name
 from atc.spark import Spark
 
 
@@ -83,7 +84,7 @@ def join_time_series_dataframes(
             F.col(f"dfPri_{column}").alias(column)
             for column in dfPrimary.columns
             if column
-            not in [startTimeColumnName, endTimeColumnName, stateColumn] + idColumns
+               not in [startTimeColumnName, endTimeColumnName, stateColumn] + idColumns
         ]
     )
 
@@ -167,14 +168,14 @@ def join_time_series_dataframes(
                 F.array(F.col("StartTimeDfPri1"), F.col("EndTimeDfPri1")),
             ).otherwise(F.array(F.lit(None), F.lit(None))),
         )
-        .withColumn(
+            .withColumn(
             "DfSec",
             F.when(
                 F.col("StartTimeDfSec") < F.col("EndTimeDfSec"),
                 F.array(F.col("StartTimeDfSec"), F.col("EndTimeDfSec")),
             ).otherwise(F.array(F.lit(None), F.lit(None))),
         )
-        .withColumn(
+            .withColumn(
             "DfPri2",
             F.when(
                 F.col("StartTimeDfPri2") < F.col("EndTimeDfPri2"),
@@ -190,7 +191,7 @@ def join_time_series_dataframes(
             f"{column}"
             for column in dfPrimary.columns
             if column
-            not in [startTimeColumnName, endTimeColumnName, stateColumn] + idColumns
+               not in [startTimeColumnName, endTimeColumnName, stateColumn] + idColumns
         ]
         + [
             f"dfPri_{stateColumn}",
@@ -203,8 +204,8 @@ def join_time_series_dataframes(
     # Extract two timestamps from unpivot data column
     df_join_unpivot = (
         df_join_unpivot.withColumn(startTimeColumnName, F.col("data")[0])
-        .withColumn(endTimeColumnName, F.col("data")[1])
-        .drop("data")
+            .withColumn(endTimeColumnName, F.col("data")[1])
+            .drop("data")
     )
 
     # Remove rows where start time and end time is null
@@ -216,9 +217,9 @@ def join_time_series_dataframes(
     df_join_unpivot = df_join_unpivot.withColumn(
         "tempStateColumn",
         F.when(F.col("type") == "DfPri1", F.col(f"dfPri_{stateColumn}"))
-        .when(F.col("type") == "DfSec", F.col(f"dfSec_{stateColumn}"))
-        .when(F.col("type") == "DfPri2", F.col(f"dfPri_{stateColumn}"))
-        .otherwise(None),
+            .when(F.col("type") == "DfSec", F.col(f"dfSec_{stateColumn}"))
+            .when(F.col("type") == "DfPri2", F.col(f"dfPri_{stateColumn}"))
+            .otherwise(None),
     )
     df_join_unpivot = df_join_unpivot.drop(
         f"dfPri_{stateColumn}", f"dfSec_{stateColumn}", "type"
@@ -274,8 +275,8 @@ def merge_df_into_target(
     if len(df_target.take(1)) == 0:
         return (
             df.write.format(table_format)
-            .mode("overwrite")
-            .saveAsTable(target_table_name)
+                .mode("overwrite")
+                .saveAsTable(target_table_name)
         )  # Consider use .save instead
 
     # Find records that need to be updated in the target (happens seldom)
@@ -299,13 +300,20 @@ def merge_df_into_target(
 
     df = (
         df.alias("a")
-        .join(df_target.alias("b"), on=join_cols, how="left")
-        .filter(filter_string)
-        .withColumn(
-            "is_new", F.when(F.col(f"{key_col}").isNull(), True).otherwise(False)
+            .join(
+            df_target.alias("b").select(
+                "b.*", F.col(f"b.{key_col}").alias(f"{key_col}_copy")
+            ),
+            on=join_cols,
+            how="left",
         )
-        .select("a.*", "is_new")
-        .cache()
+            .filter(filter_string)
+            .withColumn(
+            "is_new",
+            F.when(F.col(f"{key_col}_copy").isNull(), True).otherwise(False),
+        )
+            .select("a.*", "is_new")
+            .cache()
     )
 
     # If merge is not required, the data can just be appended
@@ -317,8 +325,7 @@ def merge_df_into_target(
             df.write.format(table_format).mode("append").saveAsTable(target_table_name)
         )  # Consider use .save instead
 
-    unique_id = uuid.uuid4().hex
-    temp_view_name = f"source_{unique_id}"
+    temp_view_name = get_unique_tempview_name()
     df.createOrReplaceTempView(temp_view_name)
 
     merge_sql_statement = f"""

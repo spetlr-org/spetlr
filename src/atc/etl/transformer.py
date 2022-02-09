@@ -26,10 +26,8 @@ class Transformer(EtlBase):
             return {self.dataset_key: self.process(df)}
         return {self.dataset_key: self.process_many(inputs)}
 
-    @abstractmethod
     def process(self, df: DataFrame) -> DataFrame:
         raise NotImplementedError()
 
-    @abstractmethod
     def process_many(self, datasets: dataset_group) -> DataFrame:
         raise NotImplementedError()

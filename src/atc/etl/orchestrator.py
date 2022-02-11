@@ -26,9 +26,10 @@ class Orchestrator(EtlBase):
     load_into = step
 
     def etl(self, inputs: dataset_group = None) -> dataset_group:
+        inputs = inputs or {}
 
         # make a shallow copy of the inputs for waring after the first step
-        datasets = inputs.copy() if inputs else {}
+        datasets = inputs.copy()
         if not self.steps:
             raise NotImplementedError("The orchestrator has no steps.")
 

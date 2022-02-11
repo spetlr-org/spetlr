@@ -30,7 +30,7 @@ class FuzzySelectTransformer(Transformer):
     """
 
     def __init__(self, columns: Iterable[str], match_cutoff=0.6):
-        super(FuzzySelectTransformer, self).__init__()
+        super().__init__()
         self.columns = list(columns)
         self.match_cutoff = match_cutoff
 

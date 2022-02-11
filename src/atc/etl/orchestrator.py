@@ -25,18 +25,37 @@ class Orchestrator(EtlBase):
     transform_with = step
     load_into = step
 
-    def execute(self) -> DataFrame:
-        datasets = self.etl({})
+    def etl(self, inputs: dataset_group = None) -> dataset_group:
 
-        if len(datasets) == 1:
-            return next(iter(datasets.values()))
-        raise AssertionError("Multiple datasets in play at the end of orchestration.")
-
-    def etl(self, inputs: dataset_group) -> dataset_group:
+        # make a shallow copy of the inputs for waring after the first step
+        datasets = inputs.copy() if inputs else {}
         if not self.steps:
             raise NotImplementedError("The orchestrator has no steps.")
-        datasets = inputs
 
-        for step in self.steps:
+        # treat the fist step differently to warn in case the input was not handled
+        datasets = self.steps[0].etl(datasets)
+        if len(inputs) and (len(inputs) + 1 == len(datasets)):
+            # There were inputs to the orchestrator,
+            # and the first step did not clean them up.
+            # expect problems.
+
+            # let's double check:
+            if (
+                # step 1 has retained all input keys
+                set(inputs.keys()).issubset(set(datasets.keys()))
+                and
+                # and has not changed their values
+                all(id(inputs[k]) == id(datasets[k]) for k in inputs.keys())
+            ):
+                print(
+                    "WARNING: You used inputs to the orchestrator, "
+                    "and the first step did not make use of them. "
+                    "Expect problems in your etl pipeline. To avoid this, "
+                    "write extractors that clean up in self.previous_extractions"
+                )
+
+        for step in self.steps[1:]:
             datasets = step.etl(datasets)
         return datasets
+
+    execute = etl

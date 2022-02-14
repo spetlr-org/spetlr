@@ -164,3 +164,11 @@ It is important that the first transformer is a `MultiInputTransformer` when hav
 ```
 {multi_multi_example}
 ```
+
+### Example-7
+
+This example illustrates the use of an orchestrator as just another ETL step.
+The principle is called composit orchestration:
+```
+{composit_orchestration_example}
+```

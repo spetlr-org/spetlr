@@ -1,6 +1,5 @@
+import warnings
 from typing import List
-
-from pyspark.sql import DataFrame
 
 from .types import EtlBase, dataset_group
 
@@ -12,9 +11,10 @@ class Orchestrator(EtlBase):
     used in a wrong order.
     """
 
-    def __init__(self):
+    def __init__(self, suppress_composition_warning=False):
         super().__init__()
         self.steps: List[EtlBase] = []
+        self.suppress_composition_warning = suppress_composition_warning
 
     def step(self, etl: EtlBase) -> "Orchestrator":
         self.steps.append(etl)
@@ -47,9 +47,10 @@ class Orchestrator(EtlBase):
                 and
                 # and has not changed their values
                 all(id(inputs[k]) == id(datasets[k]) for k in inputs.keys())
+                and not self.suppress_composition_warning
             ):
-                print(
-                    "WARNING: You used inputs to the orchestrator, "
+                warnings.warn(
+                    "You used inputs to the orchestrator, "
                     "and the first step did not make use of them. "
                     "Expect problems in your etl pipeline. To avoid this, "
                     "write extractors that clean up in self.previous_extractions"

@@ -43,6 +43,23 @@ class OrchestratorEtlTests(unittest.TestCase):
                 _ = MyO().execute({"input": "foobar"})
             self.assertRegex(buf.getvalue(), "WARNING: You used.*")
 
+    def test_misuse_warning_suppressed(self):
+        class MyEx(Extractor):
+            def read(self) -> DataFrame:
+                return "hi"
+
+        class MyO(Orchestrator):
+            def __init__(self):
+                super().__init__(suppress_composition_warning=True)
+                self.extract_from(MyEx())
+
+        with io.StringIO() as buf:
+            # run the tests
+            with contextlib.redirect_stdout(buf):
+                _ = MyO().execute({"input": "foobar"})
+            #     No warning. Suppressed.
+            self.assertEqual("", buf.getvalue())
+
     def test_correct_use_no_warning(self):
         class MyEx(Extractor):
             def read(self) -> DataFrame:

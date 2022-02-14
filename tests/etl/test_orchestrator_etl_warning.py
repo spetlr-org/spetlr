@@ -1,9 +1,5 @@
-import contextlib
-import io
-import subprocess
-import sys
 import unittest
-from pathlib import Path
+import warnings
 
 from pyspark.sql import DataFrame
 
@@ -11,6 +7,10 @@ from atc.etl import Extractor, Orchestrator
 
 
 class OrchestratorEtlTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        warnings.filterwarnings("error")
+
     def test_no_special_case(self):
         class MyEx(Extractor):
             def read(self) -> DataFrame:
@@ -21,11 +21,9 @@ class OrchestratorEtlTests(unittest.TestCase):
                 super().__init__()
                 self.extract_from(MyEx())
 
-        with io.StringIO() as buf:
-            # run the tests
-            with contextlib.redirect_stdout(buf):
-                _ = MyO().execute()
-            self.assertEqual("", buf.getvalue())
+        warnings.filterwarnings("error")
+        # no warning
+        _ = MyO().execute()
 
     def test_misuse_warning(self):
         class MyEx(Extractor):
@@ -37,11 +35,9 @@ class OrchestratorEtlTests(unittest.TestCase):
                 super().__init__()
                 self.extract_from(MyEx())
 
-        with io.StringIO() as buf:
-            # run the tests
-            with contextlib.redirect_stdout(buf):
-                _ = MyO().execute({"input": "foobar"})
-            self.assertRegex(buf.getvalue(), "WARNING: You used.*")
+        with self.assertRaises(UserWarning):
+            warnings.filterwarnings("error")
+            _ = MyO().execute({"input": "foobar"})
 
     def test_misuse_warning_suppressed(self):
         class MyEx(Extractor):
@@ -53,12 +49,9 @@ class OrchestratorEtlTests(unittest.TestCase):
                 super().__init__(suppress_composition_warning=True)
                 self.extract_from(MyEx())
 
-        with io.StringIO() as buf:
-            # run the tests
-            with contextlib.redirect_stdout(buf):
-                _ = MyO().execute({"input": "foobar"})
-            #     No warning. Suppressed.
-            self.assertEqual("", buf.getvalue())
+        warnings.filterwarnings("error")
+        # no warning
+        _ = MyO().execute()
 
     def test_correct_use_no_warning(self):
         class MyEx(Extractor):
@@ -72,12 +65,9 @@ class OrchestratorEtlTests(unittest.TestCase):
                 super().__init__()
                 self.extract_from(MyEx())
 
-        with io.StringIO() as buf:
-            # run the tests
-            with contextlib.redirect_stdout(buf):
-                _ = MyO().execute({"input": "foobar"})
-            #     No warning. extractor handled inputs.
-            self.assertEqual("", buf.getvalue())
+        warnings.filterwarnings("error")
+        # no warning
+        _ = MyO().execute()
 
 
 if __name__ == "__main__":

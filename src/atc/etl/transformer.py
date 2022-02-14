@@ -16,6 +16,7 @@ class Transformer(EtlBase):
     """
 
     def __init__(self, dataset_key: str = None):
+        super().__init__()
         if dataset_key is None:
             dataset_key = type(self).__name__
         self.dataset_key = dataset_key

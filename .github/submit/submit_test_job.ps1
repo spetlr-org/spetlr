@@ -8,12 +8,7 @@ param (
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $entryPoint= "atc_run_test",
-
-  [Parameter(Mandatory=$false)]
-  [ValidateNotNullOrEmpty()]
-  [string]
-  $testCasePath= "."
+  $sparkVersion = "9.1.x-scala2.12"
 
 )
 
@@ -53,7 +48,7 @@ $run = @{
     run_name = "Testing Run"
     # single node cluster for now
     new_cluster= @{
-        spark_version="9.1.x-scala2.12"
+        spark_version=$sparkVersion
         spark_conf= @{
             "spark.databricks.cluster.profile"= "singleNode"
             "spark.master"= "local[*, 4]"

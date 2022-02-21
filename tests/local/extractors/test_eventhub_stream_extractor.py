@@ -37,46 +37,46 @@ class EventhubStreamExtractorTest(unittest.TestCase):
     def test_raise_create_exeption(self):
         with self.assertRaises(InvalidEventhubStreamExtractorParameters) as context:
             EventhubStreamExtractor(
-                connectionString = None,
+                connectionString=None,
                 namespace=None,
                 eventhub="testEventhub",
                 accessKeyName="testAccessKeyName",
                 accessKey="testAccessKey",
                 consumerGroup="testConsumerGroup",
-                maxEventsPerTrigger=100000
+                maxEventsPerTrigger=100000,
             )
 
         with self.assertRaises(InvalidEventhubStreamExtractorParameters) as context:
             EventhubStreamExtractor(
-                connectionString = None,
+                connectionString=None,
                 namespace="testNamespace",
                 eventhub=None,
                 accessKeyName="testAccessKeyName",
                 accessKey="testAccessKey",
                 consumerGroup="testConsumerGroup",
-                maxEventsPerTrigger=100000
+                maxEventsPerTrigger=100000,
             )
 
         with self.assertRaises(InvalidEventhubStreamExtractorParameters) as context:
             EventhubStreamExtractor(
-                connectionString = None,
+                connectionString=None,
                 namespace="testNamespace",
                 eventhub="testEventhub",
                 accessKeyName=None,
                 accessKey="testAccessKey",
                 consumerGroup="testConsumerGroup",
-                maxEventsPerTrigger=100000
+                maxEventsPerTrigger=100000,
             )
 
         with self.assertRaises(InvalidEventhubStreamExtractorParameters) as context:
             EventhubStreamExtractor(
-                connectionString = None,
+                connectionString=None,
                 namespace="testNamespace",
                 eventhub="testEventhub",
                 accessKeyName="testAccessKeyName",
                 accessKey=None,
                 consumerGroup="testConsumerGroup",
-                maxEventsPerTrigger=100000
+                maxEventsPerTrigger=100000,
             )
 
     def test_create_start_from_beginning_of_stream(self):
@@ -87,7 +87,7 @@ class EventhubStreamExtractorTest(unittest.TestCase):
         )
 
         expectedStartingEventPosition = {
-            "offset": "-1", # Start stream from beginning
+            "offset": "-1",  # Start stream from beginning
             "seqNo": -1,  # not in use
             "enqueuedTime": None,  # not in use
             "isInclusive": True,
@@ -104,13 +104,15 @@ class EventhubStreamExtractorTest(unittest.TestCase):
             connectionString="testConnectionString",
             consumerGroup="testConsumerGroup",
             maxEventsPerTrigger=100000,
-            startEnqueuedTime=timestampToUse
+            startEnqueuedTime=timestampToUse,
         )
 
         expectedStartingEventPosition = {
             "offset": None,  # not in use
             "seqNo": -1,  # not in use
-            "enqueuedTime": timestampToUse.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),  # Start from timestamp
+            "enqueuedTime": timestampToUse.strftime(
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            ),  # Start from timestamp
             "isInclusive": True,
         }
 

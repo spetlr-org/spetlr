@@ -12,8 +12,8 @@ class TestConfigMaster(unittest.TestCase):
 
         (
             ConfigMaster()
-            .extras_from("tests.config_master.extras")
-            .sql_from("tests.config_master.sql")
+            .extras_from("tests.local.config_master.extras")
+            .sql_from("tests.local.config_master.sql")
         )
 
     @classmethod

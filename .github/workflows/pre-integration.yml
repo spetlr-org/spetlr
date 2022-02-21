@@ -31,4 +31,68 @@ jobs:
       - name: Install the package
         run: python setup.py develop
       - name: Run Tests
-        run: python -m pytest tests/
+        run: python -m pytest tests/local
+
+
+  integration_test:
+#    needs: unit_test
+    runs-on: ubuntu-latest
+    environment: azure
+    concurrency: azure-integration
+    strategy:
+      matrix:
+        python_version:
+          - "3.8"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine packaging
+      - name: Build
+        shell: pwsh
+        run: .github/submit/build.ps1
+      - name: Log in to azure
+        shell: pwsh
+        run: |
+          az login --service-principal `
+            -u ${{ secrets.SPN_CLIENT_ID }} `
+            -p ${{ secrets.SPN_CLIENT_SECRET }} `
+            --tenant ${{ secrets.SPN_TENANT_ID }}
+      - name: Create Deployment
+        shell: pwsh
+        run: |
+          .github/deploy/deploy.ps1  `
+            -clientId ${{ secrets.SPN_CLIENT_ID }} `
+            -clientSecret (ConvertTo-SecureString -AsPlainText ${{ secrets.SPN_CLIENT_SECRET }} -Force) `
+            -tenantId ${{ secrets.SPN_TENANT_ID }}
+
+      - name: Wait 30 secs for things to settle
+        shell: pwsh
+        run: Start-Sleep -s 30
+
+      - name: Run integration tests
+        shell: pwsh
+        run: .github/submit/submit_test_job.ps1
+
+      - name: Wait 2 min for things to settle
+        shell: pwsh
+        run: Start-Sleep -s 120
+
+      - name: Fetch integration tests
+        shell: pwsh
+        run: .github/submit/fetch_test_job.ps1
+
+      - name: Delete Deployment
+        if: always()
+        shell: pwsh
+        run: |
+          az login --service-principal `
+            -u ${{ secrets.SPN_CLIENT_ID }} `
+            -p ${{ secrets.SPN_CLIENT_SECRET }} `
+            --tenant ${{ secrets.SPN_TENANT_ID }}
+          .github/deploy/destroy.ps1

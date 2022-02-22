@@ -1,0 +1,24 @@
+name: Azure-Cleanup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: azure-integration
+      cancel-in-progress: true
+
+    steps:
+      - name: Log in to azure
+        shell: pwsh
+        run: |
+          az login --service-principal `
+            -u ${{ secrets.SPN_CLIENT_ID }} `
+            -p ${{ secrets.SPN_CLIENT_SECRET }} `
+            --tenant ${{ secrets.SPN_TENANT_ID }}
+      - name: Delete Deployment
+        shell: pwsh
+        run: |
+          .github/deploy/destroy.ps1

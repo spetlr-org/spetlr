@@ -1,10 +1,27 @@
+# This script submits a run to databricks to execute the complete test-suite
+# as a prerequisite, the library under test should already be built
+# This script does a the following things in order:
+#  - creates a unique test area on the databricks file system (dbfs)
+#  - clean the entire tests folder and copies it to dbfs
+#  - copies the library to the test area
+#  - submits a job run to databricks that
+#    - installs the library from the test area
+#    - executes a main file that
+#      - discovers unittests and executes them within the current python interpreter
+#        (only the current interpreter carries references to the spark runtime.
+#        calling subprocesses does not work.)
+#      - writes all test stdout to a log file in the test area once finished.
+#  - once the job is submitted, all job details are written to a json file
+#    The details json file can be used to fetch the job result with the fetch_test_job script
 
 param (
+# to submit parallel runs, you must specify this parameter
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]
   $testJobDetails= "test_job_details.json",
 
+# in the atc pipeline we wish to test with multiple versions.
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]
@@ -14,39 +31,51 @@ param (
 
 $srcDir = "$PSScriptRoot/../.."
 
-$libPath = "dist/atc_dataplatform-1.0.0-py3-none-any.whl"
 
+# start time of this script for job details
 $now = (Get-Date -Format yyyy-MM-ddTHH.mm)
 
-# This script submits a run to databricks to execute the complete test-suite
+
 
 # import utility functions
 . "$PSScriptRoot\..\deploy\Utilities\all.ps1"
 . "$PSScriptRoot\spark-dependencies.ps1"
 
 
-# for separating tasks, we will do everything in our own dir:
+# for separating tasks, we will do everything in our own dir (allows parallel jobs):
 $testguid = "$([guid]::NewGuid())"
 $testDir = "dbfs:/test/$([guid]::NewGuid())"
 dbfs mkdirs $testDir
 
-# upload the test libraries
-dbfs cp --overwrite  "$srcDir/$libPath" "$testDir/$libPath"
+# discover libraries in the dist folder
+[array]$libs = Get-ChildItem -Path dist -Filter *.whl | ForEach-Object -Member name
+Write-Host "To be installed on cluster: $($libs -join ", ")"
+[array]$sparkWheels =  $libs | ForEach-Object -Process {@{whl = "$testDir/dist/$_"}}
 
+# upload the library
+dbfs cp -r --overwrite  "$srcDir/dist" "$testDir/dist"
+
+# upload the test main file
+dbfs cp --overwrite  "$PSScriptRoot/main.py" "$testDir/main.py"
+
+
+# next step is to upload all unittests
 Push-Location -Path $srcDir
 
 pip install pyclean
-pyclean tests
+pyclean tests # remove *.pyc and __pycache__
+# upload all tests
 dbfs cp --overwrite -r tests/ "$testDir/tests"
 
 Pop-Location
 
+# remote path of the log
 $logOut = "$testDir/results.log"
 
 # construct the run submission configuration
 $run = @{
     run_name = "Testing Run"
-    # single node cluster for now
+    # single node cluster is sufficient
     new_cluster= @{
         spark_version=$sparkVersion
         spark_conf= @{
@@ -74,21 +103,26 @@ $run = @{
         }
         num_workers= 0
     }
-    # in addition to standard dependencies, install the lib that we just uploaded
-    libraries= $spark_dependencies + @(
-        @{whl = "$testDir/$libPath"}
-    )
+    # in addition to standard dependencies, install the libs that we just uploaded
+    libraries= $spark_dependencies + $sparkWheels
+
     # This scripts runs the test suite
     spark_python_task= @{
-      python_file="$testDir/tests/main.py"
+      python_file="$testDir/main.py"
       parameters=@(
+        # running in the spark python interpreter, the python __file__ variable does not
+        # work. Hence, we need to tell the script where the test area is.
         "--basedir=$testDir",
+        # we can actually run any part of out test suite, but some files need the full repo.
+        # Only run tests from this folder.
         "--folder=tests/cluster"
       )
     }
   }
-# we need to do this with a file because the json string is pretty funky and it breaks otherwise
+# databricks runs submit actually has an option to pass the json on the command line.
+# But here we need to do this with a json file because the json string is pretty funky and it breaks otherwise
 Set-Content "$srcDir/run.json" ($run | ConvertTo-Json -Depth 4)
+# submit the run and save the ID
 $runId = (databricks runs submit --json-file "$srcDir/run.json" | ConvertFrom-Json).run_id
 Remove-Item "$srcDir/run.json"
 
@@ -100,7 +134,7 @@ Write-Host "Using test dir $testDir"
 $run = (databricks runs get --run-id $runId | ConvertFrom-Json)
 Write-Host "Run url: $($run.run_page_url)"
 
-# Roll the test details
+# Roll the test details. When testing locally, this makes it easier to recover old runs.
 if(Test-Path -Path $testJobDetails -PathType Leaf){
     $old_job_details = Get-Content $testJobDetails | ConvertFrom-Json
     $new_filename = "$(Split-Path -LeafBase $testJobDetails).$($old_job_details.submissionTime).json"
@@ -112,6 +146,7 @@ if(Test-Path -Path $testJobDetails -PathType Leaf){
     Write-Host "Previous details at $testJobDetails were moved to $new_filename."
 }
 
+# write the test details file
 $job_details = @{
     runId=$runId
     testDir=$testDir
@@ -122,6 +157,7 @@ $job_details = @{
     logOut=$logOut
 }
 Set-Content "$testJobDetails" ($job_details | ConvertTo-Json -Depth 4)
+
 Write-Host "test job details written to $testJobDetails"
 Write-Host "you can now use fetch_test_job.ps1 to check and collect the result of your test run."
 Write-Host "============================================================================"

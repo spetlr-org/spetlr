@@ -36,7 +36,7 @@ jobs:
 
 
   integration_test:
-#    needs: unit_test
+#    needs: unit_test # integration can be run in parallel with unit-tests
     runs-on: ubuntu-latest
     environment: azure
     concurrency: azure-integration
@@ -99,7 +99,7 @@ jobs:
         run: .github/submit/fetch_test_job.ps1 -testJobDetails job91.json
 
       - name: Delete Deployment
-        if: always()
+        if: always() # this step runs even if the pipeline is manually cancelled
         shell: pwsh
         run: |
           az login --service-principal `

@@ -1,3 +1,9 @@
+# if a deployment goes wrong for any reason, this pipeline can
+# destroy the entire resource group to prevent accumulation of cost.
+# This pipeline is provided for convenience only and should not normally
+# be needed since the integration_test pipeline destroys the setup even when
+# the pipeline is cancelled.
+
 name: Azure-Cleanup
 
 on:
@@ -11,6 +17,7 @@ jobs:
       cancel-in-progress: true
 
     steps:
+      - uses: actions/checkout@v2
       - name: Log in to azure
         shell: pwsh
         run: |

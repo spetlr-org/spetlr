@@ -1,3 +1,4 @@
+# delete the entire deployment to save running costs
 param (
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]

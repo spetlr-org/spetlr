@@ -1,4 +1,9 @@
+# This is the script that creates the entire deployment
+# for readability it is split up into separate steps
+# where we try to use meaningful names.
 param (
+  # atc-dataplatform doesn't use separate environments
+  # see atc-snippets for more inspiration
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]

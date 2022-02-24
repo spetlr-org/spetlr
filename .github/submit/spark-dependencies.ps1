@@ -1,6 +1,6 @@
 ###############################################################################################
 # Specify dependencies for our spark application that are not pip packages.
-# Use the same structure as needed by the databrick job creation json
+# Use the same structure as needed by the databricks job creation json
 # $spark_dependencies = @(
 #     @{
 #       maven = @{
@@ -12,5 +12,5 @@
 ###############################################################################################
 
 $spark_dependencies = @(
-
-  )
+# we expect to add dependencies here once we have integrations to eventhubs etc.
+)

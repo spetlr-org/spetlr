@@ -1,3 +1,9 @@
+# once a test run has been submitted with submit_test_job, and a test_job_details.json file
+# is available, you can immediately run this script to fetch the result.
+# It will poll the databricks api with 5 second intervals until the job
+# has ended (reporting available progress along the way).
+# It will then attempt to fetch the results.log file that was written by the jobs main function
+# In the very end, if all tests succeeded, then the job will have succeeded, and then this script succeeds
 param (
 
   [Parameter(Mandatory=$false)]
@@ -12,7 +18,6 @@ if(-not (Test-Path -Path $testJobDetails -PathType Leaf)){
     EXIT 1
 }
 
-# This script submits a run to databricks to execute the complete test-suite
 
 # import utility functions
 . "$PSScriptRoot\..\deploy\Utilities\all.ps1"

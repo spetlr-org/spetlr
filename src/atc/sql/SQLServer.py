@@ -102,12 +102,6 @@ class SqlServer:
             """
         )
 
-    # def execute_sql_file(
-    #    self, sql_file: str, resource_path: str, arguments: dict = None
-    # ):
-    #    for sql in ConfigReader().get_sql_file(sql_file, resource_path, arguments):
-    #        self.execute_sql(sql)
-
     def test_odbc_connection(self):
         """
         This function is introduced for handling serverless database automatic pausing.
@@ -134,3 +128,58 @@ class SqlServer:
 
         if retries >= retry_limit:
             raise pyodbc.OperationalError
+
+    def execute_sql_file(
+        self, sql_file: str, resource_path: str, arguments: dict = None
+    ):
+        raise NotImplementedError("Waiting for configreader implementation...")
+
+    #    for sql in ConfigReader().get_sql_file(sql_file, resource_path, arguments):
+    #        self.execute_sql(sql)
+
+    @staticmethod
+    def table_name(table_id: str):
+        raise NotImplementedError("Waiting for configreader implementation...")
+
+    #     return ConfigReader().table_name(table_id)
+
+    def read_table(self, table_id: str):
+        raise NotImplementedError("Waiting for configreader implementation...")
+
+    #     return self.read_table_by_name(SqlServer.table_name(table_id))
+
+    def write_table(
+        self,
+        df_source: DataFrame,
+        table_id: str,
+        append: bool = False,
+        big_data_set: bool = True,
+        batch_size: int = 10 * 1024,
+        partition_count: int = 60,
+    ):
+        raise NotImplementedError("Waiting for configreader implementation...")
+
+    #     self.write_table_by_name(
+    #         df_source,
+    #         SqlServer.table_name(table_id),
+    #         append,
+    #         big_data_set,
+    #         batch_size,
+    #         partition_count,
+    #     )
+
+    def truncate_table(self, table_id: str):
+        raise NotImplementedError("Waiting for configreader implementation...")
+
+    #     table_name = SqlServer.table_name(table_id)
+    #     self.execute_sql(f"TRUNCATE TABLE {table_name}")
+
+    def drop_table(self, table_id: str):
+        raise NotImplementedError("Waiting for configreader implementation...")
+
+    #     self.drop_table_by_name(SqlServer.table_name(table_id))
+
+    def drop_view(self, table_id: str):
+        raise NotImplementedError("Waiting for configreader implementation...")
+
+    #     self.drop_view_by_name(SqlServer.table_name(table_id))

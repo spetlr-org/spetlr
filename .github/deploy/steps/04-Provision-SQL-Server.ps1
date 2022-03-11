@@ -40,19 +40,10 @@ $output = az sql db create `
   --edition "GeneralPurpose" `
   --family "Gen5" `
   --min-capacity 0.5 `
-  --capacity 2 `
+  --capacity 1 `
   --compute-model "Serverless" `
   --zone-redundant false `
   --backup-storage-redundancy Local
 
-
 Throw-WhenError -output $output
-
-
-# Lock ressource: SQL server (and databases too)
-Write-Host "  Locking SQL server and databases" -ForegroundColor DarkYellow
-Lock-Ressource `
-  -resourceGroupName $resourceGroupName `
-  -ressource $databaseServerName `
-  -Rtype "Microsoft.Sql/servers"
 

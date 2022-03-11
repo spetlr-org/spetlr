@@ -4,12 +4,10 @@ $scope = "test"
 
 New-DatabricksScope -name $scope
 
-$value =
-databricks secrets put --scope $scope --key "SqlServer--DatabricksUser" --string-value $value
-
-
-$value =
-databricks secrets put --scope $scope --key "SqlServer--DatabricksUserPassWord" --string-value $value
+# Insert SQL credentials to secrets
+# Todo: insert into key-dict instead
+databricks secrets put --scope $scope --key "SqlServer--DatabricksUser" --string-value $dbUserName
+databricks secrets put --scope $scope --key "SqlServer--DatabricksUserPassword" --string-value $dbUserPassword
 
 
 

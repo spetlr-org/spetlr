@@ -2,6 +2,8 @@
 $resourceGroupName           = "atcintegration"
 $resourceName                = "atc"
 $databricksName              = $resourceName
+$databaseServerName          = $resourceName
+$deliveryDatabase            = "Delivery"
 
 $location = "westeurope"
 $resourceTags = @(
@@ -15,5 +17,7 @@ Write-Host "* Base Configuration       *****************************************
 Write-Host "**********************************************************************" -ForegroundColor White
 Write-Host "* Resource Group                  : $resourceGroupName" -ForegroundColor White
 Write-Host "* Azure Databricks Workspace      : $databricksName" -ForegroundColor White
+Write-Host "* Azure SQL server                : $databaseServerName" -ForegroundColor White
+Write-Host "* Azure SQL database              : $deliveryDatabase" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
 

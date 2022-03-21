@@ -1,5 +1,5 @@
 from atc.spark import Spark
-from atc.sql import SqlServer
+from atc.sql.SqlServer import SqlServer
 
 
 def get_dbutils(spark):

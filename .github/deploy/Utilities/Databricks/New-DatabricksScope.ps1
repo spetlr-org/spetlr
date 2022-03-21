@@ -17,11 +17,8 @@ function New-DatabricksScope {
     )
 
     $json = Convert-Safe-FromJson -text (databricks secrets list-scopes --output JSON)
-    $scopes = $json | Select-Object -expand "scopes" | Select-Object -expand "name"
-    if ($scopes -contains $name) {
-      Write-Host "  The scope '$name' already exists" -ForegroundColor DarkYellow
-    }
-    else {
+
+    if ([string]::IsNullOrEmpty($json)){
       Write-Host "  Create secret scope '$name'" -ForegroundColor DarkYellow
       if ($keyVaultDns -and $keyVaultResourceId) {
         databricks secrets create-scope --scope $name --scope-backend-type AZURE_KEYVAULT --resource-id $keyVaultResourceId --dns-name $keyVaultDns --initial-manage-principal users
@@ -29,5 +26,23 @@ function New-DatabricksScope {
       else {
         databricks secrets create-scope --scope $name --initial-manage-principal users
       }
+
+    }
+    else {
+
+      $scopes = $json | Select-Object -expand "scopes" | Select-Object -expand "name"
+      if ($scopes -contains $name) {
+        Write-Host "  The scope '$name' already exists" -ForegroundColor DarkYellow
+      }
+      else {
+        Write-Host "  Create secret scope '$name'" -ForegroundColor DarkYellow
+        if ($keyVaultDns -and $keyVaultResourceId) {
+          databricks secrets create-scope --scope $name --scope-backend-type AZURE_KEYVAULT --resource-id $keyVaultResourceId --dns-name $keyVaultDns --initial-manage-principal users
+        }
+        else {
+          databricks secrets create-scope --scope $name --initial-manage-principal users
+        }
+      }
+
     }
   }

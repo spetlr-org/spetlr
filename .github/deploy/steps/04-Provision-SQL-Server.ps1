@@ -32,7 +32,7 @@ Throw-WhenError -output $output
 #############################################################################################
 # Provision SQL database
 #############################################################################################
-Write-Host "  Creating Database" -ForegroundColor DarkGreen
+Write-Host "  Creating Database: $deliveryDatabase" -ForegroundColor DarkGreen
 $output = az sql db create `
   --resource-group $resourceGroupName `
   --server $databaseServerName `

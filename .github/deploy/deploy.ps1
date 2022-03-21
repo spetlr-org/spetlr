@@ -56,7 +56,22 @@ Write-Host "Ready for databricks" -ForegroundColor DarkGreen
 Write-Host "Ready for databricks connect" -ForegroundColor DarkGreen
 
 ###############################################################################################
+# Provision SQL and database
+###############################################################################################
+. "$PSScriptRoot\steps\04-Provision-SQL-Server.ps1"
+
+###############################################################################################
+# Provision database databricks user
+###############################################################################################
+. "$PSScriptRoot\steps\05-Provision-db-user.ps1"
+
+###############################################################################################
 # Initialize Databricks CLI
 ###############################################################################################
 . "$PSScriptRoot\steps\08-Initialize-Databricks.ps1"
+
+###############################################################################################
+# Provision database credentials to databricks secret
+###############################################################################################
+. "$PSScriptRoot\steps\09-Provision-Databricks-secrets.ps1"
 

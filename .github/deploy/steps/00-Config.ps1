@@ -2,10 +2,12 @@
 $resourceGroupName           = "atcintegration"
 $resourceName                = "atc"
 $databricksName              = $resourceName
-$databaseServerName          = $resourceName
+$databaseServerName          = $resourceName + "test"
 $deliveryDatabase            = "Delivery"
 
-$location = "westeurope"
+
+
+$location = "eastus" # Use eastus because of free azure subscription
 $resourceTags = @(
   "Owner=Auto Deployed",
   "System=ATC-NET",

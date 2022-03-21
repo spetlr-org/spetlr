@@ -1,6 +1,6 @@
 
 # The databricks scope is named after the keyvaultname
-$scope = "test"
+$scope = $resourceName
 
 New-DatabricksScope -name $scope
 
@@ -8,6 +8,4 @@ New-DatabricksScope -name $scope
 # Todo: insert into key-dict instead
 databricks secrets put --scope $scope --key "SqlServer--DatabricksUser" --string-value $dbUserName
 databricks secrets put --scope $scope --key "SqlServer--DatabricksUserPassword" --string-value $dbUserPassword
-
-
 

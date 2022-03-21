@@ -22,11 +22,11 @@ $variables =
   "ExecRights=$($ExecRights)"
 
 Write-Host "   Creating database user for user: $($dbUserName)" -ForegroundColor DarkYellow
-Invoke-Sqlcmd -ServerInstance $sqlServerInstance `
+Invoke-Sqlcmd `
+  -ServerInstance $sqlServerInstance `
   -Database $deliveryDatabase `
   -Username $sqlServerAdminUser `
   -Password $sqlServerAdminPassword `
   -InputFile $PSScriptRoot/sql/createduser.sql `
   -Variable $variables
-
 

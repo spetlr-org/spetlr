@@ -7,6 +7,10 @@ $odbcSaveLocation="$PSScriptRoot/../drivers/msodbcsql17_17.7.2.1-1_amd64.deb"
 
 Invoke-WebRequest -Uri $odbcSource -OutFile $odbcSaveLocation
 
+if(-Not (Test-Path $odbcSaveLocation)){
+  throw "msodbcsql17 was not succesfully downloaded."
+}
+
 dbfs cp --overwrite $odbcSaveLocation dbfs:/databricks/drivers/msodbcsql17_amd64.deb
 
 Set-DatabricksGlobalInitScript `

@@ -77,9 +77,3 @@ Write-Host "Ready for databricks" -ForegroundColor DarkGreen
 # Initialize Databricks secrets
 ###############################################################################################
 . "$PSScriptRoot\steps\99-Databricks-Secrets.ps1"
-
-###############################################################################################
-# Provision database credentials to databricks secret
-###############################################################################################
-. "$PSScriptRoot\steps\09-Provision-Databricks-secrets.ps1"
-

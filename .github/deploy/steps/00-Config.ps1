@@ -2,9 +2,9 @@
 $resourceGroupName           = "atcintegration"
 $resourceName                = "atc"
 $databricksName              = $resourceName
+$dataLakeName               = $resourceName
 $databaseServerName          = $resourceName + "test"
 $deliveryDatabase            = "Delivery"
-
 
 
 $location = "eastus" # Use eastus because of free azure subscription
@@ -13,6 +13,10 @@ $resourceTags = @(
   "System=ATC-NET",
   "Service=Data Platform"
   )
+
+$dataLakeContainers = @(
+    @{name="silver"}
+)
 
 Write-Host "**********************************************************************" -ForegroundColor White
 Write-Host "* Base Configuration       *******************************************" -ForegroundColor White
@@ -23,3 +27,6 @@ Write-Host "* Azure SQL server                : $databaseServerName" -Foreground
 Write-Host "* Azure SQL database              : $deliveryDatabase" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
 
+
+$keystore = @()
+$db_secrets_scope = "atc"

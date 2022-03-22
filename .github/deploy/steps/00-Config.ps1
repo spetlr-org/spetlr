@@ -29,4 +29,4 @@ Write-Host "********************************************************************
 
 
 $keystore = @()
-$db_secrets_scope = "atc"
+$db_secrets_scope = $resourceName 

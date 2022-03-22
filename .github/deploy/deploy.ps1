@@ -59,6 +59,11 @@ Write-Host "Ready for databricks" -ForegroundColor DarkGreen
 . "$PSScriptRoot\steps\04-Initialize-Databricks.ps1"
 
 ###############################################################################################
+# Install ODBC driver
+###############################################################################################
+. "$PSScriptRoot\steps\04-Pyodbc-Driver.ps1"
+
+###############################################################################################
 # Initialize Data Lake
 ###############################################################################################
 . "$PSScriptRoot\steps\05-Provision-Data-Lake.ps1"

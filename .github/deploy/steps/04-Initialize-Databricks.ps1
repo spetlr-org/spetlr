@@ -15,11 +15,15 @@ $accessToken = Set-DatabricksSpnAdminUser `
   -workspaceUrl $workspaceUrl `
   -resourceId $resourceId
 
+Throw-WhenError -output $accessToken
+
 Write-Host "  Generate SPN personal access token" -ForegroundColor DarkYellow
 $token = ConvertTo-DatabricksPersonalAccessToken `
   -workspaceUrl $workspaceUrl `
   -bearerToken $accessToken `
   -tokenComment "$tokenComment"
+
+Throw-WhenError -output $token
 
 Write-Host "  Generate .databrickscfg" -ForegroundColor DarkYellow
 Set-Content ~/.databrickscfg "[DEFAULT]"

@@ -1,7 +1,8 @@
 
-$resourceGroupName           = "atcintegration"
-$resourceName                = "atc"
-$databricksName              = $resourceName
+$resourceGroupName          = "atcintegration"
+$resourceName               = "atc"
+$databricksName             = $resourceName
+$dataLakeName               = $resourceName
 
 $location = "westeurope"
 $resourceTags = @(
@@ -10,6 +11,10 @@ $resourceTags = @(
   "Service=Data Platform"
   )
 
+$dataLakeContainers = @(
+    @{name="silver"}
+)
+
 Write-Host "**********************************************************************" -ForegroundColor White
 Write-Host "* Base Configuration       *******************************************" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
@@ -17,3 +22,6 @@ Write-Host "* Resource Group                  : $resourceGroupName" -ForegroundC
 Write-Host "* Azure Databricks Workspace      : $databricksName" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
 
+
+$keystore = @()
+$db_secrets_scope = "atc"

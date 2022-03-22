@@ -1,7 +1,6 @@
 Write-Host "Setting up pyodbc driver" -ForegroundColor DarkYellow
 dbfs mkdirs dbfs:/databricks/drivers
 
-New-Item -Path "$PSScriptRoot/../drivers" -ItemType Directory -Force | Out-Null 
 $odbcSource="https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/msodbcsql17/msodbcsql17_17.7.2.1-1_amd64.deb"
 $odbcSaveLocation="$PSScriptRoot/../drivers/msodbcsql17_17.7.2.1-1_amd64.deb"
 
@@ -17,4 +16,4 @@ Set-DatabricksGlobalInitScript `
   -workspaceUrl $workspaceUrl `
   -bearerToken $accessToken `
   -initScriptName "pyodbc-driver" `
-  -initScriptContent (Get-Content ./pyodbc-driver.sh -Raw)
+  -initScriptContent (Get-Content "$PSScriptRoot/../drivers/pyodbc-driver.sh" -Raw)

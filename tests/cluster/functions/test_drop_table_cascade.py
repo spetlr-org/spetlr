@@ -49,11 +49,11 @@ class DropTableCascadeTest(unittest.TestCase):
                         someinteger INT
                         )
                         USING DELTA
-                        LOCATION {location}"""
+                        LOCATION '{location}'"""
         Spark.get().sql(sql_argument)
 
     @classmethod
     def create_database(self, db_name="test") -> None:
         location = f"/tmp/{db_name}/"
-        sql_argument = f"CREATE DATABASE IF NOT EXISTS {db_name} LOCATION {location}"
+        sql_argument = f"CREATE DATABASE IF NOT EXISTS {db_name} LOCATION '{location}'"
         Spark.get().sql(sql_argument)

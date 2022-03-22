@@ -14,6 +14,9 @@ class Loader(EtlBase):
     and does not consume or change it.
     """
 
+    def __init__(self):
+        super().__init__()
+
     def etl(self, inputs: dataset_group) -> dataset_group:
         if len(inputs) == 1:
             df = next(iter(inputs.values()))
@@ -22,10 +25,8 @@ class Loader(EtlBase):
         self.save_many(inputs)
         return inputs
 
-    @abstractmethod
     def save(self, df: DataFrame) -> None:
         raise NotImplementedError()
 
-    @abstractmethod
     def save_many(self, datasets: dataset_group) -> None:
         raise NotImplementedError()

@@ -8,8 +8,6 @@ from pyspark.sql import DataFrame
 from atc.utils import DataframeCreator
 
 
-@unittest.skip("Current test pipeline does not support delta tables yet.")
-# This file should test the transformation "merge_df_into_target" in atc/transformations
 class MergeDfIntoTargetTest(unittest.TestCase):
     db_name = "test" + get_unique_tempview_name()
     table_name = "testTarget"

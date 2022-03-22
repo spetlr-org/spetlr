@@ -4,8 +4,6 @@ from atc.spark import Spark
 from atc.atc_exceptions import NoTableException
 
 
-@unittest.skip("Current test pipeline does not support delta tables yet.")
-# This file should test the function "drop_table_cascade" in atc/functions
 class DropTableCascadeTest(unittest.TestCase):
     db_name = "test" + get_unique_tempview_name()
     table_name = "testTarget"

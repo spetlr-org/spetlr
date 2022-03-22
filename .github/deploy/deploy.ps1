@@ -61,22 +61,22 @@ Write-Host "Ready for databricks" -ForegroundColor DarkGreen
 ###############################################################################################
 # Install ODBC driver
 ###############################################################################################
-. "$PSScriptRoot\steps\04-Pyodbc-Driver.ps1"
+. "$PSScriptRoot\steps\05-Pyodbc-Driver.ps1"
 
 ###############################################################################################
 # Initialize Data Lake
 ###############################################################################################
-. "$PSScriptRoot\steps\05-Provision-Data-Lake.ps1"
+. "$PSScriptRoot\steps\06-Provision-Data-Lake.ps1"
 
 ###############################################################################################
 # Provision SQL and database
 ###############################################################################################
-. "$PSScriptRoot\steps\06-Provision-SQL-Server.ps1"
+. "$PSScriptRoot\steps\07-Provision-SQL-Server.ps1"
 
 ###############################################################################################
 # Provision database databricks user
 ###############################################################################################
-. "$PSScriptRoot\steps\07-Provision-db-user.ps1"
+. "$PSScriptRoot\steps\08-Provision-db-user.ps1"
 
 ###############################################################################################
 # Initialize Databricks secrets

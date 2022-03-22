@@ -30,3 +30,14 @@ Invoke-Sqlcmd `
   -InputFile $PSScriptRoot/sql/createduser.sql `
   -Variable $variables
 
+
+# Insert SQL credentials to secrets
+$keystore += @{
+  name="SqlServer--DatabricksUser"
+  key=$dbUserName
+}
+
+$keystore += @{
+  name="SqlServer--DatabricksUserPassword"
+  key=$dbUserPassword
+}

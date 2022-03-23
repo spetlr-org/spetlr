@@ -89,7 +89,7 @@ $run = @{
                 "first_on_demand": 1,
                 "spot_bid_max_price": -1
             }
-        node_type_id= "Standard_L4s"
+        node_type_id= "Standard_DS3_v2"
         custom_tags =@{
           ResourceClass="SingleNode"
         }

@@ -28,6 +28,20 @@ $output = az sql server firewall-rule create `
 
 Throw-WhenError -output $output
 
+$allowIps = @('87.60.102.127')
+
+foreach ($ipaddress in $allowIps) {
+  Write-Host "     Allow custom IP: $allowIps" -ForegroundColor DarkYellow
+  $output = az sql server firewall-rule create `
+    --server $databaseServerName `
+    --resource-group $resourceGroupName `
+    --name "Allow $ipaddress" `
+    --start-ip-address $ipaddress `
+    --end-ip-address $ipaddress
+
+  Throw-WhenError -output $output
+}
+
 
 #############################################################################################
 # Provision SQL database

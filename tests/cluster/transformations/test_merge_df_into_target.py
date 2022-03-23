@@ -30,8 +30,8 @@ class MergeDfIntoTargetTest(unittest.TestCase):
         row2,
         row3,
     ]
-    targetrow1 = [("ID1", "hello", 1)]
-    targetrow2 = [("1", "hello", 1)]
+    targetrow1 = ("ID1", "hello", 1)
+    targetrow2 = ("1", "hello", 1)
 
     @classmethod
     def setUpClass(cls):
@@ -108,7 +108,9 @@ class MergeDfIntoTargetTest(unittest.TestCase):
 
     def expected_data_01(self) -> DataFrame:
         df_new = DataframeCreator.make_partial(
-            schema=self.schema, columns=self.cols, data=self.targetrow1 + self.data_rows
+            schema=self.schema,
+            columns=self.cols,
+            data=[self.targetrow1] + self.data_rows,
         )
 
         return df_new.orderBy("id")

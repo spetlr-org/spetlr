@@ -4,6 +4,7 @@ Transformations in atc-dataplatform:
 
 * [Concatenate dataframes](#concatenate-data-frames)
 * [Fuzzy select](#fuzzy-select-transformer)
+* [Merge df into target](#merge-df-into-target)
 
 ## Concatenate data frames
 
@@ -124,3 +125,82 @@ Given a dataframe `df`, this code renames all columns:
 |    3|    4|  bar|
 +-----+-----+-----+
 ```
+
+## Merge df into target
+The transformation merges a databricks dataframe into a target database table. 
+
+``` python
+def merge_df_into_target(df: DataFrame,
+    table_name: str,
+    database_name: str,
+    join_cols: List[str]) -> None:    
+    ...
+```
+Usage example: 
+``` python
+merge_df_into_target(df_new, "testTarget", "test", ["Id"])
+```
+
+### Example
+
+The following queries crate a test table with two rows containing guitar data:
+``` python
+CREATE DATABASE IF NOT EXISTS test
+COMMENT "A test database"
+LOCATION "/tmp/test/";
+
+CREATE TABLE IF NOT EXISTS test.testTarget(
+  Id STRING,
+  Brand STRING,
+  Model STRING
+)
+USING DELTA
+COMMENT "Contains merge test target rows"
+LOCATION "/tmp/test/testTarget";
+
+insert into test.testTarget values ("2","Gibson","Les Paul");
+
+select * from testTarget.test
++----+-----+----+-----------+
+|Id  |    Brand |      Model|
++----+-----+----+-----------+
+|   2|    Gibson|   Les Paul|
++----+----------+-----------+
+
+```
+The following dataframe has one row that will be merged with Id=2, and the other rows are going to be inserted:
+``` python 
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+df_new=spark.createDataFrame(
+        spark.sparkContext.parallelize([
+            ("1", "Fender", "Jaguar"),
+            ("2", "Gibson","Starfire"),
+            ("3", "Ibanez", "RG")
+        ]),
+        StructType([
+            StructField("Id", StringType(), False),
+            StructField("Brand", StringType(), True),
+          StructField("Model", StringType(), True),
+        ]))
+
+```
+Use the transformation to merge data into the test delta table:
+``` python 
+merge_df_into_target(df_new, "testTarget", "test", ["Id"])
+
+%sql
+
+select * from test.testTarget order by Id
+
++----+-----+----+-----------+
+|Id  |    Brand |      Model|
++----+-----+----+-----------+
+|   1|    Fender|     Jaguar|
+|   2|    Gibson|   Starfire|
+|   3|    Ibanez|         RG|
++----+----------+-----------+
+
+```
+
+As one can see, the row with id=2 is now merged such that the model went from "Les Paul" to "Starfire". 
+The two other rows where inserted. 

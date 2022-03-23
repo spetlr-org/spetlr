@@ -164,8 +164,8 @@ class MergeDfIntoTargetTest(unittest.TestCase):
         location = f"/tmp/{db_name}/{table_name}"
         sql_argument = f"""CREATE TABLE IF NOT EXISTS {db_name}.{table_name}(
                       Id STRING,
-                      sometext STRING,
-                      someinteger INT
+                      Brand STRING,
+                      Model STRING
                       )
                       USING DELTA
                       LOCATION '{location}'"""
@@ -184,7 +184,7 @@ class MergeDfIntoTargetTest(unittest.TestCase):
             data=self.data_rows,
         )
 
-        return df_new.orderBy("id")
+        return df_new.orderBy("Id")
 
     def expected_data_01(self) -> DataFrame:
         df_new = DataframeCreator.make_partial(
@@ -193,7 +193,7 @@ class MergeDfIntoTargetTest(unittest.TestCase):
             data=[self.targetrow1, self.row1, self.row2, self.row3],
         )
 
-        return df_new.orderBy("id")
+        return df_new.orderBy("Id")
 
     def expected_data_02(self) -> DataFrame:
         df_new = DataframeCreator.make_partial(
@@ -202,7 +202,7 @@ class MergeDfIntoTargetTest(unittest.TestCase):
             data=[self.row1, self.row2, self.row3],
         )
 
-        return df_new.orderBy("id")
+        return df_new.orderBy("Id")
 
     def expected_data_03(self) -> DataFrame:
         df_new = DataframeCreator.make_partial(
@@ -211,18 +211,13 @@ class MergeDfIntoTargetTest(unittest.TestCase):
             data=[self.targetrow1, self.row1, self.row2, self.row3],
         )
 
-        return df_new.orderBy("id")
+        return df_new.orderBy("Id")
 
     def get_target_table(self):
-        return Spark.get().read.table(f"{self.db_name}.{self.table_name}")
+        return Spark.get().read.table(f"{self.db_name}.{self.table_name}").orderBy("Id")
 
     def equal_dfs(self, df1, df2):
         df_expected_pd = df1.toPandas()
         df_result_pd = df2.toPandas()
-
-        print("This df:")
-        print(df_expected_pd)
-        print("Should equal this df:")
-        print(df_expected_pd)
 
         self.assertTrue(df_result_pd.equals(df_expected_pd))

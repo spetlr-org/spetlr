@@ -1,7 +1,7 @@
 import unittest
 from atc.functions import get_unique_tempview_name, drop_table_cascade, init_dbutils
 from atc.spark import Spark
-from atc.atc_exceptions import NoTableException
+from atc.atc_exceptions import NoTableException, UnkownPathException
 
 
 class DropTableCascadeTest(unittest.TestCase):
@@ -18,27 +18,48 @@ class DropTableCascadeTest(unittest.TestCase):
         Spark.get().sql(f"drop database if exists {cls.db_name} cascade")
 
     def test_01_drop_table_cascade(self):
-        # TODO: Implement if path exists. It should NOT!
-        # Get table path
-        # table_path = str(
-        #     Spark.get()
-        #     .sql(f"DESCRIBE DETAIL {self.db_name}.{self.table_name}")
-        #     .collect()[0]["location"]
-        # )
 
-        # Drop table casecde
+        # Get table path
+        table_path = str(
+            Spark.get()
+            .sql(f"DESCRIBE DETAIL {self.db_name}.{self.table_name}")
+            .collect()[0]["location"]
+        )
+
+        # Drop table cacade
         drop_table_cascade(f"{self.db_name}.{self.table_name}")
 
-        # TODO: Implement if path exists. It should NOT!
         # Should not be able to find table in directory
-        # self.assertRaises(Exception, init_dbutils().fs.ls(table_path))
+        self.assert_read_file(table_path)
+
+        # Table should be dropped
+        self.assertFalse(
+            Spark.get()
+            ._jsparkSession.catalog()
+            .tableExists(self.db_name, self.table_name)
+        )
+
+        # Database should not be dropped
+        self.assertTrue(
+            Spark.get()._jsparkSession.catalog().databaseExists(self.db_name)
+        )
 
     def test_02_drop_table_exception(self):
+        # If there is no table to drop, an exception is expected.
         with self.assertRaises(NoTableException) as cm:
             drop_table_cascade(f"{self.db_name}.NoExistingTable")
         the_exception = cm.exception
 
         self.assertEqual(the_exception.value, "No table found!")
+
+    def assert_read_file(self, table_path):
+        try:
+            init_dbutils().fs.ls(table_path)
+        except Exception as e:
+            if "java.io.FileNotFoundException" in str(e):
+                self.assertTrue(True)
+            else:
+                raise UnkownPathException
 
     @classmethod
     def create_test_table(self, table_name="testTarget", db_name="test"):

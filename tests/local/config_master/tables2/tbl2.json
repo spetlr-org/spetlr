@@ -1,0 +1,9 @@
+{
+  "MyThird": {
+    "alias":"MySecond"
+  },
+  "MyFourth": {
+    "path":"/{MNT}/{ENV}/path/to/delta"
+  }
+
+}

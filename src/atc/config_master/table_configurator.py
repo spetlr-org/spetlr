@@ -2,7 +2,8 @@ import importlib.resources
 import json
 import uuid
 from pathlib import Path
-from typing import TypedDict, Union, Dict
+from types import ModuleType
+from typing import TypedDict, Union, Dict, Set
 
 import yaml
 
@@ -35,8 +36,9 @@ class TableConfigurator(metaclass=Singleton):
     unique_id: str
     table_names: Dict[str, Union[TableDetails, TableAlias, TableRelDbg]]
     table_arguments: Dict[str, str]
+    resource_paths: Set[Union[str, ModuleType]]
 
-    def __init__(self, resource_path: str = None):
+    def __init__(self, resource_path: Union[str, ModuleType] = None):
         self.unique_id = uuid.uuid4().hex
         self.resource_paths = set()
         self.table_names = dict()
@@ -46,7 +48,7 @@ class TableConfigurator(metaclass=Singleton):
 
         self.__reset()
 
-    def add_resource_path(self, resource_path: str) -> None:
+    def add_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
         self.resource_paths.add(resource_path)
 
     def __reset(self, debug: bool = False, **kwargs) -> None:
@@ -69,8 +71,10 @@ class TableConfigurator(metaclass=Singleton):
                                 if file_name.endswith(".json")
                                 else yaml.load(file, Loader=yaml.FullLoader)
                             )
+                            if not isinstance(update, dict):
+                                raise ValueError(f"document in {file_path} is no dict.")
 
-                            for key, value in update:
+                            for key, value in update.items():
                                 if self.__is_known_shape(value):
                                     self.table_names[key] = value
                                 else:
@@ -110,8 +114,14 @@ class TableConfigurator(metaclass=Singleton):
         # carry out string substitutions in name and path
         if self.__is_TableDetails_shape(self.table_names[key]):
             value: TableDetails = self.table_names[key]
-            self.table_names[key]["name"] = value["name"].format(**self.table_arguments)
-            self.table_names[key]["path"] = value["path"].format(**self.table_arguments)
+            if "name" in value:
+                self.table_names[key]["name"] = value["name"].format(
+                    **self.table_arguments
+                )
+            if "path" in value:
+                self.table_names[key]["path"] = value["path"].format(
+                    **self.table_arguments
+                )
 
     def __get_name_entry(self, table_id: str):
         entry = self.table_names[table_id]
@@ -119,7 +129,7 @@ class TableConfigurator(metaclass=Singleton):
             entry = self.table_names[entry["alias"]]
         return entry
 
-    def reset(self, debug: bool = False, **kwargs):
+    def reset(self, *, debug: bool = False, **kwargs):
         """
         Resets table names and table SQL. Enables or disables debug mode (used for unit tests and integration tests).
         :param debug: False -> release tables, True -> debug tables.
@@ -184,13 +194,12 @@ class TableConfigurator(metaclass=Singleton):
     def get_all_details(self):
         table_objects = {}
         for key in self.table_names.keys():
-            name = self.table_property(key, "name", "")
-            if name:
-                table_objects[key] = name
-                table_objects[key + "_name"] = name
+            table = self.__get_name_entry(key)
 
-            path = self.table_property(key, "path", "")
-            if path:
-                table_objects[key + "_path"] = path
+            for property, attribute in table.items():
+                table_objects[f"{key}_{property}"] = attribute
+
+            if f"{key}_name" in table_objects:
+                table_objects[key] = table_objects[f"{key}_name"]
 
         return table_objects

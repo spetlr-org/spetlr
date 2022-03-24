@@ -28,6 +28,20 @@ $output = az sql server firewall-rule create `
 
 Throw-WhenError -output $output
 
+# Add user own IP to SQL server firewall
+$allowUserIp =(Invoke-WebRequest -UseBasicParsing "ifconfig.me/ip").Content.Trim()
+
+Write-Host "     Allow user IP: $allowUserIp" -ForegroundColor DarkYellow
+$output = az sql server firewall-rule create `
+  --server $databaseServerName `
+  --resource-group $resourceGroupName `
+  --name "Allow $allowUserIp" `
+  --start-ip-address $allowUserIp `
+  --end-ip-address $allowUserIp
+
+Throw-WhenError -output $output
+
+
 
 #############################################################################################
 # Provision SQL database

@@ -23,10 +23,11 @@ Write-Host "* Base Configuration       *****************************************
 Write-Host "**********************************************************************" -ForegroundColor White
 Write-Host "* Resource Group                  : $resourceGroupName" -ForegroundColor White
 Write-Host "* Azure Databricks Workspace      : $databricksName" -ForegroundColor White
+Write-Host "* Azure Data Lake                 : $dataLakeName" -ForegroundColor White
 Write-Host "* Azure SQL server                : $databaseServerName" -ForegroundColor White
 Write-Host "* Azure SQL database              : $deliveryDatabase" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
 
 
 $keystore = @()
-$db_secrets_scope = $resourceName 
+$db_secrets_scope = $resourceName

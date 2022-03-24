@@ -1,17 +1,5 @@
-from atc.spark import Spark
+from atc.functions import init_dbutils
 from atc.sql.SqlServer import SqlServer
-
-
-def get_dbutils(spark):
-    try:
-        from pyspark.dbutils import DBUtils
-
-        dbutils = DBUtils(spark)
-    except ImportError:
-        import IPython
-
-        dbutils = IPython.get_ipython().user_ns["dbutils"]
-    return dbutils
 
 
 class DeliverySqlServer(SqlServer):
@@ -26,14 +14,12 @@ class DeliverySqlServer(SqlServer):
 
         self.hostname = "atctest.database.windows.net" if hostname is None else hostname
         self.username = (
-            get_dbutils(Spark.get()).secrets.get("atc", "SqlServer--DatabricksUser")
+            init_dbutils().secrets.get("atc", "SqlServer--DatabricksUser")
             if username is None
             else username
         )
         self.password = (
-            get_dbutils(Spark.get()).secrets.get(
-                "atc", "SqlServer--DatabricksUserPassword"
-            )
+            init_dbutils().secrets.get("atc", "SqlServer--DatabricksUserPassword")
             if password is None
             else password
         )

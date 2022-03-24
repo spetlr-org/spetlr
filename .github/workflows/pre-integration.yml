@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         python_version:
-          - "3.7"
           - "3.8"
     steps:
       - uses: actions/checkout@v2
@@ -79,20 +78,9 @@ jobs:
             -sparkVersion "9.1.x-scala2.12" `
             -testJobDetails job91.json
 
-      - name: Launch integration tests 7.3
-        shell: pwsh
-        run: |
-          .github/submit/submit_test_job.ps1  `
-            -sparkVersion "7.3.x-scala2.12" `
-            -testJobDetails job73.json
-
       - name: Wait 2 min for things to settle
         shell: pwsh
         run: Start-Sleep -s 120
-
-      - name: Fetch integration tests 7.3
-        shell: pwsh
-        run: .github/submit/fetch_test_job.ps1 -testJobDetails job73.json
 
       - name: Fetch integration tests 9.1
         shell: pwsh

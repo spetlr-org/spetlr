@@ -61,14 +61,15 @@ class TableConfigurator(metaclass=Singleton):
         self.table_names = dict()
         for resource_path in self.resource_paths:
             for file_name in importlib.resources.contents(resource_path):
-                if Path(file_name).suffix in [".json", ".yaml", ".yml"]:
+                extension = Path(file_name).suffix
+                if extension in [".json", ".yaml", ".yml"]:
                     with importlib.resources.path(
                         resource_path, file_name
                     ) as file_path:
                         with open(file_path) as file:
                             update = (
                                 json.load(file)
-                                if file_name.endswith(".json")
+                                if extension == ".json"
                                 else yaml.load(file, Loader=yaml.FullLoader)
                             )
                             if not isinstance(update, dict):
@@ -125,8 +126,16 @@ class TableConfigurator(metaclass=Singleton):
 
     def __get_name_entry(self, table_id: str):
         entry = self.table_names[table_id]
+
+        # this stack allows us to detect alias loop
+        stack = {table_id}
+
         while "alias" in entry:  # allow alias of alias
-            entry = self.table_names[entry["alias"]]
+            new_id = entry["alias"]
+            if new_id in stack:
+                raise ValueError(f"Alias loop at key {new_id}")
+            stack.add(new_id)
+            entry = self.table_names[new_id]
         return entry
 
     def reset(self, *, debug: bool = False, **kwargs):
@@ -153,6 +162,8 @@ class TableConfigurator(metaclass=Singleton):
         """
         Register a new table.
         """
+        if not self.__is_known_shape(value):
+            raise ValueError(f"Object has unexpected shape.")
         self.table_names[key] = value
         self.__resolve_key(key)
 

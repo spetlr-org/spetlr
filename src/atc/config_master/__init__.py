@@ -1,0 +1,1 @@
+from .table_configurator import TableConfigurator

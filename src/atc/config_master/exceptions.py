@@ -1,4 +1,7 @@
-class SqlParseException(Exception):
+from atc.atc_exceptions import AtcException
+
+
+class SqlParseException(AtcException):
     pass
 
 
@@ -7,4 +10,8 @@ class NoCreationException(SqlParseException):
 
 
 class UnknownCreationException(SqlParseException):
+    pass
+
+
+class UnknownShapeException(AtcException):
     pass

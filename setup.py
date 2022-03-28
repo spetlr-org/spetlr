@@ -40,7 +40,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.7",
-    install_requires=["pyyaml", "sqlparse", "deprecation", "pyodbc"],
+    install_requires=["pyyaml", "sqlparse", "deprecation", "pyodbc", "databricks-api"],
     extras_require={
         "dev": ["check-manifest"],
         # 'test': ['coverage'],

@@ -2,8 +2,21 @@
 
 Utilities in atc-dataplatform:
 
+* [Api Auto Config](#api-auto-config)
 * [Test Utilities](#test-utilities)
 * [Git Hooks](#git-hooks)
+
+## Api Auto Config
+
+Using the method `atc.db_auto.getDbApi()` gives access to a 
+`DatabricksAPI` instance thas has been pre-configured for the 
+current databricks instance. See [databricks-api](https://pypi.org/project/databricks-api/)
+for usage documentation.
+
+Under the hood the function uses the job context to get the host and token
+when on the cluster. When using `atc` with databricks-connect, the `databricks-cli` is
+called to configure the client. Thus the function works without further configuration
+in all contexts.
 
 ## Test Utilities
 

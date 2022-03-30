@@ -3,6 +3,7 @@ import time
 import pyodbc
 from pyspark.sql import DataFrame
 
+from atc.config_master import TableConfigurator
 from atc.spark import Spark
 
 
@@ -143,14 +144,10 @@ class SqlServer:
 
     @staticmethod
     def table_name(table_id: str):
-        raise NotImplementedError("Waiting for configreader implementation...")
-
-    #     return ConfigReader().table_name(table_id)
+        return TableConfigurator().table_name(table_id)
 
     def read_table(self, table_id: str):
-        raise NotImplementedError("Waiting for configreader implementation...")
-
-    #     return self.read_table_by_name(SqlServer.table_name(table_id))
+        return self.read_table_by_name(SqlServer.table_name(table_id))
 
     def write_table(
         self,
@@ -161,29 +158,21 @@ class SqlServer:
         batch_size: int = 10 * 1024,
         partition_count: int = 60,
     ):
-        raise NotImplementedError("Waiting for configreader implementation...")
-
-    #     self.write_table_by_name(
-    #         df_source,
-    #         SqlServer.table_name(table_id),
-    #         append,
-    #         big_data_set,
-    #         batch_size,
-    #         partition_count,
-    #     )
+        self.write_table_by_name(
+            df_source,
+            SqlServer.table_name(table_id),
+            append,
+            big_data_set,
+            batch_size,
+            partition_count,
+        )
 
     def truncate_table(self, table_id: str):
-        raise NotImplementedError("Waiting for configreader implementation...")
-
-    #     table_name = SqlServer.table_name(table_id)
-    #     self.execute_sql(f"TRUNCATE TABLE {table_name}")
+        table_name = SqlServer.table_name(table_id)
+        self.execute_sql(f"TRUNCATE TABLE {table_name}")
 
     def drop_table(self, table_id: str):
-        raise NotImplementedError("Waiting for configreader implementation...")
-
-    #     self.drop_table_by_name(SqlServer.table_name(table_id))
+        self.drop_table_by_name(SqlServer.table_name(table_id))
 
     def drop_view(self, table_id: str):
-        raise NotImplementedError("Waiting for configreader implementation...")
-
-    #     self.drop_view_by_name(SqlServer.table_name(table_id))
+        self.drop_view_by_name(SqlServer.table_name(table_id))

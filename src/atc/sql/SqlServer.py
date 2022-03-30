@@ -1,5 +1,7 @@
 import importlib.resources
 import time
+from types import ModuleType
+from typing import Union
 
 import pyodbc
 from pyspark.sql import DataFrame
@@ -136,7 +138,10 @@ class SqlServer:
             raise pyodbc.OperationalError
 
     def execute_sql_file(
-        self, sql_file: str, resource_path: str, arguments: dict = None
+        self,
+        sql_file: str,
+        resource_path: Union[str, ModuleType],
+        arguments: dict = None,
     ):
 
         for sql in self.get_sql_file(sql_file, resource_path, arguments):
@@ -179,7 +184,7 @@ class SqlServer:
 
     def get_sql_file(
         self,
-        resource_path: str,
+        resource_path: Union[str, ModuleType],
         sql_file: str = None,
         arguments: dict = None,
     ):
@@ -190,11 +195,9 @@ class SqlServer:
         :param arguments: values of optional arguments to be replaced in the .sql files.
         :return: generator with SQL statements.
         """
-        sql_arguments = {
-            key: TableConfigurator().table_property(key, "name", "")
-            for key in TableConfigurator().table_names.keys()
-        }
-        sql_arguments.update(TableConfigurator().table_arguments)
+
+        sql_arguments = TableConfigurator().get_all_details()
+
         if arguments is not None:
             sql_arguments.update(arguments)
         for file_name in importlib.resources.contents(resource_path):

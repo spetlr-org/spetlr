@@ -30,9 +30,9 @@ class DeliverySqlServerTests(unittest.TestCase):
         t1 = cls.tc.table_name("SqlTestTable1")
         t2 = cls.tc.table_name("SqlTestTable2")
         v1 = cls.tc.table_name("SqlTestView")
-        cls.sql_server.drop_table_by_name(t1)
-        cls.sql_server.drop_table_by_name(t2)
-        cls.sql_server.drop_view_by_name(v1)
+        # cls.sql_server.drop_table_by_name(t1)
+        # cls.sql_server.drop_table_by_name(t2)
+        # cls.sql_server.drop_view_by_name(v1)
 
         cls.tc.reset(debug=False)
 
@@ -86,18 +86,6 @@ class DeliverySqlServerTests(unittest.TestCase):
         df_with_data = self.sql_server.read_table_by_name(self.table_name)
         self.assertEqual(df_with_data.count(), 1)
 
-    # def test07_write_table_spark_no_table_exists_dummy(self):
-    #     # Drop the table
-    #     self.sql_server.drop_table_by_name(self.table_name)
-    #
-    #     # Create data to export
-    #     df_export = self.create_data()
-    #     self.sql_server.write_table(df_export, self.table_name)
-    #
-    #     # Load data
-    #     df_with_data = self.sql_server.read_table_by_name(self.table_name)
-    #     self.assertEqual(df_with_data.count(), 1)
-
     def test08_get_table_name(self):
         test_name1 = self.sql_server.table_name("SqlTestTable1")
         self.assertIn("dbo.test1", test_name1)
@@ -106,7 +94,7 @@ class DeliverySqlServerTests(unittest.TestCase):
 
     def test09_execute_sql_file(self):
 
-        file_name = "test1.sql"
+        file_name = "test1"
         path_name = extras
 
         # Create the table
@@ -114,7 +102,7 @@ class DeliverySqlServerTests(unittest.TestCase):
         self.assertTrue(True)
 
     def test10_read_w_id(self):
-        # Read by id
+        # This might fail if the previous test didnt succeed
         self.sql_server.read_table("SqlTestTable1")
         self.sql_server.read_table("SqlTestTable2")
         self.assertTrue(True)

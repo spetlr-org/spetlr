@@ -72,7 +72,8 @@ class DeliverySqlServerTests(unittest.TestCase):
         self.sql_server.drop_table_by_name(self.table_name)
 
         sql_argument = f"""
-        (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{self.table_name}') target
+        (SELECT * FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_NAME = '{self.table_name}') target
         """
         table_exists = self.sql_server.load_sql(sql_argument)
         self.assertEqual(table_exists.count(), 0)
@@ -126,7 +127,8 @@ class DeliverySqlServerTests(unittest.TestCase):
 
         table1_name = self.tc.table_name("SqlTestTable1")
         sql_argument = f"""
-                (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{table1_name}') target
+                (SELECT * FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_NAME = '{table1_name}') target
                 """
         table_exists = self.sql_server.load_sql(sql_argument)
         self.assertEqual(table_exists.count(), 0)

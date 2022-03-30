@@ -191,8 +191,10 @@ class SqlServer:
         arguments: dict = None,
     ):
         """
-        Returns SQL statements from the specified .sql file. The return value is a generator.
-        :param sql_file: name of the .sql file - if empty, all .sql files with names ending with "-create" are returned.
+        Returns SQL statements from the specified .sql file.
+        The return value is a generator.
+        :param sql_file: name of the .sql file - if empty,
+            all .sql files with names ending with "-create" are returned.
         :param resource_path: path to the .sql files.
         :param arguments: values of optional arguments to be replaced in the .sql files.
         :return: generator with SQL statements.

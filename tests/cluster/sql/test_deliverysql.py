@@ -27,6 +27,13 @@ class DeliverySqlServerTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         cls.sql_server.drop_table_by_name(cls.table_name)
+        t1 = cls.tc.table_name("SqlTestTable1")
+        t2 = cls.tc.table_name("SqlTestTable2")
+        v1 = cls.tc.table_name("SqlTestView")
+        cls.sql_server.drop_table_by_name(t1)
+        cls.sql_server.drop_table_by_name(t2)
+        cls.sql_server.drop_view_by_name(v1)
+
         cls.tc.reset(debug=False)
 
     def test01_can_connect(self):
@@ -67,7 +74,7 @@ class DeliverySqlServerTests(unittest.TestCase):
         SELECT *
                  FROM INFORMATION_SCHEMA.TABLES
                  WHERE
-                 TABLE_NAME = {self.table_name}
+                 TABLE_NAME = '{self.table_name}'
         """
         table_exists = self.sql_server.load_sql(sql_argument)
         self.assertEqual(table_exists.count(), 0)
@@ -194,7 +201,7 @@ class DeliverySqlServerTests(unittest.TestCase):
         insert_data = 123
 
         sql_argument = f"""
-                            f"INSERT INTO {self.table_name} values ({insert_data})"
+                            INSERT INTO {self.table_name} values ({insert_data})
                                         """
         self.sql_server.execute_sql(sql_argument)
 

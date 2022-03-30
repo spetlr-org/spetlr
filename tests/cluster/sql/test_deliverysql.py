@@ -1,12 +1,13 @@
 import unittest
 
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, StructField, IntegerType
+from pyspark.sql.types import IntegerType, StructField, StructType
 
 from atc.config_master import TableConfigurator
 from atc.functions import get_unique_tempview_name
 from atc.utils import DataframeCreator
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
+
 from . import extras
 
 
@@ -30,9 +31,9 @@ class DeliverySqlServerTests(unittest.TestCase):
         t1 = cls.tc.table_name("SqlTestTable1")
         t2 = cls.tc.table_name("SqlTestTable2")
         v1 = cls.tc.table_name("SqlTestView")
-        # cls.sql_server.drop_table_by_name(t1)
-        # cls.sql_server.drop_table_by_name(t2)
-        # cls.sql_server.drop_view_by_name(v1)
+        cls.sql_server.drop_table_by_name(t1)
+        cls.sql_server.drop_table_by_name(t2)
+        cls.sql_server.drop_view_by_name(v1)
 
         cls.tc.reset(debug=False)
 

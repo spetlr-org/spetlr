@@ -19,10 +19,10 @@ class DeliverySqlServerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sql_server = DeliverySqlServer()
-        tc = TableConfigurator()
+        cls.tc = TableConfigurator()
 
-        tc.add_resource_path(extras)
-        tc.reset(debug=True)
+        cls.tc.add_resource_path(extras)
+        cls.tc.reset(debug=True)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -77,40 +77,40 @@ class DeliverySqlServerTests(unittest.TestCase):
         self.assertEqual(table_exists.count(), 0)
 
     def test06_write_table_spark_dummy(self):
+        # create test table again
+        self.create_test_table()
+
+        # write using spark
         df_export = self.create_data()
-        self.sql_server.write_table(df_export, self.table_name)
+        self.sql_server.write_table_by_name(df_export, self.table_name)
         df_with_data = self.sql_server.read_table_by_name(self.table_name)
         self.assertEqual(df_with_data.count(), 1)
 
-    def test07_write_table_spark_no_table_exists_dummy(self):
-        # Drop the table
-        self.sql_server.drop_table_by_name(self.table_name)
-
-        # Create data to export
-        df_export = self.create_data()
-        self.sql_server.write_table(df_export, self.table_name)
-
-        # Load data
-        df_with_data = self.sql_server.read_table_by_name(self.table_name)
-        self.assertEqual(df_with_data.count(), 1)
+    # def test07_write_table_spark_no_table_exists_dummy(self):
+    #     # Drop the table
+    #     self.sql_server.drop_table_by_name(self.table_name)
+    #
+    #     # Create data to export
+    #     df_export = self.create_data()
+    #     self.sql_server.write_table(df_export, self.table_name)
+    #
+    #     # Load data
+    #     df_with_data = self.sql_server.read_table_by_name(self.table_name)
+    #     self.assertEqual(df_with_data.count(), 1)
 
     def test08_get_table_name(self):
         test_name1 = self.sql_server.table_name("SqlTestTable1")
         self.assertIn("dbo.test1", test_name1)
         test_name2 = self.sql_server.table_name("SqlTestTable2")
-        self.assertIn("dbo.test2", test_name1)
+        self.assertIn("dbo.test2", test_name2)
 
     def test09_execute_sql_file(self):
 
         file_name = "test1.sql"
-        path_name = "tests.cluster.sql.extras"
-        sql_arguments = {
-            "table_name1": TableConfigurator().table_name("SqlTestTable1"),
-            "table_name2": TableConfigurator().table_name("SqlTestTable2"),
-        }
+        path_name = extras
 
         # Create the table
-        self.sql_server.execute_sql_file(file_name, path_name, sql_arguments)
+        self.sql_server.execute_sql_file(resource_path=path_name, sql_file=file_name)
         self.assertTrue(True)
 
     def test10_read_w_id(self):

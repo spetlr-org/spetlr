@@ -11,6 +11,7 @@ $ReadRights = $true
 $WriteRights = $true
 $CreateRights = $true
 $ExecRights = $true
+$CreateViewRights = $true
 
 
 $variables =
@@ -19,7 +20,9 @@ $variables =
   "ReadRights=$($ReadRights)",
   "WriteRights=$($WriteRights)",
   "CreateRights=$($CreateRights)",
-  "ExecRights=$($ExecRights)"
+  "ExecRights=$($ExecRights)",
+  "CreateViewRights=$($CreateViewRights)",
+
 
 Write-Host "   Creating database user for user: $($dbUserName)" -ForegroundColor DarkYellow
 Invoke-Sqlcmd `

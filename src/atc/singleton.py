@@ -1,5 +1,6 @@
 """
-A singleton metaclass as suggested in https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+A singleton metaclass as suggested in
+https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 """
 
 

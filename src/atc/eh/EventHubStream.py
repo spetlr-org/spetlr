@@ -1,10 +1,5 @@
 # Defines a class for structured streaming from and to Azure Event Hubs
 
-from datetime import datetime, timezone
-from json import dumps
-from typing import Callable
-
-import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 
 from atc.spark import Spark
@@ -20,12 +15,16 @@ class EventHubStream:
     ):
         """
         Initializes an Azure EventHub.
-        :param connection_str: Connection string to the Event Hubs Namespace (not the actual Event Hub!)
+        :param connection_str: Connection string to the Event Hubs Namespace
+            (not the actual Event Hub!)
         :param entity_path: Name of the Event Hub within the Event Hubs Namespace
         :param consumer_group: Name of the Event Hub consumer group
-        :param max_events_per_trigger: Maximum number of events to be processed in one go.
-        Warning: The number must be at least twice as big as the average number of new events created during the time
-        it takes to process and save the existing events, otherwise the save_stream_batch() method will never finish.
+        :param max_events_per_trigger: Maximum number of events to be processed
+            in one go.
+        Warning: The number must be at least twice as big as the average number of
+        new events created during the time
+        it takes to process and save the existing events, otherwise
+        the save_stream_batch() method will never finish.
         The number must not be too high, though, to not to exceed memory resources.
         """
 

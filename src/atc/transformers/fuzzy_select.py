@@ -20,13 +20,16 @@ class NonUniqueException(AtcException):
 
 
 class FuzzySelectTransformer(Transformer):
-    """To construct a FuzzySelectTransformer, give it a list of columns that you want to see in the output.
+    """To construct a FuzzySelectTransformer,
+    give it a list of columns that you want to see in the output.
 
-    The fuzzy aspect is that difflib is used to find the best approximate source column
-    for each column name. The returned df will contain the columns as given to this transformer.
+    The fuzzy aspect is that difflib is used to find the best
+    approximate source column for each column name. The returned
+    df will contain the columns as given to this transformer.
 
-    If you would like to check the set of columns that your dataframe will be transformed into
-    you can directly call the method find_best_mapping and inspect the returned mapping.
+    If you would like to check the set of columns that your
+    dataframe will be transformed into you can directly call
+    the method find_best_mapping and inspect the returned mapping.
     """
 
     def __init__(self, columns: Iterable[str], match_cutoff=0.6):
@@ -35,7 +38,8 @@ class FuzzySelectTransformer(Transformer):
         self.match_cutoff = match_cutoff
 
     def find_best_mapping(self, in_columns: Iterable[str]) -> Dict[str, str]:
-        """returns a dict mapping source to target columns as a case insensitive fuzzy match."""
+        """returns a dict mapping source to target columns
+        as a case insensitive fuzzy match."""
         in_columns = {col.lower(): col for col in in_columns}
         mapping = dict()
         for col in self.columns:

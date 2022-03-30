@@ -17,7 +17,10 @@ class SqlServer:
     ):
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
-        self.url = f"jdbc:sqlserver://{hostname}:{port};database={database};queryTimeout=0;loginTimeout={self.timeout}"
+        self.url = (
+            f"jdbc:sqlserver://{hostname}:{port};"
+            "database={database};queryTimeout=0;loginTimeout={self.timeout}"
+        )
 
         self.username = username
         self.password = password
@@ -122,7 +125,8 @@ class SqlServer:
                 connected = True  # Database connection success!
             except pyodbc.OperationalError:
                 print(
-                    f"Database connection failed. Retries {retry_limit - retries} more time."
+                    "Database connection failed. "
+                    f"Retries {retry_limit - retries} more time."
                 )
                 time.sleep(self.sleep_time)  # Sleeps for 5 seconds
 

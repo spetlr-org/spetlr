@@ -29,7 +29,8 @@ def init_dbutils():
 
 def drop_table_cascade(DBDotTableName: str) -> None:
     """
-    drop_table_cascade drops a databricks database table and remove the files permanently
+    drop_table_cascade drops a databricks database table
+    and remove the files permanently
 
     :param DBDotTableName: db.tablename
 
@@ -49,7 +50,7 @@ def drop_table_cascade(DBDotTableName: str) -> None:
     )
 
     if table_path is None:
-        raise NoTableException(f"Table path is NONE.")
+        raise NoTableException("Table path is NONE.")
 
     # Remove files associated with table
     init_dbutils().fs.rm(table_path, recurse=True)

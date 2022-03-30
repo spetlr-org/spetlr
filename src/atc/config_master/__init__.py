@@ -1,1 +1,1 @@
-from .table_configurator import TableConfigurator
+from .table_configurator import TableConfigurator  # noqa: F401

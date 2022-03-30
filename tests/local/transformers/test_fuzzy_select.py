@@ -36,7 +36,8 @@ class FuzzySelectorTest(unittest.TestCase):
         self.assertEqual(
             FuzzySelectTransformer(
                 target_columns,
-                match_cutoff=0.8,  # a tighter similarity constraint allows a unique association
+                # a tighter similarity constraint allows a unique association
+                match_cutoff=0.8,
             ).find_best_mapping(
                 in_columns,
             ),

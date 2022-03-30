@@ -1,7 +1,7 @@
 import unittest
 
 from pyspark.sql import DataFrame
-from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+from pyspark.sql.types import StringType, StructField, StructType
 
 from atc.functions import get_unique_tempview_name
 from atc.spark import Spark

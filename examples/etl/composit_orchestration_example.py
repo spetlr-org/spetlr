@@ -1,7 +1,6 @@
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame
-from pyspark.sql.types import IntegerType
 
 from atc.etl import Extractor, Loader, Orchestrator, Transformer, dataset_group
 from atc.spark import Spark

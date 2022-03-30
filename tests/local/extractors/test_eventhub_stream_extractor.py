@@ -1,8 +1,10 @@
 import unittest
 from datetime import datetime
 
-from atc.extractors import (EventhubStreamExtractor,
-                            InvalidEventhubStreamExtractorParameters)
+from atc.extractors import (
+    EventhubStreamExtractor,
+    InvalidEventhubStreamExtractorParameters,
+)
 
 
 class EventhubStreamExtractorTest(unittest.TestCase):
@@ -29,11 +31,13 @@ class EventhubStreamExtractorTest(unittest.TestCase):
 
         self.assertEqual(
             eventhubStreamExtractor.connectionString,
-            "Endpoint=sb://testNamespace.servicebus.windows.net/testEventhub;EntityPath=testEventhub;SharedAccessKeyName=testAccessKeyName;SharedAccessKey=testAccessKey",
+            "Endpoint=sb://testNamespace.servicebus.windows.net/testEventhub;"
+            "EntityPath=testEventhub;SharedAccessKeyName=testAccessKeyName;"
+            "SharedAccessKey=testAccessKey",
         )
 
     def test_raise_create_exeption(self):
-        with self.assertRaises(InvalidEventhubStreamExtractorParameters) as context:
+        with self.assertRaises(InvalidEventhubStreamExtractorParameters):
             EventhubStreamExtractor(
                 connectionString=None,
                 namespace=None,
@@ -44,7 +48,7 @@ class EventhubStreamExtractorTest(unittest.TestCase):
                 maxEventsPerTrigger=100000,
             )
 
-        with self.assertRaises(InvalidEventhubStreamExtractorParameters) as context:
+        with self.assertRaises(InvalidEventhubStreamExtractorParameters):
             EventhubStreamExtractor(
                 connectionString=None,
                 namespace="testNamespace",
@@ -55,7 +59,7 @@ class EventhubStreamExtractorTest(unittest.TestCase):
                 maxEventsPerTrigger=100000,
             )
 
-        with self.assertRaises(InvalidEventhubStreamExtractorParameters) as context:
+        with self.assertRaises(InvalidEventhubStreamExtractorParameters):
             EventhubStreamExtractor(
                 connectionString=None,
                 namespace="testNamespace",
@@ -66,7 +70,7 @@ class EventhubStreamExtractorTest(unittest.TestCase):
                 maxEventsPerTrigger=100000,
             )
 
-        with self.assertRaises(InvalidEventhubStreamExtractorParameters) as context:
+        with self.assertRaises(InvalidEventhubStreamExtractorParameters):
             EventhubStreamExtractor(
                 connectionString=None,
                 namespace="testNamespace",

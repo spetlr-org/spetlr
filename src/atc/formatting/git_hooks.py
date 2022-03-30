@@ -92,23 +92,23 @@ def install() -> None:
             f.write(
                 dedent(
                     rf"""
-                    #!{sys.executable}
-                    import sys, subprocess
-                    if sys.executable != {repr(sys.executable)}:
-                        print("Changing interpreter")
-                        subprocess.run([{repr(sys.executable)}, __file__]+sys.argv[1:],check=True)
-                        sys.exit(0)
+    #!{sys.executable}
+    import sys, subprocess
+    if sys.executable != {repr(sys.executable)}:
+        print("Changing interpreter")
+        subprocess.run([{repr(sys.executable)}, __file__]+sys.argv[1:],check=True)
+        sys.exit(0)
 
-                    try:
-                        from atc.formatting.git_hooks import actions
-                        actions[{repr(command)}]()
-                    except ModuleNotFoundError as e:
-                        import sys
-                        print(e)
-                        print('search path was:\n-', '\n- '.join(sys.path))
-                        print('interpreter:', sys.executable)
+    try:
+        from atc.formatting.git_hooks import actions
+        actions[{repr(command)}]()
+    except ModuleNotFoundError as e:
+        import sys
+        print(e)
+        print('search path was:\n-', '\n- '.join(sys.path))
+        print('interpreter:', sys.executable)
 
-                    """
+    """
                 ).strip()
             )
     print("Done installing hooks.")

@@ -25,19 +25,28 @@ class EventhubStreamExtractor(Extractor):
     ):
         """
         :param consumerGroup: the eventhub consumerGroup to use for streaming
-        :param connectionString: connectionString to the eventhub, if not supplied namespace, eventhub, accessKeyName and accessKey have to be instead
-        :param namespace: the eventhub namespace to use for streaming, can be ignored if connectionString is supplied
-        :param eventhub: the eventhub name to use for streaming, can be ignored if connectionString is supplied
-        :param accessKeyName: the eventhub accessKeyName to use for streaming, can be ignored if connectionString is supplied
-        :param accessKey: the eventhub accessKey to use for streaming, can be ignored if connectionString is supplied
-        :param maxEventsPerTrigger: the number of events handled per mico trigger in stream
-        :param startEnqueuedTime: timestamp to define where stream starts, if None the stream wil start from the oldest event in eventhub
+        :param connectionString: connectionString to the eventhub,
+            if not supplied namespace, eventhub,
+            accessKeyName and accessKey have to be instead
+        :param namespace: the eventhub namespace to use for
+            streaming, can be ignored if connectionString is supplied
+        :param eventhub: the eventhub name to use for streaming,
+            can be ignored if connectionString is supplied
+        :param accessKeyName: the eventhub accessKeyName to use for
+            streaming, can be ignored if connectionString is supplied
+        :param accessKey: the eventhub accessKey to use for streaming,
+            can be ignored if connectionString is supplied
+        :param maxEventsPerTrigger: the number of events handled
+            per mico trigger in stream
+        :param startEnqueuedTime: timestamp to define where stream starts,
+            if None the stream wil start from the oldest event in eventhub
         """
 
         self.spark = Spark.get()
 
-        # If connectionString is missing, create it from namespace, eventhub, accessKeyName and accessKey
-        # Raise exeption is parameters are missing
+        # If connectionString is missing,
+        # create it from namespace, eventhub, accessKeyName and accessKey
+        # Raise exception is parameters are missing
         if connectionString is None:
             if (
                 namespace is None
@@ -46,10 +55,16 @@ class EventhubStreamExtractor(Extractor):
                 or accessKey is None
             ):
                 raise InvalidEventhubStreamExtractorParameters(
-                    "Either connectionString or (namespace, eventhub, accessKeyName and accessKey) have to be supplied"
+                    "Either connectionString or "
+                    "(namespace, eventhub, accessKeyName and accessKey) "
+                    "have to be supplied"
                 )
 
-            self.connectionString = f"Endpoint=sb://{namespace}.servicebus.windows.net/{eventhub};EntityPath={eventhub};SharedAccessKeyName={accessKeyName};SharedAccessKey={accessKey}"
+            self.connectionString = (
+                f"Endpoint=sb://{namespace}.servicebus.windows.net/{eventhub};"
+                f"EntityPath={eventhub};SharedAccessKeyName={accessKeyName};"
+                f"SharedAccessKey={accessKey}"
+            )
         else:
             self.connectionString = connectionString
 
@@ -74,11 +89,13 @@ class EventhubStreamExtractor(Extractor):
             self.startingEventPosition["offset"] = "-1"  # Start stream from beginning
 
     def read(self) -> DataFrame:
-        print(f"Read eventhub data stream")
+        print("Read eventhub data stream")
 
         config = {
-            "eventhubs.connectionString": self.spark.sparkContext._jvm.org.apache.spark.eventhubs.EventHubsUtils.encrypt(
-                self.connectionString
+            "eventhubs.connectionString": (
+                self.spark.sparkContext._jvm.org.apache.spark.eventhubs.EventHubsUtils.encrypt(  # noqa: E501
+                    self.connectionString
+                )
             ),
             "maxEventsPerTrigger": self.maxEventsPerTrigger,
             "eventhubs.consumerGroup": self.consumerGroup,

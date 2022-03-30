@@ -1,9 +1,10 @@
-from atc.etl.extractor import Extractor
-from atc.spark import Spark
-
 import json
 from datetime import datetime
+
 from pyspark.sql import DataFrame
+
+from atc.etl.extractor import Extractor
+from atc.spark import Spark
 
 
 class InvalidEventhubStreamExtractorParameters(Exception):
@@ -20,7 +21,7 @@ class EventhubStreamExtractor(Extractor):
         accessKeyName: str = None,
         accessKey: str = None,
         maxEventsPerTrigger: int = 10000,
-        startEnqueuedTime: datetime = None
+        startEnqueuedTime: datetime = None,
     ):
         """
         :param consumerGroup: the eventhub consumerGroup to use for streaming
@@ -38,7 +39,12 @@ class EventhubStreamExtractor(Extractor):
         # If connectionString is missing, create it from namespace, eventhub, accessKeyName and accessKey
         # Raise exeption is parameters are missing
         if connectionString is None:
-            if namespace is None or eventhub is None or accessKeyName is None or accessKey is None:
+            if (
+                namespace is None
+                or eventhub is None
+                or accessKeyName is None
+                or accessKey is None
+            ):
                 raise InvalidEventhubStreamExtractorParameters(
                     "Either connectionString or (namespace, eventhub, accessKeyName and accessKey) have to be supplied"
                 )
@@ -60,10 +66,12 @@ class EventhubStreamExtractor(Extractor):
         }
 
         if startEnqueuedTime:
-            self.startingEventPosition["enqueuedTime"] = startEnqueuedTime.strftime("%Y-%m-%dT%H:%M:%S.%fZ") # Start from timestamp
+            self.startingEventPosition["enqueuedTime"] = startEnqueuedTime.strftime(
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            )  # Start from timestamp
         else:
             # Default is to start from beginning of stream
-            self.startingEventPosition["offset"] = "-1" # Start stream from beginning
+            self.startingEventPosition["offset"] = "-1"  # Start stream from beginning
 
     def read(self) -> DataFrame:
         print(f"Read eventhub data stream")

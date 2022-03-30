@@ -9,12 +9,11 @@ To uninstall the git hooks, run
 $> python git_hooks.py uninstall
 
 """
+import os
 import subprocess
 import sys
-from textwrap import dedent
 from pathlib import Path
-import os
-
+from textwrap import dedent
 
 actions = {}
 

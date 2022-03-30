@@ -1,7 +1,7 @@
 import unittest
 
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 from atc.etl import Transformer
 from atc.etl.types import dataset_group

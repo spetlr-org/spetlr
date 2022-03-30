@@ -2,8 +2,7 @@ import unittest
 
 from atc.config_master import TableConfigurator
 
-from . import tables1
-from . import tables2
+from . import tables1, tables2
 
 
 class TestTableConfigurator(unittest.TestCase):

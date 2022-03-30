@@ -1,5 +1,7 @@
 import re
+
 import sqlparse
+
 from .details import Details
 from .exceptions import SqlParseException
 

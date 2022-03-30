@@ -1,10 +1,8 @@
+import deprecation
 from pyspark.sql import types as t
 
 import atc
 from atc.spark import Spark
-
-
-import deprecation
 
 
 @deprecation.deprecated(

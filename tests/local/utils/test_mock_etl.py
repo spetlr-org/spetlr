@@ -1,9 +1,9 @@
 import unittest
 
-from atc.etl import Transformer, Orchestrator
-from atc.spark import Spark
-from pyspark.sql import types, DataFrame
+from pyspark.sql import DataFrame, types
 
+from atc.etl import Orchestrator, Transformer
+from atc.spark import Spark
 from atc.utils import DataframeCreator, MockExtractor, MockLoader
 
 

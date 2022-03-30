@@ -1,18 +1,16 @@
 from __future__ import annotations
 
+import copy
 import importlib.resources
 import os
-import re
-from typing import List, Dict
-import copy
-import yaml
-import sqlparse
 import uuid
+from typing import Dict, List
 
-from .details import States, Details
-from .exceptions import SqlParseException
+import yaml
+
 from ..singleton import Singleton
-
+from .details import Details, States
+from .exceptions import SqlParseException
 from .sql import get_details_from_sql
 
 

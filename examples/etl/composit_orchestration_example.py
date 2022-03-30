@@ -3,7 +3,7 @@ import pyspark.sql.types as T
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType
 
-from atc.etl import Extractor, Transformer, Loader, Orchestrator, dataset_group
+from atc.etl import Extractor, Loader, Orchestrator, Transformer, dataset_group
 from atc.spark import Spark
 
 
@@ -50,7 +50,9 @@ class JapaneseGuitarExtractor(Extractor):
 class CountryOfOriginTransformer(Transformer):
     def process_many(self, dataset: dataset_group) -> DataFrame:
         usa_df = dataset["AmericanGuitarExtractor"].withColumn("country", F.lit("USA"))
-        jap_df = dataset["JapaneseGuitarExtractor"].withColumn("country", F.lit("Japan"))
+        jap_df = dataset["JapaneseGuitarExtractor"].withColumn(
+            "country", F.lit("Japan")
+        )
         return usa_df.union(jap_df)
 
 
@@ -72,9 +74,7 @@ class NoopLoader(Loader):
 
 print("ETL Orchestrator using composit innter orchestrator")
 etl_inner = (
-    Orchestrator()
-    .transform_with(CountryOfOriginTransformer())
-    .load_into(NoopLoader())
+    Orchestrator().transform_with(CountryOfOriginTransformer()).load_into(NoopLoader())
 )
 
 etl_outer = (

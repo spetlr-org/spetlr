@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 from atc.etl import Loader
 from atc.spark import Spark

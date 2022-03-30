@@ -140,7 +140,8 @@ class TableConfigurator(metaclass=Singleton):
 
     def reset(self, *, debug: bool = False, **kwargs):
         """
-        Resets table names and table SQL. Enables or disables debug mode (used for unit tests and integration tests).
+        Resets table names and table SQL. Enables or disables debug mode
+        (used for unit tests and integration tests).
         :param debug: False -> release tables, True -> debug tables.
         :param kwargs: additional keys to be substituted in names and paths
         """
@@ -148,13 +149,15 @@ class TableConfigurator(metaclass=Singleton):
 
     def is_debug(self):
         """
-        Return True if table names and table SQL specify debug table, False if release tables
+        Return True if table names and table SQL specify debug table,
+        False if release tables
         """
         return self._is_debug
 
     def get_unique_id_length(self):
         """
-        Return the character length of the UUID identifier inserted into names with the {ID} tag
+        Return the character length of the UUID identifier inserted into
+        names with the {ID} tag
         """
         return len(self.unique_id)
 
@@ -171,10 +174,12 @@ class TableConfigurator(metaclass=Singleton):
         self, table_id: str, property_name: str, default_value: str = None
     ):
         """
-        Return the table property (e.g. name, path, format, etc.) for the specified table id.
+        Return the table property (e.g. name, path, format, etc.)
+            for the specified table id.
         :param table_id: Table id in the .json or .yaml files.
         :param property_name: Name of the property to read (e.g. "name", "path", etc.)
-        :param default_value: Optional default value of the property if the property is missing.
+        :param default_value: Optional default value of the property
+            if the property is missing.
         :return: str: property value
         """
         property_value = self.__get_name_entry(table_id).get(

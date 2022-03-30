@@ -1,4 +1,3 @@
-import uuid
 import warnings
 from typing import List
 
@@ -55,7 +54,7 @@ def join_time_series_dataframes(
     for column in dfSecondary_join.columns:
         dfSecondary_join = dfSecondary_join.withColumnRenamed(column, f"dfSec_{column}")
 
-    # Create join expection
+    # Create join exception
     idMatchString = " AND ".join(
         [f"dfPri_{column} = dfSec_{column}" for column in idColumns]
     )
@@ -102,7 +101,8 @@ def join_time_series_dataframes(
     )
     df_join = df_join.fillna({"dfPri_StateGroupId": 0})
 
-    # Fix start and end timestamps when multiple states in secondary dataframe match primary dataframe
+    # Fix start and end timestamps when multiple states in secondary dataframe
+    # match primary dataframe
     window = Window.partitionBy(idColumns + ["dfPri_StateGroupId"]).orderBy(
         f"dfPri_{startTimeColumnName}", f"dfSec_{startTimeColumnName}"
     )
@@ -133,7 +133,8 @@ def join_time_series_dataframes(
     #   - One with the state from the primary dataframe
     #   - One with the state from the secondary dataframe
     #   - One with the rest of primary dataframe
-    # Correcting the end timestamps according to if there is a matching element in secondary dataframe
+    # Correcting the end timestamps according to if there is
+    # a matching element in secondary dataframe
     df_join = df_join.withColumn(
         "StartTimeDfPri1", F.col(f"dfPri_{startTimeColumnName}")
     )
@@ -197,7 +198,8 @@ def join_time_series_dataframes(
         + [
             f"dfPri_{stateColumn}",
             f"dfSec_{stateColumn}",
-            "stack(3, 'DfPri1', DfPri1, 'DfSec', DfSec, 'DfPri2', DfPri2) as (type, data)",
+            "stack(3, 'DfPri1', DfPri1, 'DfSec', DfSec, 'DfPri2', DfPri2) "
+            "as (type, data)",
         ]
     )
     df_join_unpivot = df_join.selectExpr(*unpivot_columnn_select)
@@ -246,7 +248,8 @@ def merge_df_into_target(
     Merges a databricks dataframe into a target database table
 
     :param df: The dataframe
-    :param table_name: The name of the table which the dataframe (p1) should be merged into
+    :param table_name: The name of the table which the dataframe (p1)
+        should be merged into
     :param database_name: The database name associated with the table
     :param join_cols: A list of strings which tells which columns to join on
     :param table_format: The format of the table
@@ -283,7 +286,8 @@ def merge_df_into_target(
     # Find records that need to be updated in the target (happens seldom)
 
     # Define the column to be used for checking for new rows
-    # Checking the null-ness of one right row is sufficient to mark the row as new, since null keys are disallowed.
+    # Checking the null-ness of one right row is sufficient to mark the row as new,
+    # since null keys are disallowed.
     key_col = join_cols[-1]
 
     # Write the filtering string including casting maps to strings
@@ -360,7 +364,7 @@ def concat_dfs(dfs: List[DataFrame]):
 
     # Check that the list of dataframe and each dataframe is not Nonetypes
     if dfs is None:
-        raise NoTableException(f"The table list of tables are None")
+        raise NoTableException("The table list of tables are None")
 
     for i, df in enumerate(dfs):
         if df is None:

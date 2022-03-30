@@ -16,7 +16,8 @@ class TestFunctions(unittest.TestCase):
         df.show()
 
         value = df.take(1)[0][0]
-        # since it is variable, we can only assert that the string is formatted as a uuid4
+        # since it is variable, we can only assert
+        # that the string is formatted as a uuid4
         self.assertRegex(
             value, r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
         )

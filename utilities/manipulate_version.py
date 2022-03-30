@@ -4,12 +4,11 @@ with a version that is larger than whatever is already published on test.pypi.or
 This facilitates continuous release.
 """
 import json
-import re
 from urllib.request import urlopen
 
 from packaging.version import parse
 
-init_file_path = "src/atc/__init__.py"
+version_file_path = "src/VERSION.txt"
 
 
 def main():
@@ -21,36 +20,27 @@ def main():
     else:
         version = f"{pypi_v.major}.{pypi_v.minor}.{pypi_v.micro+1}"
 
-    # substitute the version into the file
-    conts = open(init_file_path).read()
-    new_conts = re.sub(
-        r'__version__\s+=\s+"\d+\.\d+\.\w+"',
-        rf'__version__ = "{version}"',
-        conts,
-        count=1,
-    )
-    with open(init_file_path, "w") as f:
-        f.write(new_conts)
+    with open(version_file_path, "w") as f:
+        f.write(version)
 
 
 def get_local_version():
-    with open(init_file_path) as f:
-        conts = f.read()
-        m = re.search(r'__version__\s+=\s+"(\d+\.\d+\.\w+)"', conts)
-        if not m:
-            return None
-        version_string = m.group(1)
-
+    with open(version_file_path) as f:
         # clean up the version
-        v = parse(version_string)
+        v = parse(f.read())
         v = parse(v.base_version)  # remove any suffices
         return v
 
 
 def get_test_pypi_version():
-    test_pypi = json.load(urlopen("https://test.pypi.org/pypi/atc-dataplatform/json"))
-    test_pypi_version = parse(test_pypi["info"]["version"])
-    return test_pypi_version
+    try:
+        test_pypi = json.load(
+            urlopen("https://test.pypi.org/pypi/atc-dataplatform/json")
+        )
+        test_pypi_version = parse(test_pypi["info"]["version"])
+        return test_pypi_version
+    except:  # noqa: E722
+        return parse("0.0.0")
 
 
 if __name__ == "__main__":

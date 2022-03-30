@@ -16,7 +16,8 @@ from .sql import get_details_from_sql
 
 class ConfigMaster(metaclass=Singleton):
     """
-    Single point of contact for all configurations regarding tables, paths and databases.
+    Single point of contact for all configurations regarding tables,
+    paths and databases.
     """
 
     table_details: Dict[str, Details]

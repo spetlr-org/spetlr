@@ -20,7 +20,7 @@ def run_all():
     # process the logout path
     basedir = args.basedir
     if not str(basedir).startswith("dbfs:/"):
-        print(f"WARNING: argument basedir must start with dbfs:/")
+        print("WARNING: argument basedir must start with dbfs:/")
     else:
         basedir = f"/dbfs/{basedir[6:]}"
 

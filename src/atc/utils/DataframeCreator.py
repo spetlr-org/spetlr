@@ -65,7 +65,8 @@ class DataframeCreator:
                         column_schema, item, column_schema_selection
                     )
 
-                    # fix the order of the items in the row item while also given the row elements keys
+                    # fix the order of the items in the row item
+                    # while also given the row elements keys
         kwargs = OrderedDict()
         for column in schema.names:
             if column in in_data:

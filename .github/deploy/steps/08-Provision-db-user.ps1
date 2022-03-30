@@ -21,7 +21,7 @@ $variables =
   "WriteRights=$($WriteRights)",
   "CreateRights=$($CreateRights)",
   "ExecRights=$($ExecRights)",
-  "CreateViewRights=$($CreateViewRights)",
+  "CreateViewRights=$($CreateViewRights)"
 
 
 Write-Host "   Creating database user for user: $($dbUserName)" -ForegroundColor DarkYellow

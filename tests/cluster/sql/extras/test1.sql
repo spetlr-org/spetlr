@@ -1,11 +1,11 @@
-CREATE TABLE {table_name1}
+CREATE TABLE {SqlTestTable1}
 (
  testcolumn INT NULL
 )
 
 -- COMMAND ----------
 
-CREATE TABLE {table_name2}
+CREATE TABLE {SqlTestTable2}
 (
  testcolumn INT NULL
 )

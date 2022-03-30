@@ -1,7 +1,9 @@
 import unittest
-from atc.functions import get_unique_tempview_name, drop_table_cascade, init_dbutils
-from atc.spark import Spark
+
 from atc.atc_exceptions import NoTableException, UnkownPathException
+from atc.functions import (drop_table_cascade, get_unique_tempview_name,
+                           init_dbutils)
+from atc.spark import Spark
 
 
 class DropTableCascadeTest(unittest.TestCase):

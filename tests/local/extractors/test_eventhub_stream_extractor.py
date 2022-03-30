@@ -1,10 +1,8 @@
 import unittest
 from datetime import datetime
 
-from atc.extractors import (
-    EventhubStreamExtractor,
-    InvalidEventhubStreamExtractorParameters,
-)
+from atc.extractors import (EventhubStreamExtractor,
+                            InvalidEventhubStreamExtractorParameters)
 
 
 class EventhubStreamExtractorTest(unittest.TestCase):

@@ -1,8 +1,6 @@
-from abc import abstractmethod
-
 from pyspark.sql import DataFrame
 
-from .types import dataset_group, EtlBase
+from .types import EtlBase, dataset_group
 
 
 class Loader(EtlBase):

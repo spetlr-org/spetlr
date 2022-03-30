@@ -2,11 +2,13 @@
 A collection of useful pyspark snippets.
 """
 
-from atc.spark import Spark
+import uuid as _uuid
+
 from pyspark.sql.functions import udf
 from pyspark.sql.types import StringType
-import uuid as _uuid
+
 from atc.atc_exceptions import NoTableException
+from atc.spark import Spark
 
 # Pyspark uuid function implemented as recommended here
 # https://stackoverflow.com/questions/49785108/spark-streaming-with-python-how-to-add-a-uuid-column/50095755
@@ -56,7 +58,7 @@ def drop_table_cascade(DBDotTableName: str) -> None:
     Spark.get().sql(f"DROP TABLE IF EXISTS {DBDotTableName}")
 
 
-def get_unique_tempview_name()->str:
+def get_unique_tempview_name() -> str:
     unique_id = _uuid.uuid4().hex
     temp_view_name = f"source_{unique_id}"
     return temp_view_name

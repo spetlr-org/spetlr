@@ -1,8 +1,8 @@
 from collections import OrderedDict
-from typing import List, Union, Tuple, Any
+from typing import Any, List, Tuple, Union
 
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, Row, ArrayType
+from pyspark.sql.types import ArrayType, Row, StructType
 
 from atc.spark import Spark
 

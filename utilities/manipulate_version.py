@@ -32,17 +32,18 @@ def main():
     with open(init_file_path, "w") as f:
         f.write(new_conts)
 
+
 def get_local_version():
     with open(init_file_path) as f:
         conts = f.read()
-        m=re.search(r'__version__\s+=\s+"(\d+\.\d+\.\w+)"', conts)
+        m = re.search(r'__version__\s+=\s+"(\d+\.\d+\.\w+)"', conts)
         if not m:
             return None
         version_string = m.group(1)
 
-        #clean up the version
-        v= parse(version_string)
-        v=parse(v.base_version)  # remove any suffices
+        # clean up the version
+        v = parse(version_string)
+        v = parse(v.base_version)  # remove any suffices
         return v
 
 
@@ -50,6 +51,7 @@ def get_test_pypi_version():
     test_pypi = json.load(urlopen("https://test.pypi.org/pypi/atc-dataplatform/json"))
     test_pypi_version = parse(test_pypi["info"]["version"])
     return test_pypi_version
+
 
 if __name__ == "__main__":
     main()

@@ -1,8 +1,8 @@
 import unittest
 
-from atc.spark import Spark
 from pyspark.sql import types
 
+from atc.spark import Spark
 from atc.utils import DataframeCreator
 
 

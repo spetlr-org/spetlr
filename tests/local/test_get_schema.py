@@ -1,8 +1,9 @@
 import unittest
 from textwrap import dedent
 
-from atc.sql.schema import get_schema
 from pyspark.sql import types as t
+
+from atc.sql.schema import get_schema
 
 
 class TestGetSchema(unittest.TestCase):

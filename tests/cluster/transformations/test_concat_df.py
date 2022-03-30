@@ -1,6 +1,8 @@
 import unittest
+
 import pyspark.sql.functions as f
-from pyspark.sql.types import StructType, StructField, StringType
+from pyspark.sql.types import StringType, StructField, StructType
+
 import atc.transformations as atc_transform
 from atc.spark import Spark
 

@@ -3,7 +3,7 @@ import json
 import uuid
 from pathlib import Path
 from types import ModuleType
-from typing import TypedDict, Union, Dict, Set
+from typing import Dict, Set, TypedDict, Union
 
 import yaml
 
@@ -163,7 +163,7 @@ class TableConfigurator(metaclass=Singleton):
         Register a new table.
         """
         if not self.__is_known_shape(value):
-            raise ValueError(f"Object has unexpected shape.")
+            raise ValueError("Object has unexpected shape.")
         self.table_names[key] = value
         self.__resolve_key(key)
 

@@ -1,10 +1,11 @@
 import unittest
 
-from atc.functions import get_unique_tempview_name
-from atc.transformations import merge_df_into_target
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
-from atc.spark import Spark
 from pyspark.sql import DataFrame
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+
+from atc.functions import get_unique_tempview_name
+from atc.spark import Spark
+from atc.transformations import merge_df_into_target
 from atc.utils import DataframeCreator
 
 

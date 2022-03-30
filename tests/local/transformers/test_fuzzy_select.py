@@ -1,8 +1,9 @@
 import unittest
 
+from pyspark.sql import types as t
+
 import atc.spark
 from atc.transformers.fuzzy_select import FuzzySelectTransformer
-from pyspark.sql import types as t
 
 
 class FuzzySelectorTest(unittest.TestCase):

@@ -1,3 +1,4 @@
+import importlib.resources
 import time
 
 import pyodbc
@@ -137,10 +138,9 @@ class SqlServer:
     def execute_sql_file(
         self, sql_file: str, resource_path: str, arguments: dict = None
     ):
-        raise NotImplementedError("Waiting for configreader implementation...")
 
-    #    for sql in ConfigReader().get_sql_file(sql_file, resource_path, arguments):
-    #        self.execute_sql(sql)
+        for sql in self.get_sql_file(sql_file, resource_path, arguments):
+            self.execute_sql(sql)
 
     @staticmethod
     def table_name(table_id: str):
@@ -176,3 +176,35 @@ class SqlServer:
 
     def drop_view(self, table_id: str):
         self.drop_view_by_name(SqlServer.table_name(table_id))
+
+    def get_sql_file(
+        self,
+        resource_path: str,
+        sql_file: str = None,
+        arguments: dict = None,
+    ):
+        """
+        Returns SQL statements from the specified .sql file. The return value is a generator.
+        :param sql_file: name of the .sql file - if empty, all .sql files with names ending with "-create" are returned.
+        :param resource_path: path to the .sql files.
+        :param arguments: values of optional arguments to be replaced in the .sql files.
+        :return: generator with SQL statements.
+        """
+        sql_arguments = {
+            key: TableConfigurator().table_property(key, "name", "")
+            for key in TableConfigurator().table_names.keys()
+        }
+        sql_arguments.update(TableConfigurator().table_arguments)
+        if arguments is not None:
+            sql_arguments.update(arguments)
+        for file_name in importlib.resources.contents(resource_path):
+            if (
+                (sql_file is None and file_name.endswith("-create.sql"))
+                or (sql_file == "*" and file_name.endswith(".sql"))
+                or (sql_file is not None and file_name == (sql_file + "-create.sql"))
+                or (sql_file is not None and file_name == (sql_file + ".sql"))
+            ):
+                with importlib.resources.path(resource_path, file_name) as file_path:
+                    with open(file_path) as file:
+                        for sql in file.read().split(sep="-- COMMAND ----------"):
+                            yield sql.format(**sql_arguments)

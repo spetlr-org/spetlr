@@ -139,12 +139,14 @@ class SqlServer:
 
     def execute_sql_file(
         self,
-        sql_file: str,
         resource_path: Union[str, ModuleType],
+        sql_file: str,
         arguments: dict = None,
     ):
 
-        for sql in self.get_sql_file(sql_file, resource_path, arguments):
+        for sql in self.get_sql_file(
+            resource_path=resource_path, sql_file=sql_file, arguments=arguments
+        ):
             self.execute_sql(sql)
 
     @staticmethod

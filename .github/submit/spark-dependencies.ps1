@@ -13,4 +13,9 @@
 
 $spark_dependencies = @(
 # we expect to add dependencies here once we have integrations to eventhubs etc.
+    @{
+      maven = @{
+        coordinates = "com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21"
+      }
+    }
 )

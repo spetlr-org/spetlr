@@ -19,7 +19,7 @@ class TableDetails(TypedDict):
     name: str
     path: str
     format: str
-    date: str
+    partitioning: str
 
 
 class TableRelDbg(TypedDict):

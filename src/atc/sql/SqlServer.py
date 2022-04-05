@@ -23,7 +23,7 @@ class SqlServer:
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
         self.url = (
             f"jdbc:sqlserver://{hostname}:{port};"
-            "database={database};queryTimeout=0;loginTimeout={self.timeout}"
+            f"database={database};queryTimeout=0;loginTimeout={self.timeout}"
         )
 
         self.username = username

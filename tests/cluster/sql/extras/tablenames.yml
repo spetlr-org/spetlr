@@ -1,0 +1,8 @@
+SqlTestTable1:
+  name: dbo.test1{ID}
+
+SqlTestTable2:
+  name: dbo.test2{ID}
+
+SqlTestView:
+  name: viewtest1{ID}

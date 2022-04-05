@@ -8,6 +8,17 @@ Write-Host "  Generating secure admin password" -ForegroundColor DarkYellow
 $sqlServerAdminUser = "DataPlatformAdmin"
 $sqlServerAdminPassword = Generate-Password
 
+# Add to databrick secrets
+$keystore += @{
+  name="SqlServer--DataPlatformAdmin"
+  key=$sqlServerAdminUser
+}
+
+$keystore += @{
+  name="SqlServer--DataPlatformAdminPassword"
+  key=$sqlServerAdminPassword
+}
+
 Write-Host "  Creating SQL server" -ForegroundColor DarkYellow
 $output = az sql server create `
   --name $databaseServerName `

@@ -72,3 +72,19 @@ BEGIN
 END
 
 GO
+
+
+DECLARE @CreateViewRights AS VARCHAR(MAX)='$(CreateViewRights)'
+
+IF (@CreateViewRights = 'True')
+BEGIN
+	GRANT CREATE VIEW TO [$(Username)]
+	PRINT 'Add CREATE VIEW rights to $(Username)'
+END
+ELSE
+BEGIN
+	REVOKE CREATE VIEW FROM [$(Username)]
+	PRINT 'Remove CREATE VIEW rights from $(Username)'
+END
+
+GO

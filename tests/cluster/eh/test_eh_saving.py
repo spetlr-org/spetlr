@@ -1,4 +1,6 @@
+import time
 import unittest
+from datetime import datetime, timedelta
 
 from pyspark.sql import functions as f
 
@@ -29,9 +31,21 @@ class EventHubsTests(unittest.TestCase):
         )
 
     def test_02_wait_for_capture_files(self):
+        # wait until capture file appears
         dbutils = init_dbutils()
 
-        # wait until capture file appears
+        limit = datetime.now() + timedelta(minutes=5)
+        while datetime.now() < limit:
+            conts = {item.name for item in dbutils.fs.ls("/mnt/atc/silver")}
+            if "atcnamespace/" in conts:
+                break
+            else:
+                time.sleep(10)
+                continue
+        else:
+            self.assertTrue(False, "The capture file never appeared.")
+
+        self.assertTrue(True, "The capture file has appeared.")
 
     def test_03_read_eh_capture(self):
         tc = TableConfigurator()

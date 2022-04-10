@@ -58,13 +58,16 @@ def main():
         clientSecret = dbutils.secrets.get(scope=scope, key=item.clientSecretName)
         tenantId = dbutils.secrets.get(scope=scope, key=item.tenantIdName)
 
+        prfx = "fs.azure.account."
         configs = {
-            "fs.azure.account.auth.type": "OAuth",
-            "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-            "fs.azure.account.oauth2.client.id": clientId,
-            "fs.azure.account.oauth2.client.secret": clientSecret,
-            "fs.azure.account.oauth2.client.endpoint": (
-                "https://login.microsoftonline.com/" + tenantId + "/oauth2/token"
+            f"{prfx}auth.type": "OAuth",
+            f"{prfx}oauth.provider.type": (
+                "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
+            ),
+            f"{prfx}oauth2.client.id": clientId,
+            f"{prfx}oauth2.client.secret": clientSecret,
+            f"{prfx}oauth2.client.endpoint": (
+                f"https://login.microsoftonline.com/{tenantId}/oauth2/token"
             ),
         }
 

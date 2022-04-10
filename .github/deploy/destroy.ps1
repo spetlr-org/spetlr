@@ -28,3 +28,20 @@ $output = az group delete --name $resourceGroupName --yes
 Throw-WhenError -output $output
 
 Write-Host "  Parent Resource Group Deleted" -ForegroundColor Green
+
+###############################################################################################
+# Delete Mounting App registration
+###############################################################################################
+Write-Host "  Now Destroying Mounting App registration!" -ForegroundColor Red
+
+$mountApp = Graph-ListApplications -queryDisplayName $mountSpnName
+
+if ($null -eq $mountApp)
+{
+  Write-Host "No application found. Already deleted?" -ForegroundColor DarkGreen
+}else
+{
+  Write-Host "Deleting mounting app registration" -ForegroundColor DarkGreen
+  Grapsh-DeleteApplication -appId $mountApp.id
+}
+

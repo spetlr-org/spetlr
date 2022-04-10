@@ -1,0 +1,10 @@
+[
+  {
+    "storageAccountName":"atc",
+    "secretScope":"atc",
+    "clientIdName":"Databricks--ClientId",
+    "clientSecretName":"Databricks--StorageAccountKey",
+    "tenantIdName":"Databricks--TenantId",
+    "containers":["silver"]
+  }
+]

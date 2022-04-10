@@ -1,0 +1,39 @@
+custom:
+  spark-conf-single: &spark-conf-single
+    spark.databricks.io.cache.enabled: true
+    spark.databricks.delta.preview.enabled: true
+    spark.databricks.cluster.profile: singleNode
+    spark.master: local[*, 4]
+
+  azure-attributes: &azure-attributes
+    availability: ON_DEMAND_AZURE
+    first_on_demand: 1
+    spot_bid_max_price: -1
+
+  basic-cluster-single: &basic-cluster-single
+    spark_version: "9.1.x-scala2.12"
+    spark_conf: *spark-conf-single
+    azure_attributes: *azure-attributes
+    spark_env_vars:
+      PYSPARK_PYTHON: /databricks/python3/bin/python3
+    node_type_id: "Standard_DS3_v2"
+    num_workers: 0
+
+  spark-libs: &spark-libs {% include 'sparklibs.json' %}
+
+
+environments:
+  default:
+    strict_path_adjustment_policy: true
+    jobs:
+      - name: Setup Mounts
+        new_cluster:
+          <<: *basic-cluster-single
+          custom_tags:
+            JobName: Setup Mounts
+
+        libraries: *spark-libs
+        max_retries: 0
+        spark_python_task:
+          python_file: "file://src/atc/mount/main.py"
+          parameters: [ "file:fuse://tests/cluster/mount/mounts.json"]

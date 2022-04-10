@@ -94,10 +94,6 @@ class EventHubCapture:
             # loop over items in path
             value = None
             for file_info in dbutils.fs.ls(self.path + "/" + partition_path):
-                # validate
-                if not file_info.path.startswith("dbfs:"):
-                    raise AtcEhLogicException("Unexpected file paths")
-
                 if not (
                     file_info.name.startswith(c + "=") and file_info.name.endswith("/")
                 ):
@@ -210,9 +206,9 @@ class EventHubCapture:
             .withColumn(
                 "pdate",
                 f.expr(
-                    "make_timestamp(y,m,d,h,0,0)"
+                    'make_timestamp(y,m,d,h,0,0,"UTC")'
                     if "h" in self.partitioning
-                    else "make_timestamp(y,m,d,0,0,0)"
+                    else 'make_timestamp(y,m,d,0,0,0,"UTC")'
                 ),
             )
         )

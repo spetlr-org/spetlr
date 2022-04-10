@@ -36,7 +36,7 @@ $keystore += @{
 foreach ($eventHub in $eventHubConfig) {
   Write-Host "  Creating Event Hub : $($eventHub.name) " -ForegroundColor DarkYellow
 
-  $captureFormat = "{Namespace}/{EventHub}/p={PartitionId}/y={Year}/m={Month}/d={Day}/{Year}_{Month}_{Day}_{Hour}_{Minute}_{Second}_{PartitionId}"
+  $captureFormat = "{Namespace}/{EventHub}/y={Year}/m={Month}/d={Day}/{Year}_{Month}_{Day}_{Hour}_{Minute}_{Second}_{PartitionId}"
 
 
   $output = az eventhubs eventhub create `

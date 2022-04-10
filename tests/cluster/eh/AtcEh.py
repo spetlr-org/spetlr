@@ -1,7 +1,7 @@
 """
 This file sets up the EventHub that is deployed as part of the atc integration pipeline
 """
-from atc.eh.EventHubStream import EventHubStream
+from atc.eh import EventHubStream
 from atc.functions import init_dbutils
 
 

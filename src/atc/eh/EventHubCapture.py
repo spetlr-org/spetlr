@@ -1,27 +1,18 @@
 import json
 from datetime import datetime, timedelta
-from typing import Dict
 import re
 
 from pyspark.sql.utils import AnalysisException
 
 from atc.config_master import TableConfigurator
+from atc.eh.eh_exceptions import AtcEhInitException, AtcEhLogicException
 from atc.functions import init_dbutils
 from atc.spark import Spark
 
 from pyspark.sql import functions as f, DataFrame
 
 
-class EventHubCaptureStore(type):
-    _instances: Dict[str, "EventHubCapture"] = {}
-
-    def __call__(cls, id: str):
-        if id not in cls._instances:
-            cls._instances[id] = super(EventHubCaptureStore, cls).__call__(id)
-        return cls._instances[id]
-
-
-class EventHubCapture(metaclass=EventHubCaptureStore):
+class EventHubCapture:
     """Class to access eventhub capture files as table.
 
     The constructor argument should be given as a key that can be found in
@@ -29,12 +20,21 @@ class EventHubCapture(metaclass=EventHubCaptureStore):
     format=avro and with a partitioning from the set of known partitions: y,m,d,h
     """
 
-    def __init__(self, id: str):
+    @classmethod
+    def from_tc(cls, id: str):
         tc = TableConfigurator()
-        self.name = tc.table_property(id, "name")
-        self.path = tc.table_property(id, "path")
-        self.format = tc.table_property(id, "format").lower()
-        self.partitioning = tc.table_property(id, "partitioning").lower()
+        return cls(
+            name=tc.table_property(id, "name"),
+            path=tc.table_property(id, "path"),
+            format=tc.table_property(id, "format"),
+            partitioning=tc.table_property(id, "partitioning"),
+        )
+
+    def __init__(self, name: str, path: str, format: str, partitioning: str):
+        self.name = name
+        self.path = path
+        self.format = format.lower()
+        self.partitioning = partitioning.lower()
 
         assert self.format == "avro"
         self._validate_partitioning()
@@ -83,7 +83,7 @@ class EventHubCapture(metaclass=EventHubCaptureStore):
         """Add the first partition by discovering it from filesystem."""
         # raise if the table already has partitions
         if Spark.get().sql(f"SHOW PARTITIONS {self.name}").count():
-            raise Exception("Table partitions already initialized.")
+            raise AtcEhLogicException("Table partitions already initialized.")
 
         dbutils = init_dbutils()
         partition = {}
@@ -96,7 +96,7 @@ class EventHubCapture(metaclass=EventHubCaptureStore):
             for file_info in dbutils.fs.ls(self.path + "/" + partition_path):
                 # validate
                 if not file_info.path.startswith("dbfs:"):
-                    raise Exception("Unexpected file paths")
+                    raise AtcEhLogicException("Unexpected file paths")
 
                 if not (
                     file_info.name.startswith(c + "=") and file_info.name.endswith("/")
@@ -111,7 +111,7 @@ class EventHubCapture(metaclass=EventHubCaptureStore):
             # done looping over items.
             if value is None:
                 # There is probably no data, yet.
-                raise Exception("unable to discover first partition")
+                raise AtcEhInitException("unable to discover first partition")
 
             if partition_path:
                 partition_path += "/"
@@ -195,6 +195,7 @@ class EventHubCapture(metaclass=EventHubCaptureStore):
             parts_per_batch = min(len(additions), 24)
             print(f"adding {parts_per_batch} partitions")
 
+            # add partitions in batch to prevent an sql line with hundreds of parts
             batch = [additions.pop() for _ in range(parts_per_batch)]
             Spark.get().sql(f"ALTER TABLE {self.name} ADD " + " ".join(batch))
         else:

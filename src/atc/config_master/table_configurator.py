@@ -51,6 +51,11 @@ class TableConfigurator(metaclass=Singleton):
     def add_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
         self.resource_paths.add(resource_path)
 
+    def clear_all_configurations(self):
+        self.resource_paths = set()
+        self.table_names = dict()
+        self.__reset()
+
     def __reset(self, debug: bool = False, **kwargs) -> None:
         self._is_debug = debug
         self.table_arguments = dict()

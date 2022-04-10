@@ -1,3 +1,6 @@
+########################################################
+#  Setting up a SPN for the pipeline
+########################################################
 
 ## Step 1. Ensure correct subscription
 #az login
@@ -54,6 +57,7 @@ $permission_id = "18a4783c-866b-4cc7-a460-3d5e5662c884"
 az ad app permission add --id $appId --api $graph.appId --api-permission "$($permission_id)=Role"
 az ad app permission grant --id $appId  --api $graph.appId
 
+Write-Host "# please add these secrets to your github environment"
 Write-Host "`$clientId = '$appId'"
 Write-Host "`$clientSecret = '$clientSecret'"
 Write-Host "`$tenantId = '$tenantId'"

@@ -6,7 +6,8 @@ function Graph-DeleteApplication {
       $appId
     )
 
-
-    Graph-Rest -method delete -url applications/$appId
+    az rest `
+        --method delete `
+        --url https://graph.microsoft.com/v1.0/applications/$appId
 
 }

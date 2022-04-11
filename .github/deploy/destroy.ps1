@@ -25,7 +25,7 @@ Write-Host "Initialize deployment" -ForegroundColor Green
 Write-Host "  Now Destroying Parent Resource Group!" -ForegroundColor Red
 
 $output = az group delete --name $resourceGroupName --yes
-Throw-WhenError -output $output
+#Throw-WhenError -output $output
 
 Write-Host "  Parent Resource Group Deleted" -ForegroundColor Green
 
@@ -42,6 +42,6 @@ if ($null -eq $mountApp)
 }else
 {
   Write-Host "Deleting mounting app registration" -ForegroundColor DarkGreen
-  Grapsh-DeleteApplication -appId $mountApp.id
+  Graph-DeleteApplication -appId $mountApp.id
 }
 

@@ -1,12 +1,12 @@
 
-$resourceGroupName           = "atcintegration"
-$resourceName                = "atc"
-$databricksName              = $resourceName
-$dataLakeName               = $resourceName
-$databaseServerName          = $resourceName + "test"
-$deliveryDatabase            = "Delivery"
+$resourceGroupName            = "atcintegration"
+$resourceName                 = "atc"
+$databricksName               = $resourceName
+$dataLakeName                 = $resourceName
+$databaseServerName           = $resourceName + "test"
+$deliveryDatabase             = "Delivery"
 $ehNamespace                  = $resourceName+"namespace"
-
+$mountSpnName                 = "AtcMountSpn"
 
 $location = "eastus" # Use eastus because of free azure subscription
 $resourceTags = @(
@@ -36,6 +36,7 @@ Write-Host "* Azure Data Lake                 : $dataLakeName" -ForegroundColor 
 Write-Host "* Azure SQL server                : $databaseServerName" -ForegroundColor White
 Write-Host "* Azure SQL database              : $deliveryDatabase" -ForegroundColor White
 Write-Host "* Azure EventHubs Namespace       : $ehNamespace" -ForegroundColor White
+Write-Host "* Mounting SPN Name               : $mountSpnName" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
 
 

@@ -11,17 +11,4 @@
 # Pip packages should be specified in setup.py.
 ###############################################################################################
 
-$spark_dependencies = @(
-# we expect to add dependencies here once we have integrations to eventhubs etc.
-    @{
-      maven = @{
-        coordinates = "com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21"
-      }
-    },
-    @{
-      maven = @{
-        coordinates = "com.microsoft.azure:spark-mssql-connector_2.12_3.0:1.0.0-alpha"
-      }
-    }
-
-)
+$spark_dependencies = Get-Content "$PSScriptRoot/sparklibs.json" | ConvertFrom-Json

@@ -3,6 +3,8 @@ $srcDir = "$PSScriptRoot/../../.."
 
 Push-Location -Path $srcDir
 
+pip install dbx
+
 dbx configure
 copy "$srcDir/.github/submit/sparklibs.json" "$srcDir/tests/cluster/mount/"
 

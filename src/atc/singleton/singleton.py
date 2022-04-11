@@ -5,6 +5,8 @@ https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 
 
 class Singleton(type):
+    """Globally single type"""
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):

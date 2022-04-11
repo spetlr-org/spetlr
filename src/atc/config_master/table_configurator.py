@@ -19,7 +19,7 @@ class TableDetails(TypedDict):
     name: str
     path: str
     format: str
-    date: str
+    partitioning: str
 
 
 class TableRelDbg(TypedDict):
@@ -50,6 +50,11 @@ class TableConfigurator(metaclass=Singleton):
 
     def add_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
         self.resource_paths.add(resource_path)
+
+    def clear_all_configurations(self):
+        self.resource_paths = set()
+        self.table_names = dict()
+        self.__reset()
 
     def __reset(self, debug: bool = False, **kwargs) -> None:
         self._is_debug = debug

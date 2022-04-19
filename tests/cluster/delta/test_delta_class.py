@@ -4,7 +4,7 @@ from pyspark.sql.utils import AnalysisException
 
 from atc.config_master import TableConfigurator
 from atc.delta import DeltaHandle
-from atc.delta.db_handle import DbHandle
+from atc.delta import DbHandle
 from atc.spark import Spark
 
 
@@ -43,8 +43,8 @@ class DeltaTests(unittest.TestCase):
 
         df = Spark.get().createDataFrame([(1, "a"), (2, "b")], "id int, name string")
 
-        dh.overwrite(df)
-        dh.append(df)
+        dh.overwrite(df, overwriteSchema=True)
+        dh.append(df)  # schema matches
 
     def test_04_read(self):
         df = DeltaHandle.from_tc("MyTbl").read()

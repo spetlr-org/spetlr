@@ -57,17 +57,21 @@ class DeltaHandle:
             return Spark.get().read.format(self._data_format).load(self._location)
         return Spark.get().table(self._name)
 
-    def write_or_append(self, df: DataFrame, mode: str) -> None:
+    def write_or_append(self, df: DataFrame, mode: str, overwriteSchema=None) -> None:
+        writer = df.write.format(self._data_format).mode(mode)
+        if overwriteSchema is not None:
+            writer = writer.option("overwriteSchema", overwriteSchema)
+
         if self._location:
-            return df.write.format(self._data_format).mode(mode).save(self._location)
+            return writer.save(self._location)
 
-        return df.write.format(self._data_format).mode(mode).saveAsTable(self._name)
+        return writer.saveAsTable(self._name)
 
-    def overwrite(self, df: DataFrame) -> None:
-        return self.write_or_append(df, "overwrite")
+    def overwrite(self, df: DataFrame, overwriteSchema=None) -> None:
+        return self.write_or_append(df, "overwrite", overwriteSchema=overwriteSchema)
 
-    def append(self, df: DataFrame) -> None:
-        return self.write_or_append(df, "append")
+    def append(self, df: DataFrame, overwriteSchema=None) -> None:
+        return self.write_or_append(df, "append", overwriteSchema=overwriteSchema)
 
     def truncate(self) -> None:
         Spark.get().sql(f"TRUNCATE TABLE {self._name};")

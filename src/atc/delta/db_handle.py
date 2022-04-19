@@ -1,8 +1,5 @@
-from pyspark.sql import DataFrame
-
 from atc.atc_exceptions import AtcException
 from atc.config_master import TableConfigurator
-from atc.functions import init_dbutils
 from atc.spark import Spark
 
 
@@ -51,7 +48,7 @@ class DbHandle:
         Spark.get().sql(f"DROP DATABASE IF EXISTS {self._name} CASCADE;")
 
     def create(self) -> None:
-        sql = f"CREATE DATABASE IF NOT EXISTS {self._name}"
+        sql = f"CREATE DATABASE IF NOT EXISTS {self._name} "
         if self._location:
             sql += f" LOCATION '{self._location}'"
         Spark.get().sql(sql)

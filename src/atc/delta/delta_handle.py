@@ -85,9 +85,9 @@ class DeltaHandle:
             init_dbutils().fs.rm(self._location, True)
 
     def create_hive_table(self) -> None:
-        sql = f"CREATE TABLE IF NOT EXISTS {self._name}"
+        sql = f"CREATE TABLE IF NOT EXISTS {self._name} "
         if self._location:
-            sql += f"USING DELTA LOCATION '{self._location}'"
+            sql += f" USING DELTA LOCATION '{self._location}'"
         Spark.get().sql(sql)
 
     def recreate_hive_table(self):

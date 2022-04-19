@@ -3,8 +3,7 @@ import unittest
 from pyspark.sql.utils import AnalysisException
 
 from atc.config_master import TableConfigurator
-from atc.delta import DeltaHandle
-from atc.delta import DbHandle
+from atc.delta import DbHandle, DeltaHandle
 from atc.spark import Spark
 
 
@@ -16,14 +15,14 @@ class DeltaTests(unittest.TestCase):
     def test_01_configure(self):
         tc = TableConfigurator()
         tc.register(
-            "MyDb", {"name": "TestDb{ID}", "location": "/mnt/atc/silver/testdb{ID}"}
+            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/atc/silver/testdb{ID}"}
         )
 
         tc.register(
             "MyTbl",
             {
                 "name": "TestDb{ID}.TestTbl",
-                "location": "/mnt/atc/silver/testdb{ID}/testtbl",
+                "path": "/mnt/atc/silver/testdb{ID}/testtbl",
             },
         )
 
@@ -31,20 +30,24 @@ class DeltaTests(unittest.TestCase):
         DbHandle.from_tc("MyDb")
         DeltaHandle.from_tc("MyTbl")
 
-    def test_02_create(self):
-        db = DbHandle.from_tc("MyDb")
-        db.create()
-
-        dh = DeltaHandle.from_tc("MyTbl")
-        dh.create_hive_table()
-
-    def test_03_write(self):
+    def test_02_write(self):
         dh = DeltaHandle.from_tc("MyTbl")
 
         df = Spark.get().createDataFrame([(1, "a"), (2, "b")], "id int, name string")
 
         dh.overwrite(df, overwriteSchema=True)
         dh.append(df)  # schema matches
+
+    def test_03_create(self):
+        db = DbHandle.from_tc("MyDb")
+        db.create()
+
+        dh = DeltaHandle.from_tc("MyTbl")
+        dh.create_hive_table()
+
+        # test hive access:
+        df = Spark.get().table("TestDb.TestTbl")
+        self.assertTrue(4, df.count())
 
     def test_04_read(self):
         df = DeltaHandle.from_tc("MyTbl").read()

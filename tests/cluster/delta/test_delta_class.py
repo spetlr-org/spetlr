@@ -36,7 +36,17 @@ class DeltaTests(unittest.TestCase):
         df = Spark.get().createDataFrame([(1, "a"), (2, "b")], "id int, name string")
 
         dh.overwrite(df, overwriteSchema=True)
-        dh.append(df)  # schema matches
+        dh.append(df, overwriteSchema=False)  # schema matches
+
+        df = Spark.get().createDataFrame(
+            [(1, "a", "yes"), (2, "b", "no")],
+            """
+            id int,
+            name string,
+            response string
+            """,
+        )
+        dh.append(df, overwriteSchema=True)
 
     def test_03_create(self):
         db = DbHandle.from_tc("MyDb")
@@ -47,11 +57,11 @@ class DeltaTests(unittest.TestCase):
 
         # test hive access:
         df = Spark.get().table("TestDb.TestTbl")
-        self.assertTrue(4, df.count())
+        self.assertTrue(6, df.count())
 
     def test_04_read(self):
         df = DeltaHandle.from_tc("MyTbl").read()
-        self.assertEqual(4, df.count())
+        self.assertEqual(6, df.count())
 
     def test_05_truncate(self):
         dh = DeltaHandle.from_tc("MyTbl")

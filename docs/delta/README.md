@@ -1,9 +1,10 @@
 
-# DeltaHandle
+# DeltaHandle and DbHandle
 
 The `TableConfigurator` contains logic to distinguish between production and 
 debug tables. To make full use of this functionality when reading and writing 
-delta tables, a convenience class has been provided. Use the class like this
+delta tables, two convenience classes, `DeltaHandle` and `DbHandle`, have 
+been provided. Use the classes like this
 
 ```python
 from atc.config_master import TableConfigurator

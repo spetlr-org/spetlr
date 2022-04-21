@@ -35,7 +35,7 @@ class DbHandle:
     def _validate(self):
         # name is either `db`.`table` or just `table`
         if "." in self._name:
-            raise DbHandleInvalidName(f"Invlaid DB name {self._name}")
+            raise DbHandleInvalidName(f"Invalid DB name {self._name}")
 
         # only format db is supported.
         if self._data_format != "db":

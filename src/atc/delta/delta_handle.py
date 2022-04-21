@@ -36,7 +36,7 @@ class DeltaHandle:
         )
 
     def _validate(self):
-        # name is either `db`.`table` or just `table`
+        """Validates that the name is either db.table or just table."""
         name_parts = self._name.split(".")
         if len(name_parts) == 1:
             self._db = None
@@ -57,20 +57,26 @@ class DeltaHandle:
             return Spark.get().read.format(self._data_format).load(self._location)
         return Spark.get().table(self._name)
 
-    def write_or_append(self, df: DataFrame, mode: str, overwriteSchema=None) -> None:
+    def write_or_append(
+        self, df: DataFrame, mode: str, overwriteSchema: bool = None
+    ) -> None:
+        assert mode in {"append", "overwrite"}
+
         writer = df.write.format(self._data_format).mode(mode)
         if overwriteSchema is not None:
-            writer = writer.option("overwriteSchema", overwriteSchema)
+            writer = writer.option(
+                "overwriteSchema", "true" if overwriteSchema else "false"
+            )
 
         if self._location:
             return writer.save(self._location)
 
         return writer.saveAsTable(self._name)
 
-    def overwrite(self, df: DataFrame, overwriteSchema=None) -> None:
+    def overwrite(self, df: DataFrame, overwriteSchema: bool = None) -> None:
         return self.write_or_append(df, "overwrite", overwriteSchema=overwriteSchema)
 
-    def append(self, df: DataFrame, overwriteSchema=None) -> None:
+    def append(self, df: DataFrame, overwriteSchema: bool = None) -> None:
         return self.write_or_append(df, "append", overwriteSchema=overwriteSchema)
 
     def truncate(self) -> None:

@@ -58,26 +58,24 @@ class DeltaHandle:
         return Spark.get().table(self._name)
 
     def write_or_append(
-        self, df: DataFrame, mode: str, overwriteSchema: bool = None
+        self, df: DataFrame, mode: str, mergeSchema: bool = None
     ) -> None:
         assert mode in {"append", "overwrite"}
 
         writer = df.write.format(self._data_format).mode(mode)
-        if overwriteSchema is not None:
-            writer = writer.option(
-                "overwriteSchema", "true" if overwriteSchema else "false"
-            )
+        if mergeSchema is not None:
+            writer = writer.option("mergeSchema", "true" if mergeSchema else "false")
 
         if self._location:
             return writer.save(self._location)
 
         return writer.saveAsTable(self._name)
 
-    def overwrite(self, df: DataFrame, overwriteSchema: bool = None) -> None:
-        return self.write_or_append(df, "overwrite", overwriteSchema=overwriteSchema)
+    def overwrite(self, df: DataFrame, mergeSchema: bool = None) -> None:
+        return self.write_or_append(df, "overwrite", mergeSchema=mergeSchema)
 
-    def append(self, df: DataFrame, overwriteSchema: bool = None) -> None:
-        return self.write_or_append(df, "append", overwriteSchema=overwriteSchema)
+    def append(self, df: DataFrame, mergeSchema: bool = None) -> None:
+        return self.write_or_append(df, "append", mergeSchema=mergeSchema)
 
     def truncate(self) -> None:
         Spark.get().sql(f"TRUNCATE TABLE {self._name};")

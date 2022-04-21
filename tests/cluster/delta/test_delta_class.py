@@ -35,8 +35,8 @@ class DeltaTests(unittest.TestCase):
 
         df = Spark.get().createDataFrame([(1, "a"), (2, "b")], "id int, name string")
 
-        dh.overwrite(df, overwriteSchema=True)
-        dh.append(df, overwriteSchema=False)  # schema matches
+        dh.overwrite(df, mergeSchema=True)
+        dh.append(df, mergeSchema=False)  # schema matches
 
         df = Spark.get().createDataFrame(
             [(1, "a", "yes"), (2, "b", "no")],
@@ -46,7 +46,8 @@ class DeltaTests(unittest.TestCase):
             response string
             """,
         )
-        dh.append(df, overwriteSchema=True)
+
+        dh.append(df, mergeSchema=True)
 
     def test_03_create(self):
         db = DbHandle.from_tc("MyDb")

@@ -4,6 +4,7 @@ A collection of useful pyspark snippets.
 
 import uuid as _uuid
 
+from deprecation import deprecated
 from pyspark.sql.functions import udf
 from pyspark.sql.types import StringType
 
@@ -27,6 +28,7 @@ def init_dbutils():
     return dbutils
 
 
+@deprecated(details="Use DeltaHandle.drop_and_delete")
 def drop_table_cascade(DBDotTableName: str) -> None:
     """
     drop_table_cascade drops a databricks database table

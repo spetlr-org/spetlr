@@ -3,38 +3,26 @@ import json
 import uuid
 from pathlib import Path
 from types import ModuleType
-from typing import Dict, Set, TypedDict, Union
+from typing import Dict, Set, Union
 
 import yaml
 
 from atc.config_master.exceptions import UnknownShapeException
 from atc.singleton import Singleton
 
-
-class TableAlias(TypedDict):
-    alias: str
-
-
-class TableDetails(TypedDict):
-    name: str
-    path: str
-    format: str
-    partitioning: str
-
-
-class TableRelDbg(TypedDict):
-    release: Union[TableDetails, TableAlias]
-    debug: Union[TableDetails, TableAlias]
-
-
-TableDetails_keys = set(TableDetails.__annotations__.keys())
-TableAlias_keys = set(TableAlias.__annotations__.keys())
-TableRelDbg_keys = set(TableRelDbg.__annotations__.keys())
+from .configuration_types import (
+    AnyDetails,
+    TableAlias_keys,
+    TableDetailsExtended,
+    TableDetailsExtended_keys,
+    TableRelDbg,
+    TableRelDbg_keys,
+)
 
 
 class TableConfigurator(metaclass=Singleton):
     unique_id: str
-    table_names: Dict[str, Union[TableDetails, TableAlias, TableRelDbg]]
+    table_names: Dict[str, AnyDetails]
     table_arguments: Dict[str, str]
     resource_paths: Set[Union[str, ModuleType]]
 
@@ -93,7 +81,7 @@ class TableConfigurator(metaclass=Singleton):
             self.__resolve_key(key)
 
     def __is_TableDetails_shape(self, value):
-        return set(value.keys()).issubset(TableDetails_keys)
+        return set(value.keys()).issubset(TableDetailsExtended_keys)
 
     def __is_TableAlias_shape(self, value):
         return set(value.keys()).issubset(TableAlias_keys)
@@ -119,7 +107,7 @@ class TableConfigurator(metaclass=Singleton):
 
         # carry out string substitutions in name and path
         if self.__is_TableDetails_shape(self.table_names[key]):
-            value: TableDetails = self.table_names[key]
+            value: TableDetailsExtended = self.table_names[key]
             if "name" in value:
                 self.table_names[key]["name"] = value["name"].format(
                     **self.table_arguments
@@ -166,7 +154,7 @@ class TableConfigurator(metaclass=Singleton):
         """
         return len(self.unique_id)
 
-    def register(self, key: str, value: Union[TableDetails, TableAlias, TableRelDbg]):
+    def register(self, key: str, value: AnyDetails):
         """
         Register a new table.
         """

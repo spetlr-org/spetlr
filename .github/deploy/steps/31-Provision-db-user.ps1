@@ -35,12 +35,7 @@ Invoke-Sqlcmd `
 
 
 # Insert SQL credentials to secrets
-$keystore += @{
-  name="SqlServer--DatabricksUser"
-  key=$dbUserName
-}
+$secrets.addSecret("SqlServer--DatabricksUser", $dbUserName)
+$secrets.addSecret("SqlServer--DatabricksUserPassword", $dbUserPassword)
 
-$keystore += @{
-  name="SqlServer--DatabricksUserPassword"
-  key=$dbUserPassword
-}
+

@@ -14,17 +14,27 @@ function Graph-Rest {
 
     if($body){
       $body | ConvertTo-Json -Compress -Depth 100 | Set-Content body.json
-      $resp = Convert-Safe-FromJson -text (az rest `
+      $resp = az rest `
         --method $method `
         --header Content-Type=application/json `
         --url https://graph.microsoft.com/v1.0/$url `
-        --body '@body.json')
+        --body '@body.json'
       Remove-Item body.json
+
+      if($resp)
+      {
+        $resp = Convert-Safe-FromJson -text $resp
+      }
     }
     else{
-      $resp = Convert-Safe-FromJson -text (az rest `
+      $resp =  (az rest `
         --method $method `
         --url https://graph.microsoft.com/v1.0/$url )
+
+      if($resp)
+      {
+        $resp = Convert-Safe-FromJson -text $resp
+      }
     }
 
     return $resp

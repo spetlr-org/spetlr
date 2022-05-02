@@ -6,17 +6,17 @@ function Get-OAuthToken
       [ValidateNotNullOrEmpty()]
       [string]
       $tenantId,
-    
+
       [Parameter(Mandatory=$true)]
       [ValidateNotNullOrEmpty()]
       [string]
       $clientId,
-    
+
       [Parameter(Mandatory=$true)]
       [ValidateNotNullOrEmpty()]
       [string]
       $clientSecret,
-    
+
       [Parameter(Mandatory=$false)]
       [ValidateNotNullOrEmpty()]
       [string]
@@ -24,7 +24,7 @@ function Get-OAuthToken
   )
 
   $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-  
+
   $multipartContent = [System.Net.Http.MultipartFormDataContent]::new()
   $stringHeader = [System.Net.Http.Headers.ContentDispositionHeaderValue]::new("form-data")
   $stringHeader.Name = "grant_type"
@@ -54,5 +54,8 @@ function Get-OAuthToken
 
   $url = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token"
   $response = Invoke-RestMethod $url -Method 'POST' -Headers $headers -Body $body
+
+  Throw-WhenError -output $response
+
   return $response.access_token
 }

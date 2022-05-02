@@ -4,3 +4,4 @@
 . "$PSScriptRoot\New-DatabricksScope.ps1"
 . "$PSScriptRoot\Set-DatabricksGlobalInitScript.ps1"
 . "$PSScriptRoot\ConvertTo-Base64String.ps1"
+. "$PSScriptRoot\DatabricksSecretsManager.ps1"

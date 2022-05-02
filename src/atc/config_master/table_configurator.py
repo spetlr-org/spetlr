@@ -25,11 +25,13 @@ class TableConfigurator(metaclass=Singleton):
     table_names: Dict[str, AnyDetails]
     table_arguments: Dict[str, str]
     resource_paths: Set[Union[str, ModuleType]]
+    extra_config: Dict[str, str]
 
     def __init__(self, resource_path: Union[str, ModuleType] = None):
         self.unique_id = uuid.uuid4().hex
         self.resource_paths = set()
         self.table_names = dict()
+        self.extra_config = dict()
 
         if resource_path:
             self.add_resource_path(resource_path)
@@ -42,13 +44,26 @@ class TableConfigurator(metaclass=Singleton):
     def clear_all_configurations(self):
         self.resource_paths = set()
         self.table_names = dict()
+        self.extra_config = dict()
         self.__reset()
 
-    def __reset(self, debug: bool = False, **kwargs) -> None:
+    def set_extra(self, **kwargs: str):
+        self.extra_config.update(kwargs)
+
+    def set_debug(self):
+        """Select debug tables. {ID} will be replaced with a guid"""
+        self.reset(debug=True)
+
+    def set_prod(self):
+        """Select production tables. {ID} will be replaced with a empty string"""
+        self.reset(debug=False)
+
+    def __reset(self, debug: bool = False, **kwargs: str) -> None:
         self._is_debug = debug
         self.table_arguments = dict()
         self.table_arguments["MNT"] = "tmp" if debug else "mnt"
         self.table_arguments["ID"] = f"__{self.unique_id}" if debug else ""
+        self.table_arguments.update(self.extra_config)
         self.table_arguments.update(kwargs)
 
         self.table_names = dict()

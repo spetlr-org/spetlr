@@ -50,6 +50,14 @@ class TableConfigurator(metaclass=Singleton):
     def set_extra(self, **kwargs: str):
         self.extra_config.update(kwargs)
 
+    def set_debug(self):
+        """Select debug tables. {ID} will be replaced with a guid"""
+        self.reset(debug=True)
+
+    def set_prod(self):
+        """Select production tables. {ID} will be replaced with a empty string"""
+        self.reset(debug=False)
+
     def __reset(self, debug: bool = False, **kwargs: str) -> None:
         self._is_debug = debug
         self.table_arguments = dict()

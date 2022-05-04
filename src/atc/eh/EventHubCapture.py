@@ -1,13 +1,16 @@
 import json
-import re
-from datetime import datetime, timedelta
+import os
+from datetime import datetime
+from typing import Union
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 from pyspark.sql.utils import AnalysisException
 
+from atc import dbg
 from atc.config_master import TableConfigurator
 from atc.eh.eh_exceptions import AtcEhInitException, AtcEhLogicException
+from atc.eh.PartitionSpec import PartitionSpec
 from atc.functions import init_dbutils
 from atc.spark import Spark
 
@@ -20,6 +23,13 @@ class EventHubCapture:
     format=avro and with a partitioning from the set of known partitions: y,m,d,h
     """
 
+    max_partition: Union[PartitionSpec, None]
+    name: str
+    path: str
+    format: str
+    partitioning: str
+    auto_create: bool
+
     @classmethod
     def from_tc(cls, id: str):
         tc = TableConfigurator()
@@ -30,20 +40,22 @@ class EventHubCapture:
             partitioning=tc.table_property(id, "partitioning"),
         )
 
-    def __init__(self, name: str, path: str, format: str, partitioning: str):
+    def __init__(
+        self,
+        name: str,
+        path: str,
+        format: str,
+        partitioning: str,
+        auto_create: bool = True,
+    ):
         self.name = name
         self.path = path
-        self.format = format.lower()
+        self.format = format
         self.partitioning = partitioning.lower()
+        self.auto_create = auto_create
 
         assert self.format == "avro"
         self._validate_partitioning()
-
-        if "h" in self.partitioning:
-            self.partition_delta = timedelta(hours=1)
-        else:
-            self.partition_delta = timedelta(days=1)
-
         self.max_partition = None
 
     def _validate_partitioning(self, partitioning: str = None):
@@ -79,52 +91,46 @@ class EventHubCapture:
         """
         )
 
-    def _discover_first_partition(self):
+    def _discover_first_partition(self) -> PartitionSpec:
         """Add the first partition by discovering it from filesystem."""
         # raise if the table already has partitions
         if Spark.get().sql(f"SHOW PARTITIONS {self.name}").count():
             raise AtcEhLogicException("Table partitions already initialized.")
 
         dbutils = init_dbutils()
-        partition = {}
-        partition_path = ""
+        partition = PartitionSpec()
 
         # discover each part
         for c in self.partitioning:
             # loop over items in path
-            value = None
-            for file_info in dbutils.fs.ls(self.path + "/" + partition_path):
+            full_path = self.path + "/" + partition.as_path()
+            for file_info in dbutils.fs.ls(full_path):
                 if not (
                     file_info.name.startswith(c + "=") and file_info.name.endswith("/")
                 ):
                     continue
-                extraction = file_info.name[2:-1]
-
+                extraction = int(file_info.name[2:-1])
+                previous = partition.__getattribute__(c)
                 # keep only the lowest
-                if value is None or int(extraction) < int(value):
-                    value = extraction
+                if previous is None or extraction < previous:
+                    partition.__setattr__(c, extraction)
 
             # done looping over items.
-            if value is None:
+            if partition.__getattribute__(c) is None:
                 # There is probably no data, yet.
-                raise AtcEhInitException("unable to discover first partition")
-
-            if partition_path:
-                partition_path += "/"
-            partition_path += f"{c}={value}"
-            partition[c] = value
+                raise AtcEhInitException(
+                    f"unable to discover first partition at '{full_path}'"
+                )
 
         # we have discovered all parts of the partition.
         Spark.get().sql(
-            f"""ALTER TABLE {self.name} ADD PARTITION ({
-            ", ".join(f"{c}='{v}'" for c, v in partition.items())
-            })"""
+            f"""ALTER TABLE {self.name} ADD PARTITION ({partition.as_sql_spec()})"""
         )
 
         # return the partition in path form so that the repair can continue
-        return partition_path
+        return partition
 
-    def _get_max_partition(self):
+    def _get_max_partition(self) -> PartitionSpec:
         """get the current highest partition either
         1. from memory
         2. read the partition table
@@ -141,62 +147,66 @@ class EventHubCapture:
                     .agg(f.max("partition"))
                     .collect()
                 )[0][0]
+                if max_p is not None:
+                    dbg(f"There is an old partition! {max_p}")
+                    self.max_partition = PartitionSpec.from_path(max_p)
                 # value will be None if there is no value
             except AnalysisException:
                 # no such table. Better create one
-                self._create_table()
-                # new table has no partitions
-                max_p = None
+                if self.auto_create:
+                    self._create_table()
+                else:
+                    raise AtcEhInitException("external table does not exist")
 
-            if not max_p:
-                # reading partition metadata failed.
-                # initialize first partition from disk.
-                max_p = self._discover_first_partition()
+        if self.max_partition is None:
+            # reading partition metadata failed.
+            # initialize first partition from disk.
+            self.max_partition = self._discover_first_partition()
 
-            # we got the partition in the form y=2022/m=04/d=04
-            # extract the parts
-            pat = re.compile("/".join(f"{c}=(?P<{c}>\\d+)" for c in self.partitioning))
-            match = pat.match(max_p)
-            self.max_partition = datetime(
-                year=int(match.group("y")),
-                month=int(match.group("m")),
-                day=int(match.group("d")),
-                hour=int(match.group("h")) if "h" in self.partitioning else 0,
-            )
         return self.max_partition
 
     def _repair_partitioning(self):
         self._get_max_partition()
 
         # compare with current wall-clock to see if partitions are missing
-        now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
-        if "h" not in self.partitioning:
-            now = now.replace(hour=0)
+        now = datetime.now()
 
         additions = []
-        while self.max_partition < now:
+        while self.max_partition.is_earlier_than_dt(now):
             # we know that the partition table is behind
-            next_partition = self.max_partition + self.partition_delta
-            partition_spec = (
-                f"y='{next_partition.year:04}', "
-                f"m='{next_partition.month:02}', "
-                f"d='{next_partition.day:02}'"
+            next_partition = self.max_partition.next()
+
+            dbg(
+                "we are behind on the partitions. "
+                f"Try adding next {next_partition.as_path()}"
             )
-            if "h" in self.partitioning:
-                partition_spec += f", h='{next_partition.hour:02}'"
-            additions.append(f"PARTITION ({partition_spec})")
+
+            # check for existence of partition. If it does not exits,
+            # databricks would otherwise try to create the folder which breaks
+            # for read-only mounts.
+            try:
+                # Here we do not use dbutils because it does not have a meaningful
+                # exception when the file does not exist. Also, it seems slower.
+                # The only negative consequence is that the partitions will not
+                # be updated over databricks-connect
+                os.listdir("/dbfs" + self.path + "/" + next_partition.as_path())
+                additions.append(f"PARTITION ({next_partition.as_sql_spec()})")
+
+            except FileNotFoundError:
+                pass
+
+            self.max_partition = next_partition
 
         while additions:
             # We need to add partitions
             parts_per_batch = min(len(additions), 24)
-            print(f"adding {parts_per_batch} partitions")
+            dbg(f"adding {parts_per_batch} partitions")
 
             # add partitions in batch to prevent an sql line with hundreds of parts
             batch = [additions.pop() for _ in range(parts_per_batch)]
             Spark.get().sql(f"ALTER TABLE {self.name} ADD " + " ".join(batch))
         else:
-            pass
-            # no partitions to add
+            dbg("no partitions to add")
 
     def read(self) -> DataFrame:
         self._repair_partitioning()

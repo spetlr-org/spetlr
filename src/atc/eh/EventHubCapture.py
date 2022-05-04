@@ -7,18 +7,12 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 from pyspark.sql.utils import AnalysisException
 
+from atc import dbg
 from atc.config_master import TableConfigurator
 from atc.eh.eh_exceptions import AtcEhInitException, AtcEhLogicException
 from atc.eh.PartitionSpec import PartitionSpec
 from atc.functions import init_dbutils
 from atc.spark import Spark
-
-DEBUG = False
-
-
-def dbg(*args, **kwargs):
-    if DEBUG:
-        print(*args, **kwargs)
 
 
 class EventHubCapture:

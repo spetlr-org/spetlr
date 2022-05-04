@@ -2,6 +2,8 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Union
 
+from atc import dbg
+
 
 class PartitionSpec:
     y: Union[None, int]
@@ -68,8 +70,9 @@ class PartitionSpec:
         return s
 
     def as_datetime(self) -> datetime:
-        print(
-            f"returning datetime for {repr(self.y)}, {repr(self.m)}, {repr(self.d)}, {repr(self.h)}"
+        dbg(
+            "returning datetime for "
+            f"{repr(self.y)}, {repr(self.m)}, {repr(self.d)}, {repr(self.h)}"
         )
         return datetime(
             year=self.y, month=self.m, day=self.d, hour=self.h or 0, tzinfo=timezone.utc

@@ -14,6 +14,7 @@ $deliveryDatabase             = "Delivery"
 $ehNamespace                  = $resourceName+"namespace"
 $mountSpnName                 = "AtcMountSpn"
 $dbDeploySpnName                    = "AtcDbSpn"
+$cicdSpnName                    = "AtcGithubPipe"
 
 $keyVaultName                 = "atcGithubCiCd"
 

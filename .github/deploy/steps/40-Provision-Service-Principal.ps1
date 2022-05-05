@@ -1,6 +1,4 @@
 Write-Host "Provision Service Principal " -ForegroundColor DarkYellow
-# See naming standard: https://dev.azure.com/cleveras/Clever/_wiki/wikis/Clever.Wiki/892/Naming-Standard
-
 
 
 

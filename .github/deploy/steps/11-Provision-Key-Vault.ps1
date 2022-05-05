@@ -35,3 +35,12 @@ $output = az keyvault set-policy `
 
 Throw-WhenError -output $output
 
+Write-Host "  Grant access for deploying spn" -ForegroundColor DarkYellow
+$output = az keyvault set-policy `
+  --name $keyVaultName `
+  --resource-group $permanentResourceGroup `
+  --secret-permissions list get set `
+  --object-id (Graph-ListSpn -queryDisplayName $cicdSpnName).id
+
+Throw-WhenError -output $output
+

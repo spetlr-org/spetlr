@@ -17,6 +17,6 @@ param (
 # Execute steps in order
 ###############################################################################################
 
-Get-ChildItem "$PSScriptRoot/steps" -Filter *.ps1 | Sort name | Foreach-Object {
+Get-ChildItem "$PSScriptRoot/steps" -Filter *.ps1 | Sort-Object name | Foreach-Object {
   . ("$_")
 }

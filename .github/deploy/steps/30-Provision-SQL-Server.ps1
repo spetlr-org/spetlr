@@ -9,15 +9,9 @@ $sqlServerAdminUser = "DataPlatformAdmin"
 $sqlServerAdminPassword = Generate-Password
 
 # Add to databrick secrets
-$keystore += @{
-  name="SqlServer--DataPlatformAdmin"
-  key=$sqlServerAdminUser
-}
+$secrets.addSecret("SqlServer--DataPlatformAdmin", $sqlServerAdminUser)
+$secrets.addSecret("SqlServer--DataPlatformAdminPassword", $sqlServerAdminPassword)
 
-$keystore += @{
-  name="SqlServer--DataPlatformAdminPassword"
-  key=$sqlServerAdminPassword
-}
 
 Write-Host "  Creating SQL server" -ForegroundColor DarkYellow
 $output = az sql server create `

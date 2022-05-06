@@ -23,10 +23,7 @@ $eventHubConnection = az eventhubs namespace authorization-rule keys list `
 Throw-WhenError -output $eventHubConnection
 
 
-$keystore += @{
-  name="EventHubConnection"
-  key=$eventHubConnection
-}
+$secrets.addSecret("EventHubConnection", $eventHubConnection)
 
 
 ###############################################################################################

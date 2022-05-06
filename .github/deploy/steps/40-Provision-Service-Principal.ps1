@@ -1,6 +1,4 @@
 Write-Host "Provision Service Principal " -ForegroundColor DarkYellow
-# See naming standard: https://dev.azure.com/cleveras/Clever/_wiki/wikis/Clever.Wiki/892/Naming-Standard
-
 
 
 
@@ -30,18 +28,6 @@ if ($null -eq $mountSpn)
 Write-Host "  Creating Service Principal Secret" -ForegroundColor DarkYellow
 $mountPassword = Graph-AppAddPassword -appId $mountApp.id
 
-
-$keystore += @{
-  name="Databricks--StorageAccountKey"
-  key=$mountPassword.secretText
-}
-
-$keystore += @{
-  name="Databricks--TenantId"
-  key=(Convert-Safe-FromJson -text (az account show)).tenantId
-}
-
-$keystore += @{
-  name="Databricks--ClientId"
-  key=$mountSpn.appId
-}
+$secrets.addSecret("Databricks--StorageAccountKey", $mountPassword.secretText)
+$secrets.addSecret("Databricks--TenantId", (Convert-Safe-FromJson -text (az account show)).tenantId)
+$secrets.addSecret("Databricks--ClientId", $mountSpn.appId)

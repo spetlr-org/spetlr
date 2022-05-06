@@ -30,8 +30,9 @@ $resourceId = az resource show `
   --resource-group $resourceGroupName `
   --name $databricksName `
   --resource-type "Microsoft.Databricks/workspaces" `
-  --query id
-$resourceId = $resourceId.Replace('"','')
+  --query id `
+  --out tsv
+
 
 Throw-WhenError -output $resourceId
 

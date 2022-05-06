@@ -68,10 +68,7 @@ jobs:
       - name: Create Deployment
         shell: pwsh
         run: |
-          .github/deploy/deploy.ps1  `
-            -clientId ${{ secrets.SPN_CLIENT_ID }} `
-            -clientSecret (ConvertTo-SecureString -AsPlainText ${{ secrets.SPN_CLIENT_SECRET }} -Force) `
-            -tenantId ${{ secrets.SPN_TENANT_ID }}
+          .github/deploy/deploy.ps1
 
       - name: Wait 30 secs for things to settle
         shell: pwsh

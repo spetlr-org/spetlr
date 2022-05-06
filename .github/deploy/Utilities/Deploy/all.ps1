@@ -3,3 +3,5 @@
 . "$PSScriptRoot\Generate-Password.ps1"
 . "$PSScriptRoot\Scramble-String.ps1"
 . "$PSScriptRoot\Get-RandomCharacters.ps1"
+. "$PSScriptRoot\Get-KeyVaultSecret.ps1"
+. "$PSScriptRoot\Set-KeyVaultSecret.ps1"

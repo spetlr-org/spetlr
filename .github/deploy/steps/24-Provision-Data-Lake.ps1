@@ -26,10 +26,9 @@ $dataLakeKey = az storage account keys list `
 
 Throw-WhenError -output $dataLakeKey
 
-$keystore += @{
-  name="Databricks--StorageAccountKey"
-  key=$dataLakeKey
-}
+Write-Host "  Saving data lake storage account key" -ForegroundColor DarkYellow
+
+$secrets.addSecret("Databricks--StorageAccountKey", $dataLakeKey)
 
 Write-Host "  Configure containers" -ForegroundColor DarkYellow
 $output = az extension add `

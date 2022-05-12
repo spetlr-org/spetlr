@@ -15,7 +15,7 @@ $ehNamespace                  = $resourceName+"namespace"
 $mountSpnName                 = "AtcMountSpn"
 $dbDeploySpnName                    = "AtcDbSpn"
 $cicdSpnName                    = "AtcGithubPipe"
-
+$cosmosName                    = $resourceName
 $keyVaultName                 = "atcGithubCiCd"
 
 $location = "westeurope"  # Use eastus because of free azure subscription
@@ -48,6 +48,7 @@ Write-Host "* Azure Data Lake                 : $dataLakeName" -ForegroundColor 
 Write-Host "* Azure SQL server                : $databaseServerName" -ForegroundColor White
 Write-Host "* Azure SQL database              : $deliveryDatabase" -ForegroundColor White
 Write-Host "* Azure EventHubs Namespace       : $ehNamespace" -ForegroundColor White
+Write-Host "* Azure CosmosDb name             : $cosmosName" -ForegroundColor White
 Write-Host "* Mounting SPN Name               : $mountSpnName" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
 

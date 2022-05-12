@@ -119,6 +119,12 @@ $run = @{
       )
     }
   }
+
+# We used to get this warning:
+# WARN: Your CLI is configured to use Jobs API 2.0. In order to use the latest Jobs features please upgrade to 2.1: 'databricks jobs configure --version=2.1'. Future versions of
+# this CLI will default to the new Jobs API. Learn more at https://docs.databricks.com/dev-tools/cli/jobs-cli.html
+databricks jobs configure --version=2.1
+
 # databricks runs submit actually has an option to pass the json on the command line.
 # But here we need to do this with a json file because the json string is pretty funky and it breaks otherwise
 Set-Content "$srcDir/run.json" ($run | ConvertTo-Json -Depth 4)

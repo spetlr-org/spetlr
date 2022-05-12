@@ -5,7 +5,7 @@ $permanentResourceGroup       = "$base_name-permanent"
 
 $resourceGroupName            = "$base_name-integration"
 
-$resourceName                 = "atc"
+$resourceName                 = "github$base_name"
 
 $databricksName               = $resourceName
 $dataLakeName                 = $resourceName
@@ -53,6 +53,6 @@ Write-Host "* Mounting SPN Name               : $mountSpnName" -ForegroundColor 
 Write-Host "**********************************************************************" -ForegroundColor White
 
 
-$db_secrets_scope = $resourceName
 
 $secrets = [DatabricksSecretsManager]::new()
+$values = [DatabricksSecretsManager]::new()

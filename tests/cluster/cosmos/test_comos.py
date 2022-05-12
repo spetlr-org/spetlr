@@ -8,8 +8,8 @@ from atc.functions import init_dbutils
 class TestCosmos(atc.cosmos.CosmosDb):
     def __init__(self):
         super().__init__(
-            account_name="atc",
-            account_key=init_dbutils().secrets.get("atc", "Cosmos--AccountKey"),
+            account_name="githubatc",
+            account_key=init_dbutils().secrets.get("secrets", "Cosmos--AccountKey"),
             database="AtcCosmosContainer",
         )
 

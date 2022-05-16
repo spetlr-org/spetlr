@@ -1,7 +1,7 @@
 [
   {
-    "storageAccountName":"atc",
-    "secretScope":"atc",
+    "storageAccountName":"githubatc",
+    "secretScope":"secrets",
     "clientIdName":"Databricks--ClientId",
     "clientSecretName":"Databricks--StorageAccountKey",
     "tenantIdName":"Databricks--TenantId",

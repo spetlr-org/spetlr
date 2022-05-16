@@ -36,8 +36,8 @@ class EventHubsTests(unittest.TestCase):
 
         limit = datetime.now() + timedelta(minutes=5)
         while datetime.now() < limit:
-            conts = {item.name for item in dbutils.fs.ls("/mnt/atc/silver")}
-            if "atcnamespace/" in conts:
+            conts = {item.name for item in dbutils.fs.ls("/mnt/githubatc/silver")}
+            if "githubatc/" in conts:
                 break
             else:
                 time.sleep(10)
@@ -53,7 +53,7 @@ class EventHubsTests(unittest.TestCase):
             "AtcEh",
             {
                 "name": "AtcEh",
-                "path": "/mnt/atc/silver/atcnamespace/atceh",
+                "path": "/mnt/githubatc/silver/githubatc/atceh",
                 "format": "avro",
                 "partitioning": "ymd",
             },

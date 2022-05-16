@@ -12,14 +12,16 @@ class DeliverySqlServer(SqlServer):
         port: str = "1433",
     ):
 
-        self.hostname = "atctest.database.windows.net" if hostname is None else hostname
+        self.hostname = (
+            "githubatctest.database.windows.net" if hostname is None else hostname
+        )
         self.username = (
-            init_dbutils().secrets.get("atc", "SqlServer--DatabricksUser")
+            init_dbutils().secrets.get("secrets", "SqlServer--DatabricksUser")
             if username is None
             else username
         )
         self.password = (
-            init_dbutils().secrets.get("atc", "SqlServer--DatabricksUserPassword")
+            init_dbutils().secrets.get("secrets", "SqlServer--DatabricksUserPassword")
             if password is None
             else password
         )

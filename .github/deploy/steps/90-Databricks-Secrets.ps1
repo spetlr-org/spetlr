@@ -1,3 +1,4 @@
 
 
-$secrets.pushToDatabricks($db_secrets_scope)
+$secrets.pushToDatabricks("secrets")
+$values.pushToDatabricks("values")

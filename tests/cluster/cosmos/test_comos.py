@@ -15,7 +15,7 @@ class TestCosmos(atc.cosmos.CosmosDb):
         )
 
 
-class ApiTests(unittest.TestCase):
+class CosmosTests(unittest.TestCase):
     def test_01_tables(self):
         tc = TableConfigurator()
         tc.clear_all_configurations()
@@ -32,7 +32,7 @@ class ApiTests(unittest.TestCase):
             " TBLPROPERTIES(partitionKeyPath = '/pk', manualThroughput = '1100')"
         )
 
-    def test_02_write_table(self):
+    def test_03_write_table(self):
         cm = TestCosmos()
         df = Spark.get().createDataFrame(
             [("first", "pk1", 56), ("second", "pk2", 987)],
@@ -40,7 +40,7 @@ class ApiTests(unittest.TestCase):
         )
         cm.write_table(df, "CmsTbl")
 
-    def test_02_read_table(self):
+    def test_04_read_table(self):
         cm = TestCosmos()
         df = cm.read_table("CmsTbl")
         data = set(tuple(row) for row in df.collect())

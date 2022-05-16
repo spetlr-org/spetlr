@@ -14,3 +14,14 @@ $cosmosKey = az cosmosdb keys list `
 Throw-WhenError -output $cosmosKey
 
 $secrets.addSecret("Cosmos--AccountKey", $cosmosKey)
+
+Write-Host "  Getting CosmosDb endpoint" -ForegroundColor DarkYellow
+$cosmosEndpoint = az cosmosdb show `
+  --resource-group $permanentResourceGroup `
+  --name $cosmosName `
+  --query documentEndpoint `
+  --output tsv
+
+Throw-WhenError -output $cosmosEndpoint
+
+$values.addSecret("Cosmos--Endpoint", $cosmosEndpoint)

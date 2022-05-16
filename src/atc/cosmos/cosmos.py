@@ -9,7 +9,9 @@
 #       )
 #   df = server.load_table("TableId")
 #   server.save_table(df, "TableId")
+from typing import Union
 
+from azure.cosmos import CosmosClient
 from pyspark.sql import DataFrame
 from pyspark.sql.types import DataType
 
@@ -19,12 +21,20 @@ from atc.spark import Spark
 
 class CosmosDb:
     def __init__(
-        self, account_name: str, account_key: str, database: str, endpoint: str = None
+        self,
+        account_key: str,
+        database: str,
+        account_name: str = None,
+        endpoint: str = None,
     ):
-        endpoint_pattern = "https://{}.documents.azure.com:443/"
-        self.endpoint = (
-            endpoint_pattern.format(account_name) if endpoint is None else endpoint
-        )
+        if not account_name and not endpoint:
+            raise ValueError("account_name or endpoint must be set")
+
+        if not endpoint:
+            endpoint_pattern = "https://{}.documents.azure.com:443/"
+            endpoint = endpoint_pattern.format(account_name)
+
+        self.endpoint = endpoint
         self.account_key = account_key
         self.database = database
         self.config = {
@@ -33,6 +43,7 @@ class CosmosDb:
             "spark.cosmos.database": database,
             "spark.cosmos.container": None,
         }
+        self.client = CosmosClient(endpoint, credential=account_key)
 
     def execute_sql(self, sql: str):
         # Examples:
@@ -93,3 +104,10 @@ class CosmosDb:
     ):
         table_name = TableConfigurator().table_name(table_id)
         self.write_table_by_name(df_source, table_name, rows_per_partition)
+
+    def delete_item(
+        self, table_id: str, id: Union[int, str], pk: Union[int, str] = None
+    ):
+        db = self.client.get_database_client(self.database)
+        cntr = db.get_container_client(TableConfigurator().table_name(table_id))
+        cntr.delete_item(id, partition_key=pk)

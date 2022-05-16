@@ -8,9 +8,10 @@ from atc.spark import Spark
 
 class TestCosmos(atc.cosmos.CosmosDb):
     def __init__(self):
+        dbutils = init_dbutils()
         super().__init__(
-            account_name="githubatc",
-            account_key=init_dbutils().secrets.get("secrets", "Cosmos--AccountKey"),
+            endpoint=dbutils.secrets.get("values", "Cosmos--Endpoint"),
+            account_key=dbutils.secrets.get("secrets", "Cosmos--AccountKey"),
             database="AtcCosmosContainer",
         )
 
@@ -45,3 +46,10 @@ class CosmosTests(unittest.TestCase):
         df = cm.read_table("CmsTbl")
         data = set(tuple(row) for row in df.collect())
         self.assertEqual({("first", "pk1", 56), ("second", "pk2", 987)}, data)
+
+    def test_05_delete_items(self):
+        cm = TestCosmos()
+        cm.delete_item("CmsTbl", "first", "pk1")
+        cm.delete_item("CmsTbl", "second", "pk2")
+
+        cm.client.delete_database(cm.database)

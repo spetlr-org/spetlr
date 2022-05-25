@@ -1,5 +1,4 @@
 import sys
-from random import randint
 from typing import List, Optional
 
 import pyspark.sql.functions as f
@@ -8,11 +7,19 @@ from pyspark.sql import DataFrame
 from atc.etl import Loader
 from atc.spark import Spark
 
+from ..functions import get_unique_tempview_name
 from .CachedLoaderParameters import CachedLoaderParameters
 
 
 class CachedLoader(Loader):
     """
+    This class is an ETL loader that uses a cache table to turn
+    a full load of a dataframe into an incremental load, where only new
+    or changed rows are passed on. Deleted rows are also passed on but
+    to a different method.
+    The cache table needs to exist and have the correct schema matching
+    the configured parameters, see the CachedLoaderParameters class.
+
     Remember to override self.write_operation and/or self.delete_operation
     Any variable rows need to be added in this function.
     """
@@ -45,23 +52,21 @@ class CachedLoader(Loader):
             raise
 
         # validate overloading
-        write_overloaded = "write_operation" in self.__class__.__dict__
-        delete_overloaded = "delete_operation" in self.__class__.__dict__
-        if not (write_overloaded or delete_overloaded):
-            raise AssertionError(
-                "overload of write_operation " "or delete_operation required"
-            )
+        write_not_overloaded = "write_operation" not in self.__class__.__dict__
+        delete_not_overloaded = "delete_operation" not in self.__class__.__dict__
+        if write_not_overloaded or delete_not_overloaded:
+            raise AssertionError("write_operation an delete_operation required")
 
         if self.__class__ is CachedLoader:
             raise AssertionError("You should inherit from this class")
 
     def write_operation(self, df: DataFrame) -> Optional[DataFrame]:
         """Abstract Method to be overridden in child."""
-        return None
+        raise NotImplementedError()
 
     def delete_operation(self, df: DataFrame) -> Optional[DataFrame]:
         """Abstract Method to be overridden in child."""
-        return None
+        raise NotImplementedError()
 
     def save(self, df: DataFrame) -> None:
         in_cols = df.columns
@@ -137,10 +142,8 @@ class CachedLoader(Loader):
 
     def _load_cache(self, cache_to_load: DataFrame) -> None:
 
-        view_name = (
-            self.params.cache_table_name.replace(".", "_")
-            + f"_Update{randint(0, 1000):03}"
-        )
+        view_name = get_unique_tempview_name()
+
         merge_sql_statement = (
             f"MERGE INTO {self.params.cache_table_name} AS target "
             f"USING {view_name} as source "

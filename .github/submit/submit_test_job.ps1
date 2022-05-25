@@ -29,7 +29,8 @@ param (
 
 )
 
-$srcDir = "$PSScriptRoot/../.."
+# get the true repository root
+$repoRoot = (git rev-parse --show-toplevel)
 
 
 # start time of this script for job details
@@ -52,15 +53,18 @@ dbfs mkdirs $testDir
 Write-Host "To be installed on cluster: $($libs -join ", ")"
 [array]$sparkWheels =  $libs | ForEach-Object -Process {@{whl = "$testDir/dist/$_"}}
 
+[array]$testWheels = Get-Content -Path "$repoRoot/test_requirements.txt" | ForEach-Object -Process {@{pypi = @{package="$_"}}}
+
+
 # upload the library
-dbfs cp -r --overwrite  "$srcDir/dist" "$testDir/dist"
+dbfs cp -r --overwrite  "$repoRoot/dist" "$testDir/dist"
 
 # upload the test main file
 dbfs cp --overwrite  "$PSScriptRoot/main.py" "$testDir/main.py"
 
 
 # next step is to upload all unittests
-Push-Location -Path $srcDir
+Push-Location -Path $repoRoot
 
 pip install pyclean
 pyclean tests # remove *.pyc and __pycache__
@@ -104,7 +108,7 @@ $run = @{
         num_workers= 0
     }
     # in addition to standard dependencies, install the libs that we just uploaded
-    libraries= $spark_dependencies + $sparkWheels
+    libraries= $spark_dependencies + $sparkWheels + $testWheels
 
     # This scripts runs the test suite
     spark_python_task= @{
@@ -127,10 +131,10 @@ databricks jobs configure --version=2.1
 
 # databricks runs submit actually has an option to pass the json on the command line.
 # But here we need to do this with a json file because the json string is pretty funky and it breaks otherwise
-Set-Content "$srcDir/run.json" ($run | ConvertTo-Json -Depth 4)
+Set-Content "$repoRoot/run.json" ($run | ConvertTo-Json -Depth 4)
 # submit the run and save the ID
-$runId = (databricks runs submit --json-file "$srcDir/run.json" | ConvertFrom-Json).run_id
-Remove-Item "$srcDir/run.json"
+$runId = (databricks runs submit --json-file "$repoRoot/run.json" | ConvertFrom-Json).run_id
+Remove-Item "$repoRoot/run.json"
 
 # report on status
 Write-Host "============================================================================"

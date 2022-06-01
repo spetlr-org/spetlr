@@ -4,6 +4,9 @@ from pyspark.sql.utils import AnalysisException
 
 from atc.config_master import TableConfigurator
 from atc.delta import DbHandle, DeltaHandle
+from atc.etl import Orchestrator
+from atc.etl.extractors import SimpleExtractor
+from atc.etl.loaders import SimpleLoader
 from atc.spark import Spark
 
 
@@ -70,7 +73,15 @@ class DeltaTests(unittest.TestCase):
         df = dh.read()
         self.assertEqual(0, df.count())
 
-    def test_06_delete(self):
+    def test_06_etl(self):
+        o = Orchestrator()
+        o.extract_from(
+            SimpleExtractor(DeltaHandle.from_tc("MyTbl"), dataset_key="MyTbl")
+        )
+        o.load_into(SimpleLoader(DeltaHandle.from_tc("MyTbl"), mode="overwrite"))
+        o.execute()
+
+    def test_07_delete(self):
         dh = DeltaHandle.from_tc("MyTbl")
         dh.drop_and_delete()
 

@@ -62,3 +62,25 @@ Therefore, this method needs to return the rows that were actually deleted,
 (or return `None`). The cache loader takes the returned rows and
 updates the cache table with them, to mark them as having been deleted.
 returning `None` here skips the rest of the deleting logic.
+
+## Simple Extrator/Loader
+
+Often the step of extracting from, e.g. a delta handle or an eventhub,
+can be so simple that is seems superfluous to use the etl framework. For
+these cases a simple extractor and simple loader have been provided.
+Any object with a `.read()` method can be passed to the `SimpleExtractor`.
+Any object with a `.overwrite(df)` of a `.append(df)` method can be passed
+to the `SimpleLoader`. See the following example:
+```python
+from atc.eh import EventHubCapture
+from atc.delta import DeltaHandle
+from atc.etl.loaders import SimpleLoader
+from atc.etl.extractors import SimpleExtractor
+from atc.etl import Orchestrator
+
+class MyOrchestrator(Orchestrator):
+  def __init__(self):
+    super().__init__()
+    self.extract_from(EventHubCapture.from_tc("MyEhDefinition"))
+    self.load_into(DeltaHandle.from_tc("MyDeltaTable"))
+```

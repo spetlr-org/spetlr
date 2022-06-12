@@ -168,6 +168,8 @@ class TableConfigurator(metaclass=Singleton):
     ############################################
 
     def set_extra(self, **kwargs: str):
+        """Add extra replacement keys for your resources.
+        for example call .set_extra(ENV='prod')"""
         self._extra_config.update(kwargs)
         self.table_details = dict()
 

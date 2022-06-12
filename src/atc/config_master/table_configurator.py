@@ -54,7 +54,7 @@ class TableConfigurator(metaclass=Singleton):
     def get_extra_details(self) -> Dict[str, str]:
         """get all special substitutions not based on resources"""
         extras = {
-            "ID": "__{self.unique_id}" if self._is_debug else "",
+            "ID": f"__{self._unique_id}" if self._is_debug else "",
             "MNT": "tmp" if self._is_debug else "mnt",
         }
         extras.update(self._extra_config)

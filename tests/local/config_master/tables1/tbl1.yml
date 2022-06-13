@@ -13,3 +13,7 @@ MyForked:
     name: another
     path: /my/temp/path
 
+
+MyRecursing:
+  name: recursing{ID}
+  path: /{MNT}/tables/{MyRecursing_name}

@@ -2,7 +2,7 @@ import unittest
 
 from atc.config_master import TableConfigurator
 
-from . import tables1, tables2
+from . import tables1, tables2, tables3
 
 
 class TestTableConfigurator(unittest.TestCase):
@@ -32,14 +32,26 @@ class TestTableConfigurator(unittest.TestCase):
 
     def test_03_json(self):
         tc = TableConfigurator()
-        tc.add_resource_path(tables2)
 
         with self.assertRaises(KeyError):
-            tc.reset(debug=True)
+            tc.add_resource_path(tables2)
 
-        tc.reset(debug=True, ENV="dev")
+        tc.set_extra(ENV="dev")
+        tc.add_resource_path(tables2)
+        tc.reset(debug=True)
         self.assertRegex(tc.table_name("MyThird"), "first__.*")
 
         self.assertRegex(
             tc.get_all_details()["MyFourth_path"], "/tmp/dev/path/to/delta"
         )
+
+    def test_04_recursing(self):
+        tc = TableConfigurator()
+        tc.set_prod()
+        self.assertEqual(tc.table_path("MyRecursing"), "/mnt/tables/recursing")
+
+    def test_05_test_self_recursion_detection(self):
+        tc = TableConfigurator()
+        tc.set_prod()
+        with self.assertRaises(ValueError):
+            tc.add_resource_path(tables3)

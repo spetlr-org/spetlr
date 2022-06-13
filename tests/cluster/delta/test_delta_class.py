@@ -29,9 +29,17 @@ class DeltaTests(unittest.TestCase):
             },
         )
 
+        tc.register(
+            "MyTbl2",
+            {
+                "name": "TestDb{ID}.TestTbl2",
+            },
+        )
+
         # test instantiation without error
         DbHandle.from_tc("MyDb")
         DeltaHandle.from_tc("MyTbl")
+        DeltaHandle.from_tc("MyTbl2")
 
     def test_02_write(self):
         dh = DeltaHandle.from_tc("MyTbl")

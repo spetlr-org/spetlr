@@ -39,7 +39,7 @@ The guid construction allows for non-colliding parallel testing.
 
 Beyond the resource definitions, the `TableConfigurator` needs to be 
 configured to return production or test versions of tables this is done
-at the start of your code. In you jobs you need to set `TableConfigurator().set_prod()`
+at the start of your code. In your jobs you need to set `TableConfigurator().set_prod()`
 whereas your unit-tests should call `TableConfigurator().set_debug()`.
 
 ## Using the TableConfigurator

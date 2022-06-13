@@ -28,7 +28,7 @@ class DbHandle:
         tc = TableConfigurator()
         return cls(
             name=tc.table_name(id),
-            location=tc.table_path(id),
+            location=tc.table_property(id, "path", ""),
             data_format=tc.table_property(id, "format", "db"),
         )
 

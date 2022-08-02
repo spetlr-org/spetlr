@@ -49,6 +49,7 @@ class SqlServer:
         conn = pyodbc.connect(self.odbc)
         conn.autocommit = True
         conn.execute(sql)
+        conn.close()
 
     def load_sql(self, sql: str):
         self.test_odbc_connection()

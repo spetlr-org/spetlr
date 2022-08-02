@@ -1,6 +1,7 @@
+from pyspark.sql import DataFrame
+
 from atc.etl import Loader
 from atc.sql.SqlServer import SqlServer
-from pyspark.sql import DataFrame
 
 
 class SimpleSqlServerLoader(Loader):

@@ -63,7 +63,7 @@ Here are some example usages and implementations of the ETL class provided
 Here's an example of reading data from a single location, transforming it once and saving to a single destination.
 This is the most simple elt case, and will be used as base for the below more complex examples.
 
-```
+```python
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType
@@ -153,7 +153,7 @@ root
 Here's an example of having multiple `Transformer` implementations that is reused to change the data type of a given column,
 where the column name is parameterized.
 
-```
+```python
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
@@ -222,7 +222,7 @@ as the key, and a `DataFrame` as its value, the used kan can be overridden in th
 
 `Transformer` provides the function `process_many(dataset: {})` and returns a single `DataFrame`.
 
-```
+```python
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, StringType
@@ -321,7 +321,7 @@ root
 
 Here's an example of data raw ingestion without applying any transformations.
 
-```
+```python
 from pyspark.sql import DataFrame
 
 from atc.etl import Extractor, Loader, Orchestrator
@@ -359,7 +359,7 @@ etl.execute()
 
 Here's an example of having multiple `Loader` implementations that is writing the transformed data into multiple destinations.
 
-```
+```python
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
@@ -435,7 +435,7 @@ Here's an example of having both multiple `Extractor`, `Transformer` and `Loader
 
 It is important that the first transformer is a `MultiInputTransformer` when having multiple extractors.
 
-```
+```python
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
@@ -533,7 +533,7 @@ etl.execute()
 
 This example illustrates the use of an orchestrator as just another ETL step.
 The principle is called composit orchestration:
-```
+```python
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame

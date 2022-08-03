@@ -5,7 +5,7 @@ from atc.etl import Transformer
 from atc.sql.SqlServer import SqlServer
 
 
-class SimpleSqlServerLoader(Transformer):
+class SimpleSqlServerTransformer(Transformer):
     def __init__(
         self,
         *,

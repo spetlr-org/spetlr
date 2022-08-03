@@ -2,6 +2,7 @@ import unittest
 
 from pyspark.sql import DataFrame
 from pyspark.sql.types import (
+    DecimalType,
     DoubleType,
     IntegerType,
     StringType,
@@ -54,7 +55,7 @@ class SimpleSqlServerETLTests(unittest.TestCase):
         schema_expected = StructType(
             [
                 StructField("testcolumn", IntegerType(), True),
-                StructField("testcolumn2", DoubleType(), True),
+                StructField("testcolumn2", DecimalType(12, 3), True),
                 StructField("testcolumn3", StringType(), True),
             ]
         )

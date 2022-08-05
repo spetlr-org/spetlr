@@ -51,6 +51,10 @@ class SqlServer:
         conn.execute(sql)
         conn.close()
 
+    # Convenience class for align with Spark.get() method .sql.
+    def sql(self, sql: str):
+        self.execute_sql(sql)
+
     def load_sql(self, sql: str):
         self.test_odbc_connection()
         return Spark.get().read.jdbc(

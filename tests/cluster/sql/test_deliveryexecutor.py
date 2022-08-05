@@ -20,9 +20,14 @@ class DeliverySqlExecutorTests(unittest.TestCase):
         cls.tc.add_resource_path(extras)
         cls.tc.set_debug()
 
+        # Ensure no table is there
+        cls.sql_server.drop_table("SqlTestTable1")
+        cls.sql_server.drop_table("SqlTestTable2")
+
     @classmethod
     def tearDownClass(cls):
         cls.sql_server.drop_table("SqlTestTable1")
+        cls.sql_server.drop_table("SqlTestTable2")
 
     def test_can_execute(self):
         DeliverySqlExecutor().execute_sql_file("test1")

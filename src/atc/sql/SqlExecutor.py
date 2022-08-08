@@ -11,7 +11,9 @@ from atc.sql.SqlServer import SqlServer
 
 class SqlExecutor:
     def __init__(
-        self, base_module: Union[str, ModuleType] = None, server: SqlServer = None
+        self,
+        base_module: Union[str, ModuleType] = None,
+        server: SqlServer = None,
     ):
         self.base_module = base_module
         self.server = server

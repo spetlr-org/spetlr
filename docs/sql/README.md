@@ -36,6 +36,8 @@ class ExampleSqlServer(SqlServer):
 ## SqlExecutor
 This nice class can help parse and execute sql-files. It can be used for both executing spark and Azure sql queries.
 
+*NB: The parser uses the semicolon-character (;) to split the queries. If the character is used for other purposes than closing a query, there might arise some executing issues. Please use the Spark.get().sql() or SqlServer.sql() instead.* 
+
 In the example below the SqlExecutor is inherited, and your sql server is used (see [SQL Server Class](#sql-server-class)). Furthermore, provide the module of the sql-files which can be executed into the *base_module*-variable.  
  
 ```python
@@ -48,11 +50,19 @@ class DeliverySqlExecutor(SqlExecutor):
         super().__init__(base_module=extras, server=DeliverySqlServer())
 ```
 
+If one need to execute sql queries in Databricks using Spark, there is no need for providing a server. By default, the class uses the atc Spark class. 
+```python
+class SparkSqlExecutor(SqlExecutor):
+    def __init__(self):
+        super().__init__(base_module=extras)
+```
+
 In the setup job, one could consider to create all delivery SQL tables:
 
 ```python
 # In setup.py
 def setup_production_tables():
     TableConfigurator().set_prod()
+    SparkSqlExecutor().execute_sql_file("*")
     DeliverySqlExecutor().execute_sql_file("*")
 ```

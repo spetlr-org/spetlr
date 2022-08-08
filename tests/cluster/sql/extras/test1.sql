@@ -1,7 +1,7 @@
 CREATE TABLE {SqlTestTable1}
 (
  testcolumn INT NULL
-)
+);
 
 -- COMMAND ----------
 

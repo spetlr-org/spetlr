@@ -18,7 +18,7 @@ class SqlExecutor:
         self.base_module = base_module
         self.server = server
 
-    def execute_sql_file(self, file_pattern: str):
+    def execute_sql_file(self, file_pattern: str, exclude_pattern: str = None):
         """
         NB: This sql parser can be challenged in parsing sql statements
         which do not use semicolon as a query separator only.
@@ -30,6 +30,9 @@ class SqlExecutor:
 
         file_pattern = file_pattern.replace("*", ".*")
 
+        if exclude_pattern is not None:
+            exclude_pattern = exclude_pattern.replace("*", ".*")
+
         replacements = TableConfigurator().get_all_details()
 
         executor = self.server or Spark.get()
@@ -40,6 +43,11 @@ class SqlExecutor:
                 continue
 
             if not re.match(file_pattern, Path(file_name).stem):
+                continue
+
+            if exclude_pattern is not None and re.search(
+                exclude_pattern, Path(file_name).stem
+            ):
                 continue
 
             with ir.path(self.base_module, file_name) as file_path:

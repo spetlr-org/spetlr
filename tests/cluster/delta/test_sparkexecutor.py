@@ -33,8 +33,10 @@ class DeliverySparkExecutorTests(unittest.TestCase):
         cls.dh.from_tc("SparkTestTable1").drop()
 
     def test_can_execute(self):
-        SparkSqlExecutor().execute_sql_file("test1")
+        SparkSqlExecutor().execute_sql_file("*", exclude_pattern="debug")
 
         self.dh.from_tc("SparkTestTable1").read()
 
-        self.assertTrue(True)
+        SparkSqlExecutor().execute_sql_file("*")
+
+        self.dh.from_tc("SparkTestTable2").read()

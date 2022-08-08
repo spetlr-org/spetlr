@@ -24,12 +24,13 @@ class DeliverySparkExecutorTests(unittest.TestCase):
 
         # Ensure no table is there
         cls.dbh.from_tc("SparkTestDb").drop()
-        cls.dh.from_tc("SparkTestTable1").drop_table()
+
+        cls.dh.from_tc("SparkTestTable1").drop()
 
     @classmethod
     def tearDownClass(cls):
         cls.dbh.from_tc("SparkTestDb").drop()
-        cls.dh.from_tc("SparkTestTable1").drop_table()
+        cls.dh.from_tc("SparkTestTable1").drop()
 
     def test_can_execute(self):
         SparkSqlExecutor().execute_sql_file("test1")

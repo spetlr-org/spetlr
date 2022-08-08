@@ -23,13 +23,13 @@ class DeliverySparkExecutorTests(unittest.TestCase):
         cls.dh = DeltaHandle
 
         # Ensure no table is there
-        cls.dbh.from_tc("SparkTestDb").drop()
+        cls.dbh.from_tc("SparkTestDb").drop_cascade()
 
         cls.dh.from_tc("SparkTestTable1").drop()
 
     @classmethod
     def tearDownClass(cls):
-        cls.dbh.from_tc("SparkTestDb").drop()
+        cls.dbh.from_tc("SparkTestDb").drop_cascade()
         cls.dh.from_tc("SparkTestTable1").drop()
 
     def test_can_execute(self):

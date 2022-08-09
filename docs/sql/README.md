@@ -34,11 +34,16 @@ class ExampleSqlServer(SqlServer):
 
 
 ## SqlExecutor
-This nice class can help parse and execute sql-files. It can be used for both executing spark and Azure sql queries.
+This nice class can help parse and execute sql-files. It can be used for both executing 
+spark and Azure sql queries.
 
-*NB: The parser uses the semicolon-character (;) to split the queries. If the character is used for other purposes than closing a query, there might arise some executing issues. Please use the Spark.get().sql() or SqlServer.sql() instead.* 
+*NB: The parser uses the semicolon-character (;) to split the queries. If the character 
+is used for other purposes than closing a query, there might arise some executing 
+issues. Please use the Spark.get().sql() or SqlServer.sql() instead.* 
 
-In the example below the SqlExecutor is inherited, and your sql server is used (see [SQL Server Class](#sql-server-class)). Furthermore, provide the module of the sql-files which can be executed into the *base_module*-variable.  
+In the example below the SqlExecutor is inherited, and your sql server is used 
+(see [SQL Server Class](#sql-server-class)). Furthermore, provide the module of the 
+sql-files which can be executed into the *base_module*-variable.  
  
 ```python
 from atc.sql.SqlExecutor import SqlExecutor
@@ -50,7 +55,8 @@ class DeliverySqlExecutor(SqlExecutor):
         super().__init__(base_module=extras, server=DeliverySqlServer())
 ```
 
-If one need to execute sql queries in Databricks using Spark, there is no need for providing a server. By default, the class uses the atc Spark class. 
+If one need to execute sql queries in Databricks using Spark, there is no need for 
+providing a server. By default, the class uses the atc Spark class. 
 ```python
 class SparkSqlExecutor(SqlExecutor):
     def __init__(self):
@@ -66,3 +72,8 @@ def setup_production_tables():
     SparkSqlExecutor().execute_sql_file("*")
     DeliverySqlExecutor().execute_sql_file("*")
 ```
+
+It can be useful to have sql files among the resources that are only applied in special
+cases. The `SqlExecutor` therefore allows to exclude these files with the 
+`exclude_pattern` parameter. Any name where this pattern is found in the name will not 
+be included in the execution.

@@ -2,6 +2,7 @@ import unittest
 
 from atc.config_master import TableConfigurator
 from atc.delta import DbHandle, DeltaHandle
+from atc.spark import Spark
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
@@ -33,8 +34,13 @@ class DeliverySparkExecutorTests(unittest.TestCase):
         cls.dh.from_tc("SparkTestTable1").drop()
 
     def test_can_execute(self):
-        SparkSqlExecutor().execute_sql_file("test1")
+        SparkSqlExecutor().execute_sql_file("*", exclude_pattern="debug")
 
         self.dh.from_tc("SparkTestTable1").read()
 
-        self.assertTrue(True)
+        # verify that db 2 does not exist at this point
+        self.assertEqual(Spark.get().sql('SHOW DATABASES LIKE "my_db2*"').count(), 0)
+
+        SparkSqlExecutor().execute_sql_file("*")
+
+        self.dh.from_tc("SparkTestTable2").read()

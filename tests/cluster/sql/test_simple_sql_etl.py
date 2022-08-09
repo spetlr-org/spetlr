@@ -50,30 +50,12 @@ class SimpleSqlServerETLTests(unittest.TestCase):
         self.create_test_table()
         df = self.create_data()
 
-        df_out = SimpleSqlServerTransformer(
-            table_id=self.table_id, server=self.sql_server
-        ).process(df)
-
-        schema_expected = StructType(
-            [
-                StructField("testcolumn", IntegerType(), True),
-                StructField("testcolumn2", DecimalType(12, 3), True),
-                StructField("testcolumn3", StringType(), True),
-            ]
-        )
-
-        self.assertEqual(df_out.schema, schema_expected)
-
-    def test02_can_transform(self):
-        df = self.create_data()
-
         # Test that timestamp before has miliseconds also
         date_test = df.select("testcolumn4").collect()[0][0]
         self.assertEqual(
             dt_utc(2021, 1, 1, 14, 45, 22, 32).replace(tzinfo=None), date_test
         )
 
-        # Use transformer
         df_out = SimpleSqlServerTransformer(
             table_id=self.table_id, server=self.sql_server
         ).process(df)
@@ -82,6 +64,25 @@ class SimpleSqlServerETLTests(unittest.TestCase):
         # The 32 miliseconds should be gone.
         date_test = df_out.select("testcolumn4").collect()[0][0]
         self.assertEqual(dt_utc(2021, 1, 1, 14, 45, 22).replace(tzinfo=None), date_test)
+
+        schema_expected = StructType(
+            [
+                StructField("testcolumn", IntegerType(), True),
+                StructField("testcolumn2", DecimalType(12, 3), True),
+                StructField("testcolumn3", StringType(), True),
+                StructField("testcolumn4", TimestampType(), True),
+            ]
+        )
+
+        self.assertEqual(df_out.schema, schema_expected)
+
+    def test02_can_transform_and_load(self):
+        df = self.create_data()
+
+        # Use transformer
+        df_out = SimpleSqlServerTransformer(
+            table_id=self.table_id, server=self.sql_server
+        ).process(df)
 
         SimpleSqlServerLoader(table_id=self.table_id, server=self.sql_server).save(
             df_out

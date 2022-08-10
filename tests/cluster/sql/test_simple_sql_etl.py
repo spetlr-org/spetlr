@@ -1,5 +1,6 @@
 import unittest
 
+from atc_tools.time import dt_utc
 from pyspark.sql import DataFrame
 from pyspark.sql.types import (
     DecimalType,
@@ -8,6 +9,7 @@ from pyspark.sql.types import (
     StringType,
     StructField,
     StructType,
+    TimestampType,
 )
 
 from atc.config_master import TableConfigurator
@@ -48,23 +50,36 @@ class SimpleSqlServerETLTests(unittest.TestCase):
         self.create_test_table()
         df = self.create_data()
 
+        # Test that timestamp before has miliseconds also
+        date_test = df.select("testcolumn4").collect()[0][0]
+        self.assertEqual(
+            dt_utc(2021, 1, 1, 14, 45, 22, 32).replace(tzinfo=None), date_test
+        )
+
         df_out = SimpleSqlServerTransformer(
             table_id=self.table_id, server=self.sql_server
         ).process(df)
+
+        # Check that timestamp are truncated down to only seconds
+        # The 32 miliseconds should be gone.
+        date_test = df_out.select("testcolumn4").collect()[0][0]
+        self.assertEqual(dt_utc(2021, 1, 1, 14, 45, 22).replace(tzinfo=None), date_test)
 
         schema_expected = StructType(
             [
                 StructField("testcolumn", IntegerType(), True),
                 StructField("testcolumn2", DecimalType(12, 3), True),
                 StructField("testcolumn3", StringType(), True),
+                StructField("testcolumn4", TimestampType(), True),
             ]
         )
 
         self.assertEqual(df_out.schema, schema_expected)
 
-    def test02_can_transform(self):
+    def test02_can_transform_and_load(self):
         df = self.create_data()
 
+        # Use transformer
         df_out = SimpleSqlServerTransformer(
             table_id=self.table_id, server=self.sql_server
         ).process(df)
@@ -75,6 +90,7 @@ class SimpleSqlServerETLTests(unittest.TestCase):
 
         df_with_data = self.sql_server.read_table(self.table_id)
 
+        # Test that the datarow can be read
         self.assertEqual(df_with_data.count(), 1)
 
     def create_test_table(self):
@@ -86,6 +102,7 @@ class SimpleSqlServerETLTests(unittest.TestCase):
                 testcolumn INT NULL,
                 testcolumn2 DECIMAL(12,3) NULL,
                 testcolumn3 [nvarchar](50) NULL,
+                testcolumn4 DATETIME NULL
                 )
                 END
                                 """
@@ -97,11 +114,12 @@ class SimpleSqlServerETLTests(unittest.TestCase):
                 StructField("testcolumn", IntegerType(), True),
                 StructField("testcolumn2", DoubleType(), True),
                 StructField("testcolumn3", StringType(), True),
+                StructField("testcolumn4", TimestampType(), True),
             ]
         )
-        cols = ["testcolumn", "testcolumn2", "testcolumn3"]
+        cols = ["testcolumn", "testcolumn2", "testcolumn3", "testcolumn4"]
 
-        insert_data = (123, 1001.322, "Hello")
+        insert_data = (123, 1001.322, "Hello", dt_utc(2021, 1, 1, 14, 45, 22, 32))
 
         df_new = DataframeCreator.make_partial(
             schema=schema, columns=cols, data=[insert_data]

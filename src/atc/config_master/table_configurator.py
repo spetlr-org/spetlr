@@ -8,25 +8,23 @@ from typing import Dict, Set, Union
 
 import yaml
 
-from atc.config_master.exceptions import UnknownShapeException
 from atc.singleton import Singleton
 
 from ..atc_exceptions import AtcException
-from .configuration_types import (
-    AnyDetails,
-    TableAlias_keys,
-    TableDetailsExtended_keys,
-    TableRelDbg_keys,
-)
 
 
 class NoSuchPropertyException(AtcException):
     pass
 
 
+# recursive type definition of the details object
+TcDetails = Dict[str, Union[str, "TcDetails"]]
+TcDetailsValue = Union[str, TcDetails]
+
+
 class TableConfigurator(metaclass=Singleton):
     _unique_id: str
-    _raw_resource_details: Dict[str, AnyDetails]
+    _raw_resource_details: Dict[str, TcDetails]
     _is_debug: bool
     _extra_config: Dict[str, str]
 
@@ -60,6 +58,40 @@ class TableConfigurator(metaclass=Singleton):
         extras.update(self._extra_config)
         return extras
 
+    def _get_item(self, table_id: str) -> Dict[str, str]:
+        """item dictionary where release-debug and alias loops are resolved"""
+        # this stack allows us to detect alias loop
+        stack = {table_id}
+
+        value: TcDetails = self._raw_resource_details[table_id]
+
+        while set(value.keys()) in [{"release", "debug"}, {"alias"}]:
+            if set(value.keys()) == {"release", "debug"}:
+                # Handle the case of differentiated release and debug tables
+                if self._is_debug:
+                    value = value["debug"]
+                else:
+                    value = value["release"]
+
+            if set(value.keys()) == {"alias"}:  # allow alias of alias
+                new_id = value["alias"]
+                if new_id in stack:
+                    raise ValueError(f"Alias loop at key {new_id}")
+                stack.add(new_id)
+                value = self._raw_resource_details[new_id]
+
+        # we are finished resolving a possible route of aliases
+        return value
+
+    def _get_unsubstituted_item_property(self, table_id: str, property: str) -> str:
+        """item property where release-debug and alias loops are resolved"""
+        value = self._get_item(table_id)
+
+        if property in value:
+            return value[property]
+        else:
+            raise NoSuchPropertyException(property)
+
     def _get_item_property(
         self, table_id: str, property: str, _forbidden_keys: Set[str] = None
     ) -> str:
@@ -67,7 +99,9 @@ class TableConfigurator(metaclass=Singleton):
         raw_string = self._get_unsubstituted_item_property(table_id, property)
 
         replacements = self.get_extra_details()
+        # get all keys used in the raw_string, such as using {MyDb} will get "MyDb"
         format_keys = [i[1] for i in Formatter().parse(raw_string) if i[1] is not None]
+        # subtract all extra keys from the set, e.g. take out "ENV"
         other_resource_keys = set(format_keys) - set(replacements.keys())
 
         # the forbidden-keys logic allows us to detect reference loops.
@@ -85,47 +119,24 @@ class TableConfigurator(metaclass=Singleton):
         # every key that is not in the special properties and not forbidden
         # should refer to another resource. If it does not an exception will occur.
         for key in other_resource_keys:
-            if key.endswith("_path"):
-                replacements[key] = self._get_item_property(
-                    key[:-5], "path", _forbidden_keys
-                )
-            elif key.endswith("_name"):
-                replacements[key] = self._get_item_property(
-                    key[:-5], "name", _forbidden_keys
-                )
-            else:
-                replacements[key] = self._get_item_property(
-                    key, "name", _forbidden_keys
-                )
+            try:
+                # maybe we have a case of reference to property, let's try:
+
+                id_part, property_part = key.rsplit("_", 1)
+                # will raise ValueError if there are too few parts
+
+                value = self._get_item_property(id_part, property_part, _forbidden_keys)
+                # raises ValueError if it does not exist
+
+                replacements[key] = value
+                continue
+            except ValueError:
+                pass
+
+            # bare key references are to 'name' which _must_ exist in this case
+            replacements[key] = self._get_item_property(key, "name", _forbidden_keys)
 
         return raw_string.format(**replacements)
-
-    def _get_unsubstituted_item_property(self, table_id: str, property: str) -> str:
-        """item property where release-debug and alias loops are resolved"""
-        # this stack allows us to detect alias loop
-        stack = {table_id}
-
-        value = self._raw_resource_details[table_id]
-        while ("release" in value) or ("debug" in value) or ("alias" in value):
-            if ("release" in value) or ("debug" in value):
-                # Handle the case of differentiated release and debug tables
-                if self._is_debug:
-                    value = value["debug"]
-                else:
-                    value = value["release"]
-
-            if "alias" in value:  # allow alias of alias
-                new_id = value["alias"]
-                if new_id in stack:
-                    raise ValueError(f"Alias loop at key {new_id}")
-                stack.add(new_id)
-                value = self._raw_resource_details[new_id]
-
-        # we are finished resolving a possible route of aliases
-        if property in value:
-            return value[property]
-        else:
-            raise NoSuchPropertyException(property)
 
     def add_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
         backup_details = self._raw_resource_details.copy()
@@ -146,13 +157,11 @@ class TableConfigurator(metaclass=Singleton):
                                 raise ValueError(f"document in {file_path} is no dict.")
 
                             for key, value in update.items():
-                                if self.__is_known_shape(value):
-                                    self._raw_resource_details[key] = value
-                                else:
-                                    raise UnknownShapeException(
-                                        f"Object {key} in file {file_path}"
-                                        f" has unexpected shape."
+                                if not isinstance(value, dict):
+                                    raise ValueError(
+                                        f"value {key} in {file_path} is no dict."
                                     )
+                                self._raw_resource_details[key] = value
 
             # try re-building all details
             self.table_details = dict()
@@ -185,22 +194,6 @@ class TableConfigurator(metaclass=Singleton):
         self._is_debug = debug
         self.table_details = dict()
 
-    def __is_TableDetails_shape(self, value):
-        return set(value.keys()).issubset(TableDetailsExtended_keys)
-
-    def __is_TableAlias_shape(self, value):
-        return set(value.keys()).issubset(TableAlias_keys)
-
-    def __is_TableRelDbg_shape(self, value):
-        return set(value.keys()).issubset(TableRelDbg_keys)
-
-    def __is_known_shape(self, value):
-        return (
-            self.__is_TableDetails_shape(value)
-            or self.__is_TableAlias_shape(value)
-            or self.__is_TableRelDbg_shape(value)
-        )
-
     def reset(self, *, debug: bool = False):
         """
         Resets table names and table SQL. Enables or disables debug mode
@@ -224,12 +217,12 @@ class TableConfigurator(metaclass=Singleton):
         """
         return len(self._unique_id)
 
-    def register(self, key: str, value: AnyDetails):
+    def register(self, key: str, value: TcDetails):
         """
         Register a new table.
         """
-        if not self.__is_known_shape(value):
-            raise ValueError("Object has unexpected shape.")
+        if not isinstance(value, dict):
+            raise ValueError("value is no dict")
         self._raw_resource_details[key] = value
         self.table_details = dict()
 
@@ -288,13 +281,16 @@ class TableConfigurator(metaclass=Singleton):
             self.table_details = dict()
 
             for table_id in self._raw_resource_details.keys():
+                # add the name as the bare key
                 try:
                     self.table_details[table_id] = self._get_item_property(
                         table_id, "name"
                     )
                 except NoSuchPropertyException:
                     pass
-                for property_name in TableDetailsExtended_keys:
+
+                # add every propety as a _property part
+                for property_name in set(self._get_item(table_id).keys()):
                     try:
                         self.table_details[
                             f"{table_id}_{property_name}"

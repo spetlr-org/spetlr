@@ -19,7 +19,6 @@ class NoSuchPropertyException(AtcException):
 
 # recursive type definition of the details object
 TcDetails = Dict[str, Union[str, "TcDetails"]]
-TcDetailsValue = Union[str, TcDetails]
 
 
 class TableConfigurator(metaclass=Singleton):

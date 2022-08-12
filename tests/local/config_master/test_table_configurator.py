@@ -2,7 +2,7 @@ import unittest
 
 from atc.config_master import TableConfigurator
 
-from . import tables1, tables2, tables3
+from . import tables1, tables2, tables3, tables4
 
 
 class TestTableConfigurator(unittest.TestCase):
@@ -55,3 +55,11 @@ class TestTableConfigurator(unittest.TestCase):
         tc.set_prod()
         with self.assertRaises(ValueError):
             tc.add_resource_path(tables3)
+
+    def test_06_freestyle(self):
+        tc = TableConfigurator()
+        tc.set_prod()
+        tc.add_resource_path(tables4)
+        details = tc.get_all_details()
+        self.assertTrue("MyFreeTable_eggs", details)
+        self.assertEqual(tc.table_property("MyFreeTable", "bacon"), "")

@@ -11,7 +11,3 @@ class NoCreationException(SqlParseException):
 
 class UnknownCreationException(SqlParseException):
     pass
-
-
-class UnknownShapeException(AtcException):
-    pass

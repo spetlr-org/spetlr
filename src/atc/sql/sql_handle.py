@@ -1,7 +1,7 @@
 from pyspark.sql import DataFrame
 
 from atc.atc_exceptions import AtcException
-from atc.sql.SqlServer import SqlServer
+from atc.sql import BaseServer
 from atc.tables.TableHandle import TableHandle
 
 
@@ -18,9 +18,8 @@ class SqlHandleInvalidFormat(SqlHandleException):
 
 
 class SqlHandle(TableHandle):
-    def __init__(self, name: str, sql_server: SqlServer):
+    def __init__(self, name: str, sql_server: BaseServer):
         self._name = name
-
         self._sql_server = sql_server
 
         self._validate()

@@ -13,3 +13,15 @@ SparkTestDb2:
 SparkTestTable2:
   name: "{SparkTestDb2}.tbl2"
   path: "{SparkTestDb2_path}/tbl2"
+
+IncrementalBaseDb:
+  name: IncrementalBase{ID}
+  path: "/tmp/incrementalbase{ID}.db/"
+
+IncrementalBaseDummy:
+  name: "{IncrementalBaseDb}.Dummy"
+  path: "{IncrementalBaseDb_path}/dummy"
+
+IncrementalBaseDummy2:
+  name: "{IncrementalBaseDb}.Dummy2"
+  path: "{IncrementalBaseDb_path}/dummy2"

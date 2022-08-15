@@ -1,6 +1,6 @@
 import warnings
 
-from pyspark.pandas import DataFrame
+from pyspark.sql import DataFrame
 
 from atc.config_master import TableConfigurator
 from atc.etl import Loader, dataset_group

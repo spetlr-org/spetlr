@@ -97,3 +97,7 @@ class DeltaHandle:
     def recreate_hive_table(self):
         self.drop()
         self.create_hive_table()
+
+    def merge(self):
+        # This should be a method which can merge from delta to delta
+        raise NotImplementedError

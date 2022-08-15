@@ -1,8 +1,8 @@
 from pyspark.sql import DataFrame
 
 from atc.atc_exceptions import AtcException
-from atc.config_master import TableConfigurator
 from atc.sql.SqlServer import SqlServer
+from atc.tables.TableHandle import TableHandle
 
 
 class SqlHandleException(AtcException):
@@ -17,17 +17,13 @@ class SqlHandleInvalidFormat(SqlHandleException):
     pass
 
 
-class SqlHandle:
+class SqlHandle(TableHandle):
     def __init__(self, name: str, sql_server: SqlServer):
         self._name = name
+
         self._sql_server = sql_server
 
         self._validate()
-
-    @classmethod
-    def from_tc(cls, id: str, sql_server: SqlServer):
-        tc = TableConfigurator()
-        return cls(name=tc.table_name(id), sql_server=sql_server)
 
     def _validate(self):
         """Validates that the name is either db.table or just table."""
@@ -66,13 +62,3 @@ class SqlHandle:
 
     def drop_and_delete(self) -> None:
         self.drop()
-
-    def create_hive_table(self) -> None:
-        raise NotImplementedError
-
-    def recreate_hive_table(self):
-        raise NotImplementedError
-
-    def merge(self):
-        # This should be a method which can merge from delta to SQL
-        raise NotImplementedError

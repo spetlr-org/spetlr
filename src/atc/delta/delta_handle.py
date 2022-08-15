@@ -4,6 +4,7 @@ from atc.atc_exceptions import AtcException
 from atc.config_master import TableConfigurator
 from atc.functions import init_dbutils
 from atc.spark import Spark
+from atc.tables.TableHandle import TableHandle
 
 
 class DeltaHandleException(AtcException):
@@ -18,7 +19,7 @@ class DeltaHandleInvalidFormat(DeltaHandleException):
     pass
 
 
-class DeltaHandle:
+class DeltaHandle(TableHandle):
     def __init__(self, name: str, location: str = None, data_format: str = "delta"):
         self._name = name
         self._location = location
@@ -27,7 +28,7 @@ class DeltaHandle:
         self._validate()
 
     @classmethod
-    def from_tc(cls, id: str):
+    def from_tc(cls, id: str) -> "DeltaHandle":
         tc = TableConfigurator()
         return cls(
             name=tc.table_name(id),

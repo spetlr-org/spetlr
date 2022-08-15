@@ -1,10 +1,12 @@
-from pyspark.sql import DataFrame
+from deprecation import deprecated
 
-from atc.etl import Loader
 from atc.sql.SqlServer import SqlServer
 
+from . import SimpleLoader
 
-class SimpleSqlServerLoader(Loader):
+
+@deprecated(reason="Use a SimpleLoader with a SqlHandle.")
+class SimpleSqlServerLoader(SimpleLoader):
     def __init__(
         self,
         *,
@@ -12,11 +14,6 @@ class SimpleSqlServerLoader(Loader):
         server: SqlServer,
         append: bool = False,
     ):
-        super().__init__()
-        self.server = server
-        self.table_id = table_id
-        self.append = append
-
-    def save(self, df: DataFrame) -> None:
-
-        self.server.write_table(df, self.table_id, append=self.append)
+        super().__init__(
+            handle=server.from_tc(table_id), mode="append" if append else "overwrite"
+        )

@@ -6,14 +6,14 @@ from typing import Union
 
 from atc.config_master import TableConfigurator
 from atc.spark import Spark
-from atc.sql.SqlServer import SqlServer
+from atc.sql import BaseExecutor
 
 
 class SqlExecutor:
     def __init__(
         self,
         base_module: Union[str, ModuleType] = None,
-        server: SqlServer = None,
+        server: BaseExecutor = None,
     ):
         self.base_module = base_module
         self.server = server

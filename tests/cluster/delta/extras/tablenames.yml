@@ -21,7 +21,3 @@ IncrementalBaseDb:
 IncrementalBaseDummy:
   name: "{IncrementalBaseDb}.Dummy"
   path: "{IncrementalBaseDb_path}/dummy"
-
-IncrementalBaseDummy2:
-  name: "{IncrementalBaseDb}.Dummy2"
-  path: "{IncrementalBaseDb_path}/dummy2"

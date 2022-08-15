@@ -34,6 +34,7 @@ class DeliverySqlExecutorTests(unittest.TestCase):
 
         self.sql_server.read_table("SqlTestTable1")
 
-        self.sql_server.read_table("SqlTestTable2")
+        sh = self.sql_server.from_tc("SqlTestTable2")
+        sh.read()
 
         self.assertTrue(True)

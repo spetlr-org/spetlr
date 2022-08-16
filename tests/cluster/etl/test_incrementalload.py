@@ -42,15 +42,15 @@ class IncrementalBaseLoaderTests(DataframeTestCase):
         TableConfigurator().add_resource_path(extras)
         TableConfigurator().set_debug()
 
-        target_dh_dummy = DeltaHandle.from_tc("IncrementalBaseDummy")
+        cls.target_dh_dummy = DeltaHandle.from_tc("IncrementalBaseDummy")
 
         SparkSqlExecutor().execute_sql_file("incremental-base-create-test")
 
-        dummy_schema = target_dh_dummy.read().schema
+        cls.dummy_schema = cls.target_dh_dummy.read().schema
 
         # make sure target is empty
-        df_empty = DataframeCreator.make_partial(dummy_schema, [], [])
-        target_dh_dummy.overwrite(df_empty)
+        df_empty = DataframeCreator.make_partial(cls.dummy_schema, [], [])
+        cls.target_dh_dummy.overwrite(df_empty)
 
     @classmethod
     def tearDownClass(cls) -> None:

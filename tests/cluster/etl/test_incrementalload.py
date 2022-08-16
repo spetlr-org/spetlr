@@ -7,6 +7,7 @@ from atc.delta import DbHandle, DeltaHandle
 from atc.etl.loaders.IncrementalLoader import IncrementalLoader
 from atc.etl.loaders.IncrementalLoaderParameters import IncrementalLoaderParameters
 from atc.utils import DataframeCreator
+from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
@@ -38,6 +39,7 @@ class IncrementalBaseLoaderTests(DataframeTestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        TableConfigurator().add_resource_path(extras)
         TableConfigurator().set_debug()
 
         target_dh_dummy = DeltaHandle.from_tc("IncrementalBaseDummy")

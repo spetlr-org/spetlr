@@ -19,7 +19,8 @@ class GetMergeStatementTest(unittest.TestCase):
             "ON (source.col1 = target.col1) AND (source.col2 = target.col2) "
             "WHEN MATCHED THEN UPDATE -- update existing records "
             "SET target.col3 = source.col3, target.col4 = source.col4   "
-            "WHEN NOT MATCHED THEN INSERT -- insert new records ( col1, col2, col3, col4 ) "
+            "WHEN NOT MATCHED THEN INSERT -- insert new records "
+            "( col1, col2, col3, col4 ) "
             "VALUES ( source.col1, source.col2, source.col3, source.col4 );"
         )
         self.assertEqual(output.replace("  ", "").replace("\n", " ").strip(), expected)

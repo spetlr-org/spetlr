@@ -7,7 +7,7 @@ from atc.etl import Loader, dataset_group
 from atc.etl.loaders.IncrementalLoaderParameters import IncrementalLoaderParameters
 from atc.functions import get_unique_tempview_name
 from atc.spark import Spark
-from atc.utils.CheckDfMerger import CheckDfMerge
+from atc.utils.CheckDfMerge import CheckDfMerge
 from atc.utils.GetMergeStatement import GetMergeStatement
 
 

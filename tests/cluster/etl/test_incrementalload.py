@@ -1,4 +1,3 @@
-import unittest
 from typing import List
 
 from atc_tools.testing import DataframeTestCase
@@ -11,7 +10,7 @@ from atc.utils import DataframeCreator
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
-class IncrementalBaseLoaderTests(unittest.TestCase, DataframeTestCase):
+class IncrementalBaseLoaderTests(DataframeTestCase):
 
     target_id = "IncrementalBaseDummy"
 
@@ -66,7 +65,6 @@ class IncrementalBaseLoaderTests(unittest.TestCase, DataframeTestCase):
         )
 
         loader.save(df_source)
-
         self.assertDataframeMatches(self.target_dh_dummy.read(), None, self.data1)
 
     def test_02_can_perform_full_over_existing(self):

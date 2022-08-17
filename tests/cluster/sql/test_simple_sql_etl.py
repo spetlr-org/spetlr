@@ -13,8 +13,9 @@ from pyspark.sql.types import (
 )
 
 from atc.config_master import TableConfigurator
-from atc.etl.loaders.simple_sql_loader import SimpleSqlServerLoader
+from atc.etl.loaders import SimpleLoader
 from atc.functions import get_unique_tempview_name
+from atc.sql import SqlHandle
 from atc.transformers.simple_sql_transformer import SimpleSqlServerTransformer
 from atc.utils import DataframeCreator
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
@@ -84,7 +85,7 @@ class SimpleSqlServerETLTests(unittest.TestCase):
             table_id=self.table_id, server=self.sql_server
         ).process(df)
 
-        SimpleSqlServerLoader(table_id=self.table_id, server=self.sql_server).save(
+        SimpleLoader(handle=SqlHandle(name=self.table_id, server=self.sql_server)).save(
             df_out
         )
 

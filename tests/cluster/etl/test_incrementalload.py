@@ -4,8 +4,8 @@ from atc_tools.testing import DataframeTestCase
 
 from atc.config_master import TableConfigurator
 from atc.delta import DbHandle, DeltaHandle
-from atc.etl.loaders.IncrementalLoader import IncrementalLoader
-from atc.etl.loaders.IncrementalLoaderParameters import IncrementalLoaderParameters
+from atc.etl.loaders.UpsertLoader import UpsertLoader
+from atc.etl.loaders.UpsertLoaderParameters import UpsertLoaderParameters
 from atc.utils import DataframeCreator
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
@@ -57,10 +57,10 @@ class IncrementalBaseLoaderTests(DataframeTestCase):
         DbHandle.from_tc("IncrementalBaseDb").drop_cascade()
 
     def test_01_can_perform_incremental_on_empty(self):
-        params = IncrementalLoaderParameters(
+        params = UpsertLoaderParameters(
             incremental_load=True, target_id=self.target_id, join_cols=self.join_cols
         )
-        loader = IncrementalLoader(params)
+        loader = UpsertLoader(params)
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data1
@@ -73,10 +73,10 @@ class IncrementalBaseLoaderTests(DataframeTestCase):
         """The target table is already filled from before."""
         self.assertEqual(2, len(self.target_dh_dummy.read().collect()))
 
-        params = IncrementalLoaderParameters(
+        params = UpsertLoaderParameters(
             incremental_load=False, target_id=self.target_id, join_cols=self.join_cols
         )
-        loader = IncrementalLoader(params)
+        loader = UpsertLoader(params)
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data2
@@ -91,10 +91,10 @@ class IncrementalBaseLoaderTests(DataframeTestCase):
         existing_rows = self.target_dh_dummy.read().collect()
         self.assertEqual(2, len(existing_rows))
 
-        params = IncrementalLoaderParameters(
+        params = UpsertLoaderParameters(
             incremental_load=True, target_id=self.target_id, join_cols=self.join_cols
         )
-        loader = IncrementalLoader(params)
+        loader = UpsertLoader(params)
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data3
@@ -111,10 +111,10 @@ class IncrementalBaseLoaderTests(DataframeTestCase):
         existing_rows = self.target_dh_dummy.read().collect()
         self.assertEqual(3, len(existing_rows))
 
-        params = IncrementalLoaderParameters(
+        params = UpsertLoaderParameters(
             incremental_load=True, target_id=self.target_id, join_cols=self.join_cols
         )
-        loader = IncrementalLoader(params)
+        loader = UpsertLoader(params)
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data4

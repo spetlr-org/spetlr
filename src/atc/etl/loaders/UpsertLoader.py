@@ -4,15 +4,15 @@ from pyspark.sql import DataFrame
 
 from atc.config_master import TableConfigurator
 from atc.etl import Loader, dataset_group
-from atc.etl.loaders.IncrementalLoaderParameters import IncrementalLoaderParameters
+from atc.etl.loaders.UpsertLoaderParameters import UpsertLoaderParameters
 from atc.functions import get_unique_tempview_name
 from atc.spark import Spark
 from atc.utils.CheckDfMerge import CheckDfMerge
 from atc.utils.GetMergeStatement import GetMergeStatement
 
 
-class IncrementalLoader(Loader):
-    def __init__(self, params: IncrementalLoaderParameters):
+class UpsertLoader(Loader):
+    def __init__(self, params: UpsertLoaderParameters):
         super().__init__()
         self.params = params
 

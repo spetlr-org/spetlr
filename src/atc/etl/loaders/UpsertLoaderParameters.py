@@ -3,7 +3,7 @@ from typing import List
 from atc.delta import DeltaHandle
 
 
-class IncrementalLoaderParameters:
+class UpsertLoaderParameters:
     def __init__(
         self,
         incremental_load: bool,

@@ -4,14 +4,14 @@ from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StructField, StructType
 
 from atc.config_master import TableConfigurator
-from atc.sql import SqlHandle
 from atc.utils import DataframeCreator
-from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
 from . import extras
+from .DeliverySqlExecutor import DeliverySqlExecutor
+from .DeliverySqlServer import DeliverySqlServer
 
 
-class DeliverySqlServerTests(unittest.TestCase):
+class SqlHandleTests(unittest.TestCase):
     v1_dh = None
     t2_dh = None
     t1_dh = None
@@ -26,8 +26,8 @@ class DeliverySqlServerTests(unittest.TestCase):
         cls.tc.add_resource_path(extras)
         cls.tc.reset(debug=True)
 
-        cls.t1_dh = SqlHandle(name="SqlTestTable1", sql_server=DeliverySqlServer())
-        cls.t2_dh = SqlHandle(name="SqlTestTable2", sql_server=DeliverySqlServer())
+        cls.t1_dh = cls.sql_server.get_handle("SqlTestTable1")
+        cls.t2_dh = cls.sql_server.get_handle("SqlTestTable2")
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -43,11 +43,8 @@ class DeliverySqlServerTests(unittest.TestCase):
         self.assertTrue(True)
 
     def test03_execute_sql_file(self):
-        file_name = "test1"
-        path_name = extras
-
         # Create the table
-        self.sql_server.execute_sql_file(resource_path=path_name, sql_file=file_name)
+        DeliverySqlExecutor().execute_sql_file("*")
         self.assertTrue(True)
 
     def test4_read_w_id(self):

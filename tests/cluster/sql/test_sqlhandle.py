@@ -9,6 +9,7 @@ from atc.utils import DataframeCreator
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
 from . import extras
+from .DeliverySqlExecutor import DeliverySqlExecutor
 
 
 class DeliverySqlServerTests(unittest.TestCase):
@@ -44,10 +45,9 @@ class DeliverySqlServerTests(unittest.TestCase):
 
     def test03_execute_sql_file(self):
         file_name = "test1"
-        path_name = extras
 
         # Create the table
-        self.sql_server.execute_sql_file(resource_path=path_name, sql_file=file_name)
+        DeliverySqlExecutor().execute_sql_file(file_name)
         self.assertTrue(True)
 
     def test4_read_w_id(self):

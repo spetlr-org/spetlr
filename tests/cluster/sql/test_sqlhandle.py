@@ -24,7 +24,7 @@ class SqlHandleTests(unittest.TestCase):
         cls.tc = TableConfigurator()
 
         cls.tc.add_resource_path(extras)
-        cls.tc.reset(debug=True)
+        cls.tc.set_debug()
 
         cls.t1_dh = cls.sql_server.get_handle("SqlTestTable1")
         cls.t2_dh = cls.sql_server.get_handle("SqlTestTable2")

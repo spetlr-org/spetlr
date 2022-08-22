@@ -44,7 +44,7 @@ class SqlHandleTests(unittest.TestCase):
 
     def test03_execute_sql_file(self):
         # Create the table
-        DeliverySqlExecutor().execute_sql_file("*")
+        DeliverySqlExecutor().execute_sql_file("test1")
         self.assertTrue(True)
 
     def test4_read_w_id(self):

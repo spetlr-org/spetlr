@@ -1,5 +1,5 @@
 # atc-dataplatform
-A common set of python libraries for DataBricks
+A common set of python libraries for DataBricks. 
 
 ## Important Notes
 
@@ -12,8 +12,10 @@ from our installer.
 
 Get it from PyPi 
 [![PyPI version](https://badge.fury.io/py/atc-dataplatform.svg)](https://pypi.org/project/atc-dataplatform/)
-
-    pip install atc-dataplatform
+[![PyPI](https://img.shields.io/pypi/dm/atc-dataplatform)](https://pypi.org/project/atc-dataplatform/)
+```    
+pip install atc-dataplatform
+```
 
 ## Development Notes
 

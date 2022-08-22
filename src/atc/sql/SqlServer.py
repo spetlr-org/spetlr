@@ -58,6 +58,8 @@ class SqlServer:
         tc = TableConfigurator()
         return SqlHandle(name=tc.table_name(id), sql_server=self)
 
+    get_handle = from_tc
+
     # Convenience class for align with Spark.get() method .sql.
     def sql(self, sql: str):
         self.execute_sql(sql)

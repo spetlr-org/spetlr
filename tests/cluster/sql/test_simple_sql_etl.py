@@ -30,6 +30,7 @@ class SimpleSqlServerETLTests(unittest.TestCase):
     def setUpClass(cls):
         cls.sql_server = DeliverySqlServer()
         cls.tc = TableConfigurator()
+        cls.tc.clear_all_configurations()
 
         # Register the delivery table for the table configurator
         cls.tc.register(

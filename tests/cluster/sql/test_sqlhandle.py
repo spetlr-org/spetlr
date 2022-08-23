@@ -26,6 +26,8 @@ class SqlHandleTests(unittest.TestCase):
         cls.tc.add_resource_path(extras)
         cls.tc.set_debug()
 
+        DeliverySqlExecutor().execute_sql_file("*")
+
         cls.t1_dh = cls.sql_server.get_handle("SqlTestTable1")
         cls.t2_dh = cls.sql_server.get_handle("SqlTestTable2")
 
@@ -38,28 +40,23 @@ class SqlHandleTests(unittest.TestCase):
 
         cls.tc.reset(debug=False)
 
-    def test01_can_connect(self):
+    def test_01_can_connect(self):
         self.sql_server.test_odbc_connection()
         self.assertTrue(True)
 
-    def test03_execute_sql_file(self):
-        # Create the table
-        DeliverySqlExecutor().execute_sql_file("test1")
-        self.assertTrue(True)
-
-    def test4_read_w_id(self):
+    def test04_read_w_id(self):
         # This might fail if the previous test didnt succeed
         self.t1_dh.read()
         self.t2_dh.read()
         self.assertTrue(True)
 
-    def test5_write_w_id(self):
+    def test05_write_w_id(self):
         df = self.create_data()
         self.t1_dh.overwrite(df)
         df_with_data = self.t1_dh.read()
         self.assertEqual(df_with_data.count(), 1)
 
-    def test6_truncate_w_id(self):
+    def test06_truncate_w_id(self):
 
         # Truncate
         self.t1_dh.truncate()

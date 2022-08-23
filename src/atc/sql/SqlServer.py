@@ -8,6 +8,7 @@ from pyspark.sql import DataFrame
 
 from atc.config_master import TableConfigurator
 from atc.spark import Spark
+from atc.sql.sql_handle import SqlHandle
 
 
 class SqlServer:
@@ -50,6 +51,14 @@ class SqlServer:
         conn.autocommit = True
         conn.execute(sql)
         conn.close()
+
+    def from_tc(self, id: str) -> SqlHandle:
+        """This method allows an instance of SqlServer to be a drop in for the class
+        DeltaHandle. One can call from_tc(id) on either to get a table handle."""
+        tc = TableConfigurator()
+        return SqlHandle(name=tc.table_name(id), sql_server=self)
+
+    get_handle = from_tc
 
     # Convenience class for align with Spark.get() method .sql.
     def sql(self, sql: str):

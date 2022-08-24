@@ -9,10 +9,7 @@ from pyspark.sql.types import (
 )
 
 from atc.spark import Spark
-from atc.transformers.drop_oldest_duplicate_transformer import (
-    DropOldestDuplicatesTransformer,
-)
-from atc.utils import DropOldestDuplicates
+from atc.utils.DropOldestDuplicates import DropOldestDuplicates
 
 
 class TestDropOldestDuplicates(DataframeTestCase):

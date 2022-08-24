@@ -12,7 +12,6 @@ from atc.spark import Spark
 from atc.transformers.drop_oldest_duplicate_transformer import (
     DropOldestDuplicatesTransformer,
 )
-from atc.utils import DropOldestDuplicates
 
 
 class TestDropOldestDuplicatesTransformer(DataframeTestCase):
@@ -42,11 +41,13 @@ class TestDropOldestDuplicatesTransformer(DataframeTestCase):
             ]
         )
 
+        df = Spark.get().createDataFrame(data=data, schema=schema)
+
         df2 = (
             DropOldestDuplicatesTransformer(
                 cols=["id", "model", "brand"], orderByColumn="timecolumn"
             )
-            .process(data)
+            .process(df)
             .orderBy("id")
         )
 

@@ -15,8 +15,8 @@ from atc.transformers.drop_oldest_duplicate_transformer import (
 from atc.utils import DropOldestDuplicates
 
 
-class TestDropOldestDuplicates(DataframeTestCase):
-    def test_drop_oldest_duplicates(self):
+class TestDropOldestDuplicatesTransformer(DataframeTestCase):
+    def test_drop_oldest_duplicates_transformer(self):
         data = [
             (1, "Fender", "Telecaster", 5, dt_utc(2021, 7, 1, 10)),
             (1, "Fender", "Telecaster", 4, dt_utc(2021, 7, 1, 11)),
@@ -42,15 +42,16 @@ class TestDropOldestDuplicates(DataframeTestCase):
             ]
         )
 
-        df = Spark.get().createDataFrame(data=data, schema=schema)
-
-        # Testing the function
-        df = DropOldestDuplicates(
-            df=df, cols=["id", "model", "brand"], orderByColumn="timecolumn"
-        ).orderBy("id")
+        df2 = (
+            DropOldestDuplicatesTransformer(
+                cols=["id", "model", "brand"], orderByColumn="timecolumn"
+            )
+            .process(data)
+            .orderBy("id")
+        )
 
         self.assertDataframeMatches(
-            df,
+            df2,
             None,
             expected_data=expected_data,
         )

@@ -8,6 +8,7 @@ class UnionTransformer(Transformer):
     """Returns the union of all input dataframes."""
 
     def __init__(self, allowMissingColumns=False):
+        super().__init__()
         self.allowMissingColumns = allowMissingColumns
 
     def process(self, df: DataFrame) -> DataFrame:

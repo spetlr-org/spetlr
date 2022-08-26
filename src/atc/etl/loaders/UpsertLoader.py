@@ -25,7 +25,8 @@ class UpsertLoader(Loader):
         warnings.warn(
             "Incremental Base - incremental load with append"
             if incremental_load
-            else "Incremental Base - full load with append"
+            else "Incremental Base - full load with append",
+            DeprecationWarning,
         )
         return df
 
@@ -48,7 +49,8 @@ class UpsertLoader(Loader):
         if any_null_keys:
             warnings.warn(
                 "Null keys found in input dataframe. "
-                "Rows will be discarded before load."
+                "Rows will be discarded before load.",
+                DeprecationWarning,
             )
             df = df.filter(
                 " AND ".join(f"({col} is NOT NULL)" for col in self.params.join_cols)
@@ -97,6 +99,8 @@ class UpsertLoader(Loader):
 
         Spark.get().sql(merge_sql_statement)
 
-        warnings.warn("Incremental Base - incremental load with merge")
+        warnings.warn(
+            "Incremental Base - incremental load with merge", DeprecationWarning
+        )
 
         return df

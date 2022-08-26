@@ -34,7 +34,7 @@ jobs:
       - name: Check code linting
         run: flake8 .
       - name: Install the package
-        run: python setup.py develop
+        run: pip install .
       - name: Run Tests
         run: python -m pytest tests/local
 

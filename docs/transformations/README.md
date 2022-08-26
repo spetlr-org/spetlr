@@ -5,6 +5,7 @@ Transformations in atc-dataplatform:
 * [Concatenate dataframes](#concatenate-data-frames)
 * [Fuzzy select](#fuzzy-select-transformer)
 * [Merge df into target](#merge-df-into-target)
+* [DropOldestDuplicates](#dropoldestduplicates)
 
 ## Concatenate data frames
 
@@ -204,3 +205,41 @@ select * from test.testTarget order by Id
 
 As one can see, the row with id=2 is now merged such that the model went from "Les Paul" to "Starfire". 
 The two other rows where inserted. 
+
+## DropOldestDuplicates
+
+This transformation helps dropping duplicates based on time. If there is multiple duplicates, 
+only the newest row remain. In the example below, a dataframe has several duplicates - since a unique record is 
+defined by a combination of a guitar-id, model and brand. As times go by the amount
+of guitars available in a store changes. Lets assume that we only want the newest record
+and dropping the oldest duplicates:
+
+``` python 
+from atc.utils.DropOldestDuplicates import DropOldestDuplicates
+data =
+
+| id| model|     brand|amount|         timecolumn|
++---+------+----------+------+-------------------+
+|  1|Fender|Telecaster|     5|2021-07-01 10:00:00|
+|  1|Fender|Telecaster|     4|2021-07-01 11:00:00|
+|  2|Gibson|  Les Paul|    27|2021-07-01 11:00:00|
+|  3|Ibanez|        RG|    22|2021-08-01 11:00:00|
+|  3|Ibanez|        RG|    26|2021-09-01 11:00:00|
+|  3|Ibanez|        RG|    18|2021-10-01 11:00:00|
++---+------+----------+------+-------------------+
+
+df = DropOldestDuplicatesTransformer( 
+            cols=["id", "model", "brand"], 
+            orderByColumn="timecolumn"
+            ).process(data)
+df.show()
+
+| id| model|     brand|amount|         timecolumn|
++---+------+----------+------+-------------------+
+|  1|Fender|Telecaster|     4|2021-07-01 11:00:00|
+|  2|Gibson|  Les Paul|    27|2021-07-01 11:00:00|
+|  3|Ibanez|        RG|    18|2021-10-01 11:00:00|
++---+------+----------+------+-------------------+
+```
+
+Notice, the oldest duplicates are dropped. 

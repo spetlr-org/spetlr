@@ -5,6 +5,7 @@ from pyspark.sql.types import IntegerType, StructField, StructType
 
 from atc.config_master import TableConfigurator
 from atc.functions import get_unique_tempview_name
+from atc.sql import SqlServer
 from atc.utils import DataframeCreator
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
@@ -212,3 +213,17 @@ class DeliverySqlServerTests(unittest.TestCase):
                     )
                       """
         self.sql_server.execute_sql(sql_argument)
+
+    def test_from_connection_string(self):
+        server = "cltest.database.windows.net"
+        port = "1433"
+        database = "testdatabase"
+        user = "testuser"
+        password = "testpwd"
+
+        connection_string = f"Server=tcp:{server},{port};Database={database};User ID={user};Password={password};Encrypt=true;Connection Timeout=30;"
+
+        test_server = SqlServer.from_connection_string(connection_string)
+        sql_server = SqlServer(server, database, user, password, port)
+
+        self.assertEqual(test_server, sql_server)

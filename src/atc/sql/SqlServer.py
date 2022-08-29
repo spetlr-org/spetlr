@@ -1,4 +1,5 @@
 import importlib.resources
+import re
 import time
 from types import ModuleType
 from typing import Union
@@ -18,7 +19,7 @@ class SqlServer:
         database: str,
         username: str,
         password: str,
-        port: str = "1433",
+        port: str = "1433"
     ):
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
@@ -44,6 +45,30 @@ class SqlServer:
             "password": password,
             "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         }
+
+    @classmethod
+    def from_connection_string(cls, connection_string):
+        """Creates SqlServer object from connection string as described in:
+        https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlconnection.connectionstring?view=dotnet-plat-ext-6.0#remarks
+        """
+        try:
+            server_pattern = r"(Server|Address|Data Source|Addr|Network Address)=(tcp:|np:|lpc:)?([\w\d\.]+),?(\d*);"
+            server = re.search(server_pattern, connection_string).group(3)
+            port = re.search(server_pattern, connection_string).group(4)
+            if port == "":
+                port = "1433"
+
+            user_pattern = r"(User ID|UID|User)=([^;]+);"
+            username = re.search(user_pattern, connection_string).group(2)
+
+            password_pattern = "(Password|PWD)=([^;]+);"
+            password = re.search(password_pattern, connection_string).group(2)
+
+            database_pattern = r"(Initial Catalog|Database)=([^;]+);"
+            database = re.search(database_pattern, connection_string).group(2)
+        except AttributeError:
+            raise ValueError("Connection string does not conform to standard")
+        return cls(server, database, username, password, port)
 
     def execute_sql(self, sql: str):
         self.test_odbc_connection()

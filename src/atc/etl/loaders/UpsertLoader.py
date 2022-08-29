@@ -1,5 +1,3 @@
-import warnings
-
 from pyspark.sql import DataFrame
 
 from atc.config_master import TableConfigurator
@@ -22,11 +20,10 @@ class UpsertLoader(Loader):
         mode = "append" if incremental_load else "overwrite"
 
         self.params.target_dh.write_or_append(df, mode=mode)
-        warnings.warn(
+        print(
             "Incremental Base - incremental load with append"
             if incremental_load
-            else "Incremental Base - full load with append",
-            DeprecationWarning,
+            else "Incremental Base - full load with append"
         )
         return df
 
@@ -47,10 +44,9 @@ class UpsertLoader(Loader):
         )
 
         if any_null_keys:
-            warnings.warn(
+            print(
                 "Null keys found in input dataframe. "
-                "Rows will be discarded before load.",
-                DeprecationWarning,
+                "Rows will be discarded before load."
             )
             df = df.filter(
                 " AND ".join(f"({col} is NOT NULL)" for col in self.params.join_cols)
@@ -99,8 +95,6 @@ class UpsertLoader(Loader):
 
         Spark.get().sql(merge_sql_statement)
 
-        warnings.warn(
-            "Incremental Base - incremental load with merge", DeprecationWarning
-        )
+        print("Incremental Base - incremental load with merge")
 
         return df

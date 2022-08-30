@@ -15,12 +15,20 @@ from atc.sql.sql_handle import SqlHandle
 class SqlServer:
     def __init__(
         self,
-        hostname: str,
-        database: str,
-        username: str,
-        password: str,
-        port: str = "1433"
+        hostname: str = None,
+        database: str = None,
+        username: str = None,
+        password: str = None,
+        port: str = "1433",
+        connection_string: str = None
     ):
+        """Create object to interact with sql servers. Pass all but connection_string to connect via values or
+        pass only the connection_string as a keyword param to connect via connection string"""
+        if connection_string is not None:
+            hostname, port, username, password, database = self.from_connection_string(connection_string)
+        if not (hostname and database and username and password and port):
+            raise ValueError("Missing parameters for creating connection to SQL Server")
+
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
         self.url = (
@@ -46,14 +54,14 @@ class SqlServer:
             "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         }
 
-    @classmethod
-    def from_connection_string(cls, connection_string):
-        """Creates SqlServer object from connection string as described in:
+    @staticmethod
+    def from_connection_string(connection_string):
+        """Extracts values for connection to sql server, as described in:
         https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlconnection.connectionstring?view=dotnet-plat-ext-6.0#remarks
         """
         try:
             server_pattern = r"(Server|Address|Data Source|Addr|Network Address)=(tcp:|np:|lpc:)?([\w\d\.]+),?(\d*);"
-            server = re.search(server_pattern, connection_string).group(3)
+            hostname = re.search(server_pattern, connection_string).group(3)
             port = re.search(server_pattern, connection_string).group(4)
             if port == "":
                 port = "1433"
@@ -68,7 +76,8 @@ class SqlServer:
             database = re.search(database_pattern, connection_string).group(2)
         except AttributeError:
             raise ValueError("Connection string does not conform to standard")
-        return cls(server, database, username, password, port)
+
+        return hostname, port, username, password, database
 
     def execute_sql(self, sql: str):
         self.test_odbc_connection()

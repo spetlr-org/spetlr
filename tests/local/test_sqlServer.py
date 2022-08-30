@@ -21,7 +21,7 @@ class DeliverySqlServerTests(unittest.TestCase):
 
         connection_string = f"Server=tcp:{server},{port};Database={database};User ID={user};Password={password};Encrypt=true;Connection Timeout=30;"
 
-        test_server = SqlServer.from_connection_string(connection_string)
+        test_server = SqlServer(connection_string=connection_string)
         sql_server = SqlServer(server, database, user, password, port)
 
         self.assertEqual(test_server.odbc, sql_server.odbc)
@@ -37,7 +37,7 @@ class DeliverySqlServerTests(unittest.TestCase):
 
         connection_string = f"Addr={server};Initial Catalog={database};UID={user};PWD={password};Encrypt=true;Connection Timeout=30;"
 
-        test_server = SqlServer.from_connection_string(connection_string)
+        test_server = SqlServer(connection_string=connection_string)
         sql_server = SqlServer(server, database, user, password, port)
 
         self.assertEqual(test_server.odbc, sql_server.odbc)
@@ -47,4 +47,7 @@ class DeliverySqlServerTests(unittest.TestCase):
     def test_from_connection_string_raises(self):
         connection_string = f"Not data=tcp:, not pass, not user"
 
-        self.assertRaises(ValueError, SqlServer.from_connection_string, connection_string)
+        self.assertRaises(ValueError, SqlServer, None, None, None, None, None, connection_string)
+
+    def test_not_enough_params_raises(self):
+        self.assertRaises(ValueError, SqlServer, "test", None, "something missing", "nothere", "404", None)

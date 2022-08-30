@@ -11,9 +11,9 @@ from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
-class IncrementalBaseLoaderTests(DataframeTestCase):
+class UpsertLoaderTests(DataframeTestCase):
 
-    target_id = "IncrementalBaseDummy"
+    target_id = "UpsertLoaderDummy"
 
     join_cols = ["col1", "col2"]
 
@@ -42,9 +42,9 @@ class IncrementalBaseLoaderTests(DataframeTestCase):
         TableConfigurator().add_resource_path(extras)
         TableConfigurator().set_debug()
 
-        cls.target_dh_dummy = DeltaHandle.from_tc("IncrementalBaseDummy")
+        cls.target_dh_dummy = DeltaHandle.from_tc("UpsertLoaderDummy")
 
-        SparkSqlExecutor().execute_sql_file("incremental-base-create-test")
+        SparkSqlExecutor().execute_sql_file("upsertloader-test")
 
         cls.dummy_schema = cls.target_dh_dummy.read().schema
 
@@ -54,7 +54,7 @@ class IncrementalBaseLoaderTests(DataframeTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        DbHandle.from_tc("IncrementalBaseDb").drop_cascade()
+        DbHandle.from_tc("UpsertLoaderDb").drop_cascade()
 
     def test_01_can_perform_incremental_on_empty(self):
         params = UpsertLoaderParameters(

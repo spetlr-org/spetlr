@@ -1,8 +1,10 @@
+from typing import List
+
 from pyspark.sql import DataFrame
 
 from atc.atc_exceptions import AtcException
 from atc.sql import BaseServer
-from atc.tables.TableHandle import TableHandle
+from atc.tables.TableHandle import Mergeable, TableHandle
 
 
 class SqlHandleException(AtcException):
@@ -61,3 +63,9 @@ class SqlHandle(TableHandle):
 
     def drop_and_delete(self) -> None:
         self.drop()
+
+    def get_tablename(self) -> str:
+        return self._name
+
+    def upsert(self, df: DataFrame, join_cols: List[str]) -> DataFrame:
+        raise NotImplementedError

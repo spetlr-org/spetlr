@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame
 
 from atc.atc_exceptions import AtcException
 from atc.sql import BaseServer
-from atc.tables.TableHandle import Mergeable, TableHandle
+from atc.tables.TableHandle import TableHandle
 
 
 class SqlHandleException(AtcException):

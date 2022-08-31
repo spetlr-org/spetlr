@@ -1,4 +1,3 @@
-from deprecation import deprecated
 from pyspark.sql import DataFrame
 
 from atc.config_master import TableConfigurator
@@ -10,7 +9,6 @@ from atc.utils.CheckDfMerge import CheckDfMerge
 from atc.utils.GetMergeStatement import GetMergeStatement
 
 
-@deprecated(details="Use TableHandle.upsert()")
 class UpsertLoader(Loader):
     def __init__(self, params: UpsertLoaderParameters):
         super().__init__()

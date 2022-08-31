@@ -143,7 +143,7 @@ class DeltaHandle(TableHandle):
 
         # Load data from the target table for the purpose of incremental load
         if not incremental_load:
-            return do_simple_save(df, incremental_load)
+            return do_simple_save(df, incremental_load_local=False)
 
         df_target = self.read()
 

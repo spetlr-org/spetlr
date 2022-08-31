@@ -165,7 +165,7 @@ class DeltaHandle(TableHandle):
         )
 
         if not merge_required:
-            return do_simple_save(df, incremental_load_local=False)
+            return do_simple_save(df, incremental_load_local=True)
 
         temp_view_name = get_unique_tempview_name()
         df.createOrReplaceTempView(temp_view_name)

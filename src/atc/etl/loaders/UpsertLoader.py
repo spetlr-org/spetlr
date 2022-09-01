@@ -40,19 +40,14 @@ class UpsertLoader(Loader):
 
         # check null keys in our dataframe.
         any_null_keys = len(
-            df.filter(
-                " OR ".join(f"({col} is NULL)" for col in self.params.join_cols)
-            ).take(1)
+            df.filter(" OR ".join(f"({col} is NULL)" for col in self.params.join_cols)).take(1)
         )
 
         if any_null_keys:
             warnings.warn(
-                "Null keys found in input dataframe. "
-                "Rows will be discarded before load."
+                "Null keys found in input dataframe. " "Rows will be discarded before load."
             )
-            df = df.filter(
-                " AND ".join(f"({col} is NOT NULL)" for col in self.params.join_cols)
-            )
+            df = df.filter(" AND ".join(f"({col} is NOT NULL)" for col in self.params.join_cols))
 
         # Load data from the target table for the purpose of incremental load
         if not self.params.incremental_load:
@@ -87,6 +82,7 @@ class UpsertLoader(Loader):
         non_join_cols = [col for col in df.columns if col not in self.params.join_cols]
 
         merge_sql_statement = GetMergeStatement(
+            merge_statement_type="delta",
             target_table_name=target_table_name,
             source_table_name=temp_view_name,
             join_cols=self.params.join_cols,

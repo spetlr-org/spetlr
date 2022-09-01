@@ -5,7 +5,6 @@ from pyspark.sql.types import IntegerType, StructField, StructType
 
 from atc.config_master import TableConfigurator
 from atc.functions import get_unique_tempview_name
-from atc.sql import SqlServer
 from atc.utils import DataframeCreator
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 

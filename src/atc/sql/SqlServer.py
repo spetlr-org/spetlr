@@ -20,12 +20,14 @@ class SqlServer:
         username: str = None,
         password: str = None,
         port: str = "1433",
-        connection_string: str = None
+        connection_string: str = None,
     ):
         """Create object to interact with sql servers. Pass all but connection_string to connect via values or
         pass only the connection_string as a keyword param to connect via connection string"""
         if connection_string is not None:
-            hostname, port, username, password, database = self.from_connection_string(connection_string)
+            hostname, port, username, password, database = self.from_connection_string(
+                connection_string
+            )
         if not (hostname and database and username and password and port):
             raise ValueError("Missing parameters for creating connection to SQL Server")
 

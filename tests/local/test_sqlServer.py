@@ -47,7 +47,18 @@ class DeliverySqlServerTests(unittest.TestCase):
     def test_from_connection_string_raises(self):
         connection_string = f"Not data=tcp:, not pass, not user"
 
-        self.assertRaises(ValueError, SqlServer, None, None, None, None, None, connection_string)
+        self.assertRaises(
+            ValueError, SqlServer, None, None, None, None, None, connection_string
+        )
 
     def test_not_enough_params_raises(self):
-        self.assertRaises(ValueError, SqlServer, "test", None, "something missing", "nothere", "404", None)
+        self.assertRaises(
+            ValueError,
+            SqlServer,
+            "test",
+            None,
+            "something missing",
+            "nothere",
+            "404",
+            None,
+        )

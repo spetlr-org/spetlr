@@ -65,21 +65,21 @@ class SqlServer:
         try:
             server_pattern = (
                 r"(Server|Address|Data Source|Addr|Network Address)"
-                r"=(tcp:|np:|lpc:)?([\w\d\.]+),?(\d*);"
+                r"=(tcp:|np:|lpc:)?(?P<server>[\w\d\.]+),?(?P<port>\d*);"
             )
-            hostname = re.search(server_pattern, connection_string).group(3)
-            port = re.search(server_pattern, connection_string).group(4)
+            hostname = re.search(server_pattern, connection_string).group("server")
+            port = re.search(server_pattern, connection_string).group("port")
             if port == "":
                 port = "1433"
 
-            user_pattern = r"(User ID|UID|User)=([^;]+);"
-            username = re.search(user_pattern, connection_string).group(2)
+            user_pattern = r"(User ID|UID|User)=(?P<user>[^;]+);"
+            username = re.search(user_pattern, connection_string).group("user")
 
-            password_pattern = "(Password|PWD)=([^;]+);"
-            password = re.search(password_pattern, connection_string).group(2)
+            password_pattern = "(Password|PWD)=(?P<pwd>[^;]+);"
+            password = re.search(password_pattern, connection_string).group("pwd")
 
-            database_pattern = r"(Initial Catalog|Database)=([^;]+);"
-            database = re.search(database_pattern, connection_string).group(2)
+            database_pattern = r"(Initial Catalog|Database)=(?P<db>[^;]+);"
+            database = re.search(database_pattern, connection_string).group("db")
         except AttributeError:
             raise ValueError("Connection string does not conform to standard")
 

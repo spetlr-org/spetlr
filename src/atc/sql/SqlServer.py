@@ -22,8 +22,9 @@ class SqlServer:
         port: str = "1433",
         connection_string: str = None,
     ):
-        """Create object to interact with sql servers. Pass all but connection_string to connect via values or
-        pass only the connection_string as a keyword param to connect via connection string"""
+        """Create object to interact with sql servers. Pass all but
+        connection_string to connect via values or pass only the
+        connection_string as a keyword param to connect via connection string"""
         if connection_string is not None:
             hostname, port, username, password, database = self.from_connection_string(
                 connection_string
@@ -62,7 +63,10 @@ class SqlServer:
         https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlconnection.connectionstring?view=dotnet-plat-ext-6.0#remarks
         """
         try:
-            server_pattern = r"(Server|Address|Data Source|Addr|Network Address)=(tcp:|np:|lpc:)?([\w\d\.]+),?(\d*);"
+            server_pattern = (
+                r"(Server|Address|Data Source|Addr|Network Address)"
+                r"=(tcp:|np:|lpc:)?([\w\d\.]+),?(\d*);"
+            )
             hostname = re.search(server_pattern, connection_string).group(3)
             port = re.search(server_pattern, connection_string).group(4)
             if port == "":

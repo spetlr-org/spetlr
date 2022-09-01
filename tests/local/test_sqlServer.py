@@ -19,7 +19,13 @@ class DeliverySqlServerTests(unittest.TestCase):
         user = "testuser"
         password = "testpwd"
 
-        connection_string = f"Server=tcp:{server},{port};Database={database};User ID={user};Password={password};Encrypt=true;Connection Timeout=30;"
+        connection_string = f"""
+        Server=tcp:{server},{port};
+        Database={database};
+        User ID={user};
+        Password={password};
+        Encrypt=true;
+        Connection Timeout=30;"""
 
         test_server = SqlServer(connection_string=connection_string)
         sql_server = SqlServer(server, database, user, password, port)
@@ -35,7 +41,13 @@ class DeliverySqlServerTests(unittest.TestCase):
         user = "test_user1"
         password = "_@b3&yy"
 
-        connection_string = f"Addr={server};Initial Catalog={database};UID={user};PWD={password};Encrypt=true;Connection Timeout=30;"
+        connection_string = f"""
+        Addr={server};
+        Initial Catalog={database};
+        UID={user};
+        PWD={password};
+        Encrypt=true;
+        Connection Timeout=30;"""
 
         test_server = SqlServer(connection_string=connection_string)
         sql_server = SqlServer(server, database, user, password, port)
@@ -45,7 +57,7 @@ class DeliverySqlServerTests(unittest.TestCase):
         self.assertEqual(test_server.properties, sql_server.properties)
 
     def test_from_connection_string_raises(self):
-        connection_string = f"Not data=tcp:, not pass, not user"
+        connection_string = "Not data=tcp:, not pass, not user"
 
         self.assertRaises(
             ValueError, SqlServer, None, None, None, None, None, connection_string

@@ -15,7 +15,8 @@ def GetMergeStatement(
     assert merge_statement_type in {"delta", "sql"}
 
     merge_sql_statement = (
-        f"MERGE {'INTO ' if merge_statement_type == 'delta' else ''}{target_table_name} AS target "
+        f"MERGE {'INTO ' if merge_statement_type == 'delta' else ''}"
+        f"{target_table_name} AS target "
         f"USING {source_table_name} AS source "
         f"ON {' AND '.join(f'(source.{col} = target.{col})' for col in join_cols)} "
     )

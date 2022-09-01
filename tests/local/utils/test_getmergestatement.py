@@ -55,7 +55,8 @@ class GetMergeStatementTest(unittest.TestCase):
             "MERGE INTO targetname AS target USING sourcename AS source "
             "ON (source.col1 = target.col1) AND (source.col2 = target.col2) "
             "WHEN MATCHED THEN UPDATE "
-            "SET target.col3 = source.col3, target.col4 = source.col4, target.col5 = test "
+            "SET target.col3 = source.col3, target.col4 = source.col4, "
+            "target.col5 = test "
         )
 
         self.assertEqual(output, expected)

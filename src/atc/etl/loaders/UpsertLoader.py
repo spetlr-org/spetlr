@@ -38,7 +38,9 @@ class UpsertLoader(Loader):
 
         # check null keys in our dataframe.
         any_null_keys = len(
-            df.filter(" OR ".join(f"({col} is NULL)" for col in self.params.join_cols)).take(1)
+            df.filter(
+                " OR ".join(f"({col} is NULL)" for col in self.params.join_cols)
+            ).take(1)
         )
 
         if any_null_keys:
@@ -49,7 +51,9 @@ class UpsertLoader(Loader):
             df = df.filter(
                 " AND ".join(f"({col} is NOT NULL)" for col in self.params.join_cols)
             )
-            df = df.filter(" AND ".join(f"({col} is NOT NULL)" for col in self.params.join_cols))
+            df = df.filter(
+                " AND ".join(f"({col} is NOT NULL)" for col in self.params.join_cols)
+            )
 
         # Load data from the target table for the purpose of incremental load
         if not self.params.incremental_load:

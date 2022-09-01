@@ -14,10 +14,10 @@ SparkTestTable2:
   name: "{SparkTestDb2}.tbl2"
   path: "{SparkTestDb2_path}/tbl2"
 
-IncrementalBaseDb:
-  name: IncrementalBase{ID}
-  path: "/tmp/incrementalbase{ID}.db/"
+UpsertLoaderDb:
+  name: UpsertLoader{ID}
+  path: "/tmp/UpsertLoader{ID}.db/"
 
-IncrementalBaseDummy:
-  name: "{IncrementalBaseDb}.Dummy"
-  path: "{IncrementalBaseDb_path}/dummy"
+UpsertLoaderDummy:
+  name: "{UpsertLoaderDb}.Dummy"
+  path: "{UpsertLoaderDb_path}/dummy"

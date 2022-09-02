@@ -36,7 +36,10 @@ def GetMergeStatement(
         merge_sql_statement += (
             "WHEN NOT MATCHED THEN "
             f"INSERT ({', '.join(insert_cols)}) "
-            f"VALUES ({', '.join(f'source.{col}' for col in insert_cols)})"
+            f"VALUES ({', '.join(f'source.{col}' for col in insert_cols)}) "
         )
+
+    # End statement with ';'
+    merge_sql_statement = merge_sql_statement.strip() + ";"
 
     return merge_sql_statement

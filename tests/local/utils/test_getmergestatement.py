@@ -18,7 +18,7 @@ class GetMergeStatementTest(unittest.TestCase):
             "ON (source.col1 = target.col1) AND (source.col2 = target.col2) "
             "WHEN NOT MATCHED THEN "
             "INSERT (col1, col2, col3, col4) "
-            "VALUES (source.col1, source.col2, source.col3, source.col4)"
+            "VALUES (source.col1, source.col2, source.col3, source.col4);"
         )
 
         self.assertEqual(output, expected)
@@ -36,7 +36,7 @@ class GetMergeStatementTest(unittest.TestCase):
             "MERGE INTO targetname AS target USING sourcename AS source "
             "ON (source.col1 = target.col1) AND (source.col2 = target.col2) "
             "WHEN MATCHED THEN UPDATE "
-            "SET target.col3 = source.col3, target.col4 = source.col4 "
+            "SET target.col3 = source.col3, target.col4 = source.col4;"
         )
 
         self.assertEqual(output, expected)
@@ -56,7 +56,7 @@ class GetMergeStatementTest(unittest.TestCase):
             "ON (source.col1 = target.col1) AND (source.col2 = target.col2) "
             "WHEN MATCHED THEN UPDATE "
             "SET target.col3 = source.col3, target.col4 = source.col4, "
-            "target.col5 = test "
+            "target.col5 = test;"
         )
 
         self.assertEqual(output, expected)
@@ -78,7 +78,7 @@ class GetMergeStatementTest(unittest.TestCase):
             "SET target.col3 = source.col3, target.col4 = source.col4 "
             "WHEN NOT MATCHED THEN "
             "INSERT (col1, col2, col3, col4) "
-            "VALUES (source.col1, source.col2, source.col3, source.col4)"
+            "VALUES (source.col1, source.col2, source.col3, source.col4);"
         )
 
         self.assertEqual(output, expected)
@@ -100,7 +100,7 @@ class GetMergeStatementTest(unittest.TestCase):
             "SET target.col3 = source.col3, target.col4 = source.col4 "
             "WHEN NOT MATCHED THEN "
             "INSERT (col1, col2, col3, col4) "
-            "VALUES (source.col1, source.col2, source.col3, source.col4)"
+            "VALUES (source.col1, source.col2, source.col3, source.col4);"
         )
 
         self.assertEqual(output, expected)

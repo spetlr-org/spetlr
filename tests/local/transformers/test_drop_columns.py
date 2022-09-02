@@ -26,18 +26,11 @@ class TestDropColumnsTransformer(DataframeTestCase):
 
         df_input = Spark.get().createDataFrame(data=inputData, schema=inputSchema)
 
-        expectedSchema = T.StructType(
-            [
-                T.StructField("id", T.LongType(), True),
-            ]
-        )
-
         expectedData = [
             (1,),
         ]
 
-        df_expected = Spark.get().createDataFrame(expectedData, expectedSchema)
-
-        df_transformed = DropColumnsTransformer(columnList=["text1", "text2"]).process(df_input)
-
-        self.assertDataframeMatches(df_transformed, None, df_expected)
+        df_transformed = DropColumnsTransformer(columnList=["text1", "text2"]).process(
+            df_input
+        )
+        self.assertDataframeMatches(df_transformed, None, expectedData)

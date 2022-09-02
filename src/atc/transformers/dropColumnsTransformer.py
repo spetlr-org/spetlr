@@ -7,7 +7,10 @@ from atc.etl.extended_transformer import ExtendedTransformer
 
 class DropColumnsTransformer(ExtendedTransformer):
     def __init__(
-        self, columnList: List[str], dataset_input_key: str = None, dataset_output_key: str = None
+        self,
+        columnList: List[str],
+        dataset_input_key: str = None,
+        dataset_output_key: str = None,
     ):
         super().__init__(
             dataset_input_key=dataset_input_key, dataset_output_key=dataset_output_key

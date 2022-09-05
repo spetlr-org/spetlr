@@ -29,7 +29,7 @@ class ExtendedTransformer(EtlBase):
         self.dataset_input_key_list = dataset_input_key_list
 
     def etl(self, inputs: dataset_group) -> dataset_group:
-    
+
         if self.dataset_input_key:
             df = self.process(inputs[self.dataset_input_key])
         elif self.dataset_input_key_list:

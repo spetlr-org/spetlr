@@ -51,9 +51,6 @@ class UpsertLoader(Loader):
             df = df.filter(
                 " AND ".join(f"({col} is NOT NULL)" for col in self.params.join_cols)
             )
-            df = df.filter(
-                " AND ".join(f"({col} is NOT NULL)" for col in self.params.join_cols)
-            )
 
         # Load data from the target table for the purpose of incremental load
         if not self.params.incremental_load:

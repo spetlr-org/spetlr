@@ -1,4 +1,5 @@
 from abc import ABC
+from typing import List
 
 from pyspark.sql import DataFrame
 
@@ -11,6 +12,9 @@ class TableHandle(ABC):
         pass
 
     def append(self, df: DataFrame) -> None:
+        pass
+
+    def upsert(self, df: DataFrame, join_cols: List[str]) -> None:
         pass
 
     def truncate(self) -> None:

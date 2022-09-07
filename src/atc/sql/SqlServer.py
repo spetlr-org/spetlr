@@ -1,8 +1,9 @@
 import importlib.resources
 import re
 import time
+import uuid
 from types import ModuleType
-from typing import Union
+from typing import List, Union
 
 import pyodbc
 from pyspark.sql import DataFrame
@@ -10,6 +11,7 @@ from pyspark.sql import DataFrame
 from atc.config_master import TableConfigurator
 from atc.spark import Spark
 from atc.sql.sql_handle import SqlHandle
+from atc.utils import GetMergeStatement
 
 
 class SqlServer:
@@ -107,7 +109,9 @@ class SqlServer:
     def load_sql(self, sql: str):
         self.test_odbc_connection()
         return Spark.get().read.jdbc(
-            url=self.url, table=sql, properties=self.properties
+            url=self.url,
+            table=sql,
+            properties=self.properties,
         )
 
     def read_table_by_name(self, table_name: str):
@@ -139,6 +143,45 @@ class SqlServer:
         ).option(
             "password", self.password
         ).save()
+
+    def upsert_to_table_by_name(
+        self,
+        df_source: DataFrame,
+        table_name: str,
+        join_cols: List[str],
+        big_data_set: bool = True,
+        batch_size: int = 10 * 1024,
+        partition_count: int = 60,
+    ):
+        try:
+            staging_table_name = f"{table_name}_{uuid.uuid4().hex}"
+
+            # Create staging table for merge from source table
+            self.execute_sql(
+                f"SELECT * INTO {staging_table_name} FROM {table_name} WHERE 1 = 0;"
+            )
+
+            self.write_table_by_name(
+                df_source=df_source,
+                table_name=staging_table_name,
+                append=False,
+                big_data_set=big_data_set,
+                batch_size=batch_size,
+                partition_count=partition_count,
+            )
+
+            mergeQuery = GetMergeStatement(
+                merge_statement_type="sql",
+                target_table_name=table_name,
+                source_table_name=staging_table_name,
+                join_cols=join_cols,
+                insert_cols=df_source.columns,
+                update_cols=df_source.columns,
+            )
+
+            self.execute_sql(mergeQuery)
+        finally:
+            self.drop_table_by_name(staging_table_name)
 
     def truncate_table_by_name(self, table_name: str):
         self.execute_sql(f"TRUNCATE TABLE {table_name}")

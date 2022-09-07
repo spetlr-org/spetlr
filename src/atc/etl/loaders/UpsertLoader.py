@@ -85,6 +85,7 @@ class UpsertLoader(Loader):
         non_join_cols = [col for col in df.columns if col not in self.params.join_cols]
 
         merge_sql_statement = GetMergeStatement(
+            merge_statement_type="delta",
             target_table_name=target_table_name,
             source_table_name=temp_view_name,
             join_cols=self.params.join_cols,

@@ -1,3 +1,4 @@
+from .extended_transformer import ExtendedTransformer
 from .extractor import Extractor
 from .loader import Loader
 from .orchestrator import Orchestrator
@@ -10,5 +11,6 @@ __all__ = [
     "Transformer",
     "Orchestrator",
     "EtlBase",
+    "ExtendedTransformer",
     "dataset_group",
 ]

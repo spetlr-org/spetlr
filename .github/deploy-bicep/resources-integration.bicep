@@ -51,7 +51,7 @@ resource staccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
           enabled: true
         }
       }
-      keySource: 'Microsoft.Storage' // Dont know if this is true!!!!!
+      keySource: 'Microsoft.Storage'
     }
     supportsHttpsTrafficOnly: true
   }

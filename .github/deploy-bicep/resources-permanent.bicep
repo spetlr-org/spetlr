@@ -1,5 +1,3 @@
-targetScope = 'resourceGroup'
-
 param location string
 param keyVaultName string
 param devobjectid string

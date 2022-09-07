@@ -1,31 +1,20 @@
 // Setting target scope
 targetScope = 'subscription'
 
-//param basename string
 
-param permanentResourceGroup string //= '${basename}-permanent'
-param location string //= 'westeurope'
-param keyVaultName string //= 'atcGithubCiCd'
+param permanentResourceGroup string 
+param location string 
+param keyVaultName string 
 param devobjectid string
 param spnobjectid string
-param resourceTags object //= {
-//  Owner: 'Auto Deployed', System: 'ATC-NET', Service: 'Data Platform'
-//}
-//param resourceName string //= 'github${basename}'
-
-param cosmosName string //= resourceName
-
-param resourceGroupName string //= '${basename}-integration'
-
-param databricksName string// = resourceName
-
-param dataLakeName string //= resourceName
-
+param resourceTags object 
+param cosmosName string 
+param resourceGroupName string 
+param databricksName string
+param dataLakeName string 
 param datalakeContainers array
-
-param ehNamespace string //= resourceName
+param ehNamespace string 
 param eventHubConfig array
-
 param databaseServerName string
 param deliveryDatabase string
 param allowUserIp string

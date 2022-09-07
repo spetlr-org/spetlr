@@ -45,7 +45,6 @@ resource staccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
       services: {
         blob: {
           enabled: true
-
         }
         file: {
           enabled: true
@@ -56,20 +55,23 @@ resource staccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
     supportsHttpsTrafficOnly: true
   }
 
-}
+  resource blobservice 'blobServices@2021-09-01' = {
+    name: 'default'
 
-resource containersVar 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-02-01' = [for container in dataLakeContainers: {
-  name: '${dataLakeName}/default/${container.name}'
-  dependsOn: [ staccount ]
-  properties: {
-    publicAccess: 'None'
+    resource containersVar 'containers@2021-02-01' = [for container in dataLakeContainers: {
+      name: '${container.name}'
+      properties: {
+        publicAccess: 'None'
+      }
+    }]
   }
-
-}]
+}
 
 //#############################################################################################
 //# Provision Eventhub namespace and eventhubs
 //#############################################################################################
+
+var captureFormat = '{Namespace}/{EventHub}/y={Year}/m={Month}/d={Day}/{Year}_{Month}_{Day}_{Hour}_{Minute}_{Second}_{PartitionId}'
 
 resource eventhubs 'Microsoft.EventHub/namespaces@2021-11-01' = {
   name: ehNamespace
@@ -78,36 +80,31 @@ resource eventhubs 'Microsoft.EventHub/namespaces@2021-11-01' = {
   sku: {
     name: 'Standard'
   }
-}
-
-var captureFormat = '{Namespace}/{EventHub}/y={Year}/m={Month}/d={Day}/{Year}_{Month}_{Day}_{Hour}_{Minute}_{Second}_{PartitionId}'
-
-resource ehs 'Microsoft.EventHub/namespaces/eventhubs@2021-11-01' = [for eh in eventHubConfig: {
-  name: eh.name
-  parent: eventhubs
-  properties: {
-    messageRetentionInDays: 7
-    partitionCount: 4
-    captureDescription: {
-      enabled: true
-      intervalInSeconds: 60
-      sizeLimitInBytes: 314572800
-      destination: {
-        name: 'EventHubArchive.AzureBlockBlob'
-        properties: {
-          dataLakeAccountName: dataLakeName
-          blobContainer: eh.captureLocation
-          archiveNameFormat: captureFormat
-          storageAccountResourceId: staccount.id
-          
+  
+  resource ehs 'eventhubs@2021-11-01' = [for eh in eventHubConfig: {
+    name: eh.name
+    properties: {
+      messageRetentionInDays: 7
+      partitionCount: 4
+      captureDescription: {
+        enabled: true
+        intervalInSeconds: 60
+        sizeLimitInBytes: 314572800
+        destination: {
+          name: 'EventHubArchive.AzureBlockBlob'
+          properties: {
+            dataLakeAccountName: dataLakeName
+            blobContainer: eh.captureLocation
+            archiveNameFormat: captureFormat
+            storageAccountResourceId: staccount.id
+          }
         }
-        
+        skipEmptyArchives: true
+        encoding: 'Avro'
       }
-      skipEmptyArchives: true
-      encoding: 'Avro'
     }
-  }
-}]
+  }]
+}
 
 //#############################################################################################
 //# Provision SQL Server
@@ -122,23 +119,20 @@ resource sqlserver 'Microsoft.Sql/servers@2022-02-01-preview' = {
     administratorLoginPassword: sqlServerAdminPassword
   }
 
-}
-
-resource firewallazure 'Microsoft.Sql/servers/firewallRules@2022-02-01-preview' = {
-  name: 'AllowAllWindowsAzureIps'
-  parent: sqlserver
-  properties: {
-    startIpAddress: '0.0.0.0'
-    endIpAddress: '0.0.0.0'
+  resource firewallazure 'firewallRules@2022-02-01-preview' = {
+    name: 'AllowAllWindowsAzureIps'
+    properties: {
+      startIpAddress: '0.0.0.0'
+      endIpAddress: '0.0.0.0'
+    }
   }
-}
 
-resource firewalluser 'Microsoft.Sql/servers/firewallRules@2022-02-01-preview' = {
-  name: 'Allow ${allowUserIp}'
-  parent: sqlserver
-  properties: {
-    startIpAddress: allowUserIp
-    endIpAddress: allowUserIp
+  resource firewalluser 'firewallRules@2022-02-01-preview' = {
+    name: 'Allow ${allowUserIp}'
+    properties: {
+      startIpAddress: allowUserIp
+      endIpAddress: allowUserIp
+    }
   }
 }
 
@@ -152,11 +146,10 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2022-02-01-preview' = {
   location: location
   tags: resourceTags
   sku: {
-    name: 'GP_S_Gen5' // serverless?
+    name: 'GP_S_Gen5' 
     capacity: 1
     tier: 'GeneralPurpose'
     family: 'Gen5'
-
   }
   properties: {
     minCapacity: any('0.5')

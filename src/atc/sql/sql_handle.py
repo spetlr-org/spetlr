@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from pyspark.sql import DataFrame
 
@@ -61,7 +61,7 @@ class SqlHandle(TableHandle):
             df_source=df, table_name=self._name, append=True
         )
 
-    def upsert(self, df: DataFrame, join_cols: List[str]) -> None:
+    def upsert(self, df: DataFrame, join_cols: List[str]) -> Union[DataFrame, None]:
         return self._sql_server.upsert_to_table_by_name(
             df_source=df, table_name=self._name, join_cols=join_cols
         )
@@ -77,6 +77,3 @@ class SqlHandle(TableHandle):
 
     def get_tablename(self) -> str:
         return self._name
-
-    def upsert(self, df: DataFrame, join_cols: List[str]) -> DataFrame:
-        raise NotImplementedError

@@ -21,7 +21,7 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
       name: 'standard'
     }
     enabledForTemplateDeployment: true
-    tenantId: subscription().tenantId
+    tenantId: tenant().tenantId
     accessPolicies: [
       {
         // Developers
@@ -32,7 +32,7 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
             'get'
             'set'
           ] }
-        tenantId: subscription().tenantId
+        tenantId: tenant().tenantId
       } 
       {
         objectId: spnobjectid
@@ -42,7 +42,7 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
             'get'
             'set'
           ] }
-        tenantId: subscription().tenantId
+        tenantId: tenant().tenantId
       }
     ]
   }

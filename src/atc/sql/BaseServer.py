@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import List, Protocol
 
 from pyspark.sql import DataFrame
 
@@ -26,6 +26,14 @@ class BaseServer(Protocol):
         df_source: DataFrame,
         table_name: str,
         append: bool = False,
+    ):
+        pass
+
+    def upsert_to_table_by_name(
+        self,
+        df_source: DataFrame,
+        table_name: str,
+        join_cols: List[str],
     ):
         pass
 

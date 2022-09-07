@@ -14,6 +14,9 @@ class TableHandle(ABC):
     def append(self, df: DataFrame) -> None:
         pass
 
+    def upsert(self, df: DataFrame, join_cols: List[str]) -> None:
+        pass
+
     def truncate(self) -> None:
         pass
 

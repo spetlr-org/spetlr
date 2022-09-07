@@ -1,7 +1,9 @@
 import importlib.resources
+import re
 import time
+import uuid
 from types import ModuleType
-from typing import Union
+from typing import List, Union
 
 import pyodbc
 from pyspark.sql import DataFrame
@@ -9,17 +11,29 @@ from pyspark.sql import DataFrame
 from atc.config_master import TableConfigurator
 from atc.spark import Spark
 from atc.sql.sql_handle import SqlHandle
+from atc.utils import GetMergeStatement
 
 
 class SqlServer:
     def __init__(
         self,
-        hostname: str,
-        database: str,
-        username: str,
-        password: str,
+        hostname: str = None,
+        database: str = None,
+        username: str = None,
+        password: str = None,
         port: str = "1433",
+        connection_string: str = None,
     ):
+        """Create object to interact with sql servers. Pass all but
+        connection_string to connect via values or pass only the
+        connection_string as a keyword param to connect via connection string"""
+        if connection_string is not None:
+            hostname, port, username, password, database = self.from_connection_string(
+                connection_string
+            )
+        if not (hostname and database and username and password and port):
+            raise ValueError("Missing parameters for creating connection to SQL Server")
+
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
         self.url = (
@@ -45,6 +59,34 @@ class SqlServer:
             "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         }
 
+    @staticmethod
+    def from_connection_string(connection_string):
+        """Extracts values for connection to sql server, as described in:
+        https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlconnection.connectionstring?view=dotnet-plat-ext-6.0#remarks
+        """
+        try:
+            server_pattern = (
+                r"(Server|Address|Data Source|Addr|Network Address)"
+                r"=(tcp:|np:|lpc:)?(?P<server>[\w\d\.]+),?(?P<port>\d*);"
+            )
+            hostname = re.search(server_pattern, connection_string).group("server")
+            port = re.search(server_pattern, connection_string).group("port")
+            if port == "":
+                port = "1433"
+
+            user_pattern = r"(User ID|UID|User)=(?P<user>[^;]+);"
+            username = re.search(user_pattern, connection_string).group("user")
+
+            password_pattern = "(Password|PWD)=(?P<pwd>[^;]+);"
+            password = re.search(password_pattern, connection_string).group("pwd")
+
+            database_pattern = r"(Initial Catalog|Database)=(?P<db>[^;]+);"
+            database = re.search(database_pattern, connection_string).group("db")
+        except AttributeError:
+            raise ValueError("Connection string does not conform to standard")
+
+        return hostname, port, username, password, database
+
     def execute_sql(self, sql: str):
         self.test_odbc_connection()
         conn = pyodbc.connect(self.odbc)
@@ -67,7 +109,9 @@ class SqlServer:
     def load_sql(self, sql: str):
         self.test_odbc_connection()
         return Spark.get().read.jdbc(
-            url=self.url, table=sql, properties=self.properties
+            url=self.url,
+            table=sql,
+            properties=self.properties,
         )
 
     def read_table_by_name(self, table_name: str):
@@ -99,6 +143,45 @@ class SqlServer:
         ).option(
             "password", self.password
         ).save()
+
+    def upsert_to_table_by_name(
+        self,
+        df_source: DataFrame,
+        table_name: str,
+        join_cols: List[str],
+        big_data_set: bool = True,
+        batch_size: int = 10 * 1024,
+        partition_count: int = 60,
+    ):
+        try:
+            staging_table_name = f"{table_name}_{uuid.uuid4().hex}"
+
+            # Create staging table for merge from source table
+            self.execute_sql(
+                f"SELECT * INTO {staging_table_name} FROM {table_name} WHERE 1 = 0;"
+            )
+
+            self.write_table_by_name(
+                df_source=df_source,
+                table_name=staging_table_name,
+                append=False,
+                big_data_set=big_data_set,
+                batch_size=batch_size,
+                partition_count=partition_count,
+            )
+
+            mergeQuery = GetMergeStatement(
+                merge_statement_type="sql",
+                target_table_name=table_name,
+                source_table_name=staging_table_name,
+                join_cols=join_cols,
+                insert_cols=df_source.columns,
+                update_cols=df_source.columns,
+            )
+
+            self.execute_sql(mergeQuery)
+        finally:
+            self.drop_table_by_name(staging_table_name)
 
     def truncate_table_by_name(self, table_name: str):
         self.execute_sql(f"TRUNCATE TABLE {table_name}")

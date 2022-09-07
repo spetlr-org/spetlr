@@ -1,4 +1,5 @@
 import importlib.resources
+import re
 import time
 import uuid
 from types import ModuleType
@@ -16,12 +17,23 @@ from atc.utils import GetMergeStatement
 class SqlServer:
     def __init__(
         self,
-        hostname: str,
-        database: str,
-        username: str,
-        password: str,
+        hostname: str = None,
+        database: str = None,
+        username: str = None,
+        password: str = None,
         port: str = "1433",
+        connection_string: str = None,
     ):
+        """Create object to interact with sql servers. Pass all but
+        connection_string to connect via values or pass only the
+        connection_string as a keyword param to connect via connection string"""
+        if connection_string is not None:
+            hostname, port, username, password, database = self.from_connection_string(
+                connection_string
+            )
+        if not (hostname and database and username and password and port):
+            raise ValueError("Missing parameters for creating connection to SQL Server")
+
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
         self.url = (
@@ -46,6 +58,34 @@ class SqlServer:
             "password": password,
             "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         }
+
+    @staticmethod
+    def from_connection_string(connection_string):
+        """Extracts values for connection to sql server, as described in:
+        https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlconnection.connectionstring?view=dotnet-plat-ext-6.0#remarks
+        """
+        try:
+            server_pattern = (
+                r"(Server|Address|Data Source|Addr|Network Address)"
+                r"=(tcp:|np:|lpc:)?(?P<server>[\w\d\.]+),?(?P<port>\d*);"
+            )
+            hostname = re.search(server_pattern, connection_string).group("server")
+            port = re.search(server_pattern, connection_string).group("port")
+            if port == "":
+                port = "1433"
+
+            user_pattern = r"(User ID|UID|User)=(?P<user>[^;]+);"
+            username = re.search(user_pattern, connection_string).group("user")
+
+            password_pattern = "(Password|PWD)=(?P<pwd>[^;]+);"
+            password = re.search(password_pattern, connection_string).group("pwd")
+
+            database_pattern = r"(Initial Catalog|Database)=(?P<db>[^;]+);"
+            database = re.search(database_pattern, connection_string).group("db")
+        except AttributeError:
+            raise ValueError("Connection string does not conform to standard")
+
+        return hostname, port, username, password, database
 
     def execute_sql(self, sql: str):
         self.test_odbc_connection()

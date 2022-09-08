@@ -1,5 +1,7 @@
+$secrets = [DatabricksSecretsManager]::new()
+$values = [DatabricksSecretsManager]::new()
 
-$base_name         = "atc"
+$base_name                    = "atc"
 
 $permanentResourceGroup       = "$base_name-permanent"
 
@@ -11,31 +13,52 @@ $databricksName               = $resourceName
 $dataLakeName                 = $resourceName
 $databaseServerName           = $resourceName + "test"
 $deliveryDatabase             = "Delivery"
+
+
+$sqlServerAdminUser           = "DataPlatformAdmin"
+$sqlServerAdminPassword       = Generate-Password
+$allowUserIp                  = (Invoke-WebRequest -UseBasicParsing "ifconfig.me/ip").Content.Trim()
+# Add to databrick secrets
+$secrets.addSecret("SqlServer--DataPlatformAdmin", $sqlServerAdminUser)
+$secrets.addSecret("SqlServer--DataPlatformAdminPassword", $sqlServerAdminPassword)
+
+
 $ehNamespace                  = $resourceName
 $mountSpnName                 = "AtcMountSpn"
-$dbDeploySpnName                    = "AtcDbSpn"
-$cicdSpnName                    = "AtcGithubPipe"
-$cosmosName                    = $resourceName
+$dbDeploySpnName              = "AtcDbSpn"
+$cicdSpnName                  = "AtcGithubPipe"
+$cosmosName                   = $resourceName
 $keyVaultName                 = "atcGithubCiCd"
 
-$location = "westeurope"  # Use eastus because of free azure subscription
-$resourceTags = @(
-  "Owner=Auto Deployed",
-  "System=ATC-NET",
-  "Service=Data Platform"
-  )
+$location                     = "westeurope"  # Use eastus because of free azure subscription
+$resourceTags = "{'Owner':'Auto Deployed', 'System':'ATC-NET','Service':'Data Platform'}" 
+$resourceTags = $resourceTags.Replace("'",'\"')
 
 $dataLakeContainers = @(
-    @{name="silver"}
+    @{"name"="silver"}
 )
+
+$dataLakeContainersJson = "[{'name':'silver'}]" 
+$dataLakeContainersJson = $dataLakeContainersJson.Replace("'",'\"')
 
 $eventHubConfig = @(
     @{
-      name="atceh"
-      namespace=$ehNamespace
-      captureLocation = "silver"
+      "name"="atceh"
+      "namespace"=$ehNamespace
+      "captureLocation" = "silver"
     }
 )
+
+$eventHubConfigJson = "[{'name':'atceh', 'namespace':'$ehNamespace','captureLocation':'silver'}]"
+$eventHubConfigJson = $eventHubConfigJson.Replace("'",'\"')
+
+
+$devobjectid = az account show --query id 
+
+$spnobjectid = (Graph-ListSpn -queryDisplayName $cicdSpnName).id
+ 
+
+
 
 Write-Host "**********************************************************************" -ForegroundColor White
 Write-Host "* Base Configuration       *******************************************" -ForegroundColor White
@@ -54,5 +77,3 @@ Write-Host "********************************************************************
 
 
 
-$secrets = [DatabricksSecretsManager]::new()
-$values = [DatabricksSecretsManager]::new()

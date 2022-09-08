@@ -16,7 +16,7 @@ Write-Host "Initialize deployment" -ForegroundColor Green
 # import utility functions
 . "$PSScriptRoot\Utilities\all.ps1"
 
-. "$PSScriptRoot\steps\00-Config.ps1"
+. "$PSScriptRoot\00-Config.ps1"
 
 
 ###############################################################################################

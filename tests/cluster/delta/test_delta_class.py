@@ -36,6 +36,13 @@ class DeltaTests(unittest.TestCase):
             },
         )
 
+        tc.register(
+            "MyTbl3",
+            {
+                "path": "/mnt/atc/silver/testdb/testtbl3",
+            },
+        )
+
         # test instantiation without error
         DbHandle.from_tc("MyDb")
         DeltaHandle.from_tc("MyTbl")
@@ -95,3 +102,13 @@ class DeltaTests(unittest.TestCase):
 
         with self.assertRaises(AnalysisException):
             dh.read()
+
+    def test_08_write_path_only(self):
+        # check that we can write to the table with no path
+        df = DeltaHandle.from_tc("MyTbl").read()
+
+        dh3 = DeltaHandle.from_tc("MyTbl3")
+        dh3.append(df, mergeSchema=True)
+
+        df = dh3.read()
+        df.show()

@@ -55,26 +55,28 @@ class DeltaUpsertTests(DataframeTestCase):
         DbHandle.from_tc("UpsertLoaderDb").drop_cascade()
 
     def test_01_can_perform_incremental_on_empty(self):
+        """The target table is empty at beginning."""
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data1
         )
 
-        self.target_dh_dummy.upsert(
-            df_source, join_cols=self.join_cols, incremental_load=True
-        )
+        self.target_dh_dummy.upsert(df_source, join_cols=self.join_cols)
 
         self.assertDataframeMatches(self.target_dh_dummy.read(), None, self.data1)
 
-    def test_02_can_perform_full_over_existing(self):
-        """The target table is already filled from before."""
+    def test_02_can_perform_overwrite_over_existing(self):
+        """The target table is already filled from before.
+        This test does not test .upsert() logic,
+        but ensures that test 03 resembles an upsert after a full load.
+        If one needs to make an full load, use the .overwrite() method"""
         self.assertEqual(2, len(self.target_dh_dummy.read().collect()))
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data2
         )
 
-        self.target_dh_dummy.upsert(
-            df_source, join_cols=self.join_cols, incremental_load=False
+        self.target_dh_dummy.overwrite(
+            df_source,
         )
 
         self.assertDataframeMatches(self.target_dh_dummy.read(), None, self.data2)
@@ -88,9 +90,7 @@ class DeltaUpsertTests(DataframeTestCase):
             self.dummy_schema, self.dummy_columns, self.data3
         )
 
-        self.target_dh_dummy.upsert(
-            df_source, join_cols=self.join_cols, incremental_load=True
-        )
+        self.target_dh_dummy.upsert(df_source, join_cols=self.join_cols)
 
         self.assertDataframeMatches(
             self.target_dh_dummy.read(), None, self.data2 + self.data3
@@ -105,8 +105,6 @@ class DeltaUpsertTests(DataframeTestCase):
             self.dummy_schema, self.dummy_columns, self.data4
         )
 
-        self.target_dh_dummy.upsert(
-            df_source, join_cols=self.join_cols, incremental_load=True
-        )
+        self.target_dh_dummy.upsert(df_source, join_cols=self.join_cols)
 
         self.assertDataframeMatches(self.target_dh_dummy.read(), None, self.data5)

@@ -110,46 +110,22 @@ class DeltaHandle(TableHandle):
         self,
         df: DataFrame,
         join_cols: List[str],
-        incremental_load: bool = True,
     ) -> Union[DataFrame, None]:
-        def do_simple_save(
-            df_source: DataFrame,
-            incremental_load_local: bool = True,
-        ):
-            mode = "append" if incremental_load_local else "overwrite"
-
-            self.write_or_append(df_source, mode=mode)
-            print(
-                "Incremental Base - incremental load with append"
-                if incremental_load_local
-                else "Incremental Base - full load with append"
-            )
-            return df_source
 
         if df is None:
             return None
 
-        # check null keys in our dataframe.
-        any_null_keys = len(
-            df.filter(" OR ".join(f"({col} is NULL)" for col in join_cols)).take(1)
+        df = df.filter(" AND ".join(f"({col} is NOT NULL)" for col in join_cols))
+        print(
+            "Rows with NULL join keys found in input dataframe"
+            " will be discarded before load."
         )
-
-        if any_null_keys:
-            print(
-                "Null keys found in input dataframe. "
-                "Rows will be discarded before load."
-            )
-            df = df.filter(" AND ".join(f"({col} is NOT NULL)" for col in join_cols))
-
-        # Load data from the target table for the purpose of incremental load
-        if not incremental_load:
-            return do_simple_save(df, incremental_load_local=False)
 
         df_target = self.read()
 
         # If the target is empty, always do faster full load
         if len(df_target.take(1)) == 0:
-            return do_simple_save(df, incremental_load_local=False)
+            return self.write_or_append(df, mode="overwrite")
 
         # Find records that need to be updated in the target (happens seldom)
 
@@ -165,7 +141,7 @@ class DeltaHandle(TableHandle):
         )
 
         if not merge_required:
-            return do_simple_save(df, incremental_load_local=True)
+            return self.write_or_append(df, mode="append")
 
         temp_view_name = get_unique_tempview_name()
         df.createOrReplaceTempView(temp_view_name)

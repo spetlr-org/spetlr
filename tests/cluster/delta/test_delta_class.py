@@ -96,19 +96,20 @@ class DeltaTests(unittest.TestCase):
         o.load_into(SimpleLoader(DeltaHandle.from_tc("MyTbl"), mode="overwrite"))
         o.execute()
 
-    def test_07_delete(self):
+    def test_07_write_path_only(self):
+        # check that we can write to the table with no path
+        df = DeltaHandle.from_tc("MyTbl").read()
+
+        dh3 = DeltaHandle.from_tc("MyTbl3")
+
+        dh3.append(df, mergeSchema=True)
+
+        df = dh3.read()
+        df.show()
+
+    def test_08_delete(self):
         dh = DeltaHandle.from_tc("MyTbl")
         dh.drop_and_delete()
 
         with self.assertRaises(AnalysisException):
             dh.read()
-
-    def test_08_write_path_only(self):
-        # check that we can write to the table with no path
-        df = DeltaHandle.from_tc("MyTbl").read()
-
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-        dh3.append(df, mergeSchema=True)
-
-        df = dh3.read()
-        df.show()

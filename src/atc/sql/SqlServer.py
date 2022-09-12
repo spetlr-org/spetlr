@@ -1,3 +1,4 @@
+import contextlib
 import importlib.resources
 import re
 import time
@@ -87,12 +88,20 @@ class SqlServer:
 
         return hostname, port, username, password, database
 
-    def execute_sql(self, sql: str):
-        self.test_odbc_connection()
+    @contextlib.contextmanager
+    def connect_to_db(self):
         conn = pyodbc.connect(self.odbc)
         conn.autocommit = True
-        conn.execute(sql)
-        conn.close()
+        try:
+            yield conn
+        finally:
+            conn.close()
+
+    def execute_sql(self, sql: str):
+        self.test_odbc_connection()
+
+        with self.connect_to_db() as conn:
+            conn.execute(sql)
 
     def from_tc(self, id: str) -> SqlHandle:
         """This method allows an instance of SqlServer to be a drop in for the class
@@ -149,16 +158,49 @@ class SqlServer:
         df_source: DataFrame,
         table_name: str,
         join_cols: List[str],
+        filter_join_cols: bool = True,
+        overwrite_if_target_is_empty: bool = True,
         big_data_set: bool = True,
         batch_size: int = 10 * 1024,
         partition_count: int = 60,
     ):
-        try:
-            staging_table_name = f"{table_name}_{uuid.uuid4().hex}"
 
-            # Create staging table for merge from source table
-            self.execute_sql(
-                f"SELECT * INTO {staging_table_name} FROM {table_name} WHERE 1 = 0;"
+        if df_source is None:
+            return None
+
+        if filter_join_cols:
+            df_source = df_source.filter(
+                " AND ".join(f"({col} is NOT NULL)" for col in join_cols)
+            )
+            print(
+                "Rows with NULL join keys found in input dataframe"
+                " will be discarded before load."
+            )
+
+        if overwrite_if_target_is_empty:
+            df_target = self.read_table_by_name(table_name=table_name)
+
+            if len(df_target.take(1)) == 0:
+                return self.write_table_by_name(
+                    df_source=df_source,
+                    table_name=table_name,
+                    append=False,
+                    big_data_set=big_data_set,
+                    batch_size=batch_size,
+                    partition_count=partition_count,
+                )
+
+        # Define name of temp stagning table
+        # ## defines the table as a temp sql table
+        staging_table_name = f"##{uuid.uuid4().hex}"
+
+        with self.connect_to_db() as conn:
+            # Create temp staging table for merge based source table
+            conn.execute(
+                f"""
+                SELECT * INTO {staging_table_name}
+                FROM {table_name} WHERE 1 = 0;
+                """
             )
 
             self.write_table_by_name(
@@ -179,9 +221,7 @@ class SqlServer:
                 update_cols=df_source.columns,
             )
 
-            self.execute_sql(mergeQuery)
-        finally:
-            self.drop_table_by_name(staging_table_name)
+            conn.execute(mergeQuery)
 
     def truncate_table_by_name(self, table_name: str):
         self.execute_sql(f"TRUNCATE TABLE {table_name}")

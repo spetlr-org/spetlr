@@ -34,7 +34,7 @@ class EventHubsTests(unittest.TestCase):
         # wait until capture file appears
         dbutils = init_dbutils()
 
-        limit = datetime.now() + timedelta(minutes=5)
+        limit = datetime.now() + timedelta(minutes=10)
         while datetime.now() < limit:
             conts = {item.name for item in dbutils.fs.ls("/mnt/githubatc/silver")}
             if "githubatc/" in conts:

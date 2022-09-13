@@ -171,7 +171,20 @@ class DeliverySqlServerTests(DataframeTestCase):
         table_exists = self.sql_server.load_sql(sql_argument)
         self.assertEqual(table_exists.count(), 0)
 
-    def test16_upsert_to_table_dummy(self):
+    def test16_upsert_to_table_none_input(self):
+
+        val_return = self.sql_server.upsert_to_table_by_name(
+            df_source=None,
+            table_name=self.table_upsert_name,
+            join_cols=["testid"],
+            filter_join_cols=False,
+        )
+
+        self.assertEqual(val_return, None)
+
+    def test17_upsert_to_table(self):
+
+        self.create_upsert_test_table()
 
         upsertTableSchema = StructType(
             [
@@ -179,8 +192,6 @@ class DeliverySqlServerTests(DataframeTestCase):
                 StructField("testdata", StringType(), True),
             ]
         )
-
-        self.create_upsert_test_table()
 
         # Write pre upsert test data
         df_preTest = DataframeCreator.make_partial(
@@ -202,6 +213,8 @@ class DeliverySqlServerTests(DataframeTestCase):
             df_source=df_upsertTest,
             table_name=self.table_upsert_name,
             join_cols=["testid"],
+            filter_join_cols=False,
+            overwrite_if_target_is_empty=False,
         )
 
         # Validate correct upserted data
@@ -213,13 +226,87 @@ class DeliverySqlServerTests(DataframeTestCase):
             expected_data=expectedData,
         )
 
-        # Validate temp stagning table have been dropped
-        sql_argument = f"""
-        (SELECT * FROM INFORMATION_SCHEMA.TABLES
-        WHERE TABLE_NAME LIKE '{self.table_upsert_name}%') target
-        """
-        table_exists = self.sql_server.load_sql(sql_argument)
-        self.assertEqual(table_exists.count(), 1)
+    def test18_upsert_to_table_with_join_cols_filter(self):
+
+        upsertTableSchema = StructType(
+            [
+                StructField("testid", IntegerType(), True),
+                StructField("testdata", StringType(), True),
+            ]
+        )
+
+        # Write pre upsert test data
+        df_preTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[(1, "testdata1"), (2, "testdata2")],
+        )
+        self.sql_server.write_table_by_name(
+            df_source=df_preTest, table_name=self.table_upsert_name, append=False
+        )
+
+        # Write upsert test data with None keys
+        df_upsertTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[(2, "newtestdata2"), (3, "testdata3"), (None, "testdata4")],
+        )
+        self.sql_server.upsert_to_table_by_name(
+            df_source=df_upsertTest,
+            table_name=self.table_upsert_name,
+            join_cols=["testid"],
+            filter_join_cols=True,
+        )
+
+        # Validate correct upserted data
+        df_afterUpsert = self.sql_server.read_table_by_name(self.table_upsert_name)
+        expectedData = [(1, "testdata1"), (2, "newtestdata2"), (3, "testdata3")]
+
+        self.assertDataframeMatches(
+            df=df_afterUpsert,
+            expected_data=expectedData,
+        )
+
+    def test19_upsert_to_table_overwrite_empty_target(self):
+
+        upsertTableSchema = StructType(
+            [
+                StructField("testid", IntegerType(), True),
+                StructField("testdata", StringType(), True),
+            ]
+        )
+
+        # Write empty pre upsert test data
+        df_preTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[],
+        )
+        self.sql_server.write_table_by_name(
+            df_source=df_preTest, table_name=self.table_upsert_name, append=False
+        )
+
+        # Write upsert test data
+        df_upsertTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[(2, "newtestdata2"), (3, "testdata3")],
+        )
+        self.sql_server.upsert_to_table_by_name(
+            df_source=df_upsertTest,
+            table_name=self.table_upsert_name,
+            join_cols=["testid"],
+            overwrite_if_target_is_empty=True,
+        )
+
+        # Validate correct upserted data
+        df_afterUpsert = self.sql_server.read_table_by_name(self.table_upsert_name)
+        expectedData = [(2, "newtestdata2"), (3, "testdata3")]
+
+        self.assertDataframeMatches(
+            df=df_afterUpsert,
+            expected_data=expectedData,
+        )
 
     def create_test_table(self):
         sql_argument = f"""

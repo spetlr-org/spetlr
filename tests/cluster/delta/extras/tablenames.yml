@@ -6,6 +6,9 @@ SparkTestTable1:
   name: "{SparkTestDb}.tbl1"
   path: "{SparkTestDb_path}/tbl1"
 
+SparkTestTable11:
+  path: "{SparkTestDb_path}/tbl11"
+
 SparkTestDb2:
   name: my_db2{ID}
   path: /tmp/foo/bar/my_db2/

@@ -12,14 +12,16 @@
 from typing import Union
 
 from azure.cosmos import CosmosClient
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, types
 from pyspark.sql.types import DataType
 
 from atc.config_master import TableConfigurator
+from atc.cosmos.comos_handle import CosmosHandle
+from atc.cosmos.cosmos_base_server import CosmosBaseServer
 from atc.spark import Spark
 
 
-class CosmosDb:
+class CosmosDb(CosmosBaseServer):
     def __init__(
         self,
         account_key: str,
@@ -111,3 +113,29 @@ class CosmosDb:
         db = self.client.get_database_client(self.database)
         cntr = db.get_container_client(TableConfigurator().table_name(table_id))
         cntr.delete_item(id, partition_key=pk)
+
+    def delete_container(self, table_id: str):
+        self.delete_container_by_name(TableConfigurator().table_name(table_id))
+
+    def delete_container_by_name(self, table_name: str):
+        db = self.client.get_database_client(self.database)
+        db.delete_container(table_name)
+
+    def create_container_by_name(self, table_name: str):
+        db = self.client.get_database_client(self.database)
+        db.create_container(table_name)
+
+    def from_tc(self, table_id: str):
+        tc = TableConfigurator()
+        name = tc.table_name(table_id)
+        rows_per_partition = tc.table_property(table_id, "rows_per_partition", "")
+        rows_per_partition = int(rows_per_partition) if rows_per_partition else None
+        schema_str = tc.table_property(table_id, "schema", "")
+        schema = types._parse_datatype_string(schema_str) if schema_str else None
+
+        return CosmosHandle(
+            name=name,
+            cosmos_db=self,
+            schema=schema,
+            rows_per_partition=rows_per_partition,
+        )

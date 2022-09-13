@@ -20,7 +20,14 @@ class CosmosTests(unittest.TestCase):
     def test_01_tables(self):
         tc = TableConfigurator()
         tc.clear_all_configurations()
-        tc.register("CmsTbl", {"name": "CosmosTable"})
+        tc.register(
+            "CmsTbl",
+            {
+                "name": "CosmosTable",
+                "schema": "id string, pk string, value int",
+                "rows_per_partition": 5,
+            },
+        )
 
     def test_02_create_db(self):
         cm = TestCosmos()
@@ -47,7 +54,19 @@ class CosmosTests(unittest.TestCase):
         data = set(tuple(row) for row in df.collect())
         self.assertEqual({("first", "pk1", 56), ("second", "pk2", 987)}, data)
 
-    def test_05_delete_items(self):
+    def test_05_use_handle(self):
+        ch = TestCosmos().from_tc("CmsTbl")
+        df = ch.read()
+        self.assertEqual({("first", "pk1", 56), ("second", "pk2", 987)}, df)
+
+        ch.append(df)
+        self.assertEqual(ch.read().count(), 4)
+
+        # this tests table drop and table create also
+        ch.overwrite(df)
+        self.assertEqual(ch.read().count(), 2)
+
+    def test_10_delete_items(self):
         cm = TestCosmos()
         cm.delete_item("CmsTbl", "first", "pk1")
         cm.delete_item("CmsTbl", "second", "pk2")

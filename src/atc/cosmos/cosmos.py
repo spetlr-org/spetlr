@@ -16,8 +16,8 @@ from pyspark.sql import DataFrame, types
 from pyspark.sql.types import DataType
 
 from atc.config_master import TableConfigurator
-from atc.cosmos.comos_handle import CosmosHandle
 from atc.cosmos.cosmos_base_server import CosmosBaseServer
+from atc.cosmos.cosmos_handle import CosmosHandle
 from atc.spark import Spark
 
 

@@ -97,6 +97,10 @@ class TableConfigurator(metaclass=Singleton):
         """Get the full item property, fully resolved and substituted."""
         raw_string = self._get_unsubstituted_item_property(table_id, property)
 
+        # some items are not strings, then the rest of this function makes no sense
+        if not isinstance(raw_string, str):
+            return raw_string
+
         replacements = self.get_extra_details()
         # get all keys used in the raw_string, such as using {MyDb} will get "MyDb"
         format_keys = [i[1] for i in Formatter().parse(raw_string) if i[1] is not None]

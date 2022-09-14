@@ -37,7 +37,7 @@ class CosmosTests(unittest.TestCase):
             "CREATE TABLE IF NOT EXISTS"
             f" cosmosCatalog.{cm.database}.{tc.table_name('CmsTbl')}"
             " using cosmos.oltp"
-            " TBLPROPERTIES(partitionKeyPath = '/pk', manualThroughput = '1100')"
+            " TBLPROPERTIES(partitionKeyPath = '/pk', manualThroughput = '400')"
         )
 
     def test_03_write_table(self):
@@ -57,13 +57,22 @@ class CosmosTests(unittest.TestCase):
     def test_05_use_handle(self):
         ch = TestCosmos().from_tc("CmsTbl")
         df = ch.read()
-        self.assertEqual({("first", "pk1", 56), ("second", "pk2", 987)}, df)
+        data = set(tuple(row) for row in df.collect())
+        self.assertEqual({("first", "pk1", 56), ("second", "pk2", 987)}, data)
 
-        ch.append(df)
+        # create a df with two new rows.
+        new_df = Spark.get().createDataFrame(
+            [("third", "pk1", 56), ("fourth", "pk2", 987)],
+            "id string, pk string, value int",
+        )
+
+        # in append mode, there will now be 4 rows.
+        ch.append(new_df)
         self.assertEqual(ch.read().count(), 4)
 
+        # in overwrite mode, we end up with only the two new rows.
         # this tests table drop and table create also
-        ch.overwrite(df)
+        ch.overwrite(new_df)
         self.assertEqual(ch.read().count(), 2)
 
     def test_10_delete_items(self):

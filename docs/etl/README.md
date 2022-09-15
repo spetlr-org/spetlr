@@ -38,13 +38,17 @@ from atc.etl import Extractor, Transformer, Loader, Orchestrator
 
 ### Principles
 
-All ETL classes, **Orchestrator**, **Extractor**, **Transformer** and **Loader** are ETL objects.
+All ETL classes, **Orchestrator**, **Extractor**, **Transformer**, **Loader**, **ExtendedTransformer**, and **ExtendedLoader** are ETL objects.
 This means that they have a method `etl(self, inputs: dataset_group) -> dataset_group`
 (where `dataset_group = Dict[str, DataFrame]`) that transforms a set of import to a set of 
 outputs. The special properties of each type are
- - **Extractor** always adds its result to the total set,
- - **Transformer** consumes all inputs and adds a single result dataframe,
- - **Loader** acts as a sink, while passing its input on to the next sink,
+ - **Extractor** always adds its result to the total set
+ - **Transformer** consumes all inputs and adds a single result dataframe
+ - **Loader** acts as a sink, while passing its input on to the next sink
+ - **ExtendedTransformer** does not consume the input(s) and adds a single result dataframe
+ - **ExtendedLoader** same behaviour as the **Loader**, but in addition it handles dataset input key(s)
+
+The usecase for the **ExtendedTransformer** and the **ExtendedLoader** comes when there is a need to keep previously extracted (or transformed) dataframes after a transformation step. When working with these classes it is crucial to set dataset input keys and dataset output keys. This ensures that the transformer and/or loader has explicit information on which dataframe(s) to handle.
 
 The special case of the  **Orchestrator** is that it takes all its steps and executes them
 in sequence on its inputs. Running in the default `execute()` method, the inputs are empty,
@@ -606,7 +610,7 @@ class NoopLoader(Loader):
         df.show()
 
 
-print("ETL Orchestrator using composit innter orchestrator")
+print("ETL Orchestrator using composit inner orchestrator")
 etl_inner = (
     Orchestrator()
     .transform_with(CountryOfOriginTransformer())
@@ -621,5 +625,110 @@ etl_outer = (
 )
 
 etl_outer.execute()
+
+```
+
+### Example-8
+
+This example illustrates the use of `ExtendedTransformer` and `ExtendedLoader`.  
+The job here is to join the two extracted dataframes - an employees dataframe and a birthdays dataframe.  
+But, before the birthdays can be join onto the employees, the employees dataframe require a transformation step.  
+As the transformation step of employees is handled by an `ExtendedTransformer`, it does not consume the other inputs from the `dataset_group`.  
+Hence, birthdays is still available from the inputs - even after the transformation of employees.  
+Then both frames can be joined and the final dataframe saved via an `ExtendedLoader`.   
+When working with `ExtendedTransformer` and `ExtendedLoader` it is important to mind that dataset keys are crucial.  
+Setting both input and output dataset key(s) ensure that the `ExtendedTransformers` and `ExtendedLoaders` handle the intended dataframes.
+```python
+import pyspark.sql.functions as f
+from pyspark.sql import DataFrame
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+
+from atc.etl import ExtendedLoader, ExtendedTransformer, Extractor, Orchestrator
+from atc.etl.types import dataset_group
+from atc.spark import Spark
+
+
+class OfficeEmployeeExtractor(Extractor):
+    def read(self) -> DataFrame:
+        return Spark.get().createDataFrame(
+            Spark.get().sparkContext.parallelize(
+                [
+                    ("1", "Michael Scott", "Regional Manager"),
+                    ("2", "Dwight K. Schrute", "Assistant to the Regional Manager"),
+                    ("3", "Jim Halpert", "Salesman"),
+                    ("4", "Pam Beesly", "Receptionist"),
+                ]
+            ),
+            StructType(
+                [
+                    StructField("id", StringType()),
+                    StructField("name", StringType()),
+                    StructField("position", StringType()),
+                ]
+            ),
+        )
+
+
+class OfficeBirthdaysExtractor(Extractor):
+    def read(self) -> DataFrame:
+        return Spark.get().createDataFrame(
+            Spark.get().sparkContext.parallelize(
+                [
+                    (1, "March 15"),
+                    (2, "January 20"),
+                    (3, "October 1"),
+                    (4, "March 25"),
+                ]
+            ),
+            StructType(
+                [
+                    StructField("id", IntegerType()),
+                    StructField("birthday", StringType()),
+                ]
+            ),
+        )
+
+
+class IntegerTransformer(ExtendedTransformer):
+    def process(self, df: DataFrame) -> DataFrame:
+        return df.withColumn("id", f.col("id").cast(IntegerType()))
+
+
+class JoinTransformer(ExtendedTransformer):
+    def process_many(self, dataset: dataset_group) -> DataFrame:
+
+        df_employee = dataset["df_employee_transformed"]
+        df_birthdays = dataset["df_birthdays"]
+
+        return df_employee.join(other=df_birthdays, on="id")
+
+
+class ExtendedNoopLoader(ExtendedLoader):
+    def save(self, df: DataFrame) -> None:
+        df.write.format("noop").mode("overwrite").save()
+        df.printSchema()
+        df.show()
+
+
+print("ETL Orchestrator using two extended transformers")
+etl = (
+    Orchestrator()
+    .extract_from(OfficeEmployeeExtractor(dataset_key="df_employee"))
+    .extract_from(OfficeBirthdaysExtractor(dataset_key="df_birthdays"))
+    .transform_with(
+        IntegerTransformer(
+            dataset_input_key="df_employee",
+            dataset_output_key="df_employee_transformed",
+        )
+    )
+    .transform_with(
+        JoinTransformer(
+            dataset_input_key_list=["df_employee_transformed", "df_birthdays"],
+            dataset_output_key="df_final",
+        )
+    )
+    .load_into(ExtendedNoopLoader(dataset_input_key="df_final"))
+)
+etl.execute()
 
 ```

@@ -25,6 +25,10 @@ class TransformerTests(unittest.TestCase):
         self.assertEqual({"TestTransformer"}, set(result.keys()))
         self.assertEqual(6, list(result.values())[0].count())
 
+    def test_dataset_key(self):
+        result = TestTransformer("my_key").etl({"df": self.df})
+        self.assertEqual({"my_key"}, set(result.keys()))
+
 
 class TestTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
@@ -37,15 +41,17 @@ class TestTransformer(Transformer):
 
 
 def create_dataframe():
-    return Spark.get().createDataFrame(
-        Spark.get().sparkContext.parallelize([(1, "1"), (2, "2"), (3, "3")]),
-        StructType(
-            [
-                StructField("id", IntegerType(), False),
-                StructField("text", StringType(), False),
-            ]
-        ),
+
+    data = [(1, "1"), (2, "2"), (3, "3")]
+
+    schema = StructType(
+        [
+            StructField("id", IntegerType(), False),
+            StructField("text", StringType(), False),
+        ]
     )
+
+    return Spark.get().createDataFrame(data=data, schema=schema)
 
 
 if __name__ == "__main__":

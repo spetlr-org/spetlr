@@ -15,10 +15,15 @@ from azure.cosmos import CosmosClient
 from pyspark.sql import DataFrame, types
 from pyspark.sql.types import DataType
 
+from atc.atc_exceptions import AtcException
 from atc.config_master import TableConfigurator
 from atc.cosmos.cosmos_base_server import CosmosBaseServer
 from atc.cosmos.cosmos_handle import CosmosHandle
 from atc.spark import Spark
+
+
+class AtcCosmosException(AtcException):
+    pass
 
 
 class CosmosDb(CosmosBaseServer):
@@ -121,9 +126,31 @@ class CosmosDb(CosmosBaseServer):
         db = self.client.get_database_client(self.database)
         db.delete_container(table_name)
 
-    def create_container_by_name(self, table_name: str):
+    def recreate_container_by_name(self, table_name: str):
+        """
+        Delete and recreate the container while preserving properties as
+        far as possible.
+        """
         db = self.client.get_database_client(self.database)
-        db.create_container(table_name)
+
+        for container in db.list_containers():
+            if container["id"] == table_name:
+                break
+        else:
+            raise AtcCosmosException(f"table not found {table_name}")
+
+        throughput_units = (
+            db.get_container_client(table_name).get_throughput().offer_throughput
+        )
+
+        db.delete_container(table_name)
+        db.create_container(
+            id=container["id"],
+            partition_key=container["partitionKey"],
+            offer_throughput=throughput_units,
+            default_ttl=container.get("defaultTtl", None),
+            indexing_policy=container.get("indexingPolicy", None),
+        )
 
     def from_tc(self, table_id: str):
         tc = TableConfigurator()

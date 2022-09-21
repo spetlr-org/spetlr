@@ -40,15 +40,11 @@ class CosmosHandle(TableHandle):
         )
 
     def recreate(self):
-        self.drop()
-        self.create()
+        self._cosmos_db.recreate_container_by_name(self._name)
 
     def overwrite(self, df: DataFrame) -> None:
         self.recreate()
         self.append(df)
-
-    def create(self):
-        self._cosmos_db.create_container_by_name(self._name)
 
     def append(self, df: DataFrame) -> None:
         self._cosmos_db.write_table_by_name(df, self._name, self._rows_per_partition)

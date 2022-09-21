@@ -71,7 +71,7 @@ class CosmosTests(unittest.TestCase):
         self.assertEqual(ch.read().count(), 4)
 
         # in overwrite mode, we end up with only the two new rows.
-        # this tests table drop and table create also
+        # this tests table recreate also
         ch.overwrite(new_df)
         self.assertEqual(ch.read().count(), 2)
 

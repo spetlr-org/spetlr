@@ -1,7 +1,5 @@
 Write-Host "Provision Service Principal " -ForegroundColor DarkYellow
 
-
-
 Write-Host "Verifying SPN Registration"
 $mountApp = Graph-ListApplications -queryDisplayName $mountSpnName
 
@@ -28,6 +26,6 @@ if ($null -eq $mountSpn)
 Write-Host "  Creating Service Principal Secret" -ForegroundColor DarkYellow
 $mountPassword = Graph-AppAddPassword -appId $mountApp.id
 
-$secrets.addSecret("Databricks--StorageAccountKey", $mountPassword.secretText)
 $secrets.addSecret("Databricks--TenantId", (Convert-Safe-FromJson -text (az account show)).tenantId)
 $secrets.addSecret("Databricks--ClientId", $mountSpn.appId)
+$secrets.addSecret("Databricks--ClientSecret", $mountPassword.secretText)

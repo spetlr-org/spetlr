@@ -11,6 +11,7 @@ from . import extras
 
 
 class DeliverySqlServerTests(DataframeTestCase):
+
     tc = None
     sql_server = None
     table_name = get_unique_tempview_name()

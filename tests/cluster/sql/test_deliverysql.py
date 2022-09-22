@@ -11,11 +11,14 @@ from . import extras
 
 
 class DeliverySqlServerTests(DataframeTestCase):
-    tc = None
-    sql_server = None
-    table_name = get_unique_tempview_name()
-    table_upsert_name = get_unique_tempview_name()
-    view_name = get_unique_tempview_name()
+    def __init__(self, sql_server=None):
+        super(DeliverySqlServerTests, self).__init__()
+
+        tc = None
+        sql_server = None
+        table_name = get_unique_tempview_name()
+        table_upsert_name = get_unique_tempview_name()
+        view_name = get_unique_tempview_name()
 
     @classmethod
     def setUpClass(cls):

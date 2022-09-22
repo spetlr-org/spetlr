@@ -24,6 +24,7 @@ class SqlServer:
         password: str = None,
         port: str = "1433",
         connection_string: str = None,
+        is_spn: bool = False,
     ):
         """Create object to interact with sql servers. Pass all but
         connection_string to connect via values or pass only the
@@ -37,10 +38,32 @@ class SqlServer:
 
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
-        self.url = (
-            f"jdbc:sqlserver://{hostname}:{port};"
-            f"database={database};queryTimeout=0;loginTimeout={self.timeout}"
-        )
+
+        jdbc_driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+        if is_spn:
+            self.url = (
+                f"jdbc:sqlserver://{hostname}:{port};"
+                f"database={database};"
+                f"queryTimeout=0;"
+                f"loginTimeout={self.timeout};"
+                f"AADSecurePrincipalId={username};"
+                f"AADSecurePrincipalSecret={password};"
+                f"encrypt=true;"
+                f"trustServerCertificate=false;"
+                f"hostNameInCertificate=*.database.windows.net;"
+                f"authentication=ActiveDirectoryServicePrincipal;"
+                f"driver={jdbc_driver}"
+            )
+        else:
+            self.url = (
+                f"jdbc:sqlserver://{hostname}:{port};"
+                f"database={database};"
+                f"queryTimeout=0;"
+                f"loginTimeout={self.timeout};"
+                f"user={username};"
+                f"password={password};"
+                f"driver={jdbc_driver}"
+            )
 
         self.username = username
         self.password = password
@@ -54,11 +77,10 @@ class SqlServer:
             f"PWD={password};"
             f"Connection Timeout={self.timeout}"
         )
-        self.properties = {
-            "user": username,
-            "password": password,
-            "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        }
+
+        # If it is a SPN user, then it should use AD SPN authentication
+        if is_spn:
+            self.odbc = self.odbc + ";Authentication=ActiveDirectoryServicePrincipal"
 
     @staticmethod
     def from_connection_string(connection_string):
@@ -117,11 +139,7 @@ class SqlServer:
 
     def load_sql(self, sql: str):
         self.test_odbc_connection()
-        return Spark.get().read.jdbc(
-            url=self.url,
-            table=sql,
-            properties=self.properties,
-        )
+        return Spark.get().read.jdbc(url=self.url, table=sql)
 
     def read_table_by_name(self, table_name: str):
         return self.load_sql(f"(SELECT * FROM {table_name}) target")
@@ -147,10 +165,6 @@ class SqlServer:
             "url", self.url
         ).option(
             "dbtable", table_name
-        ).option(
-            "user", self.username
-        ).option(
-            "password", self.password
         ).save()
 
     def upsert_to_table_by_name(

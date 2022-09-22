@@ -32,7 +32,6 @@ class DeliverySqlServerTests(unittest.TestCase):
 
         self.assertEqual(test_server.odbc, sql_server.odbc)
         self.assertEqual(test_server.url, sql_server.url)
-        self.assertEqual(test_server.properties, sql_server.properties)
 
     def test_from_connection_string2(self):
         server = "cltest.database.windows.net"
@@ -54,7 +53,6 @@ class DeliverySqlServerTests(unittest.TestCase):
 
         self.assertEqual(test_server.odbc, sql_server.odbc)
         self.assertEqual(test_server.url, sql_server.url)
-        self.assertEqual(test_server.properties, sql_server.properties)
 
     def test_from_connection_string_raises(self):
         connection_string = "Not data=tcp:, not pass, not user"

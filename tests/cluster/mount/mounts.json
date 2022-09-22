@@ -3,7 +3,7 @@
     "storageAccountName":"githubatc",
     "secretScope":"secrets",
     "clientIdName":"Databricks--ClientId",
-    "clientSecretName":"Databricks--StorageAccountKey",
+    "clientSecretName":"Databricks--ClientSecret",
     "tenantIdName":"Databricks--TenantId",
     "containers":["silver"]
   }

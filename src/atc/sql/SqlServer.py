@@ -35,7 +35,7 @@ class SqlServer:
             hostname, port, username, password, database = self.from_connection_string(
                 connection_string
             )
-        if not (hostname and database and username and password and port):
+        if not (hostname and database and username and password):
             raise ValueError("Missing parameters for creating connection to SQL Server")
 
         self.timeout = 180  # 180 sec due to serverless

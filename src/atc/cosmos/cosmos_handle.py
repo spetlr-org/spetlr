@@ -34,7 +34,6 @@ class CosmosHandle(TableHandle):
         self._schema = schema
 
     def read(self) -> DataFrame:
-        """Read table by path if location is given, otherwise from name."""
         return self._cosmos_db.read_table_by_name(
             table_name=self._name, schema=self._schema
         )

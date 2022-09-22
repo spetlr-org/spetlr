@@ -24,7 +24,9 @@ class SqlServer:
         password: str = None,
         port: str = "1433",
         connection_string: str = None,
-        is_spn: bool = False,
+        *,
+        spnid: str = None,
+        spnpassword: str = None,
     ):
         """Create object to interact with sql servers. Pass all but
         connection_string to connect via values or pass only the
@@ -40,47 +42,44 @@ class SqlServer:
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
 
         jdbc_driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
-        if is_spn:
-            self.url = (
-                f"jdbc:sqlserver://{hostname}:{port};"
-                f"database={database};"
-                f"queryTimeout=0;"
-                f"loginTimeout={self.timeout};"
-                f"AADSecurePrincipalId={username};"
-                f"AADSecurePrincipalSecret={password};"
+        self.url = (
+            f"jdbc:sqlserver://{hostname}:{port};"
+            f"database={database};"
+            f"queryTimeout=0;"
+            f"loginTimeout={self.timeout};"
+            f"driver={jdbc_driver};"
+        )
+
+        if spnpassword and spnid and not password and not username:
+            # Use spn
+            self.url += (
+                f"AADSecurePrincipalId={spnid};"
+                f"AADSecurePrincipalSecret={spnpassword};"
                 f"encrypt=true;"
                 f"trustServerCertificate=false;"
                 f"hostNameInCertificate=*.database.windows.net;"
-                f"authentication=ActiveDirectoryServicePrincipal;"
-                f"driver={jdbc_driver}"
-            )
-        else:
-            self.url = (
-                f"jdbc:sqlserver://{hostname}:{port};"
-                f"database={database};"
-                f"queryTimeout=0;"
-                f"loginTimeout={self.timeout};"
-                f"user={username};"
-                f"password={password};"
-                f"driver={jdbc_driver}"
+                f"authentication=ActiveDirectoryServicePrincipal"
             )
 
-        self.username = username
-        self.password = password
+        elif password and username and not spnpassword and not spnid:
+            # Use SQL admin
+            self.url += f"user={username};password={password}"
+        else:
+            raise ValueError("Use either SPN or SQL user - never both")
 
         self.odbc = (
             "DRIVER={ODBC Driver 17 for SQL Server};"
             f"SERVER={hostname};"
             f"DATABASE={database};"
             f"PORT={port};"
-            f"UID={username};"
-            f"PWD={password};"
+            f"UID={username or spnid};"
+            f"PWD={password or spnpassword};"
             f"Connection Timeout={self.timeout}"
         )
 
         # If it is a SPN user, then it should use AD SPN authentication
-        if is_spn:
-            self.odbc = self.odbc + ";Authentication=ActiveDirectoryServicePrincipal"
+        if spnid:
+            self.odbc += ";Authentication=ActiveDirectoryServicePrincipal"
 
     @staticmethod
     def from_connection_string(connection_string):

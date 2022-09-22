@@ -49,6 +49,9 @@ $eventHubConfig = @(
     }
 )
 
+$pipelineSpnName = $cicdSpnName
+$pipelineObjectId = (Graph-ListSpn -queryDisplayName $pipelineSpnName).id
+
 $eventHubConfigJson = "[{'name':'atceh', 'namespace':'$ehNamespace','captureLocation':'silver'}]"
 $eventHubConfigJson = $eventHubConfigJson.Replace("'",'\"')
 

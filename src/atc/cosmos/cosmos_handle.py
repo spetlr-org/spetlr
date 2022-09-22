@@ -41,10 +41,6 @@ class CosmosHandle(TableHandle):
     def recreate(self):
         self._cosmos_db.recreate_container_by_name(self._name)
 
-    def overwrite(self, df: DataFrame) -> None:
-        self.recreate()
-        self.append(df)
-
     def append(self, df: DataFrame) -> None:
         self._cosmos_db.write_table_by_name(df, self._name, self._rows_per_partition)
 
@@ -61,10 +57,13 @@ class CosmosHandle(TableHandle):
         if mode == "append":
             return self.append(df)
         else:
-            return self.overwrite()
+            raise ValueError(f"unsupported flag value of mode: {mode}")
+
+    def overwrite(self, df: DataFrame) -> None:
+        raise NotImplementedError("Method not supported in Cosmos")
 
     def upsert(self, df: DataFrame, join_cols: List[str]) -> Union[DataFrame, None]:
-        raise NotImplementedError()
+        raise NotImplementedError("Method not supported in Cosmos")
 
     def get_tablename(self) -> str:
         return self._name

@@ -70,14 +70,15 @@ class CosmosTests(unittest.TestCase):
         ch.append(new_df)
         self.assertEqual(ch.read().count(), 4)
 
-        # in overwrite mode, we end up with only the two new rows.
-        # this tests table recreate also
-        ch.overwrite(new_df)
+        # drop and recreate the container
+        # we should end up with only the new rows.
+        ch.recreate()
+        ch.append(new_df)
         self.assertEqual(ch.read().count(), 2)
 
     def test_10_delete_items(self):
         cm = TestCosmos()
-        cm.delete_item("CmsTbl", "first", "pk1")
-        cm.delete_item("CmsTbl", "second", "pk2")
+        cm.delete_item("CmsTbl", "third", "pk1")
+        cm.delete_item("CmsTbl", "fourth", "pk2")
 
         cm.client.delete_database(cm.database)

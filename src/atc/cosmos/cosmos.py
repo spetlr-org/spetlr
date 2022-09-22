@@ -51,6 +51,7 @@ class CosmosDb(CosmosBaseServer):
             "spark.cosmos.container": None,
         }
         self.client = CosmosClient(endpoint, credential=account_key)
+        self.db_client = self.client.get_database_client(self.database)
 
     def execute_sql(self, sql: str):
         # Examples:
@@ -115,36 +116,39 @@ class CosmosDb(CosmosBaseServer):
     def delete_item(
         self, table_id: str, id: Union[int, str], pk: Union[int, str] = None
     ):
-        db = self.client.get_database_client(self.database)
-        cntr = db.get_container_client(TableConfigurator().table_name(table_id))
+
+        cntr = self.db_client.get_container_client(
+            TableConfigurator().table_name(table_id)
+        )
         cntr.delete_item(id, partition_key=pk)
 
     def delete_container(self, table_id: str):
         self.delete_container_by_name(TableConfigurator().table_name(table_id))
 
     def delete_container_by_name(self, table_name: str):
-        db = self.client.get_database_client(self.database)
-        db.delete_container(table_name)
+
+        self.db_client.delete_container(table_name)
 
     def recreate_container_by_name(self, table_name: str):
         """
         Delete and recreate the container while preserving properties as
         far as possible.
         """
-        db = self.client.get_database_client(self.database)
 
-        for container in db.list_containers():
+        for container in self.db_client.list_containers():
             if container["id"] == table_name:
                 break
         else:
             raise AtcCosmosException(f"table not found {table_name}")
 
         throughput_units = (
-            db.get_container_client(table_name).get_throughput().offer_throughput
+            self.db_client.get_container_client(table_name)
+            .get_throughput()
+            .offer_throughput
         )
 
-        db.delete_container(table_name)
-        db.create_container(
+        self.db_client.delete_container(table_name)
+        self.db_client.create_container(
             id=container["id"],
             partition_key=container["partitionKey"],
             offer_throughput=throughput_units,
@@ -152,7 +156,7 @@ class CosmosDb(CosmosBaseServer):
             indexing_policy=container.get("indexingPolicy", None),
         )
 
-    def from_tc(self, table_id: str):
+    def from_tc(self, table_id: str) -> CosmosHandle:
         tc = TableConfigurator()
         name = tc.table_name(table_id)
         rows_per_partition = tc.table_property(table_id, "rows_per_partition", "")

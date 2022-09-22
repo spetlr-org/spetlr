@@ -3,7 +3,7 @@ from typing import List, Union
 from pyspark.sql import DataFrame
 
 from atc.atc_exceptions import AtcException
-from atc.sql import BaseServer
+from atc.sql.BaseSqlServer import SqlBaseServer
 from atc.tables.TableHandle import TableHandle
 
 
@@ -20,7 +20,7 @@ class SqlHandleInvalidFormat(SqlHandleException):
 
 
 class SqlHandle(TableHandle):
-    def __init__(self, name: str, sql_server: BaseServer):
+    def __init__(self, name: str, sql_server: SqlBaseServer):
         self._name = name
         self._sql_server = sql_server
 

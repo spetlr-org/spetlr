@@ -6,3 +6,4 @@
 . $PSScriptRoot/Graph-AppAddPassword.ps1
 . $PSScriptRoot/Graph-AppRemovePassword.ps1
 . $PSScriptRoot/Graph-DeleteApplication.ps1
+. $PSScriptRoot/Graph-CreateRole.ps1

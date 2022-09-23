@@ -7,7 +7,16 @@ param (
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $environmentName=""
+  $environmentName="",
+
+  [Parameter(Mandatory=$false)]
+  [ValidateNotNullOrEmpty()]
+  [string]
+  $pipelineClientId,
+
+  [Parameter(Mandatory=$false)]
+  [securestring]
+  $pipelineClientSecret
 )
 
 # import utility functions
@@ -18,6 +27,8 @@ param (
 ###############################################################################################
 
 . "$PSScriptRoot/00-Config.ps1"
+. "$PSScriptRoot/01-Verify-Arguments"
+. "$PSScriptRoot/12-Provision-Databricks-Service-Principal"
 
 Write-Host "  Deploying ressources using Bicep..." -ForegroundColor Yellow
 
@@ -42,24 +53,14 @@ $output = az deployment sub create `
       deliveryDatabase=$deliveryDatabase `
       allowUserIp=$allowUserIp `
       sqlServerAdminUser=$sqlServerAdminUser `
-      sqlServerAdminPassword=$sqlServerAdminPassword # Should be secure string..
-      #sqlServerAdminPassword=(ConvertTo-SecureString -AsPlainText $sqlServerAdminPassword -Force)
+      sqlServerAdminPassword=$sqlServerAdminPassword `
+      pipelineSpnName=$pipelineSpnName `
+      pipelineObjectId=$pipelineObjectId
+      
 
 Throw-WhenError -output $output
 
 Write-Host "  Ressources deployed!" -ForegroundColor Green
-
-$dataLakeKey = az storage account keys list `
-  --account-name $dataLakeName `
-  --resource-group $resourceGroupName `
-  --query '[0].value' `
-  --output tsv
-
-Throw-WhenError -output $dataLakeKey
-
-Write-Host "  Saving data lake storage account key" -ForegroundColor DarkYellow
-
-$secrets.addSecret("Databricks--StorageAccountKey", $dataLakeKey)
 
 
 $eventHubConnection = az eventhubs namespace authorization-rule keys list `

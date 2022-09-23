@@ -52,3 +52,6 @@ $clientSecret = (ConvertTo-SecureString -AsPlainText $clientSecretPlain -Force)
 $clientId = $dbDeployApp.appId
 #$clientId = $dbDeploySpn.appId
 $tenantId = (Convert-Safe-FromJson -text (az account show)).tenantId
+
+$secrets.addSecret("DbDeploy--ClientId", $clientId)
+$secrets.addSecret("DbDeploy--ClientSecret", $clientSecretPlain)

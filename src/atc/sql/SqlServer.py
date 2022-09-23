@@ -24,6 +24,9 @@ class SqlServer:
         password: str = None,
         port: str = "1433",
         connection_string: str = None,
+        *,
+        spnid: str = None,
+        spnpassword: str = None,
     ):
         """Create object to interact with sql servers. Pass all but
         connection_string to connect via values or pass only the
@@ -32,33 +35,51 @@ class SqlServer:
             hostname, port, username, password, database = self.from_connection_string(
                 connection_string
             )
-        if not (hostname and database and username and password and port):
-            raise ValueError("Missing parameters for creating connection to SQL Server")
+        if not (hostname and database and port):
+            raise ValueError("Hostname or database parameters missing.")
 
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
+
+        jdbc_driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
         self.url = (
             f"jdbc:sqlserver://{hostname}:{port};"
-            f"database={database};queryTimeout=0;loginTimeout={self.timeout}"
+            f"database={database};"
+            f"queryTimeout=0;"
+            f"loginTimeout={self.timeout};"
+            f"driver={jdbc_driver};"
         )
 
-        self.username = username
-        self.password = password
+        if spnpassword and spnid and not password and not username:
+            # Use spn
+            self.url += (
+                f"AADSecurePrincipalId={spnid};"
+                f"AADSecurePrincipalSecret={spnpassword};"
+                f"encrypt=true;"
+                f"trustServerCertificate=false;"
+                f"hostNameInCertificate=*.database.windows.net;"
+                f"authentication=ActiveDirectoryServicePrincipal"
+            )
+
+        elif password and username and not spnpassword and not spnid:
+            # Use SQL admin
+            self.url += f"user={username};password={password}"
+        else:
+            raise ValueError("Use either SPN or SQL user - never both")
 
         self.odbc = (
             "DRIVER={ODBC Driver 17 for SQL Server};"
             f"SERVER={hostname};"
             f"DATABASE={database};"
             f"PORT={port};"
-            f"UID={username};"
-            f"PWD={password};"
+            f"UID={username or spnid};"
+            f"PWD={password or spnpassword};"
             f"Connection Timeout={self.timeout}"
         )
-        self.properties = {
-            "user": username,
-            "password": password,
-            "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        }
+
+        # If it is a SPN user, then it should use AD SPN authentication
+        if spnid:
+            self.odbc += ";Authentication=ActiveDirectoryServicePrincipal"
 
     @staticmethod
     def from_connection_string(connection_string):
@@ -117,11 +138,7 @@ class SqlServer:
 
     def load_sql(self, sql: str):
         self.test_odbc_connection()
-        return Spark.get().read.jdbc(
-            url=self.url,
-            table=sql,
-            properties=self.properties,
-        )
+        return Spark.get().read.jdbc(url=self.url, table=sql)
 
     def read_table_by_name(self, table_name: str):
         return self.load_sql(f"(SELECT * FROM {table_name}) target")
@@ -149,10 +166,6 @@ class SqlServer:
             "url", self.url
         ).option(
             "dbtable", table_name
-        ).option(
-            "user", self.username
-        ).option(
-            "password", self.password
         ).save()
 
     def upsert_to_table_by_name(

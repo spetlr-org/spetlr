@@ -12,6 +12,8 @@ param deliveryDatabase string
 param sqlServerAdminUser string
 @secure()
 param sqlServerAdminPassword string
+param pipelineSpnName string
+param pipelineObjectId string
 
 //#############################################################################################
 //# Provision Databricks Workspace
@@ -114,9 +116,20 @@ resource sqlserver 'Microsoft.Sql/servers@2022-02-01-preview' = {
   name: databaseServerName
   location: location
   tags: resourceTags
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     administratorLogin: sqlServerAdminUser
     administratorLoginPassword: sqlServerAdminPassword
+    
+    administrators: {
+      administratorType: 'ActiveDirectory'
+      login: pipelineSpnName
+      principalType: 'Application'
+      sid: pipelineObjectId
+      tenantId: tenant().tenantId
+    }
   }
 
   resource firewallazure 'firewallRules@2022-02-01-preview' = {
@@ -135,6 +148,7 @@ resource sqlserver 'Microsoft.Sql/servers@2022-02-01-preview' = {
     }
   }
 }
+
 
 //#############################################################################################
 //# Provision SQL database

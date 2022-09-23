@@ -33,6 +33,9 @@ class ExampleSqlServer(SqlServer):
             self.hostname, self.database, self.username, self.password, self.port
         )
 ```
+### Using SPN to connect
+
+If you are using a Service Principal to create conection to the server/database, you should set the ```spnid = "yourspnid", spnpassword = "[REDACTED]"``` instead. The SqlServer class ensures to connect properly via the JDBC/ODBC drivers. Note, you must use either SQL user credentials or SPN credentials - never both. 
 
 ### SQL Upsert
 

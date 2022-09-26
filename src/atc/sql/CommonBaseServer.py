@@ -5,7 +5,7 @@ from pyspark.sql import DataFrame
 from atc.tables import TableHandle
 
 
-class BaseServer(Protocol):
+class CommonBaseServer(Protocol):
     def execute_sql(self, sql: str) -> None:
         """synonym of .sql()"""
         pass

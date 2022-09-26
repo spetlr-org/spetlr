@@ -7,8 +7,9 @@ from pyspark.sql.types import IntegerType, StructField, StructType
 
 from atc.functions import get_unique_tempview_name
 from atc.spark import Spark
-from atc.sql import BaseServer, SqlHandle
+from atc.sql import SqlHandle
 from atc.sql.sql_handle import SqlHandleInvalidName
+from atc.sql.SqlBaseServer import SqlBaseServer
 
 
 class SqlHandleTests(DataframeTestCase):
@@ -26,7 +27,7 @@ class SqlHandleTests(DataframeTestCase):
     test_df = Spark.get().createDataFrame(data=test_df_data, schema=test_df_schema)
 
     def setUp(self):
-        self.sql_server_mock = create_autospec(BaseServer)
+        self.sql_server_mock = create_autospec(SqlBaseServer)
         self.table_handle = SqlHandle(
             name=self.test_table_name, sql_server=self.sql_server_mock
         )

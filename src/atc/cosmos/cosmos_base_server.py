@@ -3,10 +3,10 @@ from typing import Union
 from pyspark.sql import DataFrame
 from pyspark.sql.types import DataType
 
-from atc.sql import BaseServer
+from atc.sql.CommonBaseServer import CommonBaseServer
 
 
-class CosmosBaseServer(BaseServer):
+class CosmosBaseServer(CommonBaseServer):
     # this is a typing.Protocol and will never be instantiated directly.
     def execute_sql(self, sql: str):
         pass

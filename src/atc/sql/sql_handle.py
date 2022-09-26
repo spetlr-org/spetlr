@@ -3,7 +3,7 @@ from typing import List, Union
 from pyspark.sql import DataFrame
 
 from atc.atc_exceptions import AtcException
-from atc.sql.BaseSqlServer import SqlBaseServer
+from atc.sql.SqlBaseServer import SqlBaseServer
 from atc.tables.TableHandle import TableHandle
 
 

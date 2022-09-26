@@ -2,10 +2,10 @@ from typing import List
 
 from pyspark.sql import DataFrame
 
-from atc.sql import BaseServer
+from atc.sql.CommonBaseServer import CommonBaseServer
 
 
-class SqlBaseServer(BaseServer):
+class SqlBaseServer(CommonBaseServer):
     def load_sql(self, sql: str) -> DataFrame:
         pass
 

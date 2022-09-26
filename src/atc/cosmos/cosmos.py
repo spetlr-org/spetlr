@@ -9,9 +9,9 @@
 #       )
 #   df = server.load_table("TableId")
 #   server.save_table(df, "TableId")
-from typing import Union
+from typing import Optional, Union
 
-from azure.cosmos import CosmosClient
+from azure.cosmos import CosmosClient, DatabaseProxy
 from pyspark.sql import DataFrame, types
 from pyspark.sql.types import DataType
 
@@ -51,7 +51,16 @@ class CosmosDb(CosmosBaseServer):
             "spark.cosmos.container": None,
         }
         self.client = CosmosClient(endpoint, credential=account_key)
-        self.db_client = self.client.get_database_client(self.database)
+
+        self._db_client: Optional[DatabaseProxy] = None
+
+    @property
+    def db_client(self):
+        if self._db_client is not None:
+            return self._db_client
+
+        self._db_client = self.client.get_database_client(self.database)
+        return self._db_client
 
     def execute_sql(self, sql: str):
         # Examples:
@@ -72,7 +81,7 @@ class CosmosDb(CosmosBaseServer):
         spark.conf.set(
             "spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", self.account_key
         )
-        spark.sql(sql)
+        return spark.sql(sql)
 
     def read_table_by_name(self, table_name: str, schema: DataType = None) -> DataFrame:
         config = self.config.copy()

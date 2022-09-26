@@ -1,5 +1,7 @@
 import unittest
 
+from azure.cosmos.exceptions import CosmosHttpResponseError
+
 import atc.cosmos
 from atc.config_master import TableConfigurator
 from atc.functions import init_dbutils
@@ -31,6 +33,12 @@ class CosmosTests(unittest.TestCase):
 
     def test_02_create_db(self):
         cm = TestCosmos()
+        # clean up the database in case it exists from last run
+        try:
+            cm.client.delete_database(cm.database)
+        except CosmosHttpResponseError:
+            pass
+
         cm.execute_sql(f"CREATE DATABASE IF NOT EXISTS cosmosCatalog.{cm.database};")
         tc = TableConfigurator()
         cm.execute_sql(

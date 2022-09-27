@@ -56,7 +56,7 @@ $output = az deployment sub create `
       sqlServerAdminPassword=$sqlServerAdminPassword `
       pipelineSpnName=$pipelineSpnName `
       pipelineObjectId=$pipelineObjectId
-      
+
 
 Throw-WhenError -output $output
 

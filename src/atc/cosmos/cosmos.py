@@ -9,17 +9,24 @@
 #       )
 #   df = server.load_table("TableId")
 #   server.save_table(df, "TableId")
-from typing import Union
+from typing import Optional, Union
 
-from azure.cosmos import CosmosClient
-from pyspark.sql import DataFrame
+from azure.cosmos import CosmosClient, DatabaseProxy
+from pyspark.sql import DataFrame, types
 from pyspark.sql.types import DataType
 
+from atc.atc_exceptions import AtcException
 from atc.config_master import TableConfigurator
+from atc.cosmos.cosmos_base_server import CosmosBaseServer
+from atc.cosmos.cosmos_handle import CosmosHandle
 from atc.spark import Spark
 
 
-class CosmosDb:
+class AtcCosmosException(AtcException):
+    pass
+
+
+class CosmosDb(CosmosBaseServer):
     def __init__(
         self,
         account_key: str,
@@ -45,6 +52,16 @@ class CosmosDb:
         }
         self.client = CosmosClient(endpoint, credential=account_key)
 
+        self._db_client: Optional[DatabaseProxy] = None
+
+    @property
+    def db_client(self):
+        if self._db_client is not None:
+            return self._db_client
+
+        self._db_client = self.client.get_database_client(self.database)
+        return self._db_client
+
     def execute_sql(self, sql: str):
         # Examples:
         #
@@ -64,7 +81,7 @@ class CosmosDb:
         spark.conf.set(
             "spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", self.account_key
         )
-        spark.sql(sql)
+        return spark.sql(sql)
 
     def read_table_by_name(self, table_name: str, schema: DataType = None) -> DataFrame:
         config = self.config.copy()
@@ -108,6 +125,57 @@ class CosmosDb:
     def delete_item(
         self, table_id: str, id: Union[int, str], pk: Union[int, str] = None
     ):
-        db = self.client.get_database_client(self.database)
-        cntr = db.get_container_client(TableConfigurator().table_name(table_id))
+
+        cntr = self.db_client.get_container_client(
+            TableConfigurator().table_name(table_id)
+        )
         cntr.delete_item(id, partition_key=pk)
+
+    def delete_container(self, table_id: str):
+        self.delete_container_by_name(TableConfigurator().table_name(table_id))
+
+    def delete_container_by_name(self, table_name: str):
+
+        self.db_client.delete_container(table_name)
+
+    def recreate_container_by_name(self, table_name: str):
+        """
+        Delete and recreate the container while preserving properties as
+        far as possible.
+        """
+
+        for container in self.db_client.list_containers():
+            if container["id"] == table_name:
+                break
+        else:
+            raise AtcCosmosException(f"table not found {table_name}")
+
+        throughput_units = (
+            self.db_client.get_container_client(table_name)
+            .get_throughput()
+            .offer_throughput
+        )
+
+        self.db_client.delete_container(table_name)
+        self.db_client.create_container(
+            id=container["id"],
+            partition_key=container["partitionKey"],
+            offer_throughput=throughput_units,
+            default_ttl=container.get("defaultTtl", None),
+            indexing_policy=container.get("indexingPolicy", None),
+        )
+
+    def from_tc(self, table_id: str) -> CosmosHandle:
+        tc = TableConfigurator()
+        name = tc.table_name(table_id)
+        rows_per_partition = tc.table_property(table_id, "rows_per_partition", "")
+        rows_per_partition = int(rows_per_partition) if rows_per_partition else None
+        schema_str = tc.table_property(table_id, "schema", "")
+        schema = types._parse_datatype_string(schema_str) if schema_str else None
+
+        return CosmosHandle(
+            name=name,
+            cosmos_db=self,
+            schema=schema,
+            rows_per_partition=rows_per_partition,
+        )

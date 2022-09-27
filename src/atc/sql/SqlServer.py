@@ -152,6 +152,8 @@ class SqlServer:
         batch_size: int = 10 * 1024,
         partition_count: int = 60,
     ):
+        self.test_odbc_connection()
+
         df_source.repartition(partition_count).write.format(
             "com.microsoft.sqlserver.jdbc.spark" if big_data_set else "jdbc"
         ).mode("append" if append else "overwrite").option(

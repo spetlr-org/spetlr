@@ -13,7 +13,7 @@ version_file_path = "src/VERSION.txt"
 
 def main():
     # find out what version to use
-    pypi_v = get_test_pypi_version()
+    pypi_v = max(get_version("test.pypi.org"), get_version("pypi.org"))
     local_v = get_local_version()
     if local_v > pypi_v:
         version = local_v.base_version
@@ -32,11 +32,9 @@ def get_local_version():
         return v
 
 
-def get_test_pypi_version():
+def get_version(host):
     try:
-        test_pypi = json.load(
-            urlopen("https://test.pypi.org/pypi/atc-dataplatform/json")
-        )
+        test_pypi = json.load(urlopen(f"https://{host}/pypi/atc-dataplatform/json"))
         test_pypi_version = parse(test_pypi["info"]["version"])
         return test_pypi_version
     except:  # noqa: E722

@@ -2,7 +2,7 @@ from atc_tools.testing import DataframeTestCase
 from pyspark.sql import types as T
 
 from atc.spark import Spark
-from atc.transformers.timezone_transformer import TimeZoneTransformer
+from atc.transformers import TimeZoneTransformer
 
 
 class TimeZoneTransformerTest(DataframeTestCase):
@@ -21,8 +21,6 @@ class TimeZoneTransformerTest(DataframeTestCase):
         transformed_df = TimeZoneTransformer(
             latitude_col="Latitude",
             longitude_col="Longitude",
-            dataset_input_key="None",
-            dataset_output_key="None",
         ).process(input_df)
 
         expected_data = [
@@ -34,4 +32,34 @@ class TimeZoneTransformerTest(DataframeTestCase):
             df=transformed_df,
             columns=None,
             expected_data=expected_data,
+        )
+
+    def test_timezone_transformer_none(self):
+        input_schema = T.StructType(
+            [
+                T.StructField("Latitude", T.DoubleType(), True),
+                T.StructField("Longitude", T.DoubleType(), True),
+            ]
+        )
+
+        input_data = [(None, -0.083069), (55.6761, None), (None, None)]
+
+        input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
+
+        transformed_df = TimeZoneTransformer(
+            latitude_col="Latitude",
+            longitude_col="Longitude",
+        ).process(input_df)
+
+        transformed_data = [tuple(row) for row in transformed_df.collect()]
+
+        expected_data = [
+            (None, -0.083069, None),
+            (55.6761, None, None),
+            (None, None, None),
+        ]
+
+        self.assertEqual(
+            first=transformed_data,
+            second=expected_data,
         )

@@ -5,14 +5,12 @@ from atc_tools.testing import DataframeTestCase
 from atc.config_master import TableConfigurator
 from atc.delta import DbHandle, DeltaHandle
 from atc.etl.loaders.UpsertLoader import UpsertLoader
-from atc.etl.loaders.UpsertLoaderParameters import UpsertLoaderParameters
 from atc.utils import DataframeCreator
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
 class UpsertLoaderTests(DataframeTestCase):
-
     target_id = "UpsertLoaderDummy"
 
     join_cols = ["col1", "col2"]
@@ -57,10 +55,8 @@ class UpsertLoaderTests(DataframeTestCase):
         DbHandle.from_tc("UpsertLoaderDb").drop_cascade()
 
     def test_01_can_perform_incremental_on_empty(self):
-        params = UpsertLoaderParameters(
-            incremental_load=True, target_id=self.target_id, join_cols=self.join_cols
-        )
-        loader = UpsertLoader(params)
+
+        loader = UpsertLoader(handle=self.target_dh_dummy, join_cols=self.join_cols)
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data1
@@ -70,19 +66,19 @@ class UpsertLoaderTests(DataframeTestCase):
         self.assertDataframeMatches(self.target_dh_dummy.read(), None, self.data1)
 
     def test_02_can_perform_full_over_existing(self):
-        """The target table is already filled from before."""
+        """The target table is already filled from before.
+        This test does not test .upsert() logic,
+        but ensures that test 03 resembles an upsert after a full load.
+        If one needs to make an full load, use the .overwrite() method"""
         self.assertEqual(2, len(self.target_dh_dummy.read().collect()))
-
-        params = UpsertLoaderParameters(
-            incremental_load=False, target_id=self.target_id, join_cols=self.join_cols
-        )
-        loader = UpsertLoader(params)
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data2
         )
 
-        loader.save(df_source)
+        self.target_dh_dummy.overwrite(
+            df_source,
+        )
 
         self.assertDataframeMatches(self.target_dh_dummy.read(), None, self.data2)
 
@@ -91,10 +87,7 @@ class UpsertLoaderTests(DataframeTestCase):
         existing_rows = self.target_dh_dummy.read().collect()
         self.assertEqual(2, len(existing_rows))
 
-        params = UpsertLoaderParameters(
-            incremental_load=True, target_id=self.target_id, join_cols=self.join_cols
-        )
-        loader = UpsertLoader(params)
+        loader = UpsertLoader(handle=self.target_dh_dummy, join_cols=self.join_cols)
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data3
@@ -111,10 +104,7 @@ class UpsertLoaderTests(DataframeTestCase):
         existing_rows = self.target_dh_dummy.read().collect()
         self.assertEqual(3, len(existing_rows))
 
-        params = UpsertLoaderParameters(
-            incremental_load=True, target_id=self.target_id, join_cols=self.join_cols
-        )
-        loader = UpsertLoader(params)
+        loader = UpsertLoader(handle=self.target_dh_dummy, join_cols=self.join_cols)
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data4

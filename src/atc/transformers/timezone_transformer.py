@@ -2,6 +2,7 @@ import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 from timezonefinder import TimezoneFinder
 
+from atc.atc_exceptions import ColumnDoesNotExistException
 from atc.etl import ExtendedTransformer
 from atc.etl.types import dataset_group
 
@@ -52,10 +53,14 @@ class TimeZoneTransformer(ExtendedTransformer):
         columns = df.columns
 
         if self.latitude_col not in columns:
-            raise Exception("The specified latitude column is not in the DataFrame")
+            raise ColumnDoesNotExistException(
+                "The specified latitude column is not in the DataFrame"
+            )
 
         if self.longitude_col not in columns:
-            raise Exception("The specified longitude column is not in the DataFrame")
+            raise ColumnDoesNotExistException(
+                "The specified longitude column is not in the DataFrame"
+            )
 
         timezone_extractor = F.udf(
             lambda latitude, longitude: None

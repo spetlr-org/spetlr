@@ -2,10 +2,15 @@
 
 Transformations in atc-dataplatform:
 
-* [Concatenate dataframes](#concatenate-data-frames)
-* [Fuzzy select](#fuzzy-select-transformer)
-* [Merge df into target](#merge-df-into-target)
-* [DropOldestDuplicates](#dropoldestduplicates)
+- [Transformations documentation](#transformations-documentation)
+  - [Concatenate data frames](#concatenate-data-frames)
+    - [Example](#example)
+  - [Fuzzy Select Transformer](#fuzzy-select-transformer)
+    - [Example](#example-1)
+  - [Merge df into target](#merge-df-into-target)
+    - [Example](#example-2)
+  - [DropOldestDuplicates](#dropoldestduplicates)
+  - [TimeZoneTransformer](#timezonetransformer)
 
 ## Concatenate data frames
 
@@ -243,3 +248,41 @@ df.show()
 ```
 
 Notice, the oldest duplicates are dropped. 
+
+## TimeZoneTransformer
+
+This transformation uses latitude and longitude values to determine the timezone
+of a specific location. The example below shows how to apply the transformer
+of an input DataFrame to get a column with timezones. Notice, when either the
+latitude or longitude value is *None*, the returned timezone will also be *None*.
+
+
+``` python 
+from atc.transformers import TimeZoneTransformer
+data =
+
+|   latitude| longitude|
++-----------+----------+
+| 51.519487 | -0.083069|
+| 55.6761   |   12.5683|
+| None      |      None|
+| None      | -0.083069|
+| 51.519487 |      None|
++-----------+----------+
+
+df = TimeZoneTransformer( 
+            latitude_col="latitude",
+            longitude_col="longitude",
+            column_output_name="timezone"
+        ).process(data)
+df.show()
+
+|   latitude| longitude|            timezone|
++-----------+----------+--------------------+
+| 51.519487 | -0.083069|     "Europe/London"|
+| 55.6761   |   12.5683| "Europe/Copenhagen"|
+| None      |      None|                None|
+| None      | -0.083069|                None|
+| 51.519487 |      None|                None|
++-----------+----------+--------------------+
+```

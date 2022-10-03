@@ -3,10 +3,12 @@ import os
 from datetime import datetime
 from typing import Union
 
+import deprecation
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 from pyspark.sql.utils import AnalysisException
 
+import atc
 from atc import dbg
 from atc.config_master import TableConfigurator
 from atc.eh.eh_exceptions import AtcEhInitException, AtcEhLogicException
@@ -15,6 +17,12 @@ from atc.functions import init_dbutils
 from atc.spark import Spark
 
 
+@deprecation.deprecated(
+    deprecated_in="1.0.50",
+    removed_in="2.0",
+    current_version=atc.__version__,
+    details="Use EventHubCaptureExtractor instead.",
+)
 class EventHubCapture:
     """Class to access eventhub capture files as table.
 

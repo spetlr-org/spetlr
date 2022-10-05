@@ -6,6 +6,7 @@ from pyspark.sql import functions as f
 
 from atc.config_master import TableConfigurator
 from atc.eh import EventHubCapture
+from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from atc.functions import init_dbutils
 from atc.spark import Spark
 
@@ -66,3 +67,25 @@ class EventHubsTests(unittest.TestCase):
         )
         rows = {tuple(row) for row in df.collect()}
         self.assertEqual({(1, "a"), (2, "b")}, rows)
+
+    def test_04_read_eh_capture_extractor(self):
+        tc = TableConfigurator()
+        tc.register(
+            "AtcEh",
+            {
+                "name": "AtcEh",
+                "path": "/mnt/githubatc/silver/githubatc/atceh",
+                "format": "avro",
+                "partitioning": "ymd",
+            },
+        )
+        eh = EventHubCaptureExtractor.from_tc("AtcEh")
+        df = eh.read()
+        self.assertTrue(df.count(), 2)
+
+        df = eh.read(
+            (datetime.now() - timedelta(hours=1)).replace(
+                minute=0, second=0, microsecond=0
+            )
+        )
+        self.assertTrue(df.count(), 2)

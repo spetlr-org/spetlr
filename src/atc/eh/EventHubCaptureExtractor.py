@@ -1,6 +1,6 @@
 import datetime
 from datetime import datetime as dt
-from typing import List
+from typing import List, Tuple
 
 import py4j.protocol
 import pyspark.sql.utils
@@ -9,6 +9,8 @@ from pyspark.sql import functions as f
 
 from atc.config_master import TableConfigurator
 from atc.spark import Spark
+
+utc = datetime.timezone.utc
 
 
 class EventHubCaptureExtractor:
@@ -23,12 +25,12 @@ class EventHubCaptureExtractor:
     partitioning: str
 
     @classmethod
-    def from_tc(cls, id: str):
+    def from_tc(cls, tbl_id: str):
         tc = TableConfigurator()
-        assert tc.table_property(id, "format") == "avro"
+        assert tc.table_property(tbl_id, "format") == "avro"
         return cls(
-            path=tc.table_property(id, "path"),
-            partitioning=tc.table_property(id, "partitioning"),
+            path=tc.table_property(tbl_id, "path"),
+            partitioning=tc.table_property(tbl_id, "partitioning"),
         )
 
     def __init__(self, path: str, partitioning: str = ""):
@@ -39,7 +41,7 @@ class EventHubCaptureExtractor:
     def _validate_timestamp(self, stamp: dt):
         """Check that the given timestamp is an edge
         between two capture periods according to the set partitioning."""
-        stamp = stamp.astimezone(datetime.timezone.utc)
+        stamp = stamp.astimezone(utc)
         if stamp.microsecond != 0:
             return False
         if stamp.second != 0:
@@ -51,29 +53,28 @@ class EventHubCaptureExtractor:
         return True
 
     def _add_columns(self, df: DataFrame) -> DataFrame:
-
+        # here we extract the partition description from the input filename
+        # partitions are saved in folders like .../y=2022/m=09/d=23/h=02/...
+        # there are many ways to extract these parts. We use a single regular expression
+        # the parts are ordered by assumption (validated in manual tests)
+        # but this ordering is not verified in order to prioritize performance
         df = df.withColumn(
             "_parts",
-            f.expr(
-                'regexp_extract_all(input_file_name(),"['
-                + self.partitioning
-                + ']=([0-9]+)/",1)'
-            ),
+            f.expr('regexp_extract_all(input_file_name(),"[ymdh]=([0-9]+)/",1)'),
         )
-        df = df.withColumn("y", f.element_at("_parts", 1))
-        df = df.withColumn("m", f.element_at("_parts", 2))
-        df = df.withColumn("d", f.element_at("_parts", 3))
+        df = df.withColumn("y", f.element_at("_parts", 1).cast("INTEGER"))
+        df = df.withColumn("m", f.element_at("_parts", 2).cast("INTEGER"))
+        df = df.withColumn("d", f.element_at("_parts", 3).cast("INTEGER"))
         if "h" in self.partitioning:
-            df = df.withColumn("h", f.element_at("_parts", 4))
+            df = df.withColumn("h", f.element_at("_parts", 4).cast("INTEGER"))
 
+        # unfortunately, regexp_extract_all and make_timestamp are not exposed
+        # in the pyspark wrapper library
         df = df.withColumn(
             "pdate",
             f.expr(
-                "make_timestamp("
-                "cast(y AS INT),"
-                "cast(m AS INT),"
-                "cast(d AS INT),"
-                + ("cast(h AS INT)," if "h" in self.partitioning else "0,")
+                "make_timestamp(y,m,d,"
+                + ("h," if "h" in self.partitioning else "0,")
                 + '0,0,"UTC")'
             ),
         )
@@ -81,21 +82,12 @@ class EventHubCaptureExtractor:
         return df
 
     def _now_utc(self):
-        return datetime.datetime.now(tz=datetime.timezone.utc)
+        # this method needs to be here so that I can override it in the unittest
+        return dt.now(tz=utc)
 
-    def _end_edge_of_now_bin(self):
-        # the bin that covers the current time
-        return dt(
-            year=self._now_utc().year + 1,
-            month=1,
-            day=1,
-            hour=0,
-            second=0,
-            microsecond=0,
-            tzinfo=datetime.timezone.utc,
-        )
-
-    def _validated_slice_arguments(self, from_partition: dt, to_partition: dt):
+    def _validated_slice_arguments(
+        self, from_partition: dt = None, to_partition: dt = None
+    ) -> Tuple[dt, dt]:
         from_partition = from_partition.astimezone(datetime.timezone.utc)
 
         if not self._validate_timestamp(from_partition):
@@ -103,7 +95,7 @@ class EventHubCaptureExtractor:
 
         if to_partition is None:
             # if the to_partition is not given, we set it to the end of
-            to_partition = self._end_edge_of_now_bin()
+            to_partition = dt(self._now_utc().year + 1, 1, 1, tzinfo=utc)
         else:
             # to_partition was given by the caller, we need to validate it.
             to_partition = to_partition.astimezone(datetime.timezone.utc)
@@ -218,18 +210,12 @@ class EventHubCaptureExtractor:
         Given partition limits are designating the edges of partitions to read. Hence:
             - The from_partition is inclusive.
             - The to_partition is exclusive.
-        To allow the reading of all data residing in the capture files, the automatic
-        to_partition, that is used if none is given by the caller, will be the end-value
-        of the capture bin that covers the current time. This is slightly in the future:
-
-        from_partition                        now
-              \/                              \/
-        ------|------|------|------|------|------|------|------
-                                                /\
-                                          automatic to_partition
+        If no to_partition is given, all data will be read, including the
+        (usually only partially filled) current partition.
         """
 
-        # internally there are only two real cases, reading everything
+        # internally there are only two real cases,
+        # reading everything
         # or reading a slice.
         # first we handle the case of reading everything
         if from_partition is None:

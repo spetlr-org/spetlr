@@ -1,3 +1,5 @@
+from functools import reduce
+
 from pyspark.sql import DataFrame
 
 from atc.etl import Transformer
@@ -5,9 +7,26 @@ from atc.etl.types import dataset_group
 
 
 class UnionTransformer(Transformer):
-    """Returns the union of all input dataframes."""
+    """
+    This transformer unions multiple DataFrames
 
-    def __init__(self, allowMissingColumns=False):
+    Attributes:
+    ----------
+        allowMissingColumns : bool
+            When the parameter allowMissingColumns is True,
+            the set of column names in this and other DataFrame
+            can differ; missing columns will be filled with null
+
+    Methods
+    -------
+    process(df: DataFrame):
+        returns the input DataFrame
+
+    process_many(datasets: dataset_group):
+        returns the union of all input DataFrames
+    """
+
+    def __init__(self, allowMissingColumns: bool = False):
         super().__init__()
         self.allowMissingColumns = allowMissingColumns
 
@@ -16,8 +35,9 @@ class UnionTransformer(Transformer):
 
     def process_many(self, datasets: dataset_group) -> DataFrame:
         dfs = list(datasets.values())
-        df = dfs[0]
-        for other in dfs[1:]:
-            if other is not None:
-                df = df.unionByName(other, self.allowMissingColumns)
-        return df
+        return reduce(
+            lambda df1, df2: df1.unionByName(
+                df2, allowMissingColumns=self.allowMissingColumns
+            ),
+            dfs,
+        )

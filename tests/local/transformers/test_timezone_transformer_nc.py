@@ -2,10 +2,10 @@ from atc_tools.testing import DataframeTestCase
 from pyspark.sql import types as T
 
 from atc.spark import Spark
-from atc.transformers import TimeZoneTransformer
+from atc.transformers import TimeZoneTransformerNC
 
 
-class TimeZoneTransformerTest(DataframeTestCase):
+class TimeZoneTransformerNCTest(DataframeTestCase):
     def test_timezone_transformer(self):
         input_schema = T.StructType(
             [
@@ -18,7 +18,7 @@ class TimeZoneTransformerTest(DataframeTestCase):
 
         input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-        transformed_df = TimeZoneTransformer(
+        transformed_df = TimeZoneTransformerNC(
             latitude_col="Latitude",
             longitude_col="Longitude",
         ).process(input_df)
@@ -46,7 +46,7 @@ class TimeZoneTransformerTest(DataframeTestCase):
 
         input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-        transformed_df = TimeZoneTransformer(
+        transformed_df = TimeZoneTransformerNC(
             latitude_col="Latitude",
             longitude_col="Longitude",
         ).process(input_df)

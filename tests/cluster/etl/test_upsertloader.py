@@ -92,27 +92,3 @@ class UpsertLoaderTests(DataframeTestCase):
         loader.save(df_source)
 
         self.assertDataframeMatches(self.target_dh_dummy.read(), None, self.data4)
-
-    def test_04_can_perform_merge(self):
-        """The target table is already filled from before.
-        Truncating the table first."""
-
-        self.target_dh_dummy.truncate()
-        existing_rows = self.target_dh_dummy.read().collect()
-        self.assertEqual(0, len(existing_rows))
-
-        loader = UpsertLoader(handle=self.target_dh_dummy, join_cols=self.join_cols)
-
-        df_source_a = DataframeCreator.make_partial(
-            self.dummy_schema, self.dummy_columns, self.data1
-        )
-
-        df_source_b = DataframeCreator.make_partial(
-            self.dummy_schema, self.dummy_columns, self.data2
-        )
-
-        loader.save_many({"df1": df_source_a, "df2": df_source_b})
-
-        self.assertDataframeMatches(
-            self.target_dh_dummy.read(), None, self.data1 + self.data2
-        )

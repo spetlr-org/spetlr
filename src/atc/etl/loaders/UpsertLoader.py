@@ -14,9 +14,7 @@ class UpsertLoader(Loader):
         self.join_cols = join_cols
 
     def save_many(self, datasets: dataset_group) -> None:
-        """Upserts each dataset in the datasetgroup individually."""
-        for df in datasets.values():
-            self.handle.upsert(df, join_cols=self.join_cols)
+        raise NotImplementedError()
 
     def save(self, df: DataFrame) -> None:
         """Upserts a single dataframe to the target table."""

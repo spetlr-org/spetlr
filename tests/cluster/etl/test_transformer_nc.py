@@ -3,12 +3,12 @@ import unittest
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from atc.etl import ExtendedTransformer
+from atc.etl import TransformerNC
 from atc.etl.types import dataset_group
 from atc.spark import Spark
 
 
-class TransformerTests(unittest.TestCase):
+class TransformerNCTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
@@ -84,7 +84,7 @@ class TransformerTests(unittest.TestCase):
             self.transformer_input_key_list.etl({"df1": self.df, "df2": self.df})
 
 
-class TestTransformer(ExtendedTransformer):
+class TestTransformer(TransformerNC):
     def process(self, df: DataFrame) -> DataFrame:
         return df
 

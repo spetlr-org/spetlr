@@ -33,7 +33,7 @@ class EventHubCaptureExtractor:
             partitioning=tc.table_property(tbl_id, "partitioning"),
         )
 
-    def __init__(self, path: str, partitioning: str = ""):
+    def __init__(self, path: str, partitioning: str):
         self.path = path
         self.partitioning = partitioning.lower()
         assert self.partitioning in ["ymd", "ymdh"]
@@ -105,7 +105,7 @@ class EventHubCaptureExtractor:
 
             # ensure that limits are ordered correctly
             if to_partition < from_partition:
-                from_partition, to_partition = to_partition, from_partition
+                raise ValueError("Negative partition interval.")
 
         if to_partition == from_partition:
             raise ValueError("Requested to read over zero partitions.")
@@ -124,8 +124,9 @@ class EventHubCaptureExtractor:
         # we now take bites out of this slice until the slice is closed.
         # in each iteration we take the biggest bite that we can,
         while fp != tp and fp < self._now_utc():
+
             # consider a year-sized bite
-            # does fp represent a lower edge of a year slice?
+            # does fp represent a lower edge of a year slice:
             if fp.month == 1 and fp.day == 1 and fp.hour == 0:
                 # fp seems suitable, check tp
                 year_end = fp.replace(year=fp.year + 1)
@@ -205,7 +206,7 @@ class EventHubCaptureExtractor:
         r"""Read all data between the two limits.
         Supported usage:
             - set neither value, all files are read.
-            - set from_partition only, (end_partition is assumed to be now)
+            - set from_partition only, (to_partition is assumed to be now)
             - set both from_partition and to_partition
         Given partition limits are designating the edges of partitions to read. Hence:
             - The from_partition is inclusive.
@@ -222,6 +223,7 @@ class EventHubCaptureExtractor:
             if to_partition is not None:
                 raise ValueError("Use both limits or only 'from' limit.")
             else:
+                # read all
                 return self._add_columns(
                     Spark.get().read.format("avro").load(self.path)
                 )
@@ -238,8 +240,6 @@ class EventHubCaptureExtractor:
         parts_to_load = self._break_into_partitioning_parts(
             from_partition, to_partition
         )
-
-        print(parts_to_load)
 
         # we know that from_partition != to_partition
         # and the function above must return some partitions

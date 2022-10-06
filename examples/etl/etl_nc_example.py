@@ -2,7 +2,7 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from atc.etl import ExtendedLoader, ExtendedTransformer, Extractor, Orchestrator
+from atc.etl import ExtendedLoader, Extractor, Orchestrator, TransformerNC
 from atc.etl.types import dataset_group
 from atc.spark import Spark
 
@@ -48,12 +48,12 @@ class OfficeBirthdaysExtractor(Extractor):
         )
 
 
-class IntegerTransformer(ExtendedTransformer):
+class IntegerTransformerNC(TransformerNC):
     def process(self, df: DataFrame) -> DataFrame:
         return df.withColumn("id", f.col("id").cast(IntegerType()))
 
 
-class JoinTransformer(ExtendedTransformer):
+class JoinTransformerNC(TransformerNC):
     def process_many(self, dataset: dataset_group) -> DataFrame:
 
         df_employee = dataset["df_employee_transformed"]
@@ -75,13 +75,13 @@ etl = (
     .extract_from(OfficeEmployeeExtractor(dataset_key="df_employee"))
     .extract_from(OfficeBirthdaysExtractor(dataset_key="df_birthdays"))
     .transform_with(
-        IntegerTransformer(
+        IntegerTransformerNC(
             dataset_input_key="df_employee",
             dataset_output_key="df_employee_transformed",
         )
     )
     .transform_with(
-        JoinTransformer(
+        JoinTransformerNC(
             dataset_input_key_list=["df_employee_transformed", "df_birthdays"],
             dataset_output_key="df_final",
         )

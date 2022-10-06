@@ -3,11 +3,11 @@ from pyspark.sql import DataFrame
 from timezonefinder import TimezoneFinder
 
 from atc.atc_exceptions import ColumnDoesNotExistException
-from atc.etl import ExtendedTransformer
+from atc.etl import TransformerNC
 from atc.etl.types import dataset_group
 
 
-class TimeZoneTransformer(ExtendedTransformer):
+class TimeZoneTransformerNC(TransformerNC):
     """
     This transformer extracts a timezone using longitude and latitude.
 

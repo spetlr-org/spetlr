@@ -2,10 +2,10 @@ from typing import List
 
 from pyspark.sql import DataFrame
 
-from atc.etl.extended_transformer import ExtendedTransformer
+from atc.etl import TransformerNC
 
 
-class DropColumnsTransformer(ExtendedTransformer):
+class DropColumnsTransformer(TransformerNC):
     def __init__(
         self,
         columnList: List[str],

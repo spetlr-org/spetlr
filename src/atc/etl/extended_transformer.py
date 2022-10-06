@@ -12,12 +12,13 @@ class ExtendedTransformer(EtlBase):
     if you want to transform a set of dataframes,
     implement `process_many`
 
-    In regards to the etl step, the transformer CONSUMES the inputs
-    and ADDs the result of its transformation stage.
+    In regards to the etl step, the ExtendedTransformer does NOT CONSUME the inputs
+    and APPENDs the result of its transformation stage to the list of inputs.
     """
 
     def __init__(
         self,
+        *,
         dataset_output_key: str = None,
         dataset_input_key: str = None,
         dataset_input_key_list: List[str] = None,

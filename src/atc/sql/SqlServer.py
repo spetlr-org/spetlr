@@ -1,8 +1,10 @@
+import contextlib
 import importlib.resources
 import re
 import time
+import uuid
 from types import ModuleType
-from typing import Union
+from typing import List, Union
 
 import pyodbc
 from pyspark.sql import DataFrame
@@ -10,6 +12,7 @@ from pyspark.sql import DataFrame
 from atc.config_master import TableConfigurator
 from atc.spark import Spark
 from atc.sql.sql_handle import SqlHandle
+from atc.utils import GetMergeStatement
 
 
 class SqlServer:
@@ -21,6 +24,9 @@ class SqlServer:
         password: str = None,
         port: str = "1433",
         connection_string: str = None,
+        *,
+        spnid: str = None,
+        spnpassword: str = None,
     ):
         """Create object to interact with sql servers. Pass all but
         connection_string to connect via values or pass only the
@@ -29,33 +35,51 @@ class SqlServer:
             hostname, port, username, password, database = self.from_connection_string(
                 connection_string
             )
-        if not (hostname and database and username and password and port):
-            raise ValueError("Missing parameters for creating connection to SQL Server")
+        if not (hostname and database and port):
+            raise ValueError("Hostname or database parameters missing.")
 
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
+
+        jdbc_driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
         self.url = (
             f"jdbc:sqlserver://{hostname}:{port};"
-            f"database={database};queryTimeout=0;loginTimeout={self.timeout}"
+            f"database={database};"
+            f"queryTimeout=0;"
+            f"loginTimeout={self.timeout};"
+            f"driver={jdbc_driver};"
         )
 
-        self.username = username
-        self.password = password
+        if spnpassword and spnid and not password and not username:
+            # Use spn
+            self.url += (
+                f"AADSecurePrincipalId={spnid};"
+                f"AADSecurePrincipalSecret={spnpassword};"
+                f"encrypt=true;"
+                f"trustServerCertificate=false;"
+                f"hostNameInCertificate=*.database.windows.net;"
+                f"authentication=ActiveDirectoryServicePrincipal"
+            )
+
+        elif password and username and not spnpassword and not spnid:
+            # Use SQL admin
+            self.url += f"user={username};password={password}"
+        else:
+            raise ValueError("Use either SPN or SQL user - never both")
 
         self.odbc = (
             "DRIVER={ODBC Driver 17 for SQL Server};"
             f"SERVER={hostname};"
             f"DATABASE={database};"
             f"PORT={port};"
-            f"UID={username};"
-            f"PWD={password};"
+            f"UID={username or spnid};"
+            f"PWD={password or spnpassword};"
             f"Connection Timeout={self.timeout}"
         )
-        self.properties = {
-            "user": username,
-            "password": password,
-            "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        }
+
+        # If it is a SPN user, then it should use AD SPN authentication
+        if spnid:
+            self.odbc += ";Authentication=ActiveDirectoryServicePrincipal"
 
     @staticmethod
     def from_connection_string(connection_string):
@@ -85,12 +109,20 @@ class SqlServer:
 
         return hostname, port, username, password, database
 
-    def execute_sql(self, sql: str):
-        self.test_odbc_connection()
+    @contextlib.contextmanager
+    def connect_to_db(self):
         conn = pyodbc.connect(self.odbc)
         conn.autocommit = True
-        conn.execute(sql)
-        conn.close()
+        try:
+            yield conn
+        finally:
+            conn.close()
+
+    def execute_sql(self, sql: str):
+        self.test_odbc_connection()
+
+        with self.connect_to_db() as conn:
+            conn.execute(sql)
 
     def from_tc(self, id: str) -> SqlHandle:
         """This method allows an instance of SqlServer to be a drop in for the class
@@ -106,9 +138,7 @@ class SqlServer:
 
     def load_sql(self, sql: str):
         self.test_odbc_connection()
-        return Spark.get().read.jdbc(
-            url=self.url, table=sql, properties=self.properties
-        )
+        return Spark.get().read.jdbc(url=self.url, table=sql)
 
     def read_table_by_name(self, table_name: str):
         return self.load_sql(f"(SELECT * FROM {table_name}) target")
@@ -122,6 +152,8 @@ class SqlServer:
         batch_size: int = 10 * 1024,
         partition_count: int = 60,
     ):
+        self.test_odbc_connection()
+
         df_source.repartition(partition_count).write.format(
             "com.microsoft.sqlserver.jdbc.spark" if big_data_set else "jdbc"
         ).mode("append" if append else "overwrite").option(
@@ -134,11 +166,77 @@ class SqlServer:
             "url", self.url
         ).option(
             "dbtable", table_name
-        ).option(
-            "user", self.username
-        ).option(
-            "password", self.password
         ).save()
+
+    def upsert_to_table_by_name(
+        self,
+        df_source: DataFrame,
+        table_name: str,
+        join_cols: List[str],
+        filter_join_cols: bool = True,
+        overwrite_if_target_is_empty: bool = True,
+        big_data_set: bool = True,
+        batch_size: int = 10 * 1024,
+        partition_count: int = 60,
+    ):
+
+        if df_source is None:
+            return None
+
+        if filter_join_cols:
+            df_source = df_source.filter(
+                " AND ".join(f"({col} is NOT NULL)" for col in join_cols)
+            )
+            print(
+                "Rows with NULL join keys found in input dataframe"
+                " will be discarded before load."
+            )
+
+        if overwrite_if_target_is_empty:
+            df_target = self.read_table_by_name(table_name=table_name)
+
+            if len(df_target.take(1)) == 0:
+                return self.write_table_by_name(
+                    df_source=df_source,
+                    table_name=table_name,
+                    append=False,
+                    big_data_set=big_data_set,
+                    batch_size=batch_size,
+                    partition_count=partition_count,
+                )
+
+        # Define name of temp stagning table
+        # ## defines the table as a temp sql table
+        staging_table_name = f"##{uuid.uuid4().hex}"
+
+        with self.connect_to_db() as conn:
+            # Create temp staging table for merge based source table
+            conn.execute(
+                f"""
+                SELECT * INTO {staging_table_name}
+                FROM {table_name} WHERE 1 = 0;
+                """
+            )
+
+            self.write_table_by_name(
+                df_source=df_source,
+                table_name=staging_table_name,
+                append=False,
+                big_data_set=big_data_set,
+                batch_size=batch_size,
+                partition_count=partition_count,
+            )
+
+            mergeQuery = GetMergeStatement(
+                merge_statement_type="sql",
+                target_table_name=table_name,
+                source_table_name=staging_table_name,
+                join_cols=join_cols,
+                insert_cols=df_source.columns,
+                update_cols=df_source.columns,
+            )
+
+            conn.execute(mergeQuery)
 
     def truncate_table_by_name(self, table_name: str):
         self.execute_sql(f"TRUNCATE TABLE {table_name}")

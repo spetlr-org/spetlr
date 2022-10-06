@@ -1,7 +1,6 @@
-import unittest
-
+from atc_tools.testing.DataframeTestCase import DataframeTestCase
 from pyspark.sql import DataFrame
-from pyspark.sql.types import IntegerType, StructField, StructType
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 from atc.config_master import TableConfigurator
 from atc.functions import get_unique_tempview_name
@@ -11,10 +10,12 @@ from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 from . import extras
 
 
-class DeliverySqlServerTests(unittest.TestCase):
+class DeliverySqlServerTests(DataframeTestCase):
+
     tc = None
     sql_server = None
     table_name = get_unique_tempview_name()
+    table_upsert_name = get_unique_tempview_name()
     view_name = get_unique_tempview_name()
 
     @classmethod
@@ -28,6 +29,7 @@ class DeliverySqlServerTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         cls.sql_server.drop_table_by_name(cls.table_name)
+        cls.sql_server.drop_table_by_name(cls.table_upsert_name)
         t1 = cls.tc.table_name("SqlTestTable1")
         t2 = cls.tc.table_name("SqlTestTable2")
         v1 = cls.tc.table_name("SqlTestView")
@@ -170,24 +172,174 @@ class DeliverySqlServerTests(unittest.TestCase):
         table_exists = self.sql_server.load_sql(sql_argument)
         self.assertEqual(table_exists.count(), 0)
 
+    def test16_upsert_to_table_none_input(self):
+
+        val_return = self.sql_server.upsert_to_table_by_name(
+            df_source=None,
+            table_name=self.table_upsert_name,
+            join_cols=["testid"],
+            filter_join_cols=False,
+        )
+
+        self.assertEqual(val_return, None)
+
+    def test17_upsert_to_table(self):
+
+        self.create_upsert_test_table()
+
+        upsertTableSchema = StructType(
+            [
+                StructField("testid", IntegerType(), True),
+                StructField("testdata", StringType(), True),
+            ]
+        )
+
+        # Write pre upsert test data
+        df_preTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[(1, "testdata1"), (2, "testdata2")],
+        )
+        self.sql_server.write_table_by_name(
+            df_source=df_preTest, table_name=self.table_upsert_name, append=False
+        )
+
+        # Write upsert test data
+        df_upsertTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[(2, "newtestdata2"), (3, "testdata3")],
+        )
+        self.sql_server.upsert_to_table_by_name(
+            df_source=df_upsertTest,
+            table_name=self.table_upsert_name,
+            join_cols=["testid"],
+            filter_join_cols=False,
+            overwrite_if_target_is_empty=False,
+        )
+
+        # Validate correct upserted data
+        df_afterUpsert = self.sql_server.read_table_by_name(self.table_upsert_name)
+        expectedData = [(1, "testdata1"), (2, "newtestdata2"), (3, "testdata3")]
+
+        self.assertDataframeMatches(
+            df=df_afterUpsert,
+            expected_data=expectedData,
+        )
+
+    def test18_upsert_to_table_with_join_cols_filter(self):
+
+        upsertTableSchema = StructType(
+            [
+                StructField("testid", IntegerType(), True),
+                StructField("testdata", StringType(), True),
+            ]
+        )
+
+        # Write pre upsert test data
+        df_preTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[(1, "testdata1"), (2, "testdata2")],
+        )
+        self.sql_server.write_table_by_name(
+            df_source=df_preTest, table_name=self.table_upsert_name, append=False
+        )
+
+        # Write upsert test data with None keys
+        df_upsertTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[(2, "newtestdata2"), (3, "testdata3"), (None, "testdata4")],
+        )
+        self.sql_server.upsert_to_table_by_name(
+            df_source=df_upsertTest,
+            table_name=self.table_upsert_name,
+            join_cols=["testid"],
+            filter_join_cols=True,
+        )
+
+        # Validate correct upserted data
+        df_afterUpsert = self.sql_server.read_table_by_name(self.table_upsert_name)
+        expectedData = [(1, "testdata1"), (2, "newtestdata2"), (3, "testdata3")]
+
+        self.assertDataframeMatches(
+            df=df_afterUpsert,
+            expected_data=expectedData,
+        )
+
+    def test19_upsert_to_table_overwrite_empty_target(self):
+
+        upsertTableSchema = StructType(
+            [
+                StructField("testid", IntegerType(), True),
+                StructField("testdata", StringType(), True),
+            ]
+        )
+
+        # Write empty pre upsert test data
+        df_preTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[],
+        )
+        self.sql_server.write_table_by_name(
+            df_source=df_preTest, table_name=self.table_upsert_name, append=False
+        )
+
+        # Write upsert test data
+        df_upsertTest = DataframeCreator.make_partial(
+            schema=upsertTableSchema,
+            columns=["testid", "testdata"],
+            data=[(2, "newtestdata2"), (3, "testdata3")],
+        )
+        self.sql_server.upsert_to_table_by_name(
+            df_source=df_upsertTest,
+            table_name=self.table_upsert_name,
+            join_cols=["testid"],
+            overwrite_if_target_is_empty=True,
+        )
+
+        # Validate correct upserted data
+        df_afterUpsert = self.sql_server.read_table_by_name(self.table_upsert_name)
+        expectedData = [(2, "newtestdata2"), (3, "testdata3")]
+
+        self.assertDataframeMatches(
+            df=df_afterUpsert,
+            expected_data=expectedData,
+        )
+
     def create_test_table(self):
         sql_argument = f"""
-                IF OBJECT_ID('{self.table_name}', 'U') IS NULL
-                BEGIN
-                CREATE TABLE {self.table_name}
-                (
+            IF OBJECT_ID('{self.table_name}', 'U') IS NULL
+            BEGIN
+            CREATE TABLE {self.table_name}
+            (
                 testcolumn INT NULL
-                )
-                END
-                                """
+            )
+            END
+        """
         self.sql_server.execute_sql(sql_argument)
 
     def insert_single_row(self):
         insert_data = 123
 
         sql_argument = f"""
-                            INSERT INTO {self.table_name} values ({insert_data})
-                                        """
+            INSERT INTO {self.table_name} values ({insert_data})
+        """
+        self.sql_server.execute_sql(sql_argument)
+
+    def create_upsert_test_table(self):
+        sql_argument = f"""
+            IF OBJECT_ID('{self.table_upsert_name}', 'U') IS NULL
+            BEGIN
+            CREATE TABLE {self.table_upsert_name}
+            (
+                testid INT NULL,
+                testdata nvarchar(max) NULL
+            )
+            END
+        """
         self.sql_server.execute_sql(sql_argument)
 
     def create_data(self) -> DataFrame:
@@ -198,17 +350,18 @@ class DeliverySqlServerTests(unittest.TestCase):
         )
         cols = ["testcolumn"]
         df_new = DataframeCreator.make_partial(
-            schema=schema, columns=cols, data=[(456,)]
+            schema=schema,
+            columns=cols,
+            data=[(456,)],
         )
 
         return df_new.orderBy("testcolumn")
 
     def create_test_view(self, view_name, select_from_table):
         sql_argument = f"""
-
-                    CREATE OR ALTER VIEW {view_name} as
-                    (
-                    select * from {select_from_table}
-                    )
-                      """
+            CREATE OR ALTER VIEW {view_name} as
+            (
+            select * from {select_from_table}
+            )
+        """
         self.sql_server.execute_sql(sql_argument)

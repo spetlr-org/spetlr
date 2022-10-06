@@ -1,7 +1,9 @@
+from typing import List, Union
+
 from pyspark.sql import DataFrame
 
 from atc.atc_exceptions import AtcException
-from atc.sql import BaseServer
+from atc.sql.SqlBaseServer import SqlBaseServer
 from atc.tables.TableHandle import TableHandle
 
 
@@ -18,7 +20,7 @@ class SqlHandleInvalidFormat(SqlHandleException):
 
 
 class SqlHandle(TableHandle):
-    def __init__(self, name: str, sql_server: BaseServer):
+    def __init__(self, name: str, sql_server: SqlBaseServer):
         self._name = name
         self._sql_server = sql_server
 
@@ -38,26 +40,40 @@ class SqlHandle(TableHandle):
 
     def read(self) -> DataFrame:
         """Read table by path if location is given, otherwise from name."""
-        return self._sql_server.read_table_by_name(self._name)
+        return self._sql_server.read_table_by_name(table_name=self._name)
 
     def write_or_append(self, df: DataFrame, mode: str) -> None:
         assert mode in {"append", "overwrite"}
 
         append = True if mode == "append" else False
 
-        return self._sql_server.write_table_by_name(df, self._name, append=append)
+        return self._sql_server.write_table_by_name(
+            df_source=df, table_name=self._name, append=append
+        )
 
     def overwrite(self, df: DataFrame) -> None:
-        return self._sql_server.write_table_by_name(df, self._name, append=False)
+        return self._sql_server.write_table_by_name(
+            df_source=df, table_name=self._name, append=False
+        )
 
     def append(self, df: DataFrame) -> None:
-        return self._sql_server.write_table_by_name(df, self._name, append=True)
+        return self._sql_server.write_table_by_name(
+            df_source=df, table_name=self._name, append=True
+        )
+
+    def upsert(self, df: DataFrame, join_cols: List[str]) -> Union[DataFrame, None]:
+        return self._sql_server.upsert_to_table_by_name(
+            df_source=df, table_name=self._name, join_cols=join_cols
+        )
 
     def truncate(self) -> None:
-        self._sql_server.truncate_table_by_name(self._name)
+        self._sql_server.truncate_table_by_name(table_name=self._name)
 
     def drop(self) -> None:
-        self._sql_server.drop_table_by_name(self._name)
+        self._sql_server.drop_table_by_name(table_name=self._name)
 
     def drop_and_delete(self) -> None:
         self.drop()
+
+    def get_tablename(self) -> str:
+        return self._name

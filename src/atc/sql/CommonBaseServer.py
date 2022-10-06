@@ -5,17 +5,16 @@ from pyspark.sql import DataFrame
 from atc.tables import TableHandle
 
 
-class BaseServer(Protocol):
+class CommonBaseServer(Protocol):
     def execute_sql(self, sql: str) -> None:
+        """synonym of .sql()"""
         pass
 
     def from_tc(self, id: str) -> TableHandle:
         pass
 
     def sql(self, sql: str) -> None:
-        pass
-
-    def load_sql(self, sql: str) -> DataFrame:
+        """synonym of .execute_sql()"""
         pass
 
     def read_table_by_name(self, table_name: str) -> DataFrame:
@@ -27,10 +26,4 @@ class BaseServer(Protocol):
         table_name: str,
         append: bool = False,
     ):
-        pass
-
-    def truncate_table_by_name(self, table_name: str) -> None:
-        pass
-
-    def drop_table_by_name(self, table_name: str) -> None:
         pass

@@ -10,3 +10,7 @@ class NoTableException(AtcException):
 class UnkownPathException(AtcException):
     value = "Something went wrong during reading of path!"
     pass
+
+
+class ColumnDoesNotExistException(AtcException):
+    pass

@@ -2,8 +2,10 @@
 
 SQL methods ovrview:
 
-* [SQL Server Class](#sql-server-class)
-* [SqlExecutor](#sqlexecutor)
+- [Atc SQL documentation](#atc-sql-documentation)
+  - [SQL Server Class](#sql-server-class)
+    - [SQL Upsert](#sql-upsert)
+  - [SqlExecutor](#sqlexecutor)
 
 ## SQL Server Class
 Lets say you have a Azure SQL server called *youservername* with an associated database *yourdatabase*. The username is explicitly defined here as *customusername* and the password as *[REDACTED]*. Variables related to security challenges like passwords are recommended to be located in e.g. [databricks secrets](https://docs.databricks.com/security/secrets/index.html). Here is a usage example:
@@ -31,7 +33,35 @@ class ExampleSqlServer(SqlServer):
             self.hostname, self.database, self.username, self.password, self.port
         )
 ```
+### Using SPN to connect
 
+If you are using a Service Principal to create conection to the server/database, you should set the ```spnid = "yourspnid", spnpassword = "[REDACTED]"``` instead. The SqlServer class ensures to connect properly via the JDBC/ODBC drivers. Note, you must use either SQL user credentials or SPN credentials - never both. 
+
+### SQL Upsert
+
+The method upserts (updates or inserts) a databricks dataframe into a target sql table. 
+
+``` python
+def upsert_to_table_by_name(
+        self,
+        df_source: DataFrame,
+        table_name: str,
+        join_cols: List[str],
+        filter_join_cols: bool = True,
+        overwrite_if_target_is_empty: bool = True,
+    ):
+    ...
+```
+
+If 'filter_join_cols' is True, the dataframe will be filteret to not contain Null values in sql merge operation. This can be set to False to save compute if this check is already handled.
+
+If 'overwrite_if_target_is_empty' is True, the first row of the target table is read and if empty the dataframe is overwritten to the table instead of doing a merge. This can be set to False to save compute if the programmer knows the target never will be empty.
+
+Usage example:
+``` python
+sql_server.upsert_to_table_by_name(df_new, "tableName", ["Id"])
+
+```
 
 ## SqlExecutor
 This nice class can help parse and execute sql-files. It can be used for both executing 

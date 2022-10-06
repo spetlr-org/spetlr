@@ -6,3 +6,4 @@ isort
 flake8
 dbx
 atc-dataplatform-tools
+timezonefinder==6.0.2

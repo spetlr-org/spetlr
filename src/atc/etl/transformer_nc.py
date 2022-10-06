@@ -6,14 +6,14 @@ from pyspark.sql import DataFrame
 from atc.etl.types import EtlBase, dataset_group
 
 
-class ExtendedTransformer(EtlBase):
+class TransformerNC(EtlBase):
     """If you only want to transform a single input dataframe,
     implement `process`
-    if you want to transform a set of dataframes,
+    If you want to transform a set of dataframes,
     implement `process_many`
 
-    In regards to the etl step, the ExtendedTransformer does NOT CONSUME the inputs
-    and APPENDs the result of its transformation stage to the list of inputs.
+    In regards to the etl step, the TransformerNC does NOT CONSUME the inputs
+    and ADDs the result of its transformation stage to the dataset dict.
     """
 
     def __init__(

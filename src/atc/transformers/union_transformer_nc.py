@@ -3,11 +3,11 @@ from typing import List
 
 from pyspark.sql import DataFrame
 
-from atc.etl import ExtendedTransformer
+from atc.etl import TransformerNC
 from atc.etl.types import dataset_group
 
 
-class UnionTransformerNC(ExtendedTransformer):
+class UnionTransformerNC(TransformerNC):
     """
     This non-consuming transformer unions multiple DataFrames
 

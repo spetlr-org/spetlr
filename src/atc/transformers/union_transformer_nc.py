@@ -1,14 +1,15 @@
 from functools import reduce
+from typing import List
 
 from pyspark.sql import DataFrame
 
-from atc.etl import Transformer
+from atc.etl import ExtendedTransformer
 from atc.etl.types import dataset_group
 
 
-class UnionTransformer(Transformer):
+class UnionTransformerNC(ExtendedTransformer):
     """
-    This transformer unions multiple DataFrames
+    This non-consuming transformer unions multiple DataFrames
 
     Attributes:
     ----------
@@ -26,8 +27,18 @@ class UnionTransformer(Transformer):
         returns the union of all input DataFrames
     """
 
-    def __init__(self, allowMissingColumns: bool = False):
-        super().__init__()
+    def __init__(
+        self,
+        dataset_input_key: str = None,
+        dataset_input_key_list: List[str] = None,
+        dataset_output_key: str = None,
+        allowMissingColumns: bool = False,
+    ):
+        super().__init__(
+            dataset_input_key=dataset_input_key,
+            dataset_input_key_list=dataset_input_key_list,
+            dataset_output_key=dataset_output_key,
+        )
         self.allowMissingColumns = allowMissingColumns
 
     def process(self, df: DataFrame) -> DataFrame:

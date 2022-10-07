@@ -1,3 +1,5 @@
+from typing import List
+
 from pyspark.sql import DataFrame
 
 from .types import EtlBase, dataset_group
@@ -12,15 +14,29 @@ class Loader(EtlBase):
     and does not consume or change it.
     """
 
-    def __init__(self):
+    def __init__(
+        self, dataset_input_key: str = None, dataset_input_key_list: List[str] = None
+    ):
         super().__init__()
+        self.dataset_input_key = dataset_input_key
+        self.dataset_input_key_list = dataset_input_key_list
 
     def etl(self, inputs: dataset_group) -> dataset_group:
-        if len(inputs) == 1:
-            df = next(iter(inputs.values()))
-            self.save(df)
-            return inputs
-        self.save_many(inputs)
+
+        if self.dataset_input_key:
+            self.save(inputs[self.dataset_input_key])
+        elif self.dataset_input_key_list:
+            datasetFilteret = {
+                datasetKey: df
+                for datasetKey, df in inputs.items()
+                if datasetKey in self.dataset_input_key_list
+            }
+            self.save_many(datasetFilteret)
+        elif len(inputs) == 1:
+            self.save(next(iter(inputs.values())))
+        else:
+            self.save_many(inputs)
+
         return inputs
 
     def save(self, df: DataFrame) -> None:

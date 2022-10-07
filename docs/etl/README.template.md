@@ -167,13 +167,13 @@ It is important that the first transformer is a `MultiInputTransformer` when hav
 
 ### Example-7
 
-This example illustrates the use of `TransformerNC` and `ExtendedLoader`.
+This example illustrates the use of `TransformerNC`.
 The job here is to join the two extracted dataframes - an employees dataframe and a birthdays dataframe.
 But, before the birthdays can be join onto the employees, the employees dataframe require a transformation step.
 As the transformation step of employees is handled by an `TransformerNC`, it does not consume the other inputs from the `dataset_group`.
 Hence, birthdays is still available from the inputs - even after the transformation of employees.
-Then both frames can be joined and the final dataframe saved via an `ExtendedLoader`.
-When working with `TransformerNC` and `ExtendedLoader` it is important to mind that dataset keys are crucial.
+Then both frames can be joined and the final dataframe saved via an `Loader`.
+When working with `TransformerNC` it is important to mind that dataset keys are crucial.
 Setting both input and output dataset key(s) ensure that the `Transformers` and `Loaders` handle the intended dataframes.
 
 ```

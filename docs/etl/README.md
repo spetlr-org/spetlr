@@ -38,7 +38,7 @@ from atc.etl import Extractor, Transformer, Loader, Orchestrator
 
 ### Principles
 
-All ETL classes, **Orchestrator**, **Extractor**, **Transformer**, **TransformerNC**, **Loader**, and **ExtendedLoader** are ETL objects.
+All ETL classes, **Orchestrator**, **Extractor**, **Transformer**, **TransformerNC** and **Loader** are ETL objects.
 This means that they have a method `etl(self, inputs: dataset_group) -> dataset_group`
 (where `dataset_group = Dict[str, DataFrame]`) that transforms a set of import to a set of 
 outputs. The special properties of each type are
@@ -46,9 +46,8 @@ outputs. The special properties of each type are
  - **Transformer** consumes all inputs and adds a single result dataframe
  - **TransformerNC** does not consume the input(s) and adds a single result dataframe
  - **Loader** acts as a sink, while passing its input on to the next sink
- - **ExtendedLoader** same behaviour as the **Loader**, but in addition it handles dataset input key(s)
 
-The usecase for the **TransformerNC** and the **ExtendedLoader** comes when there is a need to keep previously extracted (or transformed) dataframes after a transformation step. When working with these classes it is crucial to set dataset input keys and dataset output keys. This ensures that the transformer and/or loader has explicit information on which dataframe(s) to handle.
+The usecase for the **TransformerNC** comes when there is a need to keep previously extracted (or transformed) dataframes after a transformation step. When working with these classes it is crucial to set dataset input keys and dataset output keys. This ensures that the transformer and/or loader has explicit information on which dataframe(s) to handle.
 
 The special case of the  **Orchestrator** is that it takes all its steps and executes them
 in sequence on its inputs. Running in the default `execute()` method, the inputs are empty,
@@ -535,13 +534,13 @@ etl.execute()
 
 ### Example-7
 
-This example illustrates the use of `TransformerNC` and `ExtendedLoader`.
+This example illustrates the use of `TransformerNC`.
 The job here is to join the two extracted dataframes - an employees dataframe and a birthdays dataframe.
 But, before the birthdays can be join onto the employees, the employees dataframe require a transformation step.
 As the transformation step of employees is handled by an `TransformerNC`, it does not consume the other inputs from the `dataset_group`.
 Hence, birthdays is still available from the inputs - even after the transformation of employees.
-Then both frames can be joined and the final dataframe saved via an `ExtendedLoader`.
-When working with `TransformerNC` and `ExtendedLoader` it is important to mind that dataset keys are crucial.
+Then both frames can be joined and the final dataframe saved via an `Loader`.
+When working with `TransformerNC` it is important to mind that dataset keys are crucial.
 Setting both input and output dataset key(s) ensure that the `Transformers` and `Loaders` handle the intended dataframes.
 
 ```python
@@ -549,7 +548,7 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from atc.etl import ExtendedLoader, TransformerNC, Extractor, Orchestrator
+from atc.etl import Extractor, Loader, Orchestrator, TransformerNC
 from atc.etl.types import dataset_group
 from atc.spark import Spark
 
@@ -595,12 +594,12 @@ class OfficeBirthdaysExtractor(Extractor):
         )
 
 
-class IntegerTransformer(TransformerNC):
+class IntegerTransformerNC(TransformerNC):
     def process(self, df: DataFrame) -> DataFrame:
         return df.withColumn("id", f.col("id").cast(IntegerType()))
 
 
-class JoinTransformer(TransformerNC):
+class JoinTransformerNC(TransformerNC):
     def process_many(self, dataset: dataset_group) -> DataFrame:
 
         df_employee = dataset["df_employee_transformed"]
@@ -609,31 +608,31 @@ class JoinTransformer(TransformerNC):
         return df_employee.join(other=df_birthdays, on="id")
 
 
-class ExtendedNoopLoader(ExtendedLoader):
+class NoopLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
         df.printSchema()
         df.show()
 
 
-print("ETL Orchestrator using two extended transformers")
+print("ETL Orchestrator using two non consuming transformers")
 etl = (
     Orchestrator()
     .extract_from(OfficeEmployeeExtractor(dataset_key="df_employee"))
     .extract_from(OfficeBirthdaysExtractor(dataset_key="df_birthdays"))
     .transform_with(
-        IntegerTransformer(
+        IntegerTransformerNC(
             dataset_input_key="df_employee",
             dataset_output_key="df_employee_transformed",
         )
     )
     .transform_with(
-        JoinTransformer(
+        JoinTransformerNC(
             dataset_input_key_list=["df_employee_transformed", "df_birthdays"],
             dataset_output_key="df_final",
         )
     )
-    .load_into(ExtendedNoopLoader(dataset_input_key="df_final"))
+    .load_into(NoopLoader(dataset_input_key="df_final"))
 )
 etl.execute()
 

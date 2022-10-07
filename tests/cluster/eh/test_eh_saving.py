@@ -84,8 +84,8 @@ class EventHubsTests(unittest.TestCase):
         self.assertTrue(df.count(), 2)
 
         df = eh.read(
-            (datetime.now() - timedelta(hours=1)).replace(
-                minute=0, second=0, microsecond=0
+            (datetime.now() - timedelta(hours=24)).replace(
+                hour=0, minute=0, second=0, microsecond=0
             )
         )
         self.assertTrue(df.count(), 2)

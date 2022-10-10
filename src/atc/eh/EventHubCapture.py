@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from typing import Union
 
+from deprecated import deprecated
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 from pyspark.sql.utils import AnalysisException
@@ -15,6 +16,9 @@ from atc.functions import init_dbutils
 from atc.spark import Spark
 
 
+@deprecated(
+    reason="Use EventHubCaptureExtractor instead.",
+)
 class EventHubCapture:
     """Class to access eventhub capture files as table.
 

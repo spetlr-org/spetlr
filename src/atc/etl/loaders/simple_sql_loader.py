@@ -1,11 +1,11 @@
-from deprecation import deprecated
+from deprecated import deprecated
 
 from atc.sql.SqlServer import SqlServer
 
 from . import SimpleLoader
 
 
-@deprecated(details="Use a SimpleLoader with a SqlHandle.")
+@deprecated(reason="Use a SimpleLoader with a SqlHandle.")
 class SimpleSqlServerLoader(SimpleLoader):
     def __init__(
         self,

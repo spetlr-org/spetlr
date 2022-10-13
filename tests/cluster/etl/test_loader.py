@@ -15,17 +15,6 @@ class LoaderTests(unittest.TestCase):
         self.loader.save = MagicMock()
         self.loader.save_many = MagicMock()
 
-        self.loader_input_key = Loader(dataset_input_key="my_key_1")
-        self.loader_input_key.save = MagicMock()
-        self.loader_input_key.save_many = MagicMock()
-
-        self.dataset_input_key_list = ["my_key_1", "my_key_2"]
-        self.loader_input_key_list = Loader(
-            dataset_input_key_list=self.dataset_input_key_list
-        )
-        self.loader_input_key_list.save = MagicMock()
-        self.loader_input_key_list.save_many = MagicMock()
-
         self.df_1 = create_dataframe()
         self.df_2 = create_dataframe()
         self.df_3 = create_dataframe()
@@ -39,7 +28,7 @@ class LoaderTests(unittest.TestCase):
     def test_save(self):
         # save is called when:
         # - inputs has one df
-        # - dataset_input_key is not given
+        # - dataset_input_keys is not given
         self.loader.etl({"my_key_1": self.df_1})
 
         self.assertTrue(self.loader.save.called)
@@ -53,7 +42,7 @@ class LoaderTests(unittest.TestCase):
     def test_save_many(self):
         # save is called when:
         # - inputs has more than one df
-        # - dataset_input_key is given
+        # - dataset_input_keys is given
         self.loader.etl({"my_key_1": self.df_1, "my_key_2": self.df_2})
 
         self.assertFalse(self.loader.save.called)
@@ -70,31 +59,57 @@ class LoaderTests(unittest.TestCase):
 
     def test_save_input_key(self):
         # save is called when:
-        # - inputs has more than one df
-        # - dataset_input_key is given
-        self.loader_input_key.etl({"my_key_1": self.df_1, "my_key_2": self.df_2})
+        # - dataset_input_keys is str
 
-        self.assertTrue(self.loader_input_key.save.called)
-        self.assertFalse(self.loader_input_key.save_many.called)
+        loader = Loader(dataset_input_keys="my_key_1")
+        loader.save = MagicMock()
+        loader.save_many = MagicMock()
+
+        loader.etl({"my_key_1": self.df_1, "my_key_2": self.df_2})
+
+        self.assertTrue(loader.save.called)
+        self.assertFalse(loader.save_many.called)
 
         # the .args part became available in python 3.8
-        args = self.loader_input_key.save.call_args[0]
+        args = loader.save.call_args[0]
+        self.assertEqual(len(args), 1)
+        self.assertIs(args[0], self.df_1)
+
+    def test_save_single_input_key_list(self):
+        # save is called when:
+        # - dataset_input_keys has len 1
+
+        loader = Loader(dataset_input_keys=["my_key_1"])
+        loader.save = MagicMock()
+        loader.save_many = MagicMock()
+
+        loader.etl({"my_key_1": self.df_1, "my_key_2": self.df_2})
+
+        self.assertTrue(loader.save.called)
+        self.assertFalse(loader.save_many.called)
+
+        # the .args part became available in python 3.8
+        args = loader.save.call_args[0]
         self.assertEqual(len(args), 1)
         self.assertIs(args[0], self.df_1)
 
     def test_save_many_input_key_list(self):
         # save_many is called when:
-        # - inputs has more than one df
-        # - dataset_input_key_list is given
-        self.loader_input_key_list.etl(
+        # - dataset_input_keys has len more than 1
+
+        loader = Loader(dataset_input_keys=["my_key_1", "my_key_2"])
+        loader.save = MagicMock()
+        loader.save_many = MagicMock()
+
+        loader.etl(
             {"my_key_1": self.df_1, "my_key_2": self.df_2, "my_key_3": self.df_3}
         )
 
-        self.assertFalse(self.loader_input_key_list.save.called)
-        self.assertTrue(self.loader_input_key_list.save_many.called)
+        self.assertFalse(loader.save.called)
+        self.assertTrue(loader.save_many.called)
 
         # the .args part became available in python 3.8
-        args = self.loader_input_key_list.save_many.call_args[0]
+        args = loader.save_many.call_args[0]
         self.assertEqual(len(args), 1)
 
         datasets = args[0]

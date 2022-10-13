@@ -86,6 +86,6 @@ etl = (
             dataset_output_key="df_final",
         )
     )
-    .load_into(NoopLoader(dataset_input_key="df_final"))
+    .load_into(NoopLoader(dataset_input_keys="df_final"))
 )
 etl.execute()

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from pyspark.sql import DataFrame
 
@@ -14,24 +14,28 @@ class Loader(EtlBase):
     and does not consume or change it.
     """
 
-    def __init__(
-        self, dataset_input_key: str = None, dataset_input_key_list: List[str] = None
-    ):
+    def __init__(self, dataset_input_keys: Union[str, List[str]] = None):
         super().__init__()
-        self.dataset_input_key = dataset_input_key
-        self.dataset_input_key_list = dataset_input_key_list
+
+        if dataset_input_keys is None:
+            self.dataset_input_key_list = []
+        elif isinstance(dataset_input_keys, str):
+            self.dataset_input_key_list = [dataset_input_keys]
+        else:
+            self.dataset_input_key_list = dataset_input_keys
 
     def etl(self, inputs: dataset_group) -> dataset_group:
 
-        if self.dataset_input_key:
-            self.save(inputs[self.dataset_input_key])
-        elif self.dataset_input_key_list:
-            datasetFilteret = {
-                datasetKey: df
-                for datasetKey, df in inputs.items()
-                if datasetKey in self.dataset_input_key_list
-            }
-            self.save_many(datasetFilteret)
+        if len(self.dataset_input_key_list) > 0:
+            if len(self.dataset_input_key_list) == 1:
+                self.save(inputs[self.dataset_input_key_list[0]])
+            else:
+                datasetFilteret = {
+                    datasetKey: df
+                    for datasetKey, df in inputs.items()
+                    if datasetKey in self.dataset_input_key_list
+                }
+                self.save_many(datasetFilteret)
         elif len(inputs) == 1:
             self.save(next(iter(inputs.values())))
         else:

@@ -2,7 +2,7 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from atc.etl import ExtendedLoader, Extractor, Orchestrator, TransformerNC
+from atc.etl import Extractor, Loader, Orchestrator, TransformerNC
 from atc.etl.types import dataset_group
 from atc.spark import Spark
 
@@ -62,14 +62,14 @@ class JoinTransformerNC(TransformerNC):
         return df_employee.join(other=df_birthdays, on="id")
 
 
-class ExtendedNoopLoader(ExtendedLoader):
+class NoopLoader(Loader):
     def save(self, df: DataFrame) -> None:
         df.write.format("noop").mode("overwrite").save()
         df.printSchema()
         df.show()
 
 
-print("ETL Orchestrator using two extended transformers")
+print("ETL Orchestrator using two non consuming transformers")
 etl = (
     Orchestrator()
     .extract_from(OfficeEmployeeExtractor(dataset_key="df_employee"))
@@ -86,6 +86,6 @@ etl = (
             dataset_output_key="df_final",
         )
     )
-    .load_into(ExtendedNoopLoader(dataset_input_key="df_final"))
+    .load_into(NoopLoader(dataset_input_keys="df_final"))
 )
 etl.execute()

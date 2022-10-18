@@ -4,6 +4,7 @@ from atc import Configurator
 from atc.delta import DbHandle, DeltaHandle
 from atc.spark import Spark
 from tests.cluster.delta import extras
+from tests.cluster.delta.extras.testschema import test_schema
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
@@ -19,6 +20,7 @@ class DeliverySparkExecutorTests(unittest.TestCase):
         cls.tc = Configurator()
         cls.tc.add_resource_path(extras)
         cls.tc.set_debug()
+        cls.tc.add_schema_modules(extras)
 
         cls.dbh = DbHandle
         cls.dh = DeltaHandle
@@ -44,3 +46,11 @@ class DeliverySparkExecutorTests(unittest.TestCase):
         SparkSqlExecutor().execute_sql_file("*")
 
         self.dh.from_tc("SparkTestTable2").read()
+
+    def test_can_parse_schemas(self):
+        SparkSqlExecutor().execute_sql_file("test_schema")
+
+        test_schema_df = self.dh.from_tc("SchemaTestTable").read()
+
+        # verify that the table has the correct schema
+        self.assertEqual(test_schema_df.schema, test_schema)

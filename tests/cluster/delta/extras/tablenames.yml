@@ -24,3 +24,12 @@ UpsertLoaderDb:
 UpsertLoaderDummy:
   name: "{UpsertLoaderDb}.Dummy"
   path: "{UpsertLoaderDb_path}/dummy"
+
+SchemaTestDb:
+  name: "SchemaTest"
+  path: "/tmp/SchemaTest{ID}.db/"
+
+SchemaTestTable:
+  name: "{SchemaTestDb}.schematbl"
+  path: "{SchemaTestDb_path}/schematbl"
+  schema: "{test_schema}"

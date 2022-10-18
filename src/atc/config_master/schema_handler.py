@@ -40,8 +40,8 @@ class SchemaHandler:
 
         return field_str
 
-    def get_schema(self, name: str) -> str:
-        schema = self.schemas[name]
+    def get_schema(self, schema_name: str) -> str:
+        schema = self.schemas[schema_name]
         schema_str = ""
 
         for field in schema.fields[:-1]:

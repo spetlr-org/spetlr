@@ -19,8 +19,8 @@ class UnkownPathException(AtcException):
 class DuplicateSchemaNameException(AtcException):
     value = "Schemas with duplicate names were referenced!"
     pass
-    
-    
+
+
 class ColumnDoesNotExistException(AtcException):
     pass
 

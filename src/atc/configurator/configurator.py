@@ -4,7 +4,7 @@ import uuid
 from pathlib import Path
 from string import Formatter
 from types import ModuleType
-from typing import Dict, Set, Union
+from typing import Dict, List, Set, Union
 
 import yaml
 from deprecated import deprecated
@@ -45,12 +45,18 @@ class Configurator(metaclass=ConfiguratorSingleton):
     # this dict contains all details for all resources
     table_details: Dict[str, str]
 
-    def __init__(self, resource_path: Union[str, ModuleType] = None):
+    def __init__(
+        self,
+        resource_path: Union[str, ModuleType] = None,
+        schema_handler: SchemaHandler = None,
+    ):
         self._unique_id = uuid.uuid4().hex
         self.clear_all_configurations()
 
         if resource_path:
             self.add_resource_path(resource_path)
+
+        self.schema_handler = schema_handler
 
     def clear_all_configurations(self):
         self._raw_resource_details = dict()
@@ -220,6 +226,30 @@ class Configurator(metaclass=ConfiguratorSingleton):
         # exception for any missing key, which will give a meaningful error to the user.
         return raw_string.format(**replacements)
 
+    def _get_schema_property(
+        self, table_id: str, property: str, _forbidden_keys: Set[str] = None
+    ) -> str:
+        """Get the full schema, referencing a pyspark data model, as a string"""
+        raw_string = self._get_unsubstituted_item_property(table_id, property)
+
+        # ensure that the item is a string
+        if not isinstance(raw_string, str):
+            raise ValueError(f"Invalid schema reference at table {table_id}")
+
+        # get the schema reference key
+        keys = [i[1] for i in Formatter().parse(raw_string) if i[1] is not None]
+
+        # ensure that the item consists of a single reference key
+        if len(keys) != 1:
+            raise ValueError(f"Invalid schema reference at table {table_id}")
+
+        key = keys[0]
+
+        _forbidden_keys = _forbidden_keys or set()
+        _forbidden_keys.add(f"{table_id}_{property}")
+
+        return self.schema_handler.get_schema(key)
+
     def add_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
         backup_details = self._raw_resource_details.copy()
         try:
@@ -251,6 +281,15 @@ class Configurator(metaclass=ConfiguratorSingleton):
             # if any exception raised by the above code is caught.
             self._raw_resource_details = backup_details
             raise
+
+    def add_schema_modules(
+        self,
+        schema_modules: Union[ModuleType, List[ModuleType]],
+        recursive: bool = True,
+    ):
+        self.schema_handler.add_modules(
+            schema_modules=schema_modules, recursive=recursive
+        )
 
     ############################################
     # all methods below are interface and convenience methods

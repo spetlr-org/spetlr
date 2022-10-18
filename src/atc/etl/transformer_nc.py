@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List
+from typing import List, Union
 
 from pyspark.sql import DataFrame
 
@@ -20,27 +20,32 @@ class TransformerNC(EtlBase):
         self,
         *,
         dataset_output_key: str = None,
-        dataset_input_key: str = None,
-        dataset_input_key_list: List[str] = None,
+        dataset_input_keys: Union[str, List[str]] = None,
     ):
-        if dataset_output_key is None:
-            dataset_output_key = type(self).__name__
-        self.dataset_output_key = dataset_output_key
-        self.dataset_input_key = dataset_input_key
-        self.dataset_input_key_list = dataset_input_key_list
+        if dataset_output_key is not None:
+            self.dataset_output_key = dataset_output_key
+        else:
+            self.dataset_output_key = type(self).__name__
+
+        if dataset_input_keys is None:
+            self.dataset_input_key_list = []
+        elif isinstance(dataset_input_keys, str):
+            self.dataset_input_key_list = [dataset_input_keys]
+        else:
+            self.dataset_input_key_list = dataset_input_keys
 
     def etl(self, inputs: dataset_group) -> dataset_group:
 
-        if self.dataset_input_key:
-            df = self.process(inputs[self.dataset_input_key])
-        elif self.dataset_input_key_list:
-            df = self.process_many(
-                {
+        if len(self.dataset_input_key_list) > 0:
+            if len(self.dataset_input_key_list) == 1:
+                df = self.process(inputs[self.dataset_input_key_list[0]])
+            else:
+                datasetFilteret = {
                     datasetKey: df
                     for datasetKey, df in inputs.items()
                     if datasetKey in self.dataset_input_key_list
                 }
-            )
+                df = self.process_many(datasetFilteret)
         elif len(inputs) == 1:
             df = self.process(next(iter(inputs.values())))
         else:

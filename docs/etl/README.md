@@ -622,13 +622,13 @@ etl = (
     .extract_from(OfficeBirthdaysExtractor(dataset_key="df_birthdays"))
     .transform_with(
         IntegerTransformerNC(
-            dataset_input_key="df_employee",
+            dataset_input_keys="df_employee",
             dataset_output_key="df_employee_transformed",
         )
     )
     .transform_with(
         JoinTransformerNC(
-            dataset_input_key_list=["df_employee_transformed", "df_birthdays"],
+            dataset_input_keys=["df_employee_transformed", "df_birthdays"],
             dataset_output_key="df_final",
         )
     )

@@ -14,8 +14,11 @@ class Loader(EtlBase):
     and does not consume or change it.
     """
 
-    def __init__(self, dataset_input_keys: Union[str, List[str]] = None):
-        super().__init__()
+    def __init__(
+        self,
+        *,
+        dataset_input_keys: Union[str, List[str]] = None,
+    ):
 
         if dataset_input_keys is None:
             self.dataset_input_key_list = []

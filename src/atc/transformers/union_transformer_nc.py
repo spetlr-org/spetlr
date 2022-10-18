@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import List
+from typing import List, Union
 
 from pyspark.sql import DataFrame
 
@@ -29,14 +29,13 @@ class UnionTransformerNC(TransformerNC):
 
     def __init__(
         self,
-        dataset_input_key: str = None,
-        dataset_input_key_list: List[str] = None,
-        dataset_output_key: str = None,
+        *,
         allowMissingColumns: bool = False,
+        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_output_key: str = None,
     ):
         super().__init__(
-            dataset_input_key=dataset_input_key,
-            dataset_input_key_list=dataset_input_key_list,
+            dataset_input_keys=dataset_input_keys,
             dataset_output_key=dataset_output_key,
         )
         self.allowMissingColumns = allowMissingColumns

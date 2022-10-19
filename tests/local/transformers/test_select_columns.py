@@ -2,7 +2,7 @@ import pyspark.sql.types as T
 from atc_tools.testing import DataframeTestCase
 
 from atc.spark import Spark
-from atc.transformers import SelectColumnsTransformer
+from atc.transformers import SelectColumnsTransformerNC
 
 
 class TestSelectColumnsTransformer(DataframeTestCase):
@@ -23,7 +23,7 @@ class TestSelectColumnsTransformer(DataframeTestCase):
 
         expectedData = [(42, 13.37, "Col4Data")]
 
-        transformed_df = SelectColumnsTransformer(
+        transformed_df = SelectColumnsTransformerNC(
             columnList=["Col2", "Col3", "Col4"]
         ).process(input_df)
 

@@ -2,7 +2,7 @@ import pyspark.sql.types as T
 from atc_tools.testing import DataframeTestCase
 
 from atc.spark import Spark
-from atc.transformers import DropColumnsTransformer
+from atc.transformers import DropColumnsTransformerNC
 
 
 class TestDropColumnsTransformer(DataframeTestCase):
@@ -30,7 +30,7 @@ class TestDropColumnsTransformer(DataframeTestCase):
             (1,),
         ]
 
-        df_transformed = DropColumnsTransformer(columnList=["text1", "text2"]).process(
-            df_input
-        )
+        df_transformed = DropColumnsTransformerNC(
+            columnList=["text1", "text2"]
+        ).process(df_input)
         self.assertDataframeMatches(df_transformed, None, expectedData)

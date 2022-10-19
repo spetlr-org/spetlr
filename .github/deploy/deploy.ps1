@@ -75,6 +75,9 @@ Throw-WhenError -output $eventHubConnection
 Write-Host "  Saving EventHubConnection" -ForegroundColor DarkYellow
 $secrets.addSecret("EventHubConnection", $eventHubConnection)
 
+Write-Host "  Sleep 60 seconds for ressources to settle..." -ForegroundColor DarkYellow
+Start-Sleep -s 60
+
 Get-ChildItem "$PSScriptRoot/steps" -Filter *.ps1 | Sort-Object name | Foreach-Object {
   . ("$_")
 }

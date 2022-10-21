@@ -22,7 +22,7 @@ $workspaceUrl = $workspaceUrl.Replace('"','')
 
 Throw-WhenError -output $workspaceUrl
 
-Write-Host "workspaceUrl is: $($workspaceUrl)"
+Write-Host "   workspaceUrl is: $($workspaceUrl)"
 
 Write-Host "  Install Databricks CLI" -ForegroundColor DarkYellow
 pip install --upgrade pip --quiet

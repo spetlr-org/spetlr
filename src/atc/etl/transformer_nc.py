@@ -19,8 +19,8 @@ class TransformerNC(EtlBase):
     def __init__(
         self,
         *,
-        dataset_output_key: str = None,
         dataset_input_keys: Union[str, List[str]] = None,
+        dataset_output_key: str = None,
     ):
         if dataset_output_key is not None:
             self.dataset_output_key = dataset_output_key

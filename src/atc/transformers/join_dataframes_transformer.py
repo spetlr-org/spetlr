@@ -64,12 +64,14 @@ class JoinDataframesTransformerNC(TransformerNC):
 
         if self.first_dataframe_join_key not in first_df.columns:
             raise ColumnDoesNotExistException(
-                f"'{self.first_dataframe_join_key}' cannot be found in the first DataFrame."
+                f"""'{self.first_dataframe_join_key}' cannot be found in
+                the first DataFrame."""
             )
 
         if self.second_dataframe_join_key not in second_df.columns:
             raise ColumnDoesNotExistException(
-                f"'{self.second_dataframe_join_key}' cannot be found in the second DataFrame."
+                f"""'{self.second_dataframe_join_key}' cannot be found in
+                the second DataFrame."""
             )
 
         return first_df.join(

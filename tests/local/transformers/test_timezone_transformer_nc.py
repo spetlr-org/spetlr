@@ -51,13 +51,15 @@ class TimeZoneTransformerNCTest(DataframeTestCase):
             longitude_col="Longitude",
         ).process(input_df)
 
+        transformed_data = [tuple(row) for row in transformed_df.collect()]
+
         expected_data = [
             (None, -0.083069, None),
             (55.6761, None, None),
             (None, None, None),
         ]
 
-        self.assertDataframeMatches(
-            df=transformed_df,
-            expected_data=expected_data,
+        self.assertEqual(
+            first=transformed_data,
+            second=expected_data,
         )

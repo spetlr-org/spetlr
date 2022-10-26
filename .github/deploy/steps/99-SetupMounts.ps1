@@ -8,7 +8,7 @@ pip install dbx
 dbx configure
 copy "$srcDir/.github/submit/sparklibs.json" "$srcDir/tests/cluster/mount/"
 
-$mountsJson = @(
+$mountsJson = (,@(
   @{
     storageAccountName=$resourceName
     secretScope="secrets"
@@ -17,7 +17,7 @@ $mountsJson = @(
     tenantIdName="Databricks--TenantId"
     containers = [array]$($dataLakeContainers | ForEach-Object{ $_.name })
   }
-)
+))
 
 $mountsJson | ConvertTo-Json -Depth 4 | Set-Content "$srcDir/tests/cluster/mount/mounts.json"
 

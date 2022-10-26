@@ -35,9 +35,8 @@ $location                     = "westeurope"  # Use eastus because of free azure
 $resourceTags = "{'Owner':'Auto Deployed', 'System':'ATC-NET','Service':'Data Platform'}"
 $resourceTags = $resourceTags.Replace("'",'\"')
 
-$dataLakeContainers = @(
-    @{"name"="silver"}
-)
+$dataLakeContainers = (,@(@{"name"="silver"}))
+
 
 $dataLakeContainersJson = $dataLakeContainers | ConvertTo-Json -Depth 4 -Compress
 $dataLakeContainersJson = $dataLakeContainersJson.Replace('"','\"')

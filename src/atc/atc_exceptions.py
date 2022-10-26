@@ -14,3 +14,7 @@ class UnkownPathException(AtcException):
 
 class ColumnDoesNotExistException(AtcException):
     pass
+
+
+class MoreThanTwoDataFramesException(AtcException):
+    pass

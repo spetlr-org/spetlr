@@ -1,9 +1,9 @@
-from functools import cache
+from functools import lru_cache
 
 from atc.functions import init_dbutils
 
 
-@cache
+@lru_cache
 def getValue(secret_name: str):
     return init_dbutils().secrets.get("values", secret_name)
 

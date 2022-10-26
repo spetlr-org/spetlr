@@ -9,8 +9,8 @@ from atc.eh import EventHubCapture
 from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from atc.functions import init_dbutils
 from atc.spark import Spark
+from tests.cluster.values import resourceName
 
-from ..values import resourceName
 from .AtcEh import AtcEh
 
 

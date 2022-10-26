@@ -10,6 +10,7 @@ from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from atc.functions import init_dbutils
 from atc.spark import Spark
 
+from ..values import resourceName
 from .AtcEh import AtcEh
 
 
@@ -36,9 +37,12 @@ class EventHubsTests(unittest.TestCase):
         dbutils = init_dbutils()
 
         limit = datetime.now() + timedelta(minutes=10)
+
         while datetime.now() < limit:
-            conts = {item.name for item in dbutils.fs.ls("/mnt/githubatc/silver")}
-            if "githubatc/" in conts:
+            conts = {
+                item.name for item in dbutils.fs.ls(f"/mnt/{resourceName()}/silver")
+            }
+            if f"{resourceName()}/" in conts:
                 break
             else:
                 time.sleep(10)
@@ -54,7 +58,7 @@ class EventHubsTests(unittest.TestCase):
             "AtcEh",
             {
                 "name": "AtcEh",
-                "path": "/mnt/githubatc/silver/githubatc/atceh",
+                "path": f"/mnt/{resourceName()}/silver/{resourceName()}/atceh",
                 "format": "avro",
                 "partitioning": "ymd",
             },
@@ -74,7 +78,7 @@ class EventHubsTests(unittest.TestCase):
             "AtcEh",
             {
                 "name": "AtcEh",
-                "path": "/mnt/githubatc/silver/githubatc/atceh",
+                "path": f"/mnt/{resourceName()}/silver/{resourceName()}/atceh",
                 "format": "avro",
                 "partitioning": "ymd",
             },

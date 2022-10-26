@@ -1,5 +1,6 @@
 from atc.functions import init_dbutils
 from atc.sql.SqlServer import SqlServer
+from tests.cluster.values import resourceName
 
 
 class DeliverySqlServer(SqlServer):
@@ -13,7 +14,9 @@ class DeliverySqlServer(SqlServer):
     ):
 
         self.hostname = (
-            "githubatctest.database.windows.net" if hostname is None else hostname
+            f"{resourceName()}test.database.windows.net"
+            if hostname is None
+            else hostname
         )
         self.username = (
             init_dbutils().secrets.get("secrets", "SqlServer--DatabricksUser")

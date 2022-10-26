@@ -6,7 +6,7 @@ $permanentResourceName       = "githubatc"
 $permanentResourceGroup       = "atc-permanent"
 
 # at some point, the following will be made variable between deployments
-$resourceName                 = "githubatc1234"
+$resourceName                 = "githubatc$uniqueRunId"
 $resourceGroupName            = $resourceName
 
 

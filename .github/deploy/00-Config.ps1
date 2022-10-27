@@ -10,6 +10,7 @@ $resourceName                 = "githubatc$uniqueRunId"
 $resourceGroupName            = $resourceName
 
 
+
 $databricksName               = $resourceName
 $dataLakeName                 = $resourceName
 $databaseServerName           = $resourceName + "test"

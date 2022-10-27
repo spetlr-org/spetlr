@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
 from pyspark.sql import DataFrame
 
@@ -28,6 +28,8 @@ class DeltaHandle(TableHandle):
         self._name = name
         self._location = location
         self._data_format = data_format
+
+        self._partitioning: Optional[List[str]] = None
 
         self._validate()
 
@@ -109,6 +111,35 @@ class DeltaHandle(TableHandle):
     def recreate_hive_table(self):
         self.drop()
         self.create_hive_table()
+
+    def get_partitioning(self):
+        """The result of DESCRIBE TABLE tablename is like this:
+        +-----------------+---------------+-------+
+        |         col_name|      data_type|comment|
+        +-----------------+---------------+-------+
+        |           mycolA|         string|       |
+        |           myColB|            int|       |
+        |                 |               |       |
+        |   # Partitioning|               |       |
+        |           Part 0|         mycolA|       |
+        +-----------------+---------------+-------+
+        but thie method return the partitioning in the form ['mycolA']
+        """
+        if self._partitioning is None:
+            rows_iter = iter(
+                Spark.get().sql(f"DESCRIBE TABLE {self.get_tablename()}").collect()
+            )
+            for row in rows_iter:
+                if row.col_name.strip() == "# Partitioning":
+                    break
+            parts = [
+                (int(row.col_name[5:]), row.data_type)
+                for row in rows_iter
+                if row.col_name.startswith("Part ")
+            ]
+            parts.sort()
+            self._partitioning = [p[1] for p in parts]
+        return self._partitioning
 
     def get_tablename(self) -> str:
         return self._name

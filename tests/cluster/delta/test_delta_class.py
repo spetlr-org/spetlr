@@ -113,3 +113,33 @@ class DeltaTests(unittest.TestCase):
 
         with self.assertRaises(AnalysisException):
             dh.read()
+
+    def test_09_partitioning(self):
+        dh = DeltaHandle.from_tc("MyTbl")
+        Spark.get().sql(
+            f"""
+            CREATE TABLE {dh.get_tablename()}
+            (
+            colA string,
+            colB int,
+            payload string
+            )
+            PARTITIONED BY (colB,colA)
+        """
+        )
+
+        self.assertEqual(dh.get_partitioning(), ["colB", "colA"])
+
+        dh2 = DeltaHandle.from_tc("MyTbl2")
+        Spark.get().sql(
+            f"""
+            CREATE TABLE {dh2.get_tablename()}
+            (
+            colA string,
+            colB int,
+            payload string
+            )
+        """
+        )
+
+        self.assertEqual(dh2.get_partitioning(), [])

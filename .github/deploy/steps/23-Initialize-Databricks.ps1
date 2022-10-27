@@ -3,6 +3,27 @@
 ###############################################################################################
 Write-Host "Initialize Databricks Configuration" -ForegroundColor Green
 
+Write-Host "  Collect resourceId and workspace URL" -ForegroundColor DarkYellow
+$resourceId = az resource show `
+  --resource-group $resourceGroupName `
+  --name $databricksName `
+  --resource-type "Microsoft.Databricks/workspaces" `
+  --query id `
+  --out tsv
+
+Throw-WhenError -output $resourceId
+
+$workspaceUrl = az resource show `
+  --resource-group $resourceGroupName `
+  --name $databricksName `
+  --resource-type "Microsoft.Databricks/workspaces" `
+  --query properties.workspaceUrl
+$workspaceUrl = $workspaceUrl.Replace('"','')
+
+Throw-WhenError -output $workspaceUrl
+
+Write-Host "   workspaceUrl is: $($workspaceUrl)"
+
 Write-Host "  Install Databricks CLI" -ForegroundColor DarkYellow
 pip install --upgrade pip --quiet
 pip install --upgrade databricks-cli --quiet

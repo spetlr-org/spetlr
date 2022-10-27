@@ -70,7 +70,8 @@ jobs:
         run: |
           .github/deploy/deploy.ps1 `
             -pipelineClientId ${{ secrets.SPN_CLIENT_ID }} `
-            -pipelineClientSecret (ConvertTo-SecureString -AsPlainText ${{ secrets.SPN_CLIENT_SECRET }})
+            -pipelineClientSecret (ConvertTo-SecureString -AsPlainText ${{ secrets.SPN_CLIENT_SECRET }}) `
+            -uniqueRunId ${{ github.run_id }}
 
       - name: Wait 30 secs for things to settle
         shell: pwsh
@@ -99,4 +100,5 @@ jobs:
             -u ${{ secrets.SPN_CLIENT_ID }} `
             -p ${{ secrets.SPN_CLIENT_SECRET }} `
             --tenant ${{ secrets.SPN_TENANT_ID }}
-          .github/deploy/destroy.ps1
+          .github/deploy/destroy.ps1 `
+            -uniqueRunId ${{ github.run_id }}

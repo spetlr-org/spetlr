@@ -3,7 +3,11 @@ param (
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $environmentName=""
+  $environmentName="",
+
+  [Parameter(Mandatory=$false)]
+  [string]
+  $uniqueRunId
 )
 
 az account show
@@ -24,7 +28,7 @@ Write-Host "Initialize deployment" -ForegroundColor Green
 ###############################################################################################
 Write-Host "  Now Destroying Parent Resource Group!" -ForegroundColor Red
 
-$output = az group delete --name $resourceGroupName --yes
+$output = az group delete --name $resourceGroupName --yes --no-wait
 #Throw-WhenError -output $output
 
 Write-Host "  Parent Resource Group Deleted" -ForegroundColor Green

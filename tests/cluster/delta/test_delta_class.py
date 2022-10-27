@@ -129,3 +129,17 @@ class DeltaTests(unittest.TestCase):
         )
 
         self.assertEqual(dh.get_partitioning(), ["colB", "colA"])
+
+        dh2 = DeltaHandle.from_tc("MyTbl2")
+        Spark.get().sql(
+            f"""
+            CREATE TABLE {dh2.get_tablename()}
+            (
+            colA string,
+            colB int,
+            payload string
+            )
+        """
+        )
+
+        self.assertEqual(dh2.get_partitioning(), [])

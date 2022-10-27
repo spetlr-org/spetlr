@@ -8,7 +8,7 @@ class DeliverySqlServerSpn(SqlServer):
         self,
     ):
         super().__init__(
-            hostname=f"{resourceName()}.database.windows.net",
+            hostname=f"{resourceName()}test.database.windows.net",
             database="Delivery",
             spnpassword=init_dbutils().secrets.get("secrets", "DbDeploy--ClientSecret"),
             spnid=init_dbutils().secrets.get("secrets", "DbDeploy--ClientId"),

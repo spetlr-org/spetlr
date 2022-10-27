@@ -1,5 +1,6 @@
 from atc.functions import init_dbutils
 from atc.sql.SqlServer import SqlServer
+from tests.cluster.values import resourceName
 
 
 class DeliverySqlServerSpn(SqlServer):
@@ -7,7 +8,7 @@ class DeliverySqlServerSpn(SqlServer):
         self,
     ):
         super().__init__(
-            hostname="githubatctest.database.windows.net",
+            hostname=f"{resourceName()}test.database.windows.net",
             database="Delivery",
             spnpassword=init_dbutils().secrets.get("secrets", "DbDeploy--ClientSecret"),
             spnid=init_dbutils().secrets.get("secrets", "DbDeploy--ClientId"),

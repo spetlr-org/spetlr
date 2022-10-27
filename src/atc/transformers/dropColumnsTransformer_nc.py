@@ -5,7 +5,7 @@ from pyspark.sql import DataFrame
 from atc.etl import TransformerNC
 
 
-class SelectColumnsTransformer(TransformerNC):
+class DropColumnsTransformerNC(TransformerNC):
     def __init__(
         self,
         *,
@@ -20,4 +20,4 @@ class SelectColumnsTransformer(TransformerNC):
         self.columnList = columnList
 
     def process(self, df: DataFrame) -> DataFrame:
-        return df.select(self.columnList)
+        return df.drop(*self.columnList)

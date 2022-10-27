@@ -1,13 +1,15 @@
 $secrets = [DatabricksSecretsManager]::new()
 $values = [DatabricksSecretsManager]::new()
 
-$base_name                    = "atc"
 
-$permanentResourceGroup       = "$base_name-permanent"
+$permanentResourceName       = "githubatc"
+$permanentResourceGroup       = "atc-permanent"
 
-$resourceGroupName            = "$base_name-integration"
+# at some point, the following will be made variable between deployments
+$resourceName                 = "githubatc$uniqueRunId"
+$resourceGroupName            = $resourceName
 
-$resourceName                 = "github$base_name"
+
 
 $databricksName               = $resourceName
 $dataLakeName                 = $resourceName
@@ -27,19 +29,18 @@ $ehNamespace                  = $resourceName
 $mountSpnName                 = "AtcMountSpn"
 $dbDeploySpnName              = "AtcDbSpn"
 $cicdSpnName                  = "AtcGithubPipe"
-$cosmosName                   = $resourceName
+$cosmosName                   = $permanentResourceName
 $keyVaultName                 = "atcGithubCiCd"
 
 $location                     = "westeurope"  # Use eastus because of free azure subscription
-$resourceTags = "{'Owner':'Auto Deployed', 'System':'ATC-NET','Service':'Data Platform'}" 
+$resourceTags = "{'Owner':'Auto Deployed', 'System':'ATC-NET','Service':'Data Platform'}"
 $resourceTags = $resourceTags.Replace("'",'\"')
 
-$dataLakeContainers = @(
-    @{"name"="silver"}
-)
+$dataLakeContainers = (,@(@{"name"="silver"}))
 
-$dataLakeContainersJson = "[{'name':'silver'}]" 
-$dataLakeContainersJson = $dataLakeContainersJson.Replace("'",'\"')
+
+$dataLakeContainersJson = $dataLakeContainers | ConvertTo-Json -Depth 4 -Compress
+$dataLakeContainersJson = $dataLakeContainersJson.Replace('"','\"')
 
 $eventHubConfig = @(
     @{
@@ -56,18 +57,20 @@ $eventHubConfigJson = "[{'name':'atceh', 'namespace':'$ehNamespace','captureLoca
 $eventHubConfigJson = $eventHubConfigJson.Replace("'",'\"')
 
 
-$devobjectid = az account show --query id 
+$devobjectid = az account show --query id
 
 $spnobjectid = (Graph-ListSpn -queryDisplayName $cicdSpnName).id
- 
+
 
 
 
 Write-Host "**********************************************************************" -ForegroundColor White
 Write-Host "* Base Configuration       *******************************************" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
+Write-Host "* Permanent Resource Group        : $permanentResourceGroup" -ForegroundColor White
+Write-Host "* Permanent Resource Name         : $permanentResourceName" -ForegroundColor White
 Write-Host "* Resource Group                  : $resourceGroupName" -ForegroundColor White
-Write-Host "* Permanent Resource Group                  : $permanentResourceGroup" -ForegroundColor White
+Write-Host "* Resource Name                   : $resourceName" -ForegroundColor White
 Write-Host "* location                        : $location" -ForegroundColor White
 Write-Host "* Azure Databricks Workspace      : $databricksName" -ForegroundColor White
 Write-Host "* Azure Data Lake                 : $dataLakeName" -ForegroundColor White

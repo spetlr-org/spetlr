@@ -16,7 +16,11 @@ param (
 
   [Parameter(Mandatory=$false)]
   [securestring]
-  $pipelineClientSecret
+  $pipelineClientSecret,
+
+  [Parameter(Mandatory=$false)]
+  [string]
+  $uniqueRunId
 )
 
 # import utility functions

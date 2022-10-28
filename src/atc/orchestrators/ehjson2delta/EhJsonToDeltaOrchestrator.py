@@ -29,7 +29,8 @@ class EhJsonToDeltaOrchestrator(Orchestrator):
 
         # final step,
         # append the rows to the delta table.
-        self.load_into(SimpleLoader(dh, mode="append"))
+        self._loader = SimpleLoader(dh, mode="append")
+        self.load_into(self._loader)
 
     @classmethod
     def from_tc(cls, eh_id: str, dh_id: str):
@@ -40,5 +41,9 @@ class EhJsonToDeltaOrchestrator(Orchestrator):
     def filter_with(self, etl: EtlBase):
         """Additional filters to execute before loading."""
         loader = self.steps.pop()
+
+        # the following will fail if additional steps have been added.
+        assert self._loader is loader, "unexpected change in etl steps"
+
         self.transform_with(etl)
         self.load_into(loader)

@@ -5,10 +5,10 @@ from typing import Optional
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 
+from atc.atc_exceptions import EhJsonToDeltaException
 from atc.delta import DeltaHandle
 from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from atc.etl import Extractor
-from atc.orchestrators.ehjson2delta import EhJsonToDeltaException
 from atc.spark import Spark
 
 
@@ -32,9 +32,12 @@ class EhJsonToDeltaExtractor(Extractor):
         """get the highest pdate partition,
         truncate it,
         read the event hub from that partition"""
-        max_pdate: Optional[dt] = (
-            self.dh.read().groupBy().agg(f.max("pdate")).collect()[0][0]
-        )
+        pdate_df = self.dh.read().select("pdate")
+
+        # assert correct schema
+        assert pdate_df.schema.fields[0].dataType.typeName().upper() == "TIMESTAMP"
+
+        max_pdate: Optional[dt] = pdate_df.groupBy().agg(f.max("pdate")).collect()[0][0]
         if max_pdate is None:
             # if it is None, no previous data exists,
             # so don't truncate and read everything
@@ -64,6 +67,10 @@ class EhJsonToDeltaExtractor(Extractor):
 
         # this df will be filtered stepwise
         df = self.dh.read()
+
+        # assert partitioning columns are all integers
+        for field in df.select(*dh_parts).schema.fields:
+            assert field.dataType.json().upper() == "INTEGER"
 
         y = df.groupBy().agg(f.max("y")).collect()[0][0]
         if y is None:

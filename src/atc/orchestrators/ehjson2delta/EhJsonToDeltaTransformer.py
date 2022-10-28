@@ -13,16 +13,6 @@ class EhJsonToDeltaTransformer(Transformer):
         self.target_dh = target_dh
 
     def process(self, df: DataFrame) -> DataFrame:
-        # fist add the pdate column that is composed of the y, m, d and h columns:
-        df = df.withColumn(
-            "pdate",
-            f.expr(
-                'make_timestamp(y,m,d,h,0,0,"UTC")'
-                if "h" in df.columns
-                else 'make_timestamp(y,m,d,0,0,0,"UTC")'
-            ),
-        )
-
         # use the schema form the target table to decide what to unpack
         target_df = self.target_dh.read()
         source_df = df
@@ -37,7 +27,7 @@ class EhJsonToDeltaTransformer(Transformer):
                 raise TypeError(
                     "The target table has incorrect type for "
                     f"direct column {col}, "
-                    f"ecpected {source_type}, got {target_type}."
+                    f"expected {source_type}, got {target_type}."
                 )
 
         if "Body" in direct_cols:

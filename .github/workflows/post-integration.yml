@@ -1,6 +1,8 @@
 name: Post-Integration
 
 on:
+  # workflow_dispatch allows experimental releases to test.pypi
+  workflow_dispatch:
   push:
     branches:
       - main

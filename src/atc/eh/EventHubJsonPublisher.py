@@ -6,7 +6,7 @@ from atc.etl import Loader
 
 
 class EventHubJsonPublisher(Loader):
-    """Save the rows of the incoming dataframe to the evenhub stream,
+    """Save the rows of the incoming dataframe to the eventhub stream,
     formatted as json documents."""
 
     def __init__(self, eh: EventHubStream):

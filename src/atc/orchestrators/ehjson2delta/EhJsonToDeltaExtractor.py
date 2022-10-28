@@ -1,6 +1,6 @@
 from datetime import datetime as dt
 from datetime import timezone
-from typing import Optional
+from typing import List, Optional
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
@@ -46,16 +46,27 @@ class EhJsonToDeltaExtractor(Extractor):
         max_pdate = max_pdate.astimezone(timezone.utc)
 
         # truncate this largest partition...
-        Spark.get().sql(
-            f"TRUNCATE TABLE {self.dh.get_tablename()} "
-            f" PARTITION (pdate='{max_pdate.isoformat()}')"
+        self._delete_table_partitions(
+            self.dh.get_tablename(), [f"pdate='{max_pdate.isoformat()}'"]
         )
+
         # the datetime literal specification:
         # https://spark.apache.org/docs/latest/sql-ref-literals.html#datetime-literal
         # ...it works with the python datetime .isoformat()
 
         # ...and read it back from eventhub
         return self.eh.read(from_partition=max_pdate)
+
+    def _delete_table_partitions(self, tbl_name: str, conditions: List[str]) -> None:
+        # My first attempt was TRUNCATE TABLE table PARTITION (<spec>),
+        # but it turns out that this is newer than spark 3.1 which we are using.
+        # Second attempt was to ALTER TABLE table DROP PARTITION (<spec>),
+        # but I got the error that `ALTER TABLE DROP PARTITION` is not supported
+        # for Delta tables
+
+        # So finally this uses a DELETE FROM in the hope that Spark can optimize this
+        # to efficiently remove the partition
+        Spark.get().sql(f"DELETE FROM {tbl_name} WHERE {' AND '.join(conditions) }")
 
     def _read_ymd_ymdh_partitioned(self) -> DataFrame:
         """get the highest partition, piece by piece,
@@ -70,7 +81,7 @@ class EhJsonToDeltaExtractor(Extractor):
 
         # assert partitioning columns are all integers
         for field in df.select(*dh_parts).schema.fields:
-            assert field.dataType.json().upper() == "INTEGER"
+            assert field.dataType.typeName().upper() == "INTEGER"
 
         y = df.groupBy().agg(f.max("y")).collect()[0][0]
         if y is None:
@@ -79,28 +90,25 @@ class EhJsonToDeltaExtractor(Extractor):
             return self.eh.read()
 
         # continue the logic. We know there is a partition.
-        truncate_partiton_spec = f"y={y}"
+        truncate_partiton_spec = [f"y={y}"]
         df = df.filter(f"y={y}")
 
         # if there was a y, there is a partition and hence the others must exist
         m = df.groupBy().agg(f.max("m")).collect()[0][0]
-        truncate_partiton_spec += f",m={m}"
+        truncate_partiton_spec.append(f"m={m}")
         df = df.filter(f"m={m}")
 
         d = df.groupBy().agg(f.max("d")).collect()[0][0]
-        truncate_partiton_spec += f",d={d}"
+        truncate_partiton_spec.append(f"d={d}")
         df = df.filter(f"d={d}")
 
         if "h" in dh_parts:
             h = df.groupBy().agg(f.max("h")).collect()[0][0]
-            truncate_partiton_spec += f",h={h}"
+            truncate_partiton_spec.append(f"h={h}")
         else:
             h = 0
 
-        Spark.get().sql(
-            f"TRUNCATE TABLE {self.dh.get_tablename()} "
-            f" PARTITION ({truncate_partiton_spec})"
-        )
+        self._delete_table_partitions(self.dh.get_tablename(), truncate_partiton_spec)
 
         read_from = dt(y, m, d, h, tzinfo=timezone.utc)
 

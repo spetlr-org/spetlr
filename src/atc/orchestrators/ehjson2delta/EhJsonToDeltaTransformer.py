@@ -13,7 +13,7 @@ class EhJsonToDeltaTransformer(Transformer):
         self.target_dh = target_dh
 
     def process(self, df: DataFrame) -> DataFrame:
-        # use the schema form the target table to decide what to unpack
+        # use the schema from the target table to decide what to unpack
         target_df = self.target_dh.read()
         source_df = df
 

@@ -2,12 +2,16 @@ import time
 import unittest
 from datetime import datetime, timedelta
 
+from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 
 from atc.config_master import TableConfigurator
-from atc.eh import EventHubCapture
+from atc.delta import DeltaHandle
+from atc.eh import EventHubCapture, EventHubJsonPublisher
 from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
+from atc.etl import Transformer
 from atc.functions import init_dbutils
+from atc.orchestrators import EhJsonToDeltaOrchestrator
 from atc.spark import Spark
 from tests.cluster.values import resourceName
 
@@ -23,14 +27,8 @@ class EventHubsTests(unittest.TestCase):
         eh = AtcEh()
 
         df = Spark.get().createDataFrame([(1, "a"), (2, "b")], "id int, name string")
-        eh.save_data(
-            df.select(
-                f.encode(
-                    f.to_json(f.struct("*")),
-                    "utf-8",
-                ).alias("body")
-            )
-        )
+        publisher = EventHubJsonPublisher(eh)
+        publisher.save(df)
 
     def test_02_wait_for_capture_files(self):
         # wait until capture file appears
@@ -93,3 +91,63 @@ class EventHubsTests(unittest.TestCase):
             )
         )
         self.assertTrue(df.count(), 2)
+
+    def test_05_eh_json_orchestrator(self):
+        # the orchestrator has a complex functionality that can only be fully tested
+        # on a substantial holding of capture files. That is not possible here, but
+        # such tests were carried out during development.
+        # The situation here only tests the basic functions.
+
+        # Part 1, YMD partitioned
+        tc = TableConfigurator()
+        tc.register("CpTblYMD", {"name": "CaptureTableYMD"})
+        Spark.get().sql(
+            """
+            CREATE TABLE CaptureTableYMD
+            (
+                id int,
+                name string,
+                y int,
+                m int,
+                d int
+            )
+            PARTITIONED BY (y,m,d)
+        """
+        )
+
+        eh_orch = EhJsonToDeltaOrchestrator.from_tc("AtcEh", "CpTblYMD")
+        eh_orch.execute()
+
+        df = DeltaHandle.from_tc("CpTblYMD").read()
+
+        rows = {tuple(row) for row in df.collect()}
+        self.assertEqual({(1, "a"), (2, "b")}, rows)
+
+        # Part 2, pdate partitioned.
+
+        tc.register("CpTblDate", {"name": "CaptureTableDate"})
+        Spark.get().sql(
+            """
+            CREATE TABLE CaptureTableDate
+            (
+                id INTEGER,
+                name STRING,
+                pdate TIMESTAMP
+            )
+            PARTITIONED BY (pdate)
+        """
+        )
+
+        # test the insertion of additional filters
+        class IdFilter(Transformer):
+            def process(self, df: DataFrame) -> DataFrame:
+                return df.filter("id>1")
+
+        eh_orch2 = EhJsonToDeltaOrchestrator.from_tc("AtcEh", "CpTblDate")
+        eh_orch2.filter_with(IdFilter())
+        eh_orch2.execute()
+
+        df2 = DeltaHandle.from_tc("CpTblDate").read()
+
+        rows = {tuple(row) for row in df2.collect()}
+        self.assertEqual({(2, "b")}, rows)

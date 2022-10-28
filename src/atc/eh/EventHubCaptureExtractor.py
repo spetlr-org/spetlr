@@ -246,3 +246,6 @@ class EventHubCaptureExtractor:
         assert len(parts_to_load)
 
         return self._load_union_of_parts(parts_to_load)
+
+    def get_partitioning(self):
+        return list(self.partitioning)

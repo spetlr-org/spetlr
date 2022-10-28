@@ -27,13 +27,6 @@ Then install the package locally
 
     python setup.py develop
 
-### Git Hooks
-
-Please install the git hooks in your repository by running
-
-    python utilities/git_hooks.py
-
-The hooks will help you catch problems locally instead of having to wait for the PR pipeline to fail.
 
 ### Testing
 

@@ -118,7 +118,7 @@ class EventHubsTests(unittest.TestCase):
         eh_orch = EhJsonToDeltaOrchestrator.from_tc("AtcEh", "CpTblYMD")
         eh_orch.execute()
 
-        df = DeltaHandle.from_tc("CpTblYMD").read()
+        df = DeltaHandle.from_tc("CpTblYMD").read().select("id", "name")
 
         rows = {tuple(row) for row in df.collect()}
         self.assertEqual({(1, "a"), (2, "b")}, rows)
@@ -147,7 +147,7 @@ class EventHubsTests(unittest.TestCase):
         eh_orch2.filter_with(IdFilter())
         eh_orch2.execute()
 
-        df2 = DeltaHandle.from_tc("CpTblDate").read()
+        df2 = DeltaHandle.from_tc("CpTblDate").read().select("id", "name")
 
         rows = {tuple(row) for row in df2.collect()}
         self.assertEqual({(2, "b")}, rows)

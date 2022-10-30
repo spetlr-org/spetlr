@@ -2,7 +2,7 @@ from typing import List
 
 from atc_tools.testing import DataframeTestCase
 
-from atc.config_master import TableConfigurator
+from atc import Configurator
 from atc.delta import DbHandle, DeltaHandle
 from atc.utils import DataframeCreator
 from tests.cluster.delta import extras
@@ -37,8 +37,8 @@ class DeltaUpsertTests(DataframeTestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        TableConfigurator().add_resource_path(extras)
-        TableConfigurator().set_debug()
+        Configurator().add_resource_path(extras)
+        Configurator().set_debug()
 
         cls.target_dh_dummy = DeltaHandle.from_tc("UpsertLoaderDummy")
 

@@ -1,6 +1,6 @@
 import unittest
 
-from atc.config_master import TableConfigurator
+from atc import Configurator
 from tests.cluster.sql.DeliverySqlExecutor import DeliverySqlExecutor
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
@@ -16,7 +16,7 @@ class DeliverySqlExecutorTests(unittest.TestCase):
         cls.sql_server = DeliverySqlServer()
 
         # Register the delivery table for the table configurator
-        cls.tc = TableConfigurator()
+        cls.tc = Configurator()
         cls.tc.add_resource_path(extras)
         cls.tc.set_debug()
 

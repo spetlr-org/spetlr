@@ -7,7 +7,7 @@ import pyspark.sql.utils
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 
-from atc.config_master import TableConfigurator
+from atc.configurator.configurator import Configurator
 from atc.spark import Spark
 
 utc = datetime.timezone.utc
@@ -26,7 +26,7 @@ class EventHubCaptureExtractor:
 
     @classmethod
     def from_tc(cls, tbl_id: str):
-        tc = TableConfigurator()
+        tc = Configurator()
         assert tc.table_property(tbl_id, "format") == "avro"
         return cls(
             path=tc.table_property(tbl_id, "path"),

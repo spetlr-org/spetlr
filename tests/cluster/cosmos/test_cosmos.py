@@ -3,7 +3,7 @@ import unittest
 from azure.cosmos.exceptions import CosmosHttpResponseError
 
 import atc.cosmos
-from atc.config_master import TableConfigurator
+from atc import Configurator
 from atc.functions import init_dbutils
 from atc.spark import Spark
 
@@ -20,7 +20,7 @@ class TestCosmos(atc.cosmos.CosmosDb):
 
 class CosmosTests(unittest.TestCase):
     def test_01_tables(self):
-        tc = TableConfigurator()
+        tc = Configurator()
         tc.clear_all_configurations()
         tc.register(
             "CmsTbl",
@@ -40,7 +40,7 @@ class CosmosTests(unittest.TestCase):
             pass
 
         cm.execute_sql(f"CREATE DATABASE IF NOT EXISTS cosmosCatalog.{cm.database};")
-        tc = TableConfigurator()
+        tc = Configurator()
         cm.execute_sql(
             "CREATE TABLE IF NOT EXISTS"
             f" cosmosCatalog.{cm.database}.{tc.table_name('CmsTbl')}"

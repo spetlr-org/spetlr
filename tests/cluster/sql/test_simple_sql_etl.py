@@ -12,7 +12,7 @@ from pyspark.sql.types import (
     TimestampType,
 )
 
-from atc.config_master import TableConfigurator
+from atc import Configurator
 from atc.etl.loaders import SimpleLoader
 from atc.functions import get_unique_tempview_name
 from atc.transformers.simple_sql_transformer import SimpleSqlServerTransformer
@@ -29,7 +29,7 @@ class SimpleSqlServerETLTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sql_server = DeliverySqlServer()
-        cls.tc = TableConfigurator()
+        cls.tc = Configurator()
         cls.tc.clear_all_configurations()
 
         # Register the delivery table for the table configurator

@@ -6,10 +6,8 @@ from string import Formatter
 from types import ModuleType
 from typing import Dict, Set, Union
 
-import deprecation
 import yaml
-
-from atc.singleton import Singleton
+from deprecated import deprecated
 
 from ..atc_exceptions import AtcKeyError
 
@@ -23,7 +21,21 @@ TcDetails = Dict[str, Union[str, "TcDetails"]]
 TcValue = Union[str, TcDetails]
 
 
-class Configurator(metaclass=Singleton):
+class ConfiguratorSingleton(type):
+    """The reason that we do not use atc.singleton here,
+    is that the behavior of that metaclass depends on the classname.
+    Which prevents us from making a deprecated subclass of the old name
+    which actually instantiates to the new class instance."""
+
+    _instance = None
+
+    def __call__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(ConfiguratorSingleton, cls).__call__(*args, **kwargs)
+        return cls._instance
+
+
+class Configurator(metaclass=ConfiguratorSingleton):
     _unique_id: str
     _raw_resource_details: TcDetails
     _is_debug: bool
@@ -53,18 +65,19 @@ class Configurator(metaclass=Singleton):
         self.register("ID", {"release": "", "debug": f"__{self._unique_id}"})
         self.register("MNT", {"release": "mnt", "debug": "tmp"})
 
-    @deprecation.deprecated(
-        details="register literal string values instead.",
+    @deprecated(
+        reason="use .get('ENV') to get literal values.",
     )
     def get_extra_details(self) -> Dict[str, str]:
         """The distinction between extras and normal values was removed.
-        Simply register the value using the .register method"""
+        This method will always return an empty dict. Extra settings are now
+        string items. Retrieve them with .get(id)"""
         return {}
 
     def _get_item(self, table_id: str) -> TcValue:
         """item dictionary where release-debug and alias loops are resolved"""
         # explanation to the maintainer:
-        # There are many ways to specify a value in the TableConfigurator:
+        # There are many ways to specify a value in the Configurator:
         # MyLiteral: "MyValue"
         #
         # MyKey:
@@ -225,14 +238,14 @@ class Configurator(metaclass=Singleton):
 
                             for key, value in update.items():
                                 # we now support all bare value types in yaml.
-                                # no furhter checking
+                                # no further checking
                                 self._raw_resource_details[key] = value
 
             # try re-building all details
             self.table_details = dict()
             self.get_all_details()
         except:  # noqa: E722  we re-raise the exception, so bare except is ok.
-            # this piece makes it so that the TableConfigurator can still be used
+            # this piece makes it so that the Configurator can still be used
             # if any exception raised by the above code is caught.
             self._raw_resource_details = backup_details
             raise
@@ -241,8 +254,8 @@ class Configurator(metaclass=Singleton):
     # all methods below are interface and convenience methods
     ############################################
 
-    @deprecation.deprecated(
-        details="register literal string values instead.",
+    @deprecated(
+        reason="register literal string values instead.",
     )
     def set_extra(self, **kwargs: str):
         """Use .register(key,value) instead.
@@ -322,8 +335,8 @@ class Configurator(metaclass=Singleton):
         """
         return self.table_property(table_id, "name")
 
-    @deprecation.deprecated(
-        details='Use .get(table_id,"path") instead.',
+    @deprecated(
+        reason='Use .get(table_id,"path") instead.',
     )
     def table_path(self, table_id: str):
         """

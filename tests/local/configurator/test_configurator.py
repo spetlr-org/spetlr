@@ -74,3 +74,10 @@ class TestConfigurator(unittest.TestCase):
         self.assertEqual(
             tc.get("MyComposite", "schema"), {"sql": "TODO: support this\n"}
         )
+        self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
+
+    def test_08_test_deprecated_import(self):
+        from atc.config_master import TableConfigurator
+
+        tc = TableConfigurator()
+        self.assertEqual(tc.table_name("MyComposite"), "ottoBar")

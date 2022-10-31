@@ -18,3 +18,7 @@ class ColumnDoesNotExistException(AtcException):
 
 class MoreThanTwoDataFramesException(AtcException):
     pass
+
+
+class EhJsonToDeltaException(AtcException):
+    pass

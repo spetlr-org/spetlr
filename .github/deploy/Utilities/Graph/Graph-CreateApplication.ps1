@@ -4,17 +4,10 @@ function Graph-CreateApplication {
   param (
     [Parameter(Mandatory = $true)]
     [string]
-    $displayName,
-    [Parameter(Mandatory = $false)]
-    [string]
-    $identifierUri = $null
+    $displayName
   )
-  if ($null -eq $identifierUri) {
-    $app = Graph-Rest -method "post" -url "applications" -body @{displayName = $displayName }
-  }
-  else {
-    $app = Graph-Rest -method "post" -url "applications" -body @{displayName = $displayName; identifierUris = @($identifierUri)}
-  }
-
+ 
+  $app = Graph-Rest -method "post" -url "applications" -body @{displayName = $displayName}
+ 
   return $app
 }

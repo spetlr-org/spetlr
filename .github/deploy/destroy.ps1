@@ -38,7 +38,7 @@ Write-Host "  Parent Resource Group Deleted" -ForegroundColor Green
 ###############################################################################################
 Write-Host "  Now Destroying Mounting App registration!" -ForegroundColor Red
 
-$mountApp = Graph-ListApplications -queryDisplayName $mountSpnName
+$mountApp = Graph-GetApplication -queryDisplayName $mountSpnName
 
 if ($null -eq $mountApp)
 {

@@ -2,7 +2,7 @@ import unittest
 
 from pyspark.sql.utils import AnalysisException
 
-from atc.config_master import TableConfigurator
+from atc import Configurator
 from atc.delta import DbHandle, DeltaHandle
 from atc.etl import Orchestrator
 from atc.etl.extractors import SimpleExtractor
@@ -13,10 +13,10 @@ from atc.spark import Spark
 class DeltaTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        TableConfigurator().clear_all_configurations()
+        Configurator().clear_all_configurations()
 
     def test_01_configure(self):
-        tc = TableConfigurator()
+        tc = Configurator()
         tc.register(
             "MyDb", {"name": "TestDb{ID}", "path": "/mnt/atc/silver/testdb{ID}"}
         )

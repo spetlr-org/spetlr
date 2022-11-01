@@ -1,0 +1,10 @@
+
+MyPlainLiteral: Bar
+
+MyCompositeLiteral: Foo{MyPlainLiteral}
+
+MyComposite:
+  name: otto{MyPlainLiteral}
+  schema:
+    sql: |
+      TODO: support this

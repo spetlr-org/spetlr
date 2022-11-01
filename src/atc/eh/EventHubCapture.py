@@ -9,7 +9,7 @@ from pyspark.sql import functions as f
 from pyspark.sql.utils import AnalysisException
 
 from atc import dbg
-from atc.config_master import TableConfigurator
+from atc.configurator.configurator import Configurator
 from atc.eh.eh_exceptions import AtcEhInitException, AtcEhLogicException
 from atc.eh.PartitionSpec import PartitionSpec
 from atc.functions import init_dbutils
@@ -36,7 +36,7 @@ class EventHubCapture:
 
     @classmethod
     def from_tc(cls, id: str):
-        tc = TableConfigurator()
+        tc = Configurator()
         return cls(
             name=tc.table_property(id, "name"),
             path=tc.table_property(id, "path"),

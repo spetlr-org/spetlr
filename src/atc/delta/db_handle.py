@@ -1,5 +1,5 @@
 from atc.atc_exceptions import AtcException
-from atc.config_master import TableConfigurator
+from atc.configurator.configurator import Configurator
 from atc.spark import Spark
 
 
@@ -25,7 +25,7 @@ class DbHandle:
 
     @classmethod
     def from_tc(cls, id: str):
-        tc = TableConfigurator()
+        tc = Configurator()
         return cls(
             name=tc.table_name(id),
             location=tc.table_property(id, "path", ""),

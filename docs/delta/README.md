@@ -1,16 +1,16 @@
 
 # DeltaHandle and DbHandle
 
-The `TableConfigurator` contains logic to distinguish between production and 
+The `Configurator` contains logic to distinguish between production and 
 debug tables. To make full use of this functionality when reading and writing 
 delta tables, two convenience classes, `DeltaHandle` and `DbHandle`, have 
 been provided. Use the classes like this
 
 ```python
-from atc.config_master import TableConfigurator
+from atc import Configurator
 from atc.delta import DeltaHandle, DbHandle
 
-tc = TableConfigurator()
+tc = Configurator()
 tc.add_resource_path('/my/config/files')
 
 # name is mandatory,
@@ -66,7 +66,10 @@ target_dh.upsert(df_new, ["Id"])
 
 ### Example
 
-The following queries create a test table with two rows containing guitar data. Lets assume that the TableConfigurator is configured as in the section [DeltaHandle and DbHandle](#deltaHandle-and-dbhandle), but the testTbl has the following schema:
+The following queries create a test table with two rows containing guitar data. 
+Let's assume that the Configurator is configured as in the section 
+[DeltaHandle and DbHandle](#deltaHandle-and-dbhandle), but the testTbl has the 
+following schema:
 
 ``` python
 %sql

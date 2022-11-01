@@ -2,6 +2,10 @@ class AtcException(Exception):
     pass
 
 
+class AtcKeyError(KeyError):
+    pass
+
+
 class NoTableException(AtcException):
     value = "No table found!"
     pass

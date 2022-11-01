@@ -4,8 +4,8 @@ from atc_tools.time import dt_utc
 from pyspark.sql import functions as f
 from pyspark.sql.dataframe import DataFrame
 
+from atc import Configurator
 from atc.cache import CachedLoader, CachedLoaderParameters
-from atc.config_master import TableConfigurator
 from atc.delta import DbHandle, DeltaHandle
 from atc.spark import Spark
 
@@ -23,7 +23,7 @@ class ChildCacher(CachedLoader):
         return self.written.withColumn("myId", f.lit(12345))
 
     def delete_operation(self, df: DataFrame) -> DataFrame:
-        target_name = TableConfigurator().table_name("CachedTestTarget")
+        target_name = Configurator().table_name("CachedTestTarget")
         self.to_be_deleted = df
         Spark.get().sql(f"DELETE FROM {target_name} WHERE b = 8")
         self.deleted = df.filter(df["b"] == 8)
@@ -87,7 +87,7 @@ class CachedLoaderTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        tc = TableConfigurator()
+        tc = Configurator()
         tc.clear_all_configurations()
         tc.set_debug()
 

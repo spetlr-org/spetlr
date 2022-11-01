@@ -7,20 +7,20 @@ In databricks there is one standard way to refer to a table, the
 found a need for a more abstracted notion of a table reference,
 one that allows for injection of test versions of tables and that allows 
 unified reference across different environments (dev, staging, prod).
-The `TableConfigurator` provides such a further abstraction level.
+The `Configurator` provides such a further abstraction level.
 
 ## Setting up configuration
 
-The `TableConfigurator` is a singleton class that you need to instantiate
+The `Configurator` is a singleton class that you need to instantiate
 and configure once in your project. Make sure this code is always executed
 before any reference to tables in made. Example:
 ```python
-from atc.config_master import TableConfigurator
-tc = TableConfigurator()
+from atc import Configurator
+tc = Configurator()
 tc.set_extra(ENV='prod')
 tc.add_resource_path(my.resource.module)
 ```
-The `TableConfigurator` can be configured with json or yaml files. The
+The `Configurator` can be configured with json or yaml files. The
 files must contain the following structure:
 - top level objects are resources
 - each resource must have one of three shapes:
@@ -37,12 +37,12 @@ replacement string that will be replaced with and empty string for
 production tables, or with a "__{GUID}" string when debug is selected.
 The guid construction allows for non-colliding parallel testing.
 
-Beyond the resource definitions, the `TableConfigurator` needs to be 
+Beyond the resource definitions, the `Configurator` needs to be 
 configured to return production or test versions of tables this is done
-at the start of your code. In your jobs you need to set `TableConfigurator().set_prod()`
-whereas your unit-tests should call `TableConfigurator().set_debug()`.
+at the start of your code. In your jobs you need to set `Configurator().set_prod()`
+whereas your unit-tests should call `Configurator().set_debug()`.
 
-## Using the TableConfigurator
+## Using the Configurator
 
 Once configured, the table configurator is often not used directly.
 Other classes in the atc framework use it when configured with a resource
@@ -59,8 +59,8 @@ DeltaHandle.from_tc("MyTbl")
 But sometimes you still need to call the table configurator methods
 e.g. when constructing your own sql:
 ```python
-from atc.config_master import TableConfigurator
-f"MERGE INTO {TableConfigurator().table_name('MyTbl')} AS target ..."
+from atc.config_master import Configurator
+f"MERGE INTO {Configurator().table_name('MyTbl')} AS target ..."
 ```
 
 ## Further Features
@@ -99,7 +99,7 @@ As already shown in the example above, there is a method to add
 further extra details such as an 'ENV' key. Note: The ENV key is not 
 a built-in special property. Use the `set_extra` method:
 ```python
-from atc.config_master import TableConfigurator
-tc = TableConfigurator()
+from atc.config_master import Configurator
+tc = Configurator()
 tc.set_extra(ENV='prod')
 ```

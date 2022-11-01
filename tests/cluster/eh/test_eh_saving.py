@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 
-from atc.config_master import TableConfigurator
+from atc import Configurator
 from atc.delta import DeltaHandle
 from atc.eh import EventHubCapture, EventHubJsonPublisher
 from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
@@ -21,7 +21,7 @@ from .AtcEh import AtcEh
 class EventHubsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        TableConfigurator().clear_all_configurations()
+        Configurator().clear_all_configurations()
 
     def test_01_publish(self):
         eh = AtcEh()
@@ -51,7 +51,7 @@ class EventHubsTests(unittest.TestCase):
         self.assertTrue(True, "The capture file has appeared.")
 
     def test_03_read_eh_capture(self):
-        tc = TableConfigurator()
+        tc = Configurator()
         tc.register(
             "AtcEh",
             {
@@ -71,7 +71,7 @@ class EventHubsTests(unittest.TestCase):
         self.assertEqual({(1, "a"), (2, "b")}, rows)
 
     def test_04_read_eh_capture_extractor(self):
-        tc = TableConfigurator()
+        tc = Configurator()
         tc.register(
             "AtcEh",
             {
@@ -99,7 +99,7 @@ class EventHubsTests(unittest.TestCase):
         # The situation here only tests the basic functions.
 
         # Part 1, YMD partitioned
-        tc = TableConfigurator()
+        tc = Configurator()
         tc.register("CpTblYMD", {"name": "CaptureTableYMD"})
         Spark.get().sql(
             """

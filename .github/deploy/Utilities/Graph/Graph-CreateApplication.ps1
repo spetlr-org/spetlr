@@ -7,7 +7,7 @@ function Graph-CreateApplication {
     $displayName,
     [Parameter(Mandatory = $false)]
     [string]
-    $identifierUri
+    $identifierUri = $null
   )
   if ($null -eq $identifierUri) {
     $app = Graph-Rest -method "post" -url "applications" -body @{displayName = $displayName }

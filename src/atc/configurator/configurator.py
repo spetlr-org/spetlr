@@ -7,25 +7,38 @@ from types import ModuleType
 from typing import Dict, Set, Union
 
 import yaml
+from deprecated import deprecated
 
-from atc.singleton import Singleton
-
-from ..atc_exceptions import AtcException
+from ..atc_exceptions import AtcKeyError
 
 
-class NoSuchPropertyException(AtcException):
+class NoSuchValueException(AtcKeyError):
     pass
 
 
 # recursive type definition of the details object
 TcDetails = Dict[str, Union[str, "TcDetails"]]
+TcValue = Union[str, TcDetails]
 
 
-class TableConfigurator(metaclass=Singleton):
+class ConfiguratorSingleton(type):
+    """The reason that we do not use atc.singleton here,
+    is that the behavior of that metaclass depends on the classname.
+    Which prevents us from making a deprecated subclass of the old name
+    which actually instantiates to the new class instance."""
+
+    _instance = None
+
+    def __call__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(ConfiguratorSingleton, cls).__call__(*args, **kwargs)
+        return cls._instance
+
+
+class Configurator(metaclass=ConfiguratorSingleton):
     _unique_id: str
-    _raw_resource_details: Dict[str, TcDetails]
+    _raw_resource_details: TcDetails
     _is_debug: bool
-    _extra_config: Dict[str, str]
 
     # this dict contains all details for all resources
     table_details: Dict[str, str]
@@ -39,57 +52,104 @@ class TableConfigurator(metaclass=Singleton):
 
     def clear_all_configurations(self):
         self._raw_resource_details = dict()
-        self._extra_config = dict()
         self._is_debug = False
         self.table_details = dict()
+        self._set_extras()
 
     ############################################
     # the core logic of this class is contained
     # in the following methods
     ############################################
 
-    def get_extra_details(self) -> Dict[str, str]:
-        """get all special substitutions not based on resources"""
-        extras = {
-            "ID": f"__{self._unique_id}" if self._is_debug else "",
-            "MNT": "tmp" if self._is_debug else "mnt",
-        }
-        extras.update(self._extra_config)
-        return extras
+    def _set_extras(self):
+        self.register("ID", {"release": "", "debug": f"__{self._unique_id}"})
+        self.register("MNT", {"release": "mnt", "debug": "tmp"})
 
-    def _get_item(self, table_id: str) -> Dict[str, str]:
+    @deprecated(
+        reason="use .get('ENV') to get literal values.",
+    )
+    def get_extra_details(self) -> Dict[str, str]:
+        """The distinction between extras and normal values was removed.
+        This method will always return an empty dict. Extra settings are now
+        string items. Retrieve them with .get(id)"""
+        return {}
+
+    def _get_item(self, table_id: str) -> TcValue:
         """item dictionary where release-debug and alias loops are resolved"""
-        # this stack allows us to detect alias loop
+        # explanation to the maintainer:
+        # There are many ways to specify a value in the Configurator:
+        # MyLiteral: "MyValue"
+        #
+        # MyKey:
+        #   name: someName
+        #   path: some/Path
+        #
+        # MyAlias:
+        #   alias: MyKey
+        #
+        # MyForked:
+        #   release:
+        #     alias: MyAlias
+        #   debug:
+        #     name: anotherName
+        #     path: another/Path
+        #
+        # What we want is to support that in all cases we get the intended value out
+        # tc._get_item("MyLiteral") -> "MyValue"
+        # tc._get_item("MyKey") -> {'name':..., 'path':...}
+        # tc._get_item("MyAlias") -> same as tc._get_item("MyKey")
+        # tc._get_item("MyForked")
+        #   if not self._is_debug -> same as tc._get_item("MyKey")
+        #   if self._is_debug -> {'name':'anotherName', 'path':'another/Path'}
+        #
+        # resolving forks and aliases is the task of this method.
+
+        # this stack allows us to detect alias loops
         stack = {table_id}
 
-        value: TcDetails = self._raw_resource_details[table_id]
+        value: TcValue = self._raw_resource_details[table_id]
 
-        while set(value.keys()) in [{"release", "debug"}, {"alias"}]:
-            if set(value.keys()) == {"release", "debug"}:
-                # Handle the case of differentiated release and debug tables
-                if self._is_debug:
-                    value = value["debug"]
+        while True:
+            if not isinstance(value, dict):
+                # situation like MyLiteral
+                return value
+            else:
+                # value is a dict
+                if set(value.keys()) == {"release", "debug"}:
+                    # Situation like MyForked
+                    if self._is_debug:
+                        value = value["debug"]
+                    else:
+                        value = value["release"]
+                    continue
+                elif set(value.keys()) == {"alias"}:  # allow alias of alias
+                    # Situation like MyAlias
+                    new_id = value["alias"]
+                    if new_id in stack:
+                        raise ValueError(f"Alias loop at key {new_id}")
+                    stack.add(new_id)
+                    value = self._raw_resource_details[new_id]
+                    continue
                 else:
-                    value = value["release"]
-
-            if set(value.keys()) == {"alias"}:  # allow alias of alias
-                new_id = value["alias"]
-                if new_id in stack:
-                    raise ValueError(f"Alias loop at key {new_id}")
-                stack.add(new_id)
-                value = self._raw_resource_details[new_id]
-
-        # we are finished resolving a possible route of aliases
-        return value
+                    # value is a dict,
+                    # but it is neither a forking (release,debug)
+                    # nor is it an alias
+                    # hence we have arrived at the final value set of this item
+                    # This is how both MyForked and MyAlias can arrive at MyKey
+                    return value
 
     def _get_unsubstituted_item_property(self, table_id: str, property: str) -> str:
         """item property where release-debug and alias loops are resolved"""
         value = self._get_item(table_id)
-
+        if not property:
+            if isinstance(value, dict):
+                raise NoSuchValueException("Cannot get bare string. Item is a Dict")
+            else:
+                return value
         if property in value:
             return value[property]
         else:
-            raise NoSuchPropertyException(property)
+            raise NoSuchValueException(property)
 
     def _get_item_property(
         self, table_id: str, property: str, _forbidden_keys: Set[str] = None
@@ -101,32 +161,36 @@ class TableConfigurator(metaclass=Singleton):
         if not isinstance(raw_string, str):
             return raw_string
 
-        replacements = self.get_extra_details()
         # get all keys used in the raw_string, such as using {MyDb} will get "MyDb"
-        format_keys = [i[1] for i in Formatter().parse(raw_string) if i[1] is not None]
-        # subtract all extra keys from the set, e.g. take out "ENV"
-        other_resource_keys = set(format_keys) - set(replacements.keys())
+        format_keys = set(
+            i[1] for i in Formatter().parse(raw_string) if i[1] is not None
+        )
 
         # the forbidden-keys logic allows us to detect reference loops.
         # no key that is in the upstream of a property is allowed in the string
         # substitutions of this property.
         _forbidden_keys = _forbidden_keys or set()
-        _forbidden_keys.add(f"{table_id}_{property}")
+        composite_key = table_id
+        if property:
+            composite_key += f"_{property}"
+        _forbidden_keys.add(composite_key)
         if property == "name":
             _forbidden_keys.add(table_id)
-        if any(key in _forbidden_keys for key in other_resource_keys):
+        if any(key in _forbidden_keys for key in format_keys):
             raise ValueError(
                 f"Substitution loop at table {table_id} property {property}"
             )
 
         # every key that is not in the special properties and not forbidden
         # should refer to another resource. If it does not an exception will occur.
-        for key in other_resource_keys:
+        replacements = {}
+        for key in format_keys:
             try:
                 # maybe we have a case of reference to property, let's try:
 
                 id_part, property_part = key.rsplit("_", 1)
-                # will raise ValueError if there are too few parts
+                # will raise ValueError if there are too few parts,
+                # keys without _ are handled below
 
                 value = self._get_item_property(id_part, property_part, _forbidden_keys)
                 # raises ValueError if it does not exist
@@ -136,9 +200,22 @@ class TableConfigurator(metaclass=Singleton):
             except ValueError:
                 pass
 
-            # bare key references are to 'name' which _must_ exist in this case
+            # if we get here, there was no _ in the key. Either the key exists as a bare
+            # string value, try that:
+            try:
+                replacements[key] = self._get_item_property(key, "", _forbidden_keys)
+                continue
+            except NoSuchValueException:
+                pass
+
+            # otherwise bare key references are to 'name',
+            # which _must_ exist in this case
             replacements[key] = self._get_item_property(key, "name", _forbidden_keys)
 
+        # we have run through the key names of all replacement keys in the string.
+        # Any that we could not find were skipped silently above, but that means that
+        # we do not have them in 'replacements'. Therefore, this next step will raise an
+        # exception for any missing key, which will give a meaningful error to the user.
         return raw_string.format(**replacements)
 
     def add_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
@@ -160,17 +237,15 @@ class TableConfigurator(metaclass=Singleton):
                                 raise ValueError(f"document in {file_path} is no dict.")
 
                             for key, value in update.items():
-                                if not isinstance(value, dict):
-                                    raise ValueError(
-                                        f"value {key} in {file_path} is no dict."
-                                    )
+                                # we now support all bare value types in yaml.
+                                # no further checking
                                 self._raw_resource_details[key] = value
 
             # try re-building all details
             self.table_details = dict()
             self.get_all_details()
         except:  # noqa: E722  we re-raise the exception, so bare except is ok.
-            # this piece makes it so that the TableConfigurator can still be used
+            # this piece makes it so that the Configurator can still be used
             # if any exception raised by the above code is caught.
             self._raw_resource_details = backup_details
             raise
@@ -179,11 +254,14 @@ class TableConfigurator(metaclass=Singleton):
     # all methods below are interface and convenience methods
     ############################################
 
+    @deprecated(
+        reason="register literal string values instead.",
+    )
     def set_extra(self, **kwargs: str):
-        """Add extra replacement keys for your resources.
-        for example call .set_extra(ENV='prod')"""
-        self._extra_config.update(kwargs)
-        self.table_details = dict()
+        """Use .register(key,value) instead.
+        for example call .register('ENV','prod')"""
+        for key, value in kwargs.items():
+            self.register(key, value)
 
     def set_debug(self):
         """Select debug tables. {ID} will be replaced with a guid"""
@@ -220,12 +298,10 @@ class TableConfigurator(metaclass=Singleton):
         """
         return len(self._unique_id)
 
-    def register(self, key: str, value: TcDetails):
+    def register(self, key: str, value: TcValue):
         """
-        Register a new table.
+        Register a new item.
         """
-        if not isinstance(value, dict):
-            raise ValueError("value is no dict")
         self._raw_resource_details[key] = value
         self.table_details = dict()
 
@@ -259,13 +335,19 @@ class TableConfigurator(metaclass=Singleton):
         """
         return self.table_property(table_id, "name")
 
+    @deprecated(
+        reason='Use .get(table_id,"path") instead.',
+    )
     def table_path(self, table_id: str):
         """
         Return the table path for the specified table id.
         :param table_id: Table id in the .json or .yaml files.
         :return: str: table path
         """
-        return self.table_property(table_id, "path")
+        return self.get(table_id, "path")
+
+    def get(self, table_id: str, property: str = "") -> str:
+        return self._get_item_property(table_id, property)
 
     def get_all_details(self):
         """
@@ -286,19 +368,26 @@ class TableConfigurator(metaclass=Singleton):
             for table_id in self._raw_resource_details.keys():
                 # add the name as the bare key
                 try:
-                    self.table_details[table_id] = self._get_item_property(
-                        table_id, "name"
-                    )
-                except NoSuchPropertyException:
+                    self.table_details[table_id] = self.get(table_id)
+                    continue  # if it was a bare string, we can stop here
+                except NoSuchValueException:
                     pass
 
-                # add every propety as a _property part
+                try:
+                    self.table_details[table_id] = self.get(table_id, "name")
+                except NoSuchValueException:
+                    pass
+
+                # add every property as a _property part
                 for property_name in set(self._get_item(table_id).keys()):
                     try:
-                        self.table_details[
-                            f"{table_id}_{property_name}"
-                        ] = self._get_item_property(table_id, property_name)
-                    except NoSuchPropertyException:
-                        pass
+                        item = self.get(table_id, property_name)
+                    except NoSuchValueException:
+                        continue
+                    # if the dict values are dicts, stop here,
+                    # not supported for direct substitution
+                    # this will take care of definitions of schema and similar.
+                    if not isinstance(item, dict):
+                        self.table_details[f"{table_id}_{property_name}"] = str(item)
 
         return self.table_details

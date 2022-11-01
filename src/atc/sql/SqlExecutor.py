@@ -4,7 +4,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Union
 
-from atc.config_master import TableConfigurator
+from atc.configurator.configurator import Configurator
 from atc.spark import Spark
 from atc.sql import BaseExecutor
 
@@ -33,7 +33,7 @@ class SqlExecutor:
         if exclude_pattern is not None:
             exclude_pattern = exclude_pattern.replace("*", ".*")
 
-        replacements = TableConfigurator().get_all_details()
+        replacements = Configurator().get_all_details()
 
         executor = self.server or Spark.get()
 

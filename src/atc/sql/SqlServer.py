@@ -9,7 +9,7 @@ from typing import List, Union
 import pyodbc
 from pyspark.sql import DataFrame
 
-from atc.config_master import TableConfigurator
+from atc.configurator.configurator import Configurator
 from atc.spark import Spark
 from atc.sql.sql_handle import SqlHandle
 from atc.utils import GetMergeStatement
@@ -127,7 +127,7 @@ class SqlServer:
     def from_tc(self, id: str) -> SqlHandle:
         """This method allows an instance of SqlServer to be a drop in for the class
         DeltaHandle. One can call from_tc(id) on either to get a table handle."""
-        tc = TableConfigurator()
+        tc = Configurator()
         return SqlHandle(name=tc.table_name(id), sql_server=self)
 
     get_handle = from_tc
@@ -303,7 +303,7 @@ class SqlServer:
 
     @staticmethod
     def table_name(table_id: str):
-        return TableConfigurator().table_name(table_id)
+        return Configurator().table_name(table_id)
 
     def read_table(self, table_id: str):
         return self.read_table_by_name(SqlServer.table_name(table_id))
@@ -352,7 +352,7 @@ class SqlServer:
         :return: generator with SQL statements.
         """
 
-        sql_arguments = TableConfigurator().get_all_details()
+        sql_arguments = Configurator().get_all_details()
 
         if arguments is not None:
             sql_arguments.update(arguments)

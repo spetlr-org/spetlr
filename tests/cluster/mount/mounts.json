@@ -5,6 +5,8 @@
     "clientIdName":"Databricks--ClientId",
     "clientSecretName":"Databricks--ClientSecret",
     "tenantIdName":"Databricks--TenantId",
-    "containers":["silver"]
+    "containers":["silver"],
+
+    "comment": "This entire file is overwritten by the deployment pipeline"
   }
 ]

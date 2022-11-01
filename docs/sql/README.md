@@ -98,7 +98,7 @@ In the setup job, one could consider to create all delivery SQL tables:
 ```python
 # In setup.py
 def setup_production_tables():
-    TableConfigurator().set_prod()
+    Configurator().set_prod()
     SparkSqlExecutor().execute_sql_file("*")
     DeliverySqlExecutor().execute_sql_file("*")
 ```

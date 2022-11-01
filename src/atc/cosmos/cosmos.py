@@ -16,7 +16,7 @@ from pyspark.sql import DataFrame, types
 from pyspark.sql.types import DataType
 
 from atc.atc_exceptions import AtcException
-from atc.config_master import TableConfigurator
+from atc.configurator.configurator import Configurator
 from atc.cosmos.cosmos_base_server import CosmosBaseServer
 from atc.cosmos.cosmos_handle import CosmosHandle
 from atc.spark import Spark
@@ -95,7 +95,7 @@ class CosmosDb(CosmosBaseServer):
         return rd.load()
 
     def read_table(self, table_id: str, schema: DataType = None) -> DataFrame:
-        table_name = TableConfigurator().table_name(table_id)
+        table_name = Configurator().table_name(table_id)
         return self.read_table_by_name(table_name, schema)
 
     def write_table_by_name(
@@ -119,20 +119,18 @@ class CosmosDb(CosmosBaseServer):
     def write_table(
         self, df_source: DataFrame, table_id: str, rows_per_partition: int = None
     ):
-        table_name = TableConfigurator().table_name(table_id)
+        table_name = Configurator().table_name(table_id)
         self.write_table_by_name(df_source, table_name, rows_per_partition)
 
     def delete_item(
         self, table_id: str, id: Union[int, str], pk: Union[int, str] = None
     ):
 
-        cntr = self.db_client.get_container_client(
-            TableConfigurator().table_name(table_id)
-        )
+        cntr = self.db_client.get_container_client(Configurator().table_name(table_id))
         cntr.delete_item(id, partition_key=pk)
 
     def delete_container(self, table_id: str):
-        self.delete_container_by_name(TableConfigurator().table_name(table_id))
+        self.delete_container_by_name(Configurator().table_name(table_id))
 
     def delete_container_by_name(self, table_name: str):
 
@@ -166,7 +164,7 @@ class CosmosDb(CosmosBaseServer):
         )
 
     def from_tc(self, table_id: str) -> CosmosHandle:
-        tc = TableConfigurator()
+        tc = Configurator()
         name = tc.table_name(table_id)
         rows_per_partition = tc.table_property(table_id, "rows_per_partition", "")
         rows_per_partition = int(rows_per_partition) if rows_per_partition else None

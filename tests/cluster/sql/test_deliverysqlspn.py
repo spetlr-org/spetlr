@@ -1,4 +1,4 @@
-from atc.config_master import TableConfigurator
+from atc import Configurator
 
 from . import extras
 from .DeliverySqlServerSpn import DeliverySqlServerSpn
@@ -9,7 +9,7 @@ class DeliverySqlServerSpnTests(DeliverySqlServerTests):
     @classmethod
     def setUpClass(cls):
         cls.sql_server = DeliverySqlServerSpn()
-        cls.tc = TableConfigurator()
+        cls.tc = Configurator()
 
         cls.tc.add_resource_path(extras)
         cls.tc.reset(debug=True)

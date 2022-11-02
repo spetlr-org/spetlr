@@ -77,7 +77,12 @@ class TestConfigurator(unittest.TestCase):
         self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
 
     def test_08_test_deprecated_import(self):
+        from atc import Configurator
         from atc.config_master import TableConfigurator
 
         tc = TableConfigurator()
         self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
+
+        c = Configurator()
+
+        self.assertIs(tc, c)

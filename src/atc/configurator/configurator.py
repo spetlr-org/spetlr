@@ -30,9 +30,11 @@ class ConfiguratorSingleton(type):
     _instance = None
 
     def __call__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(ConfiguratorSingleton, cls).__call__(*args, **kwargs)
-        return cls._instance
+        if ConfiguratorSingleton._instance is None:
+            ConfiguratorSingleton._instance = super(
+                ConfiguratorSingleton, cls
+            ).__call__(*args, **kwargs)
+        return ConfiguratorSingleton._instance
 
 
 class Configurator(metaclass=ConfiguratorSingleton):

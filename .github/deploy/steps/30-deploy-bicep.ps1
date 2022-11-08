@@ -5,7 +5,7 @@ Write-Host "  Deploying ressources using Bicep..." -ForegroundColor Yellow
 # command that is slow or that can fail. This is to keep the destroy script, which also
 # depends on 00-Config as fast and as reliable as possible.
 $allowUserIp                  = (Invoke-WebRequest -UseBasicParsing "ifconfig.me/ip").Content.Trim()
-$spnobjectid = (Graph-ListSpn -queryDisplayName $cicdSpnName).id
+$spnobjectid = (Graph-GetSpn -queryDisplayName $cicdSpnName).id
 $devobjectid = az account show --query id
 
 $sqlAdminSpnName=$dbSpn.name

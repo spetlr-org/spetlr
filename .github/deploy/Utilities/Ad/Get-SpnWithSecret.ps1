@@ -35,7 +35,7 @@ function Get-SpnWithSecret {
 
 
   Write-Host "Verifying $spnName SPN Registration"
-  $app = Graph-ListApplications -queryDisplayName $spnName
+  $app = Graph-GetApplication -queryDisplayName $spnName
   $useOldPassword = $true
 
   if ($null -eq $app)
@@ -47,7 +47,7 @@ function Get-SpnWithSecret {
     Write-Host "$spnName App registration exists" -ForegroundColor DarkGreen
   }
 
-  $spnObject = Graph-ListSpn -queryDisplayName $spnName
+  $spnObject = Graph-GetSpn -queryDisplayName $spnName
   if (-not $spnObject)
   {
     Write-Host "  Creating $spnName Service Principal" -ForegroundColor DarkYellow

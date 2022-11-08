@@ -1,9 +1,9 @@
-Write-Host "  Assigning Databricks Service Principal as Contributor for Atc"
+Write-Host "  Assigning Service Principal as Contributor for Atc"
 
 $output = az role assignment create `
-  --role "Contributor" `
+  --role "Storage Blob Data Contributor" `
   --assignee-principal-type ServicePrincipal `
-  --assignee-object-id $dbDeploySpn.id `
+  --assignee-object-id $mountSpn.objectId `
   --resource-group $resourceGroupName
 
 Throw-WhenError -output $output

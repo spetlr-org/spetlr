@@ -1,11 +1,10 @@
 class DatabricksSecretsManager {
-  $secrets = @()
+  $secrets = @{}
 
 
   [void] addSecret([string]$name, [string]$value){
     # save for later so we can add it to databricks
-    $this.secrets += @{
-      name=$name
+    $this.secrets[$name] = @{
       value=$value
     }
   }
@@ -14,25 +13,18 @@ class DatabricksSecretsManager {
     New-DatabricksScope -name $db_secrets_scope
 
 
-    foreach ($secret in $this.secrets) {
+    foreach ($name in $this.secrets.keys) {
 
-      databricks secrets put --scope $db_secrets_scope --key $secret.name --string-value $secret.value
-      Write-Host "  Added secret '$($secret.name)'"
+      databricks secrets put --scope $db_secrets_scope --key $name --string-value $this.secrets[$name].value
+      Write-Host "  Added secret '$($name)'"
     }
-
-# $existing_keys = Convert-Safe-FromJson -text (databricks secrets list --scope $db_secrets_scope --output JSON)
-# Throw-WhenError -output $existing_keys
-#
-# foreach($secret in $existing_keys.secrets){
-#   if(-not $key_names.Contains($secret.key)){
-#     databricks secrets delete --scope $db_secrets_scope --key $secret.key
-#     Write-Host "  Deleted key '$($secret.key)'"
-#   }
-# }
-
-
   }
 
+  [void] list(){
+    foreach ($name in $this.secrets.keys) {
+      Write-Host $name
+    }
+  }
 }
 
 

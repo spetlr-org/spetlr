@@ -1,6 +1,15 @@
-$secrets = [DatabricksSecretsManager]::new()
-$values = [DatabricksSecretsManager]::new()
+# This script sets up a number of constants.
+# This step makes no call to any resource, and is therefore very fast.
 
+if(-not $secrets){
+  # allows this step to be imported multiple times.
+  $secrets = [DatabricksSecretsManager]::new()
+  $values = [DatabricksSecretsManager]::new()
+}
+
+# Important Paths
+$repoRoot = (git rev-parse --show-toplevel)
+$sqlSourceDir = Resolve-Path $PSScriptRoot/sql
 
 $permanentResourceName       = "githubatc"
 $permanentResourceGroup       = "atc-permanent"
@@ -19,47 +28,62 @@ $deliveryDatabase             = "Delivery"
 
 $sqlServerAdminUser           = "DataPlatformAdmin"
 $sqlServerAdminPassword       = Generate-Password
-$allowUserIp                  = (Invoke-WebRequest -UseBasicParsing "ifconfig.me/ip").Content.Trim()
+
 # Add to databrick secrets
 $secrets.addSecret("SqlServer--DataPlatformAdmin", $sqlServerAdminUser)
 $secrets.addSecret("SqlServer--DataPlatformAdminPassword", $sqlServerAdminPassword)
 
 
 $ehNamespace                  = $resourceName
+
+# The SPN whose role will be used to access the storage account
 $mountSpnName                 = "AtcMountSpn"
+
+# This SPn will be used to deploy databricks
+# The reason fo using a subsidiary SPN for this is that SPN can pull a databricks
+# token from an API with no human in the loop. So if the identity that runs the
+# deployment is a person, using this SPN allows us to still do this.
 $dbDeploySpnName              = "AtcDbSpn"
+
+# The SPN that runs the github pipeline
 $cicdSpnName                  = "AtcGithubPipe"
+
 $cosmosName                   = $permanentResourceName
+
 $keyVaultName                 = "atcGithubCiCd"
 
-$location                     = "westeurope"  # Use eastus because of free azure subscription
-$resourceTags = "{'Owner':'Auto Deployed', 'System':'ATC-NET','Service':'Data Platform'}"
-$resourceTags = $resourceTags.Replace("'",'\"')
+# Use eastus because of free azure subscription
+# note, we no longer use a free subscription
+$location                     = "westeurope"
+
+$resourceTags = @{
+  Owner='Auto Deployed'
+  System='ATC-NET'
+  Service='Data Platform'
+  deployedAt="$(Get-Date -Format "o" -AsUTC)"
+}
+
+$resourceTags = ($resourceTags| ConvertTo-Json -Depth 4 -Compress).Replace('"','\"')
 
 $dataLakeContainers = (,@(@{"name"="silver"}))
 
 
-$dataLakeContainersJson = $dataLakeContainers | ConvertTo-Json -Depth 4 -Compress
-$dataLakeContainersJson = $dataLakeContainersJson.Replace('"','\"')
+$dataLakeContainersJson = ($dataLakeContainers | ConvertTo-Json -Depth 4 -Compress).Replace('"','\"')
 
-$eventHubConfig = @(
+$eventHubConfig = (,@(
     @{
       "name"="atceh"
       "namespace"=$ehNamespace
       "captureLocation" = "silver"
     }
-)
-
-$pipelineSpnName = $cicdSpnName
-$pipelineObjectId = (Graph-ListSpn -queryDisplayName $pipelineSpnName).id
-
-$eventHubConfigJson = "[{'name':'atceh', 'namespace':'$ehNamespace','captureLocation':'silver'}]"
-$eventHubConfigJson = $eventHubConfigJson.Replace("'",'\"')
+))
+$eventHubConfigJson = ($eventHubConfig | ConvertTo-Json -Depth 4 -Compress).Replace('"','\"')
 
 
-$devobjectid = az account show --query id
+$sqlAdminSpnName = $cicdSpnName
 
-$spnobjectid = (Graph-ListSpn -queryDisplayName $cicdSpnName).id
+
+
 
 
 

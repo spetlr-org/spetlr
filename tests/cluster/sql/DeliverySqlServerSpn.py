@@ -10,6 +10,8 @@ class DeliverySqlServerSpn(SqlServer):
         super().__init__(
             hostname=f"{resourceName()}test.database.windows.net",
             database="Delivery",
-            spnpassword=init_dbutils().secrets.get("secrets", "DbDeploy--ClientSecret"),
-            spnid=init_dbutils().secrets.get("secrets", "DbDeploy--ClientId"),
+            spnpassword=init_dbutils().secrets.get(
+                "secrets", "Databricks--ClientSecret"
+            ),
+            spnid=init_dbutils().secrets.get("secrets", "Databricks--ClientId"),
         )

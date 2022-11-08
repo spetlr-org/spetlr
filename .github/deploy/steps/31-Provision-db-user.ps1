@@ -1,5 +1,3 @@
-Write-Host "  Install SqlServer (Invoke-SqlCmd)" -ForegroundColor DarkYellow
-Install-Module -Name SqlServer -Force
 
 Write-Host "  Generating database user" -ForegroundColor DarkYellow
 
@@ -25,13 +23,14 @@ $variables =
 
 
 Write-Host "   Creating database user for user: $($dbUserName)" -ForegroundColor DarkYellow
-Invoke-Sqlcmd `
+$output = Invoke-Sqlcmd `
   -ServerInstance $sqlServerInstance `
   -Database $deliveryDatabase `
   -Username $sqlServerAdminUser `
   -Password $sqlServerAdminPassword `
-  -InputFile $PSScriptRoot/sql/createduser.sql `
+  -InputFile $sqlSourceDir/createduser.sql `
   -Variable $variables
+Throw-WhenError -output $output
 
 
 # Insert SQL credentials to secrets

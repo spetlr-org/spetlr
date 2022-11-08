@@ -31,8 +31,8 @@ pip install --upgrade databricks-cli --quiet
 Write-Host "  Add the SPN to the Databricks Workspace as an admin user" -ForegroundColor DarkYellow
 $accessToken = Set-DatabricksSpnAdminUser `
   -tenantId $tenantId `
-  -clientId $clientId `
-  -clientSecret (ConvertFrom-SecureString $clientSecret -AsPlainText) `
+  -clientId $dbSpn.clientId `
+  -clientSecret $dbSpn.secretText `
   -workspaceUrl $workspaceUrl `
   -resourceId $resourceId
 

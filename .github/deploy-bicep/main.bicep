@@ -2,18 +2,18 @@
 targetScope = 'subscription'
 
 
-param permanentResourceGroup string 
-param location string 
-param keyVaultName string 
+param permanentResourceGroup string
+param location string
+param keyVaultName string
 param devobjectid string
 param spnobjectid string
-param resourceTags object 
-param cosmosName string 
-param resourceGroupName string 
+param resourceTags object
+param cosmosName string
+param resourceGroupName string
 param databricksName string
-param dataLakeName string 
+param dataLakeName string
 param datalakeContainers array
-param ehNamespace string 
+param ehNamespace string
 param eventHubConfig array
 param databaseServerName string
 param deliveryDatabase string
@@ -21,8 +21,8 @@ param allowUserIp string
 param sqlServerAdminUser string
 @secure()
 param sqlServerAdminPassword string
-param pipelineSpnName string
-param pipelineObjectId string
+param sqlAdminSpnName string
+param sqlAdminObjectId string
 
 // Creating permanent resource group
 module rgModule 'rg-permanent.bicep' = {
@@ -80,7 +80,7 @@ module resources2 'resources-integration.bicep' = {
     deliveryDatabase: deliveryDatabase
     sqlServerAdminUser: sqlServerAdminUser
     sqlServerAdminPassword: sqlServerAdminPassword
-    pipelineSpnName: pipelineSpnName
-    pipelineObjectId: pipelineObjectId
+    sqlAdminSpnName: sqlAdminSpnName
+    sqlAdminObjectId: sqlAdminObjectId
   }
 }

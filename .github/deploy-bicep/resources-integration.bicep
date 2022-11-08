@@ -12,8 +12,8 @@ param deliveryDatabase string
 param sqlServerAdminUser string
 @secure()
 param sqlServerAdminPassword string
-param pipelineSpnName string
-param pipelineObjectId string
+param sqlAdminSpnName string
+param sqlAdminObjectId string
 
 //#############################################################################################
 //# Provision Databricks Workspace
@@ -82,7 +82,7 @@ resource eventhubs 'Microsoft.EventHub/namespaces@2021-11-01' = {
   sku: {
     name: 'Standard'
   }
-  
+
   resource ehs 'eventhubs@2021-11-01' = [for eh in eventHubConfig: {
     name: eh.name
     properties: {
@@ -122,12 +122,12 @@ resource sqlserver 'Microsoft.Sql/servers@2022-02-01-preview' = {
   properties: {
     administratorLogin: sqlServerAdminUser
     administratorLoginPassword: sqlServerAdminPassword
-    
+
     administrators: {
       administratorType: 'ActiveDirectory'
-      login: pipelineSpnName
+      login: sqlAdminSpnName
       principalType: 'Application'
-      sid: pipelineObjectId
+      sid: sqlAdminObjectId
       tenantId: tenant().tenantId
     }
   }
@@ -160,7 +160,7 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2022-02-01-preview' = {
   location: location
   tags: resourceTags
   sku: {
-    name: 'GP_S_Gen5' 
+    name: 'GP_S_Gen5'
     capacity: 1
     tier: 'GeneralPurpose'
     family: 'Gen5'

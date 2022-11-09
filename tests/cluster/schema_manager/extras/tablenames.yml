@@ -13,23 +13,3 @@ SchemaTestTable2:
   schema: 
     sql: |
       a INTEGER, b STRING,
-
-SchemaTestTable3:
-  name: "{SchemaTestDb}.schematbl3"
-  path: "{SchemaTestDb_path}/schematbl3"
-  schema: 
-    json: {}
-
-SchemaTestTable4:
-  name: "{SchemaTestDb}.schematbl4"
-  path: "{SchemaTestDb_path}/schematbl4"
-  schema: 
-    python: |
-      StructType(
-          [
-              StructField("TestCol1", IntegerType(), True),
-              StructField("TestCol2", StringType(), False),
-              StructField("TestCol3", TimestampType(), True),
-              StructField("TestCol4", BooleanType(), True),
-          ]
-      )

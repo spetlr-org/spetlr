@@ -1,6 +1,6 @@
 from pyspark.sql import types as t
 
-test_schema = t.StructType(
+python_test_schema = t.StructType(
     [
         t.StructField("a", t.IntegerType(), True),
         t.StructField(

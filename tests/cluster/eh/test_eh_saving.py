@@ -1,7 +1,8 @@
 import time
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
+from atc_tools.time import dt_utc
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 
@@ -69,6 +70,17 @@ class EventHubsTests(unittest.TestCase):
         )
         rows = {tuple(row) for row in df.collect()}
         self.assertEqual({(1, "a"), (2, "b")}, rows)
+
+        df = eh.read().select("EnqueuedTimestamp")
+        self.assertEqual(
+            df.schema.fields[0].dataType.typeName().upper(),
+            "TIMESTAMP",
+        )
+        row_written: datetime = df.take(1)[0][0]
+        # assert that the eventhub row was written less than 1000 seconds ago
+        self.assertLess(
+            abs((row_written.astimezone(timezone.utc) - dt_utc()).total_seconds()), 1000
+        )
 
     def test_04_read_eh_capture_extractor(self):
         tc = Configurator()

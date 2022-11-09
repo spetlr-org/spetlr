@@ -223,30 +223,6 @@ class Configurator(metaclass=ConfiguratorSingleton):
         # exception for any missing key, which will give a meaningful error to the user.
         return raw_string.format(**replacements)
 
-    def _get_schema_property(
-        self, table_id: str, property: str, _forbidden_keys: Set[str] = None
-    ) -> str:
-        """Get the full schema, referencing a pyspark data model, as a string"""
-        raw_string = self._get_unsubstituted_item_property(table_id, property)
-
-        # ensure that the item is a string
-        if not isinstance(raw_string, str):
-            raise ValueError(f"Invalid schema reference at table {table_id}")
-
-        # get the schema reference key
-        keys = [i[1] for i in Formatter().parse(raw_string) if i[1] is not None]
-
-        # ensure that the item consists of a single reference key
-        if len(keys) != 1:
-            raise ValueError(f"Invalid schema reference at table {table_id}")
-
-        key = keys[0]
-
-        _forbidden_keys = _forbidden_keys or set()
-        _forbidden_keys.add(f"{table_id}_{property}")
-
-        return self.schema_handler.get_schema(key)
-
     def add_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
         backup_details = self._raw_resource_details.copy()
         try:

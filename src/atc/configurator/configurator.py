@@ -4,7 +4,7 @@ import uuid
 from pathlib import Path
 from string import Formatter
 from types import ModuleType
-from typing import Dict, List, Set, Union
+from typing import Dict, Set, Union
 
 import yaml
 from deprecated import deprecated
@@ -48,15 +48,12 @@ class Configurator(metaclass=ConfiguratorSingleton):
     def __init__(
         self,
         resource_path: Union[str, ModuleType] = None,
-        schema_handler: SchemaHandler = None,
     ):
         self._unique_id = uuid.uuid4().hex
         self.clear_all_configurations()
 
         if resource_path:
             self.add_resource_path(resource_path)
-
-        self.schema_handler = schema_handler
 
     def clear_all_configurations(self):
         self._raw_resource_details = dict()
@@ -281,15 +278,6 @@ class Configurator(metaclass=ConfiguratorSingleton):
             # if any exception raised by the above code is caught.
             self._raw_resource_details = backup_details
             raise
-
-    def add_schema_modules(
-        self,
-        schema_modules: Union[ModuleType, List[ModuleType]],
-        recursive: bool = True,
-    ):
-        self.schema_handler.add_modules(
-            schema_modules=schema_modules, recursive=recursive
-        )
 
     ############################################
     # all methods below are interface and convenience methods

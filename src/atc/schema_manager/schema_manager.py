@@ -4,7 +4,7 @@ from typing import Dict
 import pyspark.sql.types as T
 
 from atc.atc_exceptions import AtcException
-from atc.config_master import TableConfigurator
+from atc.configurator import Configurator
 from atc.singleton import Singleton
 
 
@@ -38,9 +38,7 @@ class SchemaManager(metaclass=Singleton):
 
         # Otherwise, check if the schema identifier is a table identifier
         try:
-            schema = TableConfigurator().table_property(
-                table_id=schema_identifier, property_name="schema"
-            )
+            schema = Configurator().get(table_id=schema_identifier, property="schema")
         except ValueError:
             raise NoSuchSchemaException(schema_identifier)
 
@@ -87,7 +85,7 @@ class SchemaManager(metaclass=Singleton):
     def get_all_schemas(self):
         out_schemas = copy.deepcopy(self._registered_schemas)
 
-        table_details = TableConfigurator().get_all_details()
+        table_details = Configurator().get_all_details()
 
         for name, value in list(table_details.items()):
             if "_schema" in name:

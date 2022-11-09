@@ -2,7 +2,7 @@ import unittest
 
 import pyspark.sql.types as T
 
-from atc.config_master import TableConfigurator
+from atc.configurator import Configurator
 from atc.schema_manager import SchemaManager
 from tests.cluster.schema_manager import extras
 
@@ -26,7 +26,7 @@ class TestSchemaManager(unittest.TestCase):
         self.assertIn("register_test", manager._registered_schemas.keys())
 
     def test_get_registered_schema(self):
-        TableConfigurator().add_resource_path(extras)
+        Configurator().add_resource_path(extras)
         manager = SchemaManager()
 
         schema = T.StructType(
@@ -47,7 +47,7 @@ class TestSchemaManager(unittest.TestCase):
         )
 
     def test_get_python_ref_schema(self):
-        TableConfigurator().add_resource_path(extras)
+        Configurator().add_resource_path(extras)
 
         schema = SchemaManager().get_schema(schema_identifier="SchemaTestTable1")
 
@@ -56,7 +56,7 @@ class TestSchemaManager(unittest.TestCase):
         self.assertEqual(schema, expected_schema)
 
     def test_get_sql_schema(self):
-        TableConfigurator().add_resource_path(extras)
+        Configurator().add_resource_path(extras)
 
         schema = SchemaManager().get_schema(schema_identifier="SchemaTestTable2")
 
@@ -78,7 +78,7 @@ class TestSchemaManager(unittest.TestCase):
         pass
 
     def test_get_schema_as_string(self):
-        TableConfigurator().add_resource_path(extras)
+        Configurator().add_resource_path(extras)
 
         schema = SchemaManager().get_schema_as_string(
             schema_identifier="SchemaTestTable2"
@@ -87,12 +87,12 @@ class TestSchemaManager(unittest.TestCase):
         self.assertEqual(schema, "a INTEGER, b STRING,")
 
     def test_get_all_schemas(self):
-        TableConfigurator().add_resource_path(extras)
+        Configurator().add_resource_path(extras)
 
         schemas_dict = SchemaManager().get_all_schemas()
 
         expected_schemas = {
-            "python_test_table": extras.python_test_schema,
+            "python_test_schema": extras.python_test_schema,
             "SchemaTestTable1": extras.python_test_schema,
             "SchemaTestTable2": T.StructType(
                 [
@@ -105,7 +105,7 @@ class TestSchemaManager(unittest.TestCase):
         self.assertDictEqual(schemas_dict, expected_schemas)
 
     def test_get_all_spark_sql_schemas(self):
-        TableConfigurator().add_resource_path(extras)
+        Configurator().add_resource_path(extras)
 
         schemas_dict = SchemaManager().get_all_spark_sql_schemas()
 

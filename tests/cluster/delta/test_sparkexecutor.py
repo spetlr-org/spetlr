@@ -19,7 +19,6 @@ class DeliverySparkExecutorTests(unittest.TestCase):
         cls.tc = Configurator()
         cls.tc.add_resource_path(extras)
         cls.tc.set_debug()
-        cls.tc.add_schema_modules(extras)
 
         cls.dbh = DbHandle
         cls.dh = DeltaHandle

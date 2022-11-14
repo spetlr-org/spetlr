@@ -26,3 +26,15 @@ class MoreThanTwoDataFramesException(AtcException):
 
 class EhJsonToDeltaException(AtcException):
     pass
+
+
+class NoSuchSchemaException(AtcException):
+    pass
+
+
+class FalseSchemaDefinitionException(AtcException):
+    pass
+
+
+class UnregisteredSchemaDefinitionException(AtcException):
+    pass

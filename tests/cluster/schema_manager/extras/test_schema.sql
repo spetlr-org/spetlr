@@ -1,11 +1,9 @@
 CREATE DATABASE IF NOT EXISTS {SchemaTestDb}
-COMMENT "Contains schema testing data"
-LOCATION "{SchemaTestDb_path}";
+COMMENT "Contains schema testing data";
 
-CREATE TABLE IF NOT EXISTS {SchemaTestTable}
+CREATE TABLE IF NOT EXISTS {SchemaTestTable1}
 (
-    {SchemaTestTable_schema}
+    {SchemaTestTable1_schema}
 )
-USING DELTA
+USING {SchemaTestTable1_format}
 COMMENT "Contains schema testing data"
-LOCATION "{SchemaTestTable_path}"

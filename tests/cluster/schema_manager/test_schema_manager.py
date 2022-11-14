@@ -118,6 +118,32 @@ class TestSchemaManager(unittest.TestCase):
 
         self.assertDictEqual(schemas_dict, expected_schemas)
 
+    def test_schema_to_spark_sql(self):
+        schema = T.StructType(
+            [
+                T.StructField("Column1", T.IntegerType(), True),
+                T.StructField("Column2", T.StringType(), True),
+                T.StructField("Column3", T.FloatType(), True),
+            ]
+        )
+
+        expected_str = "Column1 INTEGER, Column2 STRING, Column3 FLOAT"
+
+        transformed_str = SchemaManager()._schema_to_spark_sql(schema=schema)
+        transformed_schema = T._parse_datatype_string(s=transformed_str)
+
+        self.assertEqual(expected_str, transformed_str)
+        self.assertEqual(schema, transformed_schema)
+
+    def test_sql_executor_schema(self):
+        SparkSqlExecutor().execute_sql_file("*")
+
+        test_df = DeltaHandle.from_tc("SparkTestTable1").read()
+
+        expected_columns = extras.python_test_schema.names
+
+        self.assertEqual(test_df.columns, expected_columns)
+
 
 if __name__ == "__main__":
     unittest.main()

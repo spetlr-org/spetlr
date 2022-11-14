@@ -5,6 +5,7 @@ SchemaTestDb:
 SchemaTestTable1:
   name: "{SchemaTestDb}.schematbl1"
   path: "{SchemaTestDb_path}/schematbl1"
+  format: "delta"
   schema: "python_test_schema"
 
 SchemaTestTable2:

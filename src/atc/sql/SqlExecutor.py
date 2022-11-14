@@ -5,6 +5,7 @@ from types import ModuleType
 from typing import Union
 
 from atc.configurator.configurator import Configurator
+from atc.schema_manager import SchemaManager
 from atc.spark import Spark
 from atc.sql import BaseExecutor
 
@@ -34,10 +35,8 @@ class SqlExecutor:
             exclude_pattern = exclude_pattern.replace("*", ".*")
 
         replacements = Configurator().get_all_details()
-        # replacements update with schema manager
-        # name: manager.get_all_spark_sql_schemas()
-        # manager asks table configurator for all keys, specifically if they have a
-        # schema
+        schema_replacements = SchemaManager().get_all_spark_sql_schemas()
+        replacements = {**replacements, **schema_replacements}
 
         executor = self.server or Spark.get()
 

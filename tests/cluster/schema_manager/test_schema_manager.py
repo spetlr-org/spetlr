@@ -60,7 +60,7 @@ class TestSchemaManager(unittest.TestCase):
             "a int, b int, c string",
             "cplx struct<someId:string,details:struct<id:string>,"
             "blabla:array<int>>, d timestamp, m map<int,string>,"
-            " p decimal(10,3), final string"
+            " p decimal(10,3), final string",
         )
         expected_schemas = {
             "python_test_table": test_table_string,

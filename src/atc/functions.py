@@ -8,7 +8,7 @@ from deprecated import deprecated
 from pyspark.sql.functions import udf
 from pyspark.sql.types import StringType
 
-from atc.atc_exceptions import NoTableException
+from atc.atc_exceptions import NoDbUtils, NoTableException
 from atc.spark import Spark
 
 # Pyspark uuid function implemented as recommended here
@@ -20,12 +20,14 @@ def init_dbutils():
     try:
         from pyspark.dbutils import DBUtils
 
-        dbutils = DBUtils(Spark.get())
-    except ImportError:
-        import IPython
+        return DBUtils(Spark.get())
+    except (ImportError, ModuleNotFoundError):
+        try:
+            import IPython
 
-        dbutils = IPython.get_ipython().user_ns["dbutils"]
-    return dbutils
+            return IPython.get_ipython().user_ns["dbutils"]
+        except (ImportError, ModuleNotFoundError):
+            raise NoDbUtils()
 
 
 @deprecated(reason="Use DeltaHandle.drop_and_delete")

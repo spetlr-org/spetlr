@@ -7,10 +7,9 @@ import requests
 
 from ..atc_exceptions import NoRunId
 from .JobReflection import JobReflection
-from .WebHookNotifier import WebHookNotifier
 
 
-class SlackNotifier(WebHookNotifier):
+class SlackNotifier:
     def __init__(self, webhookurl: str):
         self.webhookurl = webhookurl
 
@@ -35,7 +34,8 @@ class SlackNotifier(WebHookNotifier):
             + ">\n"
         )
 
-        text += f"\n{message}\n"
+        if message:
+            text += f"\n{message}\n"
 
         text += f"\nCaller info:\n```\n{called_from}\n```\n"
 

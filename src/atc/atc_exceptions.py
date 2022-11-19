@@ -30,3 +30,7 @@ class EhJsonToDeltaException(AtcException):
 
 class NoRunId(AtcException):
     pass
+
+
+class NoDbUtils(AtcException):
+    pass

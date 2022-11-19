@@ -3,7 +3,7 @@ from functools import lru_cache
 
 from requests import HTTPError
 
-from atc.atc_exceptions import NoRunId
+from atc.atc_exceptions import NoDbUtils, NoRunId
 from atc.db_auto import getDbApi
 from atc.functions import init_dbutils
 
@@ -24,7 +24,7 @@ class JobReflection:
                 .getContext()
                 .toJson()
             )
-        except AttributeError:
+        except (AttributeError, NoDbUtils):
             raise NoRunId()
 
     @classmethod

@@ -17,7 +17,10 @@ class SchemaManager(metaclass=Singleton):
     _registered_schemas: Dict[str, T.StructType] = {}
 
     def __init__(self):
-        pass
+        self.clear_all_configurations()
+
+    def clear_all_configurations(self):
+        self._registered_schemas = dict()
 
     def register_schema(self, schema_name: str, schema: T.StructType) -> None:
         self._registered_schemas[schema_name] = schema
@@ -86,7 +89,7 @@ class SchemaManager(metaclass=Singleton):
 
         return str_schema
 
-    def get_all_schemas(self) -> Dict[str, T.StringType]:
+    def get_all_schemas(self) -> Dict[str, T.StructType]:
         table_ids = Configurator().table_details.keys()
 
         for id in table_ids:
@@ -107,7 +110,3 @@ class SchemaManager(metaclass=Singleton):
             str_schemas[name] = str_schema
 
         return str_schemas
-
-
-def register_schema(schema_name: str, schema: T.StructField) -> None:
-    SchemaManager().register_schema(schema_name=schema_name, schema=schema)

@@ -11,6 +11,7 @@ SchemaTestTable1:
 SchemaTestTable2:
   name: "{SchemaTestDb}.schematbl2"
   path: "{SchemaTestDb_path}/schematbl2"
-  schema: 
+  schema:
     sql: |
-      a INTEGER, b STRING,
+      a INTEGER,
+      b STRING

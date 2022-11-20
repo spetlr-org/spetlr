@@ -5,14 +5,20 @@ import pyspark.sql.types as T
 from atc.configurator import Configurator
 from atc.delta import DeltaHandle
 from atc.schema_manager import SchemaManager
-from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
-from tests.cluster.schema_manager import extras
+
+from . import extras
+from .SparkExecutor import SparkSqlExecutor
 
 
 class TestSchemaManager(unittest.TestCase):
-    def test_get_sql_schema(self):
-        Configurator().add_resource_path(extras)
+    @classmethod
+    def setUpClass(cls) -> None:
+        c = Configurator()
+        c.clear_all_configurations()
+        c.add_resource_path(extras)
+        extras.initSchemaManger()
 
+    def test_get_sql_schema(self):
         schema = SchemaManager().get_schema(schema_identifier="SchemaTestTable2")
 
         expected_schema = T.StructType(
@@ -25,16 +31,14 @@ class TestSchemaManager(unittest.TestCase):
         self.assertEqual(schema, expected_schema)
 
     def test_get_schema_as_string(self):
-        Configurator().add_resource_path(extras)
 
         schema = SchemaManager().get_schema_as_string(
             schema_identifier="SchemaTestTable2"
         )
 
-        self.assertEqual(schema, "a INTEGER, b STRING,")
+        self.assertEqual(schema, "a int, b string")
 
     def test_get_all_schemas(self):
-        Configurator().add_resource_path(extras)
 
         schemas_dict = SchemaManager().get_all_schemas()
 
@@ -52,20 +56,22 @@ class TestSchemaManager(unittest.TestCase):
         self.assertDictEqual(schemas_dict, expected_schemas)
 
     def test_get_all_spark_sql_schemas(self):
-        Configurator().add_resource_path(extras)
-
         schemas_dict = SchemaManager().get_all_spark_sql_schemas()
 
         test_table_string = (
-            "a int, b int, c string",
-            "cplx struct<someId:string,details:struct<id:string>,"
-            "blabla:array<int>>, d timestamp, m map<int,string>,"
-            " p decimal(10,3), final string",
+            "a int, "
+            "b int, "
+            "c string, "
+            "cplx struct<someId:string,details:struct<id:string>,blabla:array<int>>, "
+            "d timestamp, "
+            "m map<int,string>, "
+            "p decimal(10,3), "
+            "final string"
         )
         expected_schemas = {
             "python_test_table": test_table_string,
             "SchemaTestTable1": test_table_string,
-            "SchemaTestTable2": "a INTEGER, b STRING,",
+            "SchemaTestTable2": "a int, b string",
         }
 
         self.assertDictEqual(schemas_dict, expected_schemas)
@@ -79,12 +85,12 @@ class TestSchemaManager(unittest.TestCase):
             ]
         )
 
-        expected_str = "Column1 INTEGER, Column2 STRING, Column3 FLOAT"
-
         transformed_str = SchemaManager()._schema_to_spark_sql(schema=schema)
+        expected_str = "Column1 int, Column2 string, Column3 float"
+        self.assertEqual(expected_str, transformed_str)
+
         transformed_schema = T._parse_datatype_string(s=transformed_str)
 
-        self.assertEqual(expected_str, transformed_str)
         self.assertEqual(schema, transformed_schema)
 
     def test_sql_executor_schema(self):
@@ -92,10 +98,4 @@ class TestSchemaManager(unittest.TestCase):
 
         test_df = DeltaHandle.from_tc("SparkTestTable1").read()
 
-        expected_columns = extras.python_test_schema.names
-
-        self.assertEqual(test_df.columns, expected_columns)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        self.assertEqual(test_df.schema, extras.python_test_schema)

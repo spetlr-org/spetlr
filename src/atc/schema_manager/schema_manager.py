@@ -105,7 +105,7 @@ class SchemaManager(metaclass=Singleton):
         schemas_dict = self.get_all_schemas()
         str_schemas = {}
 
-        for name, schema in list(schemas_dict.items()):
+        for name, schema in schemas_dict.items():
             str_schema = self._schema_to_spark_sql(schema)
             str_schemas[name] = str_schema
 

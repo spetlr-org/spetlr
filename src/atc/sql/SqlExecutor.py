@@ -35,7 +35,10 @@ class SqlExecutor:
             exclude_pattern = exclude_pattern.replace("*", ".*")
 
         replacements = Configurator().get_all_details()
-        schema_replacements = SchemaManager().get_all_spark_sql_schemas()
+        schema_replacements = {
+            f"{k}_schema": v
+            for k, v in SchemaManager().get_all_spark_sql_schemas().items()
+        }
         replacements = {**replacements, **schema_replacements}
 
         executor = self.server or Spark.get()

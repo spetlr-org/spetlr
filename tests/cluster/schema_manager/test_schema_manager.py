@@ -97,6 +97,6 @@ class TestSchemaManager(unittest.TestCase):
     def test_sql_executor_schema(self):
         SparkSqlExecutor().execute_sql_file("*")
 
-        test_df = DeltaHandle.from_tc("SparkTestTable1").read()
+        test_df = DeltaHandle.from_tc("SchemaTestTable1").read()
 
         self.assertEqual(test_df.schema, extras.python_test_schema)

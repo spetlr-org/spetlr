@@ -16,6 +16,7 @@ class TestSchemaManager(unittest.TestCase):
         c = Configurator()
         c.clear_all_configurations()
         c.add_resource_path(extras)
+        SchemaManager().clear_all_configurations()
         extras.initSchemaManger()
 
     def test_get_sql_schema(self):
@@ -57,7 +58,7 @@ class TestSchemaManager(unittest.TestCase):
 
     def test_get_all_spark_sql_schemas(self):
         schemas_dict = SchemaManager().get_all_spark_sql_schemas()
-
+        self.maxDiff = None
         test_table_string = (
             "a int, "
             "b int, "
@@ -69,7 +70,7 @@ class TestSchemaManager(unittest.TestCase):
             "final string"
         )
         expected_schemas = {
-            "python_test_table": test_table_string,
+            "python_test_schema": test_table_string,
             "SchemaTestTable1": test_table_string,
             "SchemaTestTable2": "a int, b string",
         }

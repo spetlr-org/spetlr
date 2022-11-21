@@ -26,3 +26,11 @@ class MoreThanTwoDataFramesException(AtcException):
 
 class EhJsonToDeltaException(AtcException):
     pass
+
+
+class NoRunId(AtcException):
+    pass
+
+
+class NoDbUtils(AtcException):
+    pass

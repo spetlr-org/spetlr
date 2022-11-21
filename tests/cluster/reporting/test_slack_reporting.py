@@ -48,9 +48,8 @@ class SlackNotifierTests(unittest.TestCase):
     def test_01_info_webhook(self):
         slack = SlackNotifier(self.hook_url)
 
-        # print(f"http://{httpd.server_name}:{httpd.server_port}/")
         # Call the WebHookNotifier here
-        slack.notify_info()
+        slack.notify_info("my nice message")
 
         self.assertTrue(self.HTTPHandler.called)
         self.assertIn("text", self.HTTPHandler.called_data)
@@ -59,6 +58,7 @@ class SlackNotifierTests(unittest.TestCase):
             "message was sent from your job Testing Run",
         )
         self.assertRegex(self.HTTPHandler.called_data["text"], "test_01_info_webhook")
+        self.assertRegex(self.HTTPHandler.called_data["text"], "my nice message")
         print(self.HTTPHandler.called_data["text"])
 
     def test_02_exc_webhook(self):

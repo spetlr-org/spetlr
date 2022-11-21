@@ -1,5 +1,6 @@
 import json
 from functools import lru_cache
+from typing import Dict
 
 from requests import HTTPError
 
@@ -11,7 +12,7 @@ from atc.functions import init_dbutils
 class JobReflection:
     @classmethod
     @lru_cache
-    def get_job_details(cls):
+    def get_job_details(cls) -> Dict:
         try:
             # this strange construct reaches beyond the pyspark api layer
             # and into undocumented structures in order to retrieve the details
@@ -29,7 +30,7 @@ class JobReflection:
 
     @classmethod
     @lru_cache
-    def get_job_api_details(cls):
+    def get_job_api_details(cls) -> Dict:
         run_id = cls.get_current_run_id()
         db_api = getDbApi()
 

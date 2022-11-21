@@ -4,13 +4,13 @@ The Schema Manager class is the intended way to retrieve schemas in atc. It can 
 The `SchemaManager` class is a singleton class that can be invoked anywhere to get any schema defined in a dataplatform using offline mthods.
 
 ### Summary
-This section will briefly cover the included methods and their use, the following sections go inot slightly more detail with how they are implemented.
+This section will briefly cover the included methods and their use, the following sections go into slightly more detail with how they are implemented.
 The main methods are:
 - `register_schema`
 - `get_schema`
 - `get_all_schemas`
 Schemas written in pyspark must be registered with a given name to be accessible. The schema of any table can be retrieved by invoking the `get_schema` method with either the given name of the schema or the name of the table the schema is attributed to in a .yaml file.
-Lastly, all defined schemas can be, which includes those defined in separate files as well as .yaml files.
+Lastly, all defined schemas can be retrieved in a single dictionary. This includes those defined in separate files as well as .yaml files.
 
 
 ### Schema Types

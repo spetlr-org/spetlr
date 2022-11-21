@@ -38,3 +38,11 @@ class FalseSchemaDefinitionException(AtcException):
 
 class UnregisteredSchemaDefinitionException(AtcException):
     pass
+
+
+class NoRunId(AtcException):
+    pass
+
+
+class NoDbUtils(AtcException):
+    pass

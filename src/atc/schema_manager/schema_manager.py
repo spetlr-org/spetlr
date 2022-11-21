@@ -33,7 +33,7 @@ class SchemaManager(metaclass=Singleton):
         a Configurator table id.
         """
 
-        # Check if the identifier is a registered schema
+        # Check if the identifier was directly registered or previously retrieved
         if schema_identifier in self._registered_schemas.keys():
             return self._registered_schemas[schema_identifier]
 
@@ -43,12 +43,13 @@ class SchemaManager(metaclass=Singleton):
         except ValueError:
             raise NoSuchSchemaException(schema_identifier)
 
-        # If the schema is a string, check if it has been registered
-        if isinstance(schema, str) and schema in self._registered_schemas.keys():
-            self._registered_schemas[schema_identifier] = self._registered_schemas[
-                schema
-            ]
-            return self._registered_schemas[schema_identifier]
+        # If the schema is a string, look it up as another schema
+        if isinstance(schema, str):
+            # exceptions raised here will correctly roll up to the caller.
+            # recursive call allows for stacked definitions
+            other_schema = self.get_schema(schema)
+            self._registered_schemas[schema_identifier] = other_schema
+            return other_schema
 
         # Otherwise, it must be a dict
         if not isinstance(schema, dict):
@@ -59,10 +60,11 @@ class SchemaManager(metaclass=Singleton):
 
         # Check if the schema is a sql string
         if key == "sql":
-            self._registered_schemas[schema_identifier] = T._parse_datatype_string(
-                value
-            )
-            return self._registered_schemas[schema_identifier]
+            parsed_schema = T._parse_datatype_string(value)
+            if not isinstance(parsed_schema, T.StructType):
+                raise FalseSchemaDefinitionException()
+            self._registered_schemas[schema_identifier] = parsed_schema
+            return parsed_schema
 
         # TODO: Add additional schema types here
         else:

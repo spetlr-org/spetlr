@@ -61,7 +61,7 @@ class TestSchemaManager(DataframeTestCase):
 
         test_schema1_str = (
             "a int, "
-            'b int  COMMENT "really? is that it?",'
+            'b int  COMMENT "really? is that it?", '
             "c string, "
             "cplx struct<someId:string,details:struct<id:string>,blabla:array<int>>, "
             "d timestamp, "
@@ -83,7 +83,7 @@ class TestSchemaManager(DataframeTestCase):
             "SchemaTestTable1": test_schema2_str,
             "SchemaTestTable2": "a int, b string",
         }
-
+        self.maxDiff = None
         self.assertDictEqual(expected_schemas, schemas_dict)
 
     def test_schema_to_spark_sql(self):
@@ -97,9 +97,12 @@ class TestSchemaManager(DataframeTestCase):
 
         transformed_str = SchemaManager()._schema_to_spark_sql(schema=schema)
         expected_str = "Column1 int, Column2 string, Column3 float"
+
+        self.maxDiff = None
         self.assertEqual(expected_str, transformed_str)
 
         transformed_schema = T._parse_datatype_string(s=transformed_str)
+        self.maxDiff = None
         self.assertEqualSchema(schema, transformed_schema)
 
     def test_sql_executor_schema(self):
@@ -107,6 +110,7 @@ class TestSchemaManager(DataframeTestCase):
 
         test_df = DeltaHandle.from_tc("SchemaTestTable1").read()
 
+        self.maxDiff = None
         self.assertEqualSchema(
             SchemaManager().get_schema("python_test_schema2"), test_df.schema
         )

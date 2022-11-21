@@ -1,6 +1,5 @@
-import unittest
-
 import pyspark.sql.types as T
+from atc_tools.testing import DataframeTestCase
 
 from atc.configurator import Configurator
 from atc.delta import DeltaHandle
@@ -10,7 +9,7 @@ from . import extras
 from .SparkExecutor import SparkSqlExecutor
 
 
-class TestSchemaManager(unittest.TestCase):
+class TestSchemaManager(DataframeTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         c = Configurator()
@@ -99,4 +98,6 @@ class TestSchemaManager(unittest.TestCase):
 
         test_df = DeltaHandle.from_tc("SchemaTestTable1").read()
 
-        self.assertEqual(test_df.schema, extras.python_test_schema)
+        self.assertEqualSchema(
+            test_df.schema, SchemaManager().get_schema("python_test_schema")
+        )

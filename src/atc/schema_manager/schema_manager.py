@@ -110,7 +110,3 @@ class SchemaManager(metaclass=Singleton):
             str_schemas[name] = str_schema
 
         return str_schemas
-
-
-def register_schema(schema_name: str, schema: T.StructField) -> None:
-    SchemaManager().register_schema(schema_name=schema_name, schema=schema)

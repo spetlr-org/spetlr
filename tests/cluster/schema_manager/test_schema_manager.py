@@ -17,7 +17,7 @@ class TestSchemaManager(unittest.TestCase):
         c.clear_all_configurations()
         c.add_resource_path(extras)
         SchemaManager().clear_all_configurations()
-        extras.initSchemaManger()
+        extras.initSchemaManager()
 
     def test_get_sql_schema(self):
         schema = SchemaManager().get_schema(schema_identifier="SchemaTestTable2")

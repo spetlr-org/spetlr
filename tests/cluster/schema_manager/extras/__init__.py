@@ -1,9 +1,9 @@
-from atc.schema_manager.schema_manager import register_schema
+from atc.schema_manager import SchemaManager
 
 from .python_schemas import python_test_schema
 
 
-def initSchemaManger():
+def initSchemaManager() -> SchemaManager:
     """
     This is the master function to initialize the SchemaManager.
     The code to register the schema with the manager is not carried out as part of the

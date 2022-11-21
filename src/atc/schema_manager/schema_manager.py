@@ -1,3 +1,4 @@
+import json
 from typing import Dict
 
 import pyspark.sql.types as T
@@ -12,7 +13,6 @@ from atc.singleton import Singleton
 
 
 class SchemaManager(metaclass=Singleton):
-
     # This dict contains the registered schemas
     _registered_schemas: Dict[str, T.StructType] = {}
 
@@ -78,9 +78,16 @@ class SchemaManager(metaclass=Singleton):
         # - comments
         # - nested datatypes
 
-        str_schema = ", ".join(
-            [f"{field.name} {field.dataType.simpleString()}" for field in schema.fields]
-        )
+        rows = []
+        for field in schema.fields:
+            row = f"{field.name} {field.dataType.simpleString()}"
+            if "comment" in field.metadata:
+                # I could have used a repr() here,
+                # but then I could get single quoted string. This ensured double quotes
+                row += f'  COMMENT {json.dumps(field.metadata["comment"])}'
+            rows.append(row)
+
+        str_schema = ", ".join(rows)
 
         return str_schema
 

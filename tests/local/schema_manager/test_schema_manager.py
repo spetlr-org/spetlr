@@ -50,8 +50,8 @@ class TestSchemaManager(unittest.TestCase):
         self.sc.register_schema(schema_name="register_test2", schema=schema)
 
         self.assertEqual(
-            self.sc.get_schema(schema_identifier="register_test2"),
             schema,
+            self.sc.get_schema(schema_identifier="register_test2"),
         )
 
     def test_get_python_ref_schema(self):
@@ -59,4 +59,4 @@ class TestSchemaManager(unittest.TestCase):
 
         expected_schema = extras.python_test_schema
 
-        self.assertEqual(schema, expected_schema)
+        self.assertEqual(expected_schema, schema)

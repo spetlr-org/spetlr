@@ -28,7 +28,7 @@ class TestSchemaManager(DataframeTestCase):
             ]
         )
 
-        self.assertEqual(schema, expected_schema)
+        self.assertEqualSchema(schema, expected_schema)
 
     def test_get_schema_as_string(self):
 
@@ -100,8 +100,7 @@ class TestSchemaManager(DataframeTestCase):
         self.assertEqual(expected_str, transformed_str)
 
         transformed_schema = T._parse_datatype_string(s=transformed_str)
-
-        self.assertEqual(schema, transformed_schema)
+        self.assertEqualSchema(schema, transformed_schema)
 
     def test_sql_executor_schema(self):
         SparkSqlExecutor().execute_sql_file("*")

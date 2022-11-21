@@ -45,7 +45,8 @@ class TestSchemaManager(unittest.TestCase):
 
         expected_schemas = {
             "python_test_schema": extras.python_test_schema,
-            "SchemaTestTable1": extras.python_test_schema,
+            "python_test_schema2": extras.python_test_schema2,
+            "SchemaTestTable1": extras.python_test_schema2,
             "SchemaTestTable2": T.StructType(
                 [
                     T.StructField("a", T.IntegerType(), True),
@@ -54,12 +55,12 @@ class TestSchemaManager(unittest.TestCase):
             ),
         }
 
-        self.assertDictEqual(schemas_dict, expected_schemas)
+        self.assertDictEqual(expected_schemas, schemas_dict)
 
     def test_get_all_spark_sql_schemas(self):
         schemas_dict = SchemaManager().get_all_spark_sql_schemas()
-        self.maxDiff = None
-        test_table_string = (
+
+        test_schema1_str = (
             "a int, "
             "b int, "
             "c string, "
@@ -69,13 +70,22 @@ class TestSchemaManager(unittest.TestCase):
             "p decimal(10,3), "
             "final string"
         )
+        test_schema2_str = (
+            "a int, "
+            "c string, "
+            "d timestamp, "
+            "m map<int,string>, "
+            "p decimal(10,3), "
+            "final string"
+        )
         expected_schemas = {
-            "python_test_schema": test_table_string,
-            "SchemaTestTable1": test_table_string,
+            "python_test_schema": test_schema1_str,
+            "python_test_schema2": test_schema2_str,
+            "SchemaTestTable1": test_schema2_str,
             "SchemaTestTable2": "a int, b string",
         }
 
-        self.assertDictEqual(schemas_dict, expected_schemas)
+        self.assertDictEqual(expected_schemas, schemas_dict)
 
     def test_schema_to_spark_sql(self):
         schema = T.StructType(
@@ -99,4 +109,4 @@ class TestSchemaManager(unittest.TestCase):
 
         test_df = DeltaHandle.from_tc("SchemaTestTable1").read()
 
-        self.assertEqual(test_df.schema, extras.python_test_schema)
+        self.assertEqual(extras.python_test_schema2, test_df.schema)

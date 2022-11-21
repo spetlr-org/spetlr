@@ -31,3 +31,14 @@ python_test_schema = t.StructType(
         t.StructField("final", t.StringType(), True),
     ]
 )
+
+python_test_schema2 = t.StructType(
+    [
+        t.StructField("a", t.IntegerType(), True),
+        t.StructField("c", t.StringType(), True),
+        t.StructField("d", t.TimestampType(), True),
+        t.StructField("m", t.MapType(t.IntegerType(), t.StringType(), True), True),
+        t.StructField("p", t.DecimalType(10, 3), True),
+        t.StructField("final", t.StringType(), True),
+    ]
+)

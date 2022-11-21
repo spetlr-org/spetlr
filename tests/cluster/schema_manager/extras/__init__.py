@@ -1,6 +1,6 @@
 from atc.schema_manager import SchemaManager
 
-from .python_schemas import python_test_schema
+from .python_schemas import python_test_schema, python_test_schema2
 
 
 def initSchemaManager() -> SchemaManager:
@@ -20,4 +20,5 @@ def initSchemaManager() -> SchemaManager:
     """
     sc = SchemaManager()
     sc.register_schema("python_test_schema", python_test_schema)
+    sc.register_schema("python_test_schema2", python_test_schema2)
     return sc

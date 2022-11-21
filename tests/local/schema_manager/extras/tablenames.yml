@@ -6,11 +6,3 @@ SchemaTestTable1:
   name: "{SchemaTestDb}.schematbl1"
   path: "{SchemaTestDb_path}/schematbl1"
   schema: "python_test_schema"
-
-SchemaTestTable2:
-  name: "{SchemaTestDb}.schematbl2"
-  path: "{SchemaTestDb_path}/schematbl2"
-  schema:
-    sql: |
-      a INTEGER,
-      b STRING

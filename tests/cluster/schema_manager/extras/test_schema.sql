@@ -7,3 +7,4 @@ CREATE TABLE IF NOT EXISTS {SchemaTestTable1}
 )
 USING {SchemaTestTable1_format}
 COMMENT "Contains schema testing data"
+LOCATION "{SchemaTestTable1_path}";

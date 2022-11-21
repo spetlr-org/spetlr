@@ -13,4 +13,4 @@ SchemaTestTable2:
   path: "{SchemaTestDb_path}/schematbl2"
   schema: 
     sql: |
-      a INTEGER, b STRING,
+      a INTEGER, b STRING

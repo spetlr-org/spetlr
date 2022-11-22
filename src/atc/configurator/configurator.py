@@ -45,7 +45,10 @@ class Configurator(metaclass=ConfiguratorSingleton):
     # this dict contains all details for all resources
     table_details: Dict[str, str]
 
-    def __init__(self, resource_path: Union[str, ModuleType] = None):
+    def __init__(
+        self,
+        resource_path: Union[str, ModuleType] = None,
+    ):
         self._unique_id = uuid.uuid4().hex
         self.clear_all_configurations()
 

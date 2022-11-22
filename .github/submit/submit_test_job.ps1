@@ -15,13 +15,13 @@
 #    The details json file can be used to fetch the job result with the fetch_test_job script
 
 param (
-# to submit parallel runs, you must specify this parameter
+  # to submit parallel runs, you must specify this parameter
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]
   $testJobDetails= "test_job_details.json",
 
-# in the atc pipeline we wish to test with multiple versions.
+  # in the atc pipeline we wish to test with multiple versions.
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]
@@ -49,7 +49,7 @@ $testDir = "dbfs:/test/$([guid]::NewGuid())"
 dbfs mkdirs $testDir
 
 # discover libraries in the dist folder
-[array]$libs = Get-ChildItem -Path dist -Filter *.whl | ForEach-Object -Member name
+[array]$libs = Get-ChildItem -Path "$repoRoot/dist" -Filter *.whl | ForEach-Object -Member name
 Write-Host "To be installed on cluster: $($libs -join ", ")"
 [array]$sparkWheels =  $libs | ForEach-Object -Process {@{whl = "$testDir/dist/$_"}}
 
@@ -78,51 +78,51 @@ $logOut = "$testDir/results.log"
 
 # construct the run submission configuration
 $run = @{
-    run_name = "Testing Run"
-    # single node cluster is sufficient
-    new_cluster= @{
-        spark_version=$sparkVersion
-        spark_conf= @{
-            "spark.databricks.cluster.profile"= "singleNode"
-            "spark.master"= "local[*, 4]"
-            "spark.databricks.delta.preview.enabled"= $true
-            "spark.databricks.io.cache.enabled"= $true
-        }
-        azure_attributes=${
+  run_name = "Testing Run"
+  # single node cluster is sufficient
+  new_cluster= @{
+    spark_version=$sparkVersion
+    spark_conf= @{
+      "spark.databricks.cluster.profile"= "singleNode"
+      "spark.master"= "local[*, 4]"
+      "spark.databricks.delta.preview.enabled"= $true
+      "spark.databricks.io.cache.enabled"= $true
+    }
+    azure_attributes=${
                 "availability"= "ON_DEMAND_AZURE",
                 "first_on_demand": 1,
                 "spot_bid_max_price": -1
             }
-        node_type_id= "Standard_DS3_v2"
-        custom_tags =@{
-          ResourceClass="SingleNode"
-        }
-        spark_env_vars= @{
-            PYSPARK_PYTHON= "/databricks/python3/bin/python3"
-        }
-        cluster_log_conf= @{
-            dbfs=@{
-                destination="$testDir/cluster-logs"
-            }
-        }
-        num_workers= 0
+    node_type_id= "Standard_DS3_v2"
+    custom_tags =@{
+      ResourceClass="SingleNode"
     }
-    # in addition to standard dependencies, install the libs that we just uploaded
-    libraries= $spark_dependencies + $sparkWheels + $testWheels
-
-    # This scripts runs the test suite
-    spark_python_task= @{
-      python_file="$testDir/main.py"
-      parameters=@(
-        # running in the spark python interpreter, the python __file__ variable does not
-        # work. Hence, we need to tell the script where the test area is.
-        "--basedir=$testDir",
-        # we can actually run any part of out test suite, but some files need the full repo.
-        # Only run tests from this folder.
-        "--folder=tests/cluster"
-      )
+    spark_env_vars= @{
+      PYSPARK_PYTHON= "/databricks/python3/bin/python3"
     }
+    cluster_log_conf= @{
+      dbfs=@{
+        destination="$testDir/cluster-logs"
+      }
+    }
+    num_workers= 0
   }
+  # in addition to standard dependencies, install the libs that we just uploaded
+  libraries= $spark_dependencies + $sparkWheels + $testWheels
+
+  # This scripts runs the test suite
+  spark_python_task= @{
+    python_file="$testDir/main.py"
+    parameters=@(
+      # running in the spark python interpreter, the python __file__ variable does not
+      # work. Hence, we need to tell the script where the test area is.
+      "--basedir=$testDir",
+      # we can actually run any part of out test suite, but some files need the full repo.
+      # Only run tests from this folder.
+      "--folder=tests/cluster"
+    )
+  }
+}
 
 # We used to get this warning:
 # WARN: Your CLI is configured to use Jobs API 2.0. In order to use the latest Jobs features please upgrade to 2.1: 'databricks jobs configure --version=2.1'. Future versions of
@@ -145,26 +145,28 @@ $run = (databricks runs get --run-id $runId | ConvertFrom-Json)
 Write-Host "Run url: $($run.run_page_url)"
 
 # Roll the test details. When testing locally, this makes it easier to recover old runs.
-if(Test-Path -Path $testJobDetails -PathType Leaf){
-    $old_job_details = Get-Content $testJobDetails | ConvertFrom-Json
-    $new_filename = "$(Split-Path -LeafBase $testJobDetails).$($old_job_details.submissionTime).json"
-    $parent = Split-Path -Parent $testJobDetails
-    if ($parent){
-        $new_filename = Join-Path -Path $parent -ChildPath $new_filename
-    }
-    Set-Content "$new_filename" ($old_job_details | ConvertTo-Json -Depth 4)
-    Write-Host "Previous details at $testJobDetails were moved to $new_filename."
+if(Test-Path -Path $testJobDetails -PathType Leaf)
+{
+  $old_job_details = Get-Content $testJobDetails | ConvertFrom-Json
+  $new_filename = "$(Split-Path -LeafBase $testJobDetails).$($old_job_details.submissionTime).json"
+  $parent = Split-Path -Parent $testJobDetails
+  if ($parent)
+  {
+    $new_filename = Join-Path -Path $parent -ChildPath $new_filename
+  }
+  Set-Content "$new_filename" ($old_job_details | ConvertTo-Json -Depth 4)
+  Write-Host "Previous details at $testJobDetails were moved to $new_filename."
 }
 
 # write the test details file
 $job_details = @{
-    runId=$runId
-    testDir=$testDir
-    submissionTime=$now
-    testFolder=$testFolder
-    environmentType= $environmentType
-    environmentName=$environmentName
-    logOut=$logOut
+  runId=$runId
+  testDir=$testDir
+  submissionTime=$now
+  testFolder=$testFolder
+  environmentType= $environmentType
+  environmentName=$environmentName
+  logOut=$logOut
 }
 Set-Content "$testJobDetails" ($job_details | ConvertTo-Json -Depth 4)
 

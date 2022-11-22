@@ -1,0 +1,8 @@
+SchemaTestDb:
+  name: "SchemaTest"
+  path: "/tmp/SchemaTest{ID}.db/"
+
+SchemaTestTable1:
+  name: "{SchemaTestDb}.schematbl1"
+  path: "{SchemaTestDb_path}/schematbl1"
+  schema: "python_test_schema"

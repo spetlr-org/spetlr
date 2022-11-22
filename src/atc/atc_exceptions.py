@@ -28,6 +28,18 @@ class EhJsonToDeltaException(AtcException):
     pass
 
 
+class NoSuchSchemaException(AtcException):
+    pass
+
+
+class FalseSchemaDefinitionException(AtcException):
+    pass
+
+
+class UnregisteredSchemaDefinitionException(AtcException):
+    pass
+
+
 class NoRunId(AtcException):
     pass
 

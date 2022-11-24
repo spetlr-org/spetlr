@@ -12,13 +12,14 @@
 from typing import Optional, Union
 
 from azure.cosmos import CosmosClient, DatabaseProxy
-from pyspark.sql import DataFrame, types
+from pyspark.sql import DataFrame
 from pyspark.sql.types import DataType
 
-from atc.atc_exceptions import AtcException
+from atc.atc_exceptions import AtcException, NoSuchSchemaException
 from atc.configurator.configurator import Configurator
 from atc.cosmos.cosmos_base_server import CosmosBaseServer
 from atc.cosmos.cosmos_handle import CosmosHandle
+from atc.schema_manager import SchemaManager
 from atc.spark import Spark
 
 
@@ -168,8 +169,11 @@ class CosmosDb(CosmosBaseServer):
         name = tc.table_name(table_id)
         rows_per_partition = tc.table_property(table_id, "rows_per_partition", "")
         rows_per_partition = int(rows_per_partition) if rows_per_partition else None
-        schema_str = tc.table_property(table_id, "schema", "")
-        schema = types._parse_datatype_string(schema_str) if schema_str else None
+
+        try:
+            schema = SchemaManager().get_schema(table_id)
+        except NoSuchSchemaException:
+            schema = None
 
         return CosmosHandle(
             name=name,

@@ -26,7 +26,7 @@ class CosmosTests(unittest.TestCase):
             "CmsTbl",
             {
                 "name": "CosmosTable",
-                "schema": "id string, pk string, value int",
+                "schema": {"sql": "id string, pk string, value int"},
                 "rows_per_partition": 5,
             },
         )

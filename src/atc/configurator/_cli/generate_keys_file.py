@@ -1,7 +1,6 @@
 import argparse
 import os.path
 from io import StringIO
-from textwrap import dedent
 
 
 def setup_parser(parser: argparse.ArgumentParser):
@@ -9,23 +8,12 @@ def setup_parser(parser: argparse.ArgumentParser):
     parser.add_argument("-o", "--output_file", type=str, default="")
 
 
-def generate_keys_file(options):
-    from atc import Configurator
-
-    c = Configurator()
+def generate_keys_file(self, options):
 
     writer = StringIO()
-    writer.write(
-        dedent(
-            """\
-                # AUTO GENERATED FILE.
-                # contains all atc.Configurator keys
+    writer.write("# AUTO GENERATED FILE\n# contains all atc.Configurator keys\n\n")
 
-            """
-        )
-    )
-
-    for key in c.all_keys():
+    for key in self.all_keys():
         writer.write(f"{key} = {repr(key)}\n")
 
     writer.seek(0)
@@ -50,7 +38,7 @@ def generate_keys_file(options):
             old_conts = ""
         with open(options.output_file, "w") as f:
             f.write(new_conts)
-        if not old_conts or new_conts == old_conts:
+        if new_conts == old_conts:
             return 0
         else:
             return 1

@@ -103,3 +103,66 @@ from atc.config_master import Configurator
 tc = Configurator()
 tc.set_extra(ENV='prod')
 ```
+
+
+## The Configurator Command Line Interface (CLI)
+
+The table configurations, available to the configurator can be useful when executing 
+actions on the command line. See below for individual commands. To expose the 
+configurator command line interface, you need to call the `.cli()` method *after* 
+you have initialized the configurator with your project details. You therefor need 
+to expose a command line script as shown below.
+
+In the file that initializes your configurator:
+```
+def init_my_configurator():
+    c= Configurator()
+    c.add_resource_path(my_yaml_module)
+    c.register('ENV', config.my_env_name)
+    return c
+
+if __name__ == "__main__":
+    init_my_configurator().cli()
+```
+Now, all the functionality below will become available on the command line.
+
+### Generated Keys File
+When using an IDE to develop python code, a useful feature is auto-completion and 
+linting. Such features are however not available when using string keys from yaml 
+files. It can therefore be useful to extract the keys from the yaml configurations 
+and make them available as python objects.
+
+Call the following command to generate such a keys file from your initialized 
+configurator.
+
+```
+$> my_config generate-keys-file -o keys.py
+```
+
+This will create the file `keys.py` with the following example contents:
+```python
+# AUTO GENERATED FILE.
+# contains all atc.Configurator keys
+
+MyFirst = "MyFirst"
+MySecond = "MySecond"
+MyAlias = "MyAlias"
+MyForked = "MyForked"
+MyRecursing = "MyRecursing"
+```
+
+You can now use the keys file to auto-complete and validate your yaml keys:
+```python
+DeltaHandle.from_tc("MyFirst")
+```
+becomes
+```python
+from keys import MyFirst
+DeltaHandle.from_tc(MyFirst)
+```
+which also supports flake8 linting for correct spelling.
+
+If you want to check that you did not forget to update the keys file as part of your 
+CICD pipeline, rerunning the same command will return and exit code of 0 if the file 
+was already up-to-date. If any changes were applied to the file, the exit code will 
+be 1. This can be used to fail the pipeline script.

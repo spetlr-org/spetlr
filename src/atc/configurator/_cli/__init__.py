@@ -49,4 +49,4 @@ def cli(self):
         parser.print_help()
         sys.exit(1)
 
-    sys.exit(func(options))
+    sys.exit(func(self, options))

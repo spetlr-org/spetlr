@@ -8,7 +8,7 @@ from atc import Configurator
 from . import tables1
 
 
-class TestConfigurator(unittest.TestCase):
+class TestConfiguratorCli(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         c = Configurator()
@@ -26,12 +26,13 @@ class TestConfigurator(unittest.TestCase):
             sys.argv = ["mycliprog", "generate-keys-file", "-o", name]
             with self.assertRaises(SystemExit) as ex:
                 c.cli()
-                self.assertEqual(ex.exception.code, 0)
+                # file did not match. exit code 1
+                self.assertEqual(ex.exception.code, 1)
 
             conts = open(name).read()
             expected = dedent(
                 """\
-                # AUTO GENERATED FILE.
+                # AUTO GENERATED FILE
                 # contains all atc.Configurator keys
 
                 ID = "ID"
@@ -45,19 +46,9 @@ class TestConfigurator(unittest.TestCase):
             )
             self.assertEqual(conts, expected)
 
-            with open(name, "w") as f:
-                f.write("garbage")
-
             # repeat the test
             sys.argv = ["mycliprog", "generate-keys-file", "-o", name]
             with self.assertRaises(SystemExit) as ex:
                 c.cli()
-                # This time the error code is set to 1 since the file was updated
-                self.assertEqual(ex.exception.code, 1)
-
-            # repeat the test
-            sys.argv = ["mycliprog", "generate-keys-file", "-o", name]
-            with self.assertRaises(SystemExit) as ex:
-                c.cli()
-                # This time the error code is set to 0 since the file contetns were ok
+                # This time the error code is set to 0 since the file contents were ok
                 self.assertEqual(ex.exception.code, 0)

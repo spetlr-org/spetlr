@@ -55,6 +55,10 @@ class Configurator(metaclass=ConfiguratorSingleton):
         if resource_path:
             self.add_resource_path(resource_path)
 
+    def all_keys(self):
+        """All keys that appear in the configuration files."""
+        return list(self._raw_resource_details.keys())
+
     def clear_all_configurations(self):
         self._raw_resource_details = dict()
         self._is_debug = False
@@ -396,3 +400,5 @@ class Configurator(metaclass=ConfiguratorSingleton):
                         self.table_details[f"{table_id}_{property_name}"] = str(item)
 
         return self.table_details
+
+    from ._cli import cli

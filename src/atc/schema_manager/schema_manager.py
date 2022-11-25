@@ -99,13 +99,11 @@ class SchemaManager(metaclass=Singleton):
         return str_schema
 
     def get_all_schemas(self) -> Dict[str, T.StructType]:
-        table_ids = Configurator().table_details.keys()
-
-        for id in table_ids:
+        for id in Configurator().all_keys():
             try:
                 Configurator().get(id, "schema")
                 self.get_schema(schema_identifier=id)
-            except Exception:
+            except NoSuchSchemaException:
                 continue
 
         return self._registered_schemas

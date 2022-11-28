@@ -11,6 +11,7 @@ Transformations in atc-dataplatform:
     - [Example](#example-2)
   - [DropOldestDuplicates](#dropoldestduplicates)
   - [TimeZoneTransformer](#timezonetransformer)
+  - [SelectAndCastColumnsTransformer](#selectandcastcolumnstransformer)
 
 ## Concatenate data frames
 
@@ -285,4 +286,38 @@ df.show()
 | None      | -0.083069|                None|
 | 51.519487 |      None|                None|
 +-----------+----------+--------------------+
+```
+
+## SelectAndCastColumnsTransformer
+
+This transformation is selecting and casting columns in dataframe based
+on pyspark schema.
+
+``` python 
+from atc.transformers import SelectAndCastColumnsTransformer
+data =
+
+|         id|    number|     value|
++-----------+----------+----------+
+|         1 |       42 |        1 |
+|         2 |      355 |        0 |
++-----------+----------+----------+
+
+desired_schema = T.StructType(
+    [
+        T.StructField("id", T.StringType(), True),
+        T.StructField("value", T.BooleanType(), True),
+    ]
+)
+
+df = SelectAndCastColumnsTransformer( 
+      schema=desired_schema
+  ).process(data)
+df.show()
+
+|         id|     value|
++-----------+----------+
+|       "1" |     True |
+|       "2" |    False |
++-----------+----------+
 ```

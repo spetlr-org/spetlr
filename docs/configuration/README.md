@@ -163,6 +163,5 @@ DeltaHandle.from_tc(MyFirst)
 which also supports flake8 linting for correct spelling.
 
 If you want to check that you did not forget to update the keys file as part of your 
-CICD pipeline, rerunning the same command will return and exit code of 0 if the file 
-was already up-to-date. If any changes were applied to the file, the exit code will 
-be 1. This can be used to fail the pipeline script.
+CICD pipeline, running the same command with the additional option `--check-only` 
+will return an exit code of 0 if the file was already up-to-date and 1 otherwise.

@@ -3,12 +3,12 @@ from typing import Dict
 
 import pyspark.sql.types as T
 
-from atc.atc_exceptions import (
+from atc.configurator import Configurator
+from atc.exceptions import (
     FalseSchemaDefinitionException,
     NoSuchSchemaException,
     UnregisteredSchemaDefinitionException,
 )
-from atc.configurator import Configurator
 from atc.singleton import Singleton
 
 

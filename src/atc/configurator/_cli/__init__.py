@@ -1,5 +1,6 @@
 import argparse
-import sys
+
+from atc.exceptions.cli_exceptions import AtcCliException
 
 from . import generate_keys_file
 
@@ -47,6 +48,6 @@ def cli(self):
         func = options.func
     except AttributeError:
         parser.print_help()
-        sys.exit(1)
+        raise AtcCliException("No actions given")
 
-    sys.exit(func(self, options))
+    func(self, options)

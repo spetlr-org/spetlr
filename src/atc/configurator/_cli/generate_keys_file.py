@@ -2,6 +2,8 @@ import argparse
 import os.path
 from io import StringIO
 
+from atc.exceptions.cli_exceptions import AtcCliCheckFailed
+
 
 def setup_parser(parser: argparse.ArgumentParser):
     parser.set_defaults(func=generate_keys_file)
@@ -44,16 +46,17 @@ def generate_keys_file(self, options):
             if os.path.exists(options.output_file):
                 old_conts = open(options.output_file).read()
                 if new_conts == old_conts:
-                    return 0
-                elif options.check:
-                    print(
+                    return  # all good
+                else:
+                    raise AtcCliCheckFailed(
                         f"Output file {options.output_file} "
                         "does not have correct contents."
                     )
-                    return 1
             else:
-                print(f"Output file {options.output_file} does not exist.")
-                return 1
+                raise AtcCliCheckFailed(
+                    f"Output file {options.output_file} does not exist."
+                )
+
         with open(options.output_file, "w") as f:
             f.write(new_conts)
-        return 0
+        return

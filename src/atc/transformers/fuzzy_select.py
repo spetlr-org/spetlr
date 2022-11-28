@@ -3,8 +3,8 @@ from typing import Dict, Iterable, List
 
 from pyspark.sql import DataFrame
 
-from atc.atc_exceptions import AtcException
 from atc.etl.transformer import Transformer
+from atc.exceptions import AtcException
 
 
 class FuzzySelectException(AtcException):

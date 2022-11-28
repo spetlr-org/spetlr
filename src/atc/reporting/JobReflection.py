@@ -4,8 +4,8 @@ from typing import Dict
 
 from requests import HTTPError
 
-from atc.atc_exceptions import NoDbUtils, NoRunId
 from atc.db_auto import getDbApi
+from atc.exceptions import NoDbUtils, NoRunId
 from atc.functions import init_dbutils
 
 

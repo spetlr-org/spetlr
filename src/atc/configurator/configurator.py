@@ -9,7 +9,7 @@ from typing import Dict, Set, Union
 import yaml
 from deprecated import deprecated
 
-from ..atc_exceptions import AtcKeyError
+from atc.exceptions import AtcKeyError
 
 
 class NoSuchValueException(AtcKeyError):

@@ -4,7 +4,7 @@ from typing import List
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame, Window
 
-from atc.atc_exceptions import NoTableException
+from atc.exceptions import NoTableException
 from atc.functions import get_unique_tempview_name
 from atc.spark import Spark
 

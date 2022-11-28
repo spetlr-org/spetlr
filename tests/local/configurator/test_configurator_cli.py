@@ -4,6 +4,7 @@ from tempfile import NamedTemporaryFile
 from textwrap import dedent
 
 from atc import Configurator
+from atc.exceptions.cli_exceptions import AtcCliCheckFailed
 
 from . import tables1
 
@@ -24,16 +25,13 @@ class TestConfiguratorCli(unittest.TestCase):
             name = nf.name
             nf.close()
             sys.argv = ["mycliprog", "generate-keys-file", "-c", "-o", name]
-            with self.assertRaises(SystemExit) as ex:
-                c.cli()
+            with self.assertRaises(AtcCliCheckFailed):
                 # file did not exist. exit code 1
-                self.assertEqual(ex.exception.code, 1)
+                c.cli()
 
             sys.argv = ["mycliprog", "generate-keys-file", "-o", name]
-            with self.assertRaises(SystemExit) as ex:
-                c.cli()
-                # file written. exit code 0
-                self.assertEqual(ex.exception.code, 0)
+            c.cli()
+            # file written. clean exit
 
             conts = open(name).read()
             expected = dedent(
@@ -54,7 +52,13 @@ class TestConfiguratorCli(unittest.TestCase):
 
             # repeat the test
             sys.argv = ["mycliprog", "generate-keys-file", "--check-only", "-o", name]
-            with self.assertRaises(SystemExit) as ex:
+            c.cli()
+            # check passes since the file contents were ok
+
+            with open(name, "w") as f:
+                f.write(expected[:-10])  # bad contents
+
+            sys.argv = ["mycliprog", "generate-keys-file", "-c", "-o", name]
+            with self.assertRaises(AtcCliCheckFailed):
+                # file had bad contents
                 c.cli()
-                # This time the error code is set to 0 since the file contents were ok
-                self.assertEqual(ex.exception.code, 0)

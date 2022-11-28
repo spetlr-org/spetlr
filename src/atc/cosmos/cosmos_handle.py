@@ -3,8 +3,8 @@ from typing import List, Union
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType
 
-from atc.atc_exceptions import AtcException
 from atc.cosmos.cosmos_base_server import CosmosBaseServer
+from atc.exceptions import AtcException
 from atc.tables.TableHandle import TableHandle
 
 

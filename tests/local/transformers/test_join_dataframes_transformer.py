@@ -1,10 +1,7 @@
 import pyspark.sql.types as T
 from atc_tools.testing import DataframeTestCase
 
-from atc.atc_exceptions import (
-    ColumnDoesNotExistException,
-    MoreThanTwoDataFramesException,
-)
+from atc.exceptions import ColumnDoesNotExistException, MoreThanTwoDataFramesException
 from atc.spark import Spark
 from atc.transformers import JoinDataframesTransformerNC
 

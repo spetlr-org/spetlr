@@ -23,11 +23,17 @@ class TestConfiguratorCli(unittest.TestCase):
         with NamedTemporaryFile() as nf:
             name = nf.name
             nf.close()
+            sys.argv = ["mycliprog", "generate-keys-file", "-c", "-o", name]
+            with self.assertRaises(SystemExit) as ex:
+                c.cli()
+                # file did not exist. exit code 1
+                self.assertEqual(ex.exception.code, 1)
+
             sys.argv = ["mycliprog", "generate-keys-file", "-o", name]
             with self.assertRaises(SystemExit) as ex:
                 c.cli()
-                # file did not match. exit code 1
-                self.assertEqual(ex.exception.code, 1)
+                # file written. exit code 0
+                self.assertEqual(ex.exception.code, 0)
 
             conts = open(name).read()
             expected = dedent(
@@ -47,7 +53,7 @@ class TestConfiguratorCli(unittest.TestCase):
             self.assertEqual(conts, expected)
 
             # repeat the test
-            sys.argv = ["mycliprog", "generate-keys-file", "-o", name]
+            sys.argv = ["mycliprog", "generate-keys-file", "--check-only", "-o", name]
             with self.assertRaises(SystemExit) as ex:
                 c.cli()
                 # This time the error code is set to 0 since the file contents were ok

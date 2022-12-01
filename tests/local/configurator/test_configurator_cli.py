@@ -29,7 +29,7 @@ class TestConfiguratorCli(unittest.TestCase):
                 # file did not exist. exit code 1
                 c.cli()
 
-            sys.argv = ["mycliprog", "generate-keys-file", "-o", name]
+            sys.argv = ["mycliprog", "generate-keys-file", "--output-file", name]
             c.cli()
             # file written. clean exit
 

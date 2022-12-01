@@ -9,12 +9,7 @@ from typing import Dict, Set, Union
 import yaml
 from deprecated import deprecated
 
-from atc.exceptions import AtcKeyError
-
-
-class NoSuchValueException(AtcKeyError):
-    pass
-
+from atc.exceptions import NoSuchValueException
 
 # recursive type definition of the details object
 TcDetails = Dict[str, Union[str, "TcDetails"]]

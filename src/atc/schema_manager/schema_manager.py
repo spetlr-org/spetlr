@@ -7,6 +7,7 @@ from atc.configurator import Configurator
 from atc.exceptions import (
     FalseSchemaDefinitionException,
     NoSuchSchemaException,
+    NoSuchValueException,
     UnregisteredSchemaDefinitionException,
 )
 from atc.singleton import Singleton
@@ -40,7 +41,7 @@ class SchemaManager(metaclass=Singleton):
         # Otherwise, check if the schema identifier is a table identifier
         try:
             schema = Configurator().get(table_id=schema_identifier, property="schema")
-        except ValueError:
+        except NoSuchValueException:
             raise NoSuchSchemaException(schema_identifier)
 
         # If the schema is a string, look it up as another schema
@@ -101,7 +102,6 @@ class SchemaManager(metaclass=Singleton):
     def get_all_schemas(self) -> Dict[str, T.StructType]:
         for id in Configurator().all_keys():
             try:
-                Configurator().get(id, "schema")
                 self.get_schema(schema_identifier=id)
             except NoSuchSchemaException:
                 continue

@@ -15,10 +15,10 @@ from azure.cosmos import CosmosClient, DatabaseProxy
 from pyspark.sql import DataFrame
 from pyspark.sql.types import DataType
 
-from atc.atc_exceptions import AtcException, NoSuchSchemaException
 from atc.configurator.configurator import Configurator
 from atc.cosmos.cosmos_base_server import CosmosBaseServer
 from atc.cosmos.cosmos_handle import CosmosHandle
+from atc.exceptions import AtcException, NoSuchSchemaException
 from atc.schema_manager import SchemaManager
 from atc.spark import Spark
 

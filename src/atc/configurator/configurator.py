@@ -9,12 +9,7 @@ from typing import Dict, Set, Union
 import yaml
 from deprecated import deprecated
 
-from ..atc_exceptions import AtcKeyError
-
-
-class NoSuchValueException(AtcKeyError):
-    pass
-
+from atc.exceptions import NoSuchValueException
 
 # recursive type definition of the details object
 TcDetails = Dict[str, Union[str, "TcDetails"]]
@@ -54,6 +49,10 @@ class Configurator(metaclass=ConfiguratorSingleton):
 
         if resource_path:
             self.add_resource_path(resource_path)
+
+    def all_keys(self):
+        """All keys that appear in the configuration files."""
+        return list(self._raw_resource_details.keys())
 
     def clear_all_configurations(self):
         self._raw_resource_details = dict()
@@ -396,3 +395,5 @@ class Configurator(metaclass=ConfiguratorSingleton):
                         self.table_details[f"{table_id}_{property_name}"] = str(item)
 
         return self.table_details
+
+    from ._cli import cli

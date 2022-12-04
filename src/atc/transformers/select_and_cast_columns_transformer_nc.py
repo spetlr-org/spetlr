@@ -15,6 +15,8 @@ class SelectAndCastColumnsTransformerNC(TransformerNC):
     ----------
         schema : StructType
             pyspark schema to use for select and cast
+        caseInsensitiveMatching : Boolean
+            used for case insensitive matching, by default False
         dataset_input_keys : Union[str, List[str]]
             list of input dataset keys
         dataset_output_key : str

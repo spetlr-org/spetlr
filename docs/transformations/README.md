@@ -292,6 +292,7 @@ df.show()
 
 This transformation is selecting and casting columns in dataframe based
 on pyspark schema.
+If case-insensitive matching is desired, caseInsensitiveMatching can be set to True
 
 ``` python 
 from atc.transformers import SelectAndCastColumnsTransformer
@@ -311,7 +312,8 @@ desired_schema = T.StructType(
 )
 
 df = SelectAndCastColumnsTransformer( 
-      schema=desired_schema
+      schema=desired_schema,
+      caseInsensitiveMatching=False
   ).process(data)
 df.show()
 

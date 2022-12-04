@@ -28,9 +28,7 @@ class SimpleSqlServerTransformer(Transformer):
 
         # If the format is timestamp, the seconds should be trunc
         col_choose = [
-            f.date_trunc("second", f.col(x[0]))
-            if x[1] == "timestamp"
-            else f.col(x[0])
+            f.date_trunc("second", f.col(x[0])) if x[1] == "timestamp" else f.col(x[0])
             for x in df.dtypes
         ]
         df = df.select(col_choose)

@@ -40,5 +40,5 @@ class SelectAndCastColumnsTransformerNC(TransformerNC):
         return SelectAndCastColumns(
             df=df,
             schema=self.schema,
-            caseInsensitiveMatching=self.caseInsensitiveMatching
+            caseInsensitiveMatching=self.caseInsensitiveMatching,
         )

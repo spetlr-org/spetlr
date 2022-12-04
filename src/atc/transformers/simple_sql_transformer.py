@@ -23,7 +23,7 @@ class SimpleSqlServerTransformer(Transformer):
         # [f.col("ColumnName).cast("string").alias("ColumnName"), ...]
 
         df = SelectAndCastColumns(
-            df=df, schema=self.server.read_table(self.table_id).schema()
+            df=df, schema=self.server.read_table(self.table_id).schema
         )
 
         # If the format is timestamp, the seconds should be trunc

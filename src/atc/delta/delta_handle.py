@@ -2,8 +2,8 @@ from typing import List, Optional, Union
 
 from pyspark.sql import DataFrame
 
-from atc.atc_exceptions import AtcException
 from atc.configurator.configurator import Configurator
+from atc.exceptions import AtcException
 from atc.functions import get_unique_tempview_name, init_dbutils
 from atc.spark import Spark
 from atc.tables.TableHandle import TableHandle

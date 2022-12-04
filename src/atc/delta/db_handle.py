@@ -1,5 +1,5 @@
-from atc.atc_exceptions import AtcException
 from atc.configurator.configurator import Configurator
+from atc.exceptions import AtcException
 from atc.spark import Spark
 
 

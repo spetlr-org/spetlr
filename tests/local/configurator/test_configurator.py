@@ -6,6 +6,10 @@ from . import tables1, tables2, tables3, tables4, tables5
 
 
 class TestConfigurator(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        Configurator().clear_all_configurations()
+
     def test_01_import_config(self):
         tc = Configurator()
         tc.add_resource_path(tables1)

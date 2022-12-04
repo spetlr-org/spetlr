@@ -6,7 +6,8 @@ from textwrap import dedent
 
 import requests
 
-from ..atc_exceptions import NoRunId
+from atc.exceptions import NoRunId
+
 from .JobReflection import JobReflection
 
 

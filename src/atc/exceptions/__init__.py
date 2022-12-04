@@ -46,3 +46,7 @@ class NoRunId(AtcException):
 
 class NoDbUtils(AtcException):
     pass
+
+
+class NoSuchValueException(AtcKeyError):
+    pass

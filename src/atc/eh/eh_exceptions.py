@@ -1,4 +1,4 @@
-from atc.atc_exceptions import AtcException
+from atc.exceptions import AtcException
 
 
 class AtcEhException(AtcException):

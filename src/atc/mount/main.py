@@ -2,7 +2,7 @@ import argparse
 import json
 from types import SimpleNamespace
 
-from atc.atc_exceptions import AtcException
+from atc.exceptions import AtcException
 from atc.functions import init_dbutils
 
 

@@ -8,7 +8,7 @@ from deprecated import deprecated
 from pyspark.sql.functions import udf
 from pyspark.sql.types import StringType
 
-from atc.atc_exceptions import NoDbUtils, NoTableException
+from atc.exceptions import NoDbUtils, NoTableException
 from atc.spark import Spark
 
 # Pyspark uuid function implemented as recommended here

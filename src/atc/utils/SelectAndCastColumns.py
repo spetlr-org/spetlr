@@ -3,6 +3,10 @@ import pyspark.sql.types as T
 from pyspark.sql import DataFrame
 
 
+def _lower(col: str, caseInsensitiveMatching: bool):
+    return col.lower() if caseInsensitiveMatching else col
+
+
 def SelectAndCastColumns(
     *, df: DataFrame, schema: T.StructType, caseInsensitiveMatching: bool = False
 ) -> DataFrame:
@@ -18,19 +22,13 @@ def SelectAndCastColumns(
     return: DataFrame mathing schema
     """
 
-    if caseInsensitiveMatching:
-        selectAndCastColumnsList = [
-            F.col(c.name).cast(c.dataType).alias(c.name)
-            if c.name.lower() in [col.lower() for col in df.columns]
-            else F.lit(None).cast(c.dataType).alias(c.name)
-            for c in schema
-        ]
-    else:
-        selectAndCastColumnsList = [
-            F.col(c.name).cast(c.dataType).alias(c.name)
-            if c.name in df.columns
-            else F.lit(None).cast(c.dataType).alias(c.name)
-            for c in schema
-        ]
+    dfColumns = [_lower(col, caseInsensitiveMatching) for col in df.columns]
+
+    selectAndCastColumnsList = [
+        F.col(c.name).cast(c.dataType).alias(c.name)
+        if _lower(c.name, caseInsensitiveMatching) in dfColumns
+        else F.lit(None).cast(c.dataType).alias(c.name)
+        for c in schema
+    ]
 
     return df.select(selectAndCastColumnsList)

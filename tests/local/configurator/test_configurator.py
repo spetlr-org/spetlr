@@ -114,5 +114,5 @@ class TestConfigurator(unittest.TestCase):
 
         self.assertEqual(
             SchemaManager().get_schema_as_string("MyDetailsTable"),
-            """a int, b int, c string, d timestamp, another int,""",
+            """a int, b int, c string, d timestamp, another int""",
         )

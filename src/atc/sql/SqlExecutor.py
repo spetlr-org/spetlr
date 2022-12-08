@@ -31,6 +31,11 @@ class SqlExecutor:
 
         file_pattern = file_pattern.replace("*", ".*")
 
+        # the string end indicator will prevent us from matching the wrong files
+        #  where a filename is also a prefix to another filename
+        if not file_pattern.endswith("$"):
+            file_pattern = file_pattern + "$"
+
         if exclude_pattern is not None:
             exclude_pattern = exclude_pattern.replace("*", ".*")
 

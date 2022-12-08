@@ -20,16 +20,47 @@ tc = Configurator()
 tc.set_extra(ENV='prod')
 tc.add_resource_path(my.resource.module)
 ```
+
+### Configuration from yaml or json
+
 The `Configurator` can be configured with json or yaml files. The
 files must contain the following structure:
 - top level objects are resources
 - each resource must have one of three shapes:
   - a single key named 'alias' to refer to another resource
   - two keys called 'release' and 'debug', each containing resource details
-  - resource details consisting of a 'name' attribute
-    - optionally also with a 'path' attribute,
-    - optionally also with a 'format' and 'partitioning' attribute.
-You can see examples for all three cases in the unit-tests.
+  - resource details consisting of a dictionary of attributes, such as
+    - a 'name' attribute
+    - a 'path' attribute,
+    - a 'format' and 'partitioning' attribute.
+
+The following is an example of a configuration file
+```yaml
+MyFirst:
+  name: first{ID}
+  path: /{MNT}/my/first{ID}
+# MNT and ID are default replacements
+# using .set_prod(), MNT becomes 'mnt', while in debug it becomes tmp
+# is helps when using mount point locations for tables.
+
+MyAlias:
+  alias: MyFirst
+
+MyForked:
+  release:
+    alias: MyFirst
+  debug:
+    name: another
+    path: /my/temp/path
+# using release and debug is an alternative way of differentiating the cases instead
+# of using {ID}, note that {ID} has the advantage of separating concurrent test runs
+
+MyRecursing:
+  name: recursing{ID}
+  path: /{MNT}/tables/{MyRecursing_name}
+# using the notation '_name' refers back to the 'name' property of that dictionary.
+# alias and release/debug will be resolved before the property is accessed
+```
 
 You optionally either provide 'release' and 'debug' versions of each table
 or include the structure `{ID}` in the name and path. This is a special
@@ -41,6 +72,67 @@ Beyond the resource definitions, the `Configurator` needs to be
 configured to return production or test versions of tables this is done
 at the start of your code. In your jobs you need to set `Configurator().set_prod()`
 whereas your unit-tests should call `Configurator().set_debug()`.
+
+### Configuration from sql
+
+When using sql statements to create and manage tables, it can be good to keep all
+information referring to a table within one file. Therefore, the configurator employs 
+a sql parsing library to extract table details directly from the CREATE statements. 
+It can be used like this:
+
+```python
+from . import my_sql_folder
+Configurator().add_sql_resource_path(my_sql_folder)
+```
+
+A sql CREATE statement already contains all information that the configurator needs 
+except the key, aka. table_id, that shall be used to refer to the table.
+This key needs to be added to the sql in the form of a comment with a magic prefix
+`"-- atc.Configurator "` (note the spaces. not case-sensitive.) See the following 
+example:
+```sparksql
+-- atc.Configurator key: MySparkDb
+CREATE DATABASE IF NOT EXISTS `my_db1{ID}`
+COMMENT "Dummy Database 1"
+LOCATION "/tmp/foo/bar/my_db1/";
+
+-- atc.Configurator key: MyDetailsTable
+CREATE TABLE IF NOT EXISTS `my_db1{ID}.details`
+(
+  {MySqlTable_schema},
+  another int
+  -- comment with ;
+)
+USING DELTA
+COMMENT "Dummy Database 1 details"
+LOCATION "/{MNT}/foo/bar/my_db1/details/";
+
+
+-- ATC.CONFIGURATOR key: MySqlTable
+-- atc.Configurator delete_on_delta_schema_mismatch: true
+CREATE TABLE IF NOT EXISTS `{MySparkDb}.tbl1`
+(
+  a int,
+  b int,
+  c string,
+  d timestamp
+)
+USING DELTA
+COMMENT "Dummy Database 1 table 1"
+LOCATION "/{MNT}/foo/bar/my_db1/tbl1/";
+```
+
+The example is quite complex and demonstrates a number of features:
+- the magic tag "-- ATC.CONFIGURATOR " is case-insensitive
+- the key has to be specified as `-- ATC.CONFIGURATOR key: MyKey`.
+- any other attribute can be specified after the same magic tag and will be 
+  available through the configurator. In fact, all comments with the magic tag will 
+  be collected together and will be interpreted as a `yaml` document, so more 
+  complicated structures are also possible.
+- all python string substitutions that the configurator offers are also available 
+  here in the sql configuration.
+- string substitution is available inside the schema, this allows schemas to be 
+  constructed from other schemas.
 
 ## Using the Configurator
 

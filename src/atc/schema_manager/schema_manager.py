@@ -72,13 +72,9 @@ class SchemaManager(metaclass=Singleton):
                     other_base_key = other_key[: -len("_schema")]
                     replacements[other_key] = self.get_schema_as_string(other_base_key)
                 else:
-                    if "_" in other_key:
-                        identifier, property = other_key.rsplit("_", 1)
-                        replacements[other_key] = Configurator().get(
-                            identifier, property
-                        )
-                    else:
-                        replacements[other_key] = Configurator().get(other_key)
+                    replacements[other_key] = Configurator().get_all_details()[
+                        other_key
+                    ]
             if replacements:
                 value = value.format(**replacements)
 

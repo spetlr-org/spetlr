@@ -6,6 +6,7 @@ https://spark.apache.org/docs/latest/sql-ref-syntax-ddl-create-table-datasource.
 and returns a dictionary of configuration details.
 """
 import importlib.resources
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
@@ -19,10 +20,11 @@ from ..exceptions.configurator_exceptions import (
 )
 from .sql import parse, sqlparse
 
-_magic_comment_start = "-- atc.Configurator "
+_magic_comment_start = "-- atc.configurator "
 
 
 def _extract_comment_attributes(stmt) -> Dict:
+    _magic_comment_start_re = re.compile(_magic_comment_start, re.IGNORECASE)
     collected_lines = []
     for token in stmt:
         if token.ttype in sqlparse.tokens.Whitespace:
@@ -30,7 +32,7 @@ def _extract_comment_attributes(stmt) -> Dict:
         if token.ttype not in sqlparse.tokens.Comment:
             continue
         val: str = token.value.strip()
-        if not val.startswith(_magic_comment_start):
+        if not _magic_comment_start_re.match(val):
             continue
         collected_lines.append(val[len(_magic_comment_start) :])
     yaml_document = "\n".join(collected_lines)
@@ -132,6 +134,73 @@ def _extract_optional_blocks(stmt) -> StatementBlocks:
     return blocks
 
 
+def _walk_create_statement(statement) -> Dict:
+    # create an iterator over all tokens in the statement
+    # that are not whitespace
+    statement = (
+        token
+        for token in statement
+        if token.ttype not in sqlparse.tokens.Whitespace
+        and token.ttype not in sqlparse.tokens.Comment
+    )
+
+    # We are now ready to go through the statement
+    # both create Table and create database must start with create
+    token = next(statement)
+    if token.value.upper() != "CREATE":
+        # not a table or db create statement. Nothing to do
+        return {}
+
+    entity = next(statement)
+
+    if entity.value.upper() == "TABLE":
+        is_table = True
+    elif entity.value.upper() in ("SCHEMA", "DATABASE"):
+        is_table = False
+    else:
+        # not a table or db create statement. Nothing to do
+        return {}
+
+    # next is the optional "IF NOT EXISTS"
+    peek = next(statement)
+    if peek.value.upper() == "IF NOT EXISTS":
+        name_token = next(statement)
+    else:
+        name_token = peek
+
+    # the following token must be the name
+    if not isinstance(name_token, sqlparse.sql.Identifier):
+        raise AtcConfiguratorInvalidSqlException("Expected an identifier")
+
+    name = name_token.value.strip("`")
+    # guard against double definition.
+
+    blocks = _extract_optional_blocks(statement)
+
+    if not is_table and blocks.schema is not None:
+        raise AtcConfiguratorInvalidSqlException("A database cannot have a schema")
+
+    if is_table and blocks.using is None:
+        raise AtcConfiguratorInvalidSqlException("A table must have a using statement")
+
+    # all validation is completed.
+    # construct the configurator object
+
+    object_details = {
+        "name": name,
+        "path": blocks.location,
+        "format": blocks.using.lower() if is_table else "db",
+        "options": blocks.options,
+        "partitioned_by": blocks.partitioned_by,
+        "clustered_by": blocks.clustered_by,
+        "sorted_by": blocks.clustered_by,
+        "comment": blocks.comment,
+        "tblproperties": blocks.tblproperties,
+        "schema": {"sql": blocks.schema.strip("()")} if blocks.schema else None,
+    }
+    return {k: v for k, v in object_details.items() if v is not None}
+
+
 def _parse_sql_to_config(resource_path: Union[str, ModuleType]) -> Dict:
     details = {}
     for file_name in importlib.resources.contents(resource_path):
@@ -143,93 +212,21 @@ def _parse_sql_to_config(resource_path: Union[str, ModuleType]) -> Dict:
                 for statement in parse(file.read()):
 
                     comment_attributes = _extract_comment_attributes(statement)
-                    if "tag" not in comment_attributes:
+                    if "key" not in comment_attributes:
                         # if no magic comments were used on the statement,
                         # then there is nothing to configure here
                         continue
-                    tag = comment_attributes.pop("tag")
+                    table_id = comment_attributes.pop("key")
 
-                    # create an iterator over all tokens in the statement
-                    # that are not whitespace
-                    statement = (
-                        token
-                        for token in statement
-                        if token.ttype not in sqlparse.tokens.Whitespace
-                        and token.ttype not in sqlparse.tokens.Comment
-                    )
-
-                    # We are now ready to go through the statement
-                    # both create Table and create database must start with create
-                    token = next(statement)
-                    if token.value.upper() != "CREATE":
-                        print(token)
-                        raise AtcConfiguratorInvalidSqlException()
-
-                    entity = next(statement)
-
-                    if entity.value.upper() == "TABLE":
-                        is_table = True
-                    elif entity.value.upper() in ("SCHEMA", "DATABASE"):
-                        is_table = False
-                    else:
-                        raise AtcConfiguratorInvalidSqlException()
-
-                    # next is the optional "IF NOT EXISTS"
-                    peek = next(statement)
-                    if peek.value.upper() == "IF NOT EXISTS":
-                        name_token = next(statement)
-                    else:
-                        name_token = peek
-
-                    # the following token must be the name
-                    if not isinstance(name_token, sqlparse.sql.Identifier):
-                        raise AtcConfiguratorInvalidSqlException(
-                            "Expected an identifier"
-                        )
-
-                    name = name_token.value.strip("`")
-                    # guard against double definition.
-
-                    blocks = _extract_optional_blocks(statement)
-
-                    if not is_table and blocks.schema is not None:
-                        raise AtcConfiguratorInvalidSqlException(
-                            "A database cannot have a schema"
-                        )
-
-                    if is_table and blocks.using is None:
-                        raise AtcConfiguratorInvalidSqlException(
-                            "A table must have a using statement"
-                        )
-
-                    # all validation is completed.
-                    # construct the configurator object
-
-                    object_details = {
-                        "name": name,
-                        "path": blocks.location,
-                        "format": blocks.using.lower() if is_table else "db",
-                        "options": blocks.options,
-                        "partitioned_by": blocks.partitioned_by,
-                        "clustered_by": blocks.clustered_by,
-                        "sorted_by": blocks.clustered_by,
-                        "comment": blocks.comment,
-                        "tblproperties": blocks.tblproperties,
-                        "schema": {
-                            "sql": blocks.schema.strip("()") if blocks.schema else None
-                        },
-                    }
+                    object_details = _walk_create_statement(statement)
 
                     for key in object_details:
                         if key in comment_attributes:
                             raise AtcConfiguratorInvalidSqlCommentsException(
-                                f"Error for {key} in {tag}, "
+                                f"Error for {key} in {table_id}, "
                                 "The comments must not specify attributes, "
                                 "that can be derived directly from the sql."
                             )
                     object_details.update(comment_attributes)
-
-                    details[tag] = {
-                        k: v for k, v in object_details.items() if v is not None
-                    }
+                    details[table_id] = object_details
     return details

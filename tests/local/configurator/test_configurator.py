@@ -98,7 +98,6 @@ class TestConfigurator(unittest.TestCase):
         c.clear_all_configurations()
         c.add_sql_resource_path(sql)
         c.set_prod()
-        # print(c.all_keys())
 
         self.assertEqual(c.get("MySparkDb", "name"), "my_db1")
         self.assertEqual(c.get("MySparkDb", "path"), "/tmp/foo/bar/my_db1/")
@@ -115,5 +114,5 @@ class TestConfigurator(unittest.TestCase):
 
         self.assertEqual(
             SchemaManager().get_schema_as_string("MyDetailsTable"),
-            """a int, b int, c string, d timestamp, another int""",
+            """a int, b int, c string, d timestamp, another int,""",
         )

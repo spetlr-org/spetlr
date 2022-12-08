@@ -1,12 +1,12 @@
--- atc.Configurator tag: MySparkDb
+-- atc.Configurator key: MySparkDb
 CREATE DATABASE IF NOT EXISTS `my_db1{ID}`
 COMMENT "Dummy Database 1"
 LOCATION "/tmp/foo/bar/my_db1/";
 
--- atc.Configurator tag: MyDetailsTable
+-- atc.Configurator key: MyDetailsTable
 CREATE TABLE IF NOT EXISTS `my_db1{ID}.details`
 (
-  {MySqlTable_schema},
+  {MyAlias_schema},
   another int
   -- comment with ;
 )
@@ -14,10 +14,15 @@ USING DELTA
 COMMENT "Dummy Database 1 details"
 LOCATION "/{MNT}/foo/bar/my_db1/details/";
 
+-- pure configurator magic in this statement
+-- atc.Configurator key: MyAlias
+-- atc.Configurator alias: MySqlTable
+;
 
--- atc.Configurator tag: MySqlTable
+
+-- ATC.CONFIGURATOR key: MySqlTable
 -- atc.Configurator delete_on_delta_schema_mismatch: true
-CREATE TABLE IF NOT EXISTS `my_db1{ID}.tbl1`
+CREATE TABLE IF NOT EXISTS `{MySparkDb}.tbl1`
 (
   a int,
   b int,

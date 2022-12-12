@@ -24,6 +24,7 @@ class ChildCacher(CachedLoader):
 
     def delete_operation(self, df: DataFrame) -> DataFrame:
         target_name = Configurator().table_name("CachedTestTarget")
+
         self.to_be_deleted = df
         Spark.get().sql(f"DELETE FROM {target_name} WHERE b = 8")
         self.deleted = df.filter(df["b"] == 8)

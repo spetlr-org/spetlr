@@ -1,3 +1,4 @@
+import dataclasses
 import re
 import string
 
@@ -36,17 +37,6 @@ def get_schema(sql: str) -> t.StructType:
         # remove whitespace before and after spacial character
         sql = re.sub(rf"\s*{c}\s*", c.strip("\\"), sql, flags=re.MULTILINE)
 
-    # remove comment tags
-    sql = re.sub(
-        r" COMMENT\s*"  # the COMMENT keyword,
-        r'"'  # followed by a "
-        r'([^"]|\\")*?'  # followed by any number of non-" OR '\"' sequences
-        r'",',  # finally followed by the closing ",
-        ",",
-        sql,
-        flags=re.MULTILINE | re.IGNORECASE,
-    )
-
     # we can go no further with regex
 
     it = peekable(sql)
@@ -59,14 +49,59 @@ def get_schema(sql: str) -> t.StructType:
             _peek_skip_space_or_colon(it)
             data_type = _get_data_type(it)
             log(f"got name: {name}, type: {data_type}")
-            struct.add(name, data_type)
-            if next(it) == ",":
+            m = _get_metadata(it)
+            metadata = {"comment": m.comment} if m.comment else None
+            struct.add(
+                field=name, data_type=data_type, nullable=m.nullable, metadata=metadata
+            )
+            c = next(it)
+            if c == ",":
                 continue
             else:
-                raise AssertionError("Malformed SQL")
+                raise SchemaExtractionError("Malformed SQL")
     except StopIteration:
         pass
     return struct
+
+
+@dataclasses.dataclass
+class _Metadata:
+    comment: str = None
+    nullable: bool = True
+
+
+def _get_metadata(it) -> _Metadata:
+    m = _Metadata()
+    while it.peek() != ",":
+        if it.peek() != " ":
+            raise SchemaExtractionError("Malformed SQL")
+
+        token = _get_data_type_name(it).upper()
+        if token == "NOT":
+            for c in " NULL":
+                if next(it).upper() != c:
+                    raise SchemaExtractionError("Malformed SQL")
+            m.nullable = False
+            continue
+        elif token == "COMMENT":
+            # manually parse this thing, there must be better ways,
+            for c in ' "':
+                if next(it).upper() != c:
+                    raise SchemaExtractionError("Malformed SQL")
+            escape_active = False
+            m.comment = ""
+            for c in it:
+                if escape_active:
+                    m.comment += c
+                    escape_active = False
+                elif c == "\\":
+                    escape_active = True
+                elif c == '"':
+                    break
+                else:
+                    m.comment += c
+
+    return m
 
 
 def _peek_skip_space(it):

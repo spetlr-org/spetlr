@@ -81,7 +81,8 @@ jobs:
         run: |
           .github/submit/submit_test_job.ps1  `
             -sparkVersion "10.4.x-scala2.12" `
-            -testJobDetails job104.json
+            -testJobDetails job104.json `
+            -sparkLibs sparklibs104.json
 
       - name: Wait 2 min for things to settle
         shell: pwsh

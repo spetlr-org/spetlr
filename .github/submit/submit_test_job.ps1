@@ -25,7 +25,13 @@ param (
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $sparkVersion = "9.1.x-scala2.12"
+  $sparkVersion = "9.1.x-scala2.12",
+
+  [Parameter(Mandatory=$false)]
+  [ValidateNotNullOrEmpty()]
+  [string]
+  $sparkLibs = "sparklibs94.json"
+
 
 )
 
@@ -40,7 +46,7 @@ $now = (Get-Date -Format yyyy-MM-ddTHH.mm)
 
 # import utility functions
 . "$PSScriptRoot\..\deploy\Utilities\all.ps1"
-. "$PSScriptRoot\spark-dependencies.ps1"
+$spark_dependencies = Get-Content "$PSScriptRoot/$sparkLibs" | ConvertFrom-Json
 
 
 # for separating tasks, we will do everything in our own dir (allows parallel jobs):

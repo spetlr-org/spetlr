@@ -30,7 +30,7 @@ param (
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $sparkLibs = "sparklibs94.json"
+  $sparkLibs = "sparklibs91.json"
 
 
 )

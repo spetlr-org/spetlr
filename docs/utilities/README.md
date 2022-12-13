@@ -33,10 +33,10 @@ This class allows the user to specify which columns she wants to give values for
 
 ```python3
 from atc.utils import DataframeCreator
-from pyspark.sql import types
+from atc.sql.schema import get_schema
 
 df = DataframeCreator.make_partial(
-            schema=types._parse_datatype_string("""
+            schema=get_schema("""
                 Id INTEGER,
                 measured DOUBLE,
                 customer STRUCT<

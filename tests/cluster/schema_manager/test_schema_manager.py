@@ -4,6 +4,7 @@ from atc_tools.testing import DataframeTestCase
 from atc.configurator import Configurator
 from atc.delta import DeltaHandle
 from atc.schema_manager import SchemaManager
+from atc.sql.schema import get_schema
 
 from . import extras
 from .SparkExecutor import SparkSqlExecutor
@@ -101,7 +102,7 @@ class TestSchemaManager(DataframeTestCase):
         self.maxDiff = None
         self.assertEqual(expected_str, transformed_str)
 
-        transformed_schema = T._parse_datatype_string(s=transformed_str)
+        transformed_schema = get_schema(s=transformed_str)
         self.maxDiff = None
         self.assertEqualSchema(schema, transformed_schema)
 

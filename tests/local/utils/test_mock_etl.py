@@ -1,9 +1,10 @@
 import unittest
 
-from pyspark.sql import DataFrame, types
+from pyspark.sql import DataFrame
 
 from atc.etl import Orchestrator, Transformer
 from atc.spark import Spark
+from atc.sql.schema import get_schema
 from atc.utils import DataframeCreator, MockExtractor, MockLoader
 
 
@@ -12,7 +13,7 @@ class MockEtlTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         Spark.get()
 
-        cls.schema = types._parse_datatype_string(
+        cls.schema = get_schema(
             """
             Id INTEGER,
             measured DOUBLE

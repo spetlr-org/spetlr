@@ -34,13 +34,13 @@ def get_schema(sql: str) -> t.StructType:
 
     for c in [",", ":", "<", ">", r"\(", r"\)"]:
         # remove whitespace before and after spacial character
-        sql = re.sub(rf"\s*{c}\s*", ",", sql, flags=re.MULTILINE)
+        sql = re.sub(rf"\s*{c}\s*", c.strip("\\"), sql, flags=re.MULTILINE)
 
     # remove comment tags
     sql = re.sub(
         r" COMMENT\s*"  # the COMMENT keyword,
         r'"'  # followed by a "
-        r'([^"]|\\")*'  # followed by any number of non-" OR '\"' sequences
+        r'([^"]|\\")*?'  # followed by any number of non-" OR '\"' sequences
         r'",',  # finally followed by the closing ",
         ",",
         sql,

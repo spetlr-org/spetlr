@@ -207,7 +207,10 @@ class CachedLoader(Loader):
                     != f.col(f"cache.{self.params.rowHash}")
                 )
             )
-            .select(*[f"df.{c}" for c in in_cols])
+            .select(
+                *self.params.key_cols,
+                *[f"df.{c}" for c in in_cols if c not in self.params.key_cols],
+            )
         )
 
         # cached rows with no incoming match will have a null fromPayload column

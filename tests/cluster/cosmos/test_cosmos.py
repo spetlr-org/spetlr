@@ -15,6 +15,7 @@ class TestCosmos(atc.cosmos.CosmosDb):
             endpoint=dbutils.secrets.get("values", "Cosmos--Endpoint"),
             account_key=dbutils.secrets.get("secrets", "Cosmos--AccountKey"),
             database="AtcCosmosContainer",
+            catalog_name=None,
         )
 
 
@@ -39,11 +40,13 @@ class CosmosTests(unittest.TestCase):
         except CosmosHttpResponseError:
             pass
 
-        cm.execute_sql(f"CREATE DATABASE IF NOT EXISTS cosmosCatalog.{cm.database};")
+        cm.execute_sql(
+            f"CREATE DATABASE IF NOT EXISTS {cm.catalog_name}.{cm.database};"
+        )
         tc = Configurator()
         cm.execute_sql(
             "CREATE TABLE IF NOT EXISTS"
-            f" cosmosCatalog.{cm.database}.{tc.table_name('CmsTbl')}"
+            f" {cm.catalog_name}.{cm.database}.{tc.table_name('CmsTbl')}"
             " using cosmos.oltp"
             " TBLPROPERTIES(partitionKeyPath = '/pk', manualThroughput = '400')"
         )

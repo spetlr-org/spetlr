@@ -111,10 +111,11 @@ class EventHubsTests(unittest.TestCase):
 
         # Part 1, YMD partitioned
         tc = Configurator()
-        tc.register("CpTblYMD", {"name": "CaptureTableYMD"})
+        tc.set_debug()
+        tc.register("CpTblYMD", {"name": "CaptureTableYMD{ID}"})
         Spark.get().sql(
-            """
-            CREATE TABLE CaptureTableYMD
+            f"""
+            CREATE TABLE {tc.table_name('CpTblYMD')}
             (
                 id int,
                 name string,
@@ -136,10 +137,10 @@ class EventHubsTests(unittest.TestCase):
 
         # Part 2, pdate partitioned.
 
-        tc.register("CpTblDate", {"name": "CaptureTableDate"})
+        tc.register("CpTblDate", {"name": "CaptureTableDate{ID}"})
         Spark.get().sql(
-            """
-            CREATE TABLE CaptureTableDate
+            f"""
+            CREATE TABLE {tc.table_name('CpTblDate')}
             (
                 id INTEGER,
                 name STRING,

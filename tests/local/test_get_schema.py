@@ -10,7 +10,7 @@ class TestGetSchema(unittest.TestCase):
     def test_01_schema1(self):
         sql = dedent(
             r"""
-            a int,
+            a int NOT NULL,
             b int COMMENT "really? is that it?",
             c string,
             cplx struct< -- irrelevant comment
@@ -23,14 +23,13 @@ class TestGetSchema(unittest.TestCase):
             m map<int,string>,
             p decimal(10,3),
             final string
-
-        """
+            """
         )
         struct = get_schema(sql)
         self.assertEqual(
             t.StructType(
                 [
-                    t.StructField("a", t.IntegerType(), True),
+                    t.StructField("a", t.IntegerType(), False),
                     t.StructField(
                         "b",
                         t.IntegerType(),

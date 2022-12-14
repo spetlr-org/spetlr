@@ -43,19 +43,15 @@ def get_schema(sql: str) -> t.StructType:
     struct = t.StructType([])
     try:
         while True:
-            log("Looking at next field:")
             name = _get_identifier(it)
-            log(f"got name {name}")
             _peek_skip_space_or_colon(it)
             data_type = _get_data_type(it)
-            log(f"got name: {name}, type: {data_type}")
             m = _get_metadata(it)
             metadata = {"comment": m.comment} if m.comment else None
             struct.add(
                 field=name, data_type=data_type, nullable=m.nullable, metadata=metadata
             )
-            c = next(it)
-            if c == ",":
+            if next(it) == ",":
                 continue
             else:
                 raise SchemaExtractionError("Malformed SQL")
@@ -72,22 +68,31 @@ class _Metadata:
 
 def _get_metadata(it) -> _Metadata:
     m = _Metadata()
-    while it.peek() != ",":
+    while it:
+        if it.peek() == ",":
+            break  # no more metadata
+
         if it.peek() != " ":
             raise SchemaExtractionError("Malformed SQL")
+        next(it)  # consume space
 
-        token = _get_data_type_name(it).upper()
+        token = _get_ascii_token(it).upper()
         if token == "NOT":
             for c in " NULL":
-                if next(it).upper() != c:
+                try:
+                    if next(it).upper() != c:
+                        raise SchemaExtractionError("Malformed SQL")
+                except StopIteration:
                     raise SchemaExtractionError("Malformed SQL")
             m.nullable = False
             continue
         elif token == "COMMENT":
             # manually parse this thing, there must be better ways,
-            for c in ' "':
-                if next(it).upper() != c:
-                    raise SchemaExtractionError("Malformed SQL")
+            if not it or next(it) != " ":
+                raise SchemaExtractionError("Malformed SQL")
+            if not it or next(it) != '"':
+                raise SchemaExtractionError("Malformed SQL")
+
             escape_active = False
             m.comment = ""
             for c in it:
@@ -113,11 +118,9 @@ def _peek_skip_space(it):
 
 
 def _peek_skip_space_or_colon(it):
-    c = it.peek()
+    c = it.peek("x")
     if c in " :":
         next(it)
-        c = it.peek()
-    return c
 
 
 def _flatten(it: peekable):
@@ -125,7 +128,7 @@ def _flatten(it: peekable):
 
 
 def _get_data_type(it: peekable) -> t.DataType:
-    type_name = _get_data_type_name(it).upper()
+    type_name = _get_ascii_token(it).upper()
     log(f"Type name is {type_name}")
     simples = dict(
         BOOLEAN=t.BooleanType(),
@@ -149,7 +152,7 @@ def _get_data_type(it: peekable) -> t.DataType:
         return simples[type_name]
     elif type_name in ["DECIMAL", "DEC", "NUMERIC"]:
         # we need to parse the (scale,precision) block if present
-        c = _peek_skip_space(it)
+        c = it.peek("x")
         if c == ",":
             return t.DecimalType()
         if c != "(":
@@ -160,10 +163,14 @@ def _get_data_type(it: peekable) -> t.DataType:
 
         # c is (
         block = []
-        while it.peek() != ")":
-            block.append(next(it))
-        next(it)  # consume the )
-        _peek_skip_space(it)
+        while True:
+            try:
+                c = next(it)
+            except StopIteration:
+                raise SchemaExtractionError("decimal () block never ended")
+            if c == ")":
+                break
+            block.append(c)
 
         block = "".join(block)
         precision, scale = block.split(",")
@@ -174,7 +181,12 @@ def _get_data_type(it: peekable) -> t.DataType:
 
     elif type_name == "STRUCT":
         # we need to parse the struct members
-        c = next(it)
+        try:
+            c = next(it)
+        except StopIteration:
+            raise SchemaExtractionError(
+                "after STRUCT a <> block must follow, but string ended."
+            )
         if c != "<":
             raise SchemaExtractionError(
                 f"after STRUCT must follow a < > block. found: '{c}'"
@@ -249,17 +261,16 @@ def _get_data_type(it: peekable) -> t.DataType:
         raise NotImplementedError(f"Data type not implementd: {type_name}")
 
 
-def _get_data_type_name(it: peekable) -> str:
+def _get_ascii_token(it: peekable) -> str:
     name = []
-    _peek_skip_space(it)
 
-    while it.peek() in string.ascii_letters:
+    while it.peek(".") in string.ascii_letters:
         name.append(next(it))
 
     name = "".join(name).strip()
 
     if not name:
-        raise SchemaExtractionError(f"unable to get a type name: {_flatten(it)}")
+        raise SchemaExtractionError(f"unable to get a token: '{_flatten(it)}'")
     return name
 
 

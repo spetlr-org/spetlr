@@ -102,7 +102,7 @@ class TestSchemaManager(DataframeTestCase):
         self.maxDiff = None
         self.assertEqual(expected_str, transformed_str)
 
-        transformed_schema = get_schema(s=transformed_str)
+        transformed_schema = get_schema(transformed_str)
         self.maxDiff = None
         self.assertEqualSchema(schema, transformed_schema)
 

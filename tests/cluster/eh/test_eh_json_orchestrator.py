@@ -23,27 +23,27 @@ class JsonEhOrchestratorUnitTests(unittest.TestCase):
         cls.tc.register("TblPdate", {"name": "TablePdate{ID}"})
 
         spark = Spark.get()
-        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TableYMD')}")
-        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TableYMDH')}")
-        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TablePdate')}")
+        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblYMD')}")
+        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblYMDH')}")
+        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblPdate')}")
 
         spark.sql(
             f"""
-            CREATE TABLE {cls.tc.table_name('TableYMD')}
+            CREATE TABLE {cls.tc.table_name('TblYMD')}
             (id int, name string, y int, m int, d int)
             PARTITIONED BY (y,m,d)
         """
         )
         spark.sql(
             f"""
-            CREATE TABLE {cls.tc.table_name('TableYMDH')}
+            CREATE TABLE {cls.tc.table_name('TblYMDH')}
             (id int, name string, y int, m int, d int, h int)
             PARTITIONED BY (y,m,d,h)
         """
         )
         spark.sql(
             f"""
-            CREATE TABLE {cls.tc.table_name('TablePdate')}
+            CREATE TABLE {cls.tc.table_name('TblPdate')}
             (id int, name string, pdate timestamp)
             PARTITIONED BY (pdate)
         """

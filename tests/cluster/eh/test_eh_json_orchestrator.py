@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 from atc_tools.time import dt_utc
 
-from atc.config_master import TableConfigurator
+from atc import Configurator
 from atc.delta import DeltaHandle
 from atc.eh import EventHubCaptureExtractor
 from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaExtractor
@@ -11,38 +11,39 @@ from atc.spark import Spark
 
 
 class JsonEhOrchestratorUnitTests(unittest.TestCase):
-    tc: TableConfigurator
+    tc: Configurator
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.tc = TableConfigurator()
+        cls.tc = Configurator()
+        cls.tc.set_debug()
         cls.tc.clear_all_configurations()
-        cls.tc.register("TblYMD", {"name": "TableYMD"})
-        cls.tc.register("TblYMDH", {"name": "TableYMDH"})
-        cls.tc.register("TblPdate", {"name": "TablePdate"})
+        cls.tc.register("TblYMD", {"name": "TableYMD{ID}"})
+        cls.tc.register("TblYMDH", {"name": "TableYMDH{ID}"})
+        cls.tc.register("TblPdate", {"name": "TablePdate{ID}"})
 
         spark = Spark.get()
-        spark.sql("DROP TABLE IF EXISTS TableYMD")
-        spark.sql("DROP TABLE IF EXISTS TableYMDH")
-        spark.sql("DROP TABLE IF EXISTS TablePdate")
+        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblYMD')}")
+        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblYMDH')}")
+        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblPdate')}")
 
         spark.sql(
-            """
-            CREATE TABLE TableYMD
+            f"""
+            CREATE TABLE {cls.tc.table_name('TblYMD')}
             (id int, name string, y int, m int, d int)
             PARTITIONED BY (y,m,d)
         """
         )
         spark.sql(
-            """
-            CREATE TABLE TableYMDH
+            f"""
+            CREATE TABLE {cls.tc.table_name('TblYMDH')}
             (id int, name string, y int, m int, d int, h int)
             PARTITIONED BY (y,m,d,h)
         """
         )
         spark.sql(
-            """
-            CREATE TABLE TablePdate
+            f"""
+            CREATE TABLE {cls.tc.table_name('TblPdate')}
             (id int, name string, pdate timestamp)
             PARTITIONED BY (pdate)
         """

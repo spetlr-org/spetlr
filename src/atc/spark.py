@@ -9,7 +9,7 @@ Some standard options are pre-set, call configure with value=None to remove them
 # https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from pyspark.sql import SparkSession
 
@@ -65,3 +65,9 @@ class Spark:
             builder = builder.config(key, value)
         cls._spark = builder.getOrCreate()
         return cls._spark
+
+    @classmethod
+    def version(cls) -> Tuple:
+        return tuple(int(p) for p in cls.get().version.split("."))
+
+    DATABRICKS_RUNTIME_9_1 = (3, 1, 2)

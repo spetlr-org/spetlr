@@ -1,0 +1,17 @@
+[
+  {
+    "maven" : {
+      "coordinates" : "com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.22"
+    }
+  },
+  {
+    "maven" : {
+      "coordinates" : "com.microsoft.azure:spark-mssql-connector_2.12:1.2.0"
+    }
+  },
+  {
+    "maven" : {
+      "coordinates" : "com.azure.cosmos.spark:azure-cosmos-spark_3-3_2-12:4.15.0"
+    }
+  }
+]

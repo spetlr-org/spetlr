@@ -1,5 +1,5 @@
 SchemaTestDb:
-  name: "SchemaTest"
+  name: "SchemaTest{ID}"
   path: "/tmp/SchemaTest{ID}.db/"
 
 SchemaTestTable1:

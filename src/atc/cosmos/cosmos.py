@@ -1,5 +1,6 @@
 # Defines a class for opening a connection to Cosmos DB,
 # loading and saving tables, and executing SQL.
+import hashlib
 
 # e.g. usage:
 #   server = CosmosDb()
@@ -34,6 +35,7 @@ class CosmosDb(CosmosBaseServer):
         database: str,
         account_name: str = None,
         endpoint: str = None,
+        catalog_name: Optional[str] = "cosmosCatalog",
     ):
         if not account_name and not endpoint:
             raise ValueError("account_name or endpoint must be set")
@@ -54,6 +56,10 @@ class CosmosDb(CosmosBaseServer):
         self.client = CosmosClient(endpoint, credential=account_key)
 
         self._db_client: Optional[DatabaseProxy] = None
+        self.catalog_name = (
+            catalog_name
+            or hashlib.sha1(f"{endpoint}{self.database}".encode()).hexdigest()
+        )
 
     @property
     def db_client(self):
@@ -73,14 +79,16 @@ class CosmosDb(CosmosBaseServer):
         #       "TBLPROPERTIES(partitionKeyPath = '/id', manualThroughput = '1100')"
         spark = Spark.get()
         spark.conf.set(
-            "spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog"
+            f"spark.sql.catalog.{self.catalog_name}",
+            "com.azure.cosmos.spark.CosmosCatalog",
         )
         spark.conf.set(
-            "spark.sql.catalog.cosmosCatalog.spark.cosmos.accountEndpoint",
+            f"spark.sql.catalog.{self.catalog_name}.spark.cosmos.accountEndpoint",
             self.endpoint,
         )
         spark.conf.set(
-            "spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", self.account_key
+            f"spark.sql.catalog.{self.catalog_name}.spark.cosmos.accountKey",
+            self.account_key,
         )
         return spark.sql(sql)
 

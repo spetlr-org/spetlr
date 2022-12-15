@@ -19,7 +19,6 @@ custom:
     node_type_id: "Standard_DS3_v2"
     num_workers: 0
 
-  spark-libs: &spark-libs {% include 'sparklibs.json' %}
 
 
 environments:
@@ -32,7 +31,6 @@ environments:
           custom_tags:
             JobName: Setup Mounts
 
-        libraries: *spark-libs
         max_retries: 0
         spark_python_task:
           python_file: "file://src/atc/mount/main.py"

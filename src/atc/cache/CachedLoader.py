@@ -55,7 +55,7 @@ class CachedLoader(Loader):
         write_not_overloaded = "write_operation" not in self.__class__.__dict__
         delete_not_overloaded = "delete_operation" not in self.__class__.__dict__
         if write_not_overloaded or delete_not_overloaded:
-            raise AssertionError("write_operation an delete_operation required")
+            raise AssertionError("write_operation and delete_operation required")
 
         if self.__class__ is CachedLoader:
             raise AssertionError("You should inherit from this class")
@@ -207,12 +207,25 @@ class CachedLoader(Loader):
                     != f.col(f"cache.{self.params.rowHash}")
                 )
             )
-            .select(*in_cols)
+            .select(
+                *self.params.key_cols,
+                *[f"df.{c}" for c in in_cols if c not in self.params.key_cols],
+            )
         )
 
         # cached rows with no incoming match will have a null fromPayload column
-        result.to_be_deleted = joined_df.filter("fromPayload IS NULL").select(
-            *self.params.key_cols, "cache.*"
-        )
+        if Spark.version() > Spark.DATABRICKS_RUNTIME_9_1:
+            # from databricks 10.4 this returns all columns, including key columns.
+            # specifying key columns again causes them to be present twice in the
+            # data frame
+            result.to_be_deleted = joined_df.filter("fromPayload IS NULL").select(
+                "cache.*"
+            )
+        else:
+            # up to databricks 9.1 the key columns need to be selected separately,
+            # since they are not returned by the cache.*
+            result.to_be_deleted = joined_df.filter("fromPayload IS NULL").select(
+                *self.params.key_cols, "cache.*"
+            )
 
         return result

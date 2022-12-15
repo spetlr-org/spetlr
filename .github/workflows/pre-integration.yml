@@ -76,12 +76,23 @@ jobs:
         shell: pwsh
         run: Start-Sleep -s 30
 
+
       - name: Launch integration tests 9.1
         shell: pwsh
         run: |
           .github/submit/submit_test_job.ps1  `
             -sparkVersion "9.1.x-scala2.12" `
-            -testJobDetails job91.json
+            -testJobDetails job91.json `
+            -sparkLibs sparklibs91.json
+
+
+      - name: Launch integration tests 10.4
+        shell: pwsh
+        run: |
+          .github/submit/submit_test_job.ps1  `
+            -sparkVersion "10.4.x-scala2.12" `
+            -testJobDetails job104.json `
+            -sparkLibs sparklibs104.json
 
       - name: Wait 2 min for things to settle
         shell: pwsh
@@ -90,6 +101,10 @@ jobs:
       - name: Fetch integration tests 9.1
         shell: pwsh
         run: .github/submit/fetch_test_job.ps1 -testJobDetails job91.json
+
+      - name: Fetch integration tests 10.4
+        shell: pwsh
+        run: .github/submit/fetch_test_job.ps1 -testJobDetails job104.json
 
       - name: Delete Deployment
         if: always() # this step runs even if the pipeline is manually cancelled

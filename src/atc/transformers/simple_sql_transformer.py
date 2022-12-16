@@ -3,6 +3,7 @@ from pyspark.sql import DataFrame
 
 from atc.etl import Transformer
 from atc.sql.SqlServer import SqlServer
+from atc.utils import SelectAndCastColumns
 
 
 class SimpleSqlServerTransformer(Transformer):
@@ -21,13 +22,16 @@ class SimpleSqlServerTransformer(Transformer):
         # are casted to the target types
         # [f.col("ColumnName).cast("string").alias("ColumnName"), ...]
 
+        df = SelectAndCastColumns(
+            df=df, schema=self.server.read_table(self.table_id).schema
+        )
+
         # If the format is timestamp, the seconds should be trunc
-        target_df = self.server.read_table(self.table_id)
         col_choose = [
-            f.date_trunc("second", f.col(x[0])).cast(x[1]).alias(x[0])
+            f.date_trunc("second", f.col(x[0])).alias(x[0])
             if x[1] == "timestamp"
-            else f.col(x[0]).cast(x[1]).alias(x[0])
-            for x in target_df.dtypes
+            else f.col(x[0])
+            for x in df.dtypes
         ]
         df = df.select(col_choose)
 

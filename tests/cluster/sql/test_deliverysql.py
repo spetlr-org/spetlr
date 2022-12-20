@@ -311,15 +311,15 @@ class DeliverySqlServerTests(DataframeTestCase):
 
     def test20_big_data_set(self):
         # Ensure table creation
-        self.sql_server.drop_table(self.table_name)
+        self.sql_server.drop_table_by_name(self.table_name)
         self.create_test_table()
 
         # Create test data
         df = self.create_data()
 
         # Write as big data set
-        self.sql_server.write_table(df, self.table_name, big_data_set=True)
-        df_with_data = self.sql_server.read_table(self.table_name)
+        self.sql_server.write_table_by_name(df, self.table_name, big_data_set=True)
+        df_with_data = self.sql_server.read_table_by_name(self.table_name)
         self.assertEqual(df_with_data.count(), 1)
 
     def create_test_table(self):

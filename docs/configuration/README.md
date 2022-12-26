@@ -29,11 +29,11 @@ files must contain the following structure:
 - each resource must have one of three shapes:
   - a single key named 'alias' to refer to another resource
   - two keys called 'release' and 'debug', each containing resource details
-  - resource details consisting of a dictionary of attributes, such as
-    - a 'name' attribute
-    - a 'path' attribute,
-    - a 'format' and 'partitioning' attribute.
-
+  - resource details consisting of a dictionary of attributes, in the case of 
+    describing a hive table or database, a certain scheme needs to be followed as 
+    described below. However, it is possible to use any structure to describe 
+    resources of any kind.
+ 
 The following is an example of a configuration file
 ```yaml
 MyFirst:
@@ -73,12 +73,79 @@ configured to return production or test versions of tables this is done
 at the start of your code. In your jobs you need to set `Configurator().set_prod()`
 whereas your unit-tests should call `Configurator().set_debug()`.
 
+### Describing Hive tables
+
+In spark sql, there are [database create statements](https://spark.apache.org/docs/3.0.0-preview/sql-ref-syntax-ddl-create-database.html)
+and [table create statemets](https://spark.apache.org/docs/latest/sql-ref-syntax-ddl-create-table-datasource.html)
+that follow a fixed pattern reproduced here:
+
+```sparksql
+CREATE {DATABASE | SCHEMA} [ IF NOT EXISTS ] database_name
+  [ COMMENT database_comment ]
+  [ LOCATION database_directory ]
+  [ WITH DBPROPERTIES (property_name=property_value [ , ...]) ];
+
+CREATE TABLE [ IF NOT EXISTS ] table_identifier
+    [ ( col_name1 col_type1 [ COMMENT col_comment1 ], ... ) ]
+    USING data_source
+    [ OPTIONS ( key1=val1, key2=val2, ... ) ]
+    [ PARTITIONED BY ( col_name1, col_name2, ... ) ]
+    [ CLUSTERED BY ( col_name3, col_name4, ... ) 
+        [ SORTED BY ( col_name [ ASC | DESC ], ... ) ] 
+        INTO num_buckets BUCKETS ]
+    [ LOCATION path ]
+    [ COMMENT table_comment ]
+    [ TBLPROPERTIES ( key1=val1, key2=val2, ... ) ]
+    [ AS select_statement ]
+```
+
+The logic in this library expects the information in the above statements to be 
+reproduced in yaml in the following structure:
+```yaml
+MyAtcDbReference:
+  name: database_name
+  comment: database_comment
+  path: database_directory
+  format: "db"
+  dbproperties:
+    property_name: property_value
+
+MyAtcTableReference:
+  name: table_identifier
+  path: path
+  format: data_source
+  schema:
+    sql: |
+      col_name1 col_type1 [ COMMENT col_comment1 ], ... 
+  options:
+    key1: val1
+    key2: val2
+  partitioned_by:
+    - col_name1
+    - col_name2
+  clustered_by:
+    cols:
+      - col_name3
+      - col_name4 
+    buckets: num_buckets
+    sorted_by:
+      - name: col_name 
+        ordering: "ASC" or "DESC"
+  comment: table_comment
+  tblproperties:
+    key1: val1
+    key2: val2
+```
+
+Note that the form `CREATE TABLE table_identifier AS select_statement` is not supported.
+For alternate ways to specify the schema, see the documentation for the schema manager.
+
 ### Configuration from sql
 
-When using sql statements to create and manage tables, it can be good to keep all
-information referring to a table within one file. Therefore, the configurator employs 
-a sql parsing library to extract table details directly from the CREATE statements. 
-It can be used like this:
+When using sql statements to create and manage tables, a developer may desire to 
+keep all information referring to a table within one file. Therefore, the 
+configurator employs a sql parsing library to extract table details directly from the 
+CREATE statements. It can be used like this:
 
 ```python
 from . import my_sql_folder
@@ -138,6 +205,9 @@ The example is quite complex and demonstrates a number of features:
   here in the sql configuration.
 - string substitution is available inside the schema, this allows schemas to be 
   constructed from other schemas.
+
+When using the configurator to parse `sql` code, the in-memory structure will be as 
+described in the section on hive-table specification.
 
 ## Using the Configurator
 

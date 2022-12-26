@@ -106,7 +106,25 @@ class TestConfigurator(unittest.TestCase):
         self.assertEqual(c.get("MySqlTable", "name"), "my_db1.tbl1")
         c.set_debug()
         self.assertEqual(c.get("MySqlTable", "path"), "/tmp/foo/bar/my_db1/tbl1/")
+
         self.assertEqual(c.get("MySqlTable", "format"), "delta")
+        self.assertEqual(c.get("MySqlTable", "options"), dict(key1="val1", key2="val2"))
+        self.assertEqual(c.get("MySqlTable", "partitioned_by"), ["a", "b"])
+        self.assertEqual(
+            c.get("MySqlTable", "clustered_by"),
+            dict(
+                cols=["c", "d"],
+                sorted_by=[
+                    dict(name="a", ordering="ASC"),
+                    dict(name="b", ordering="DESC"),
+                ],
+                buckets=5,
+            ),
+        )
+        self.assertEqual(c.get("MySqlTable", "comment"), "Dummy Database 1 table 1")
+        self.assertEqual(
+            c.get("MySqlTable", "tblproperties"), dict(key1="val1", key2="val2")
+        )
         self.assertEqual(
             SchemaManager().get_schema("MySqlTable"),
             types._parse_datatype_string("""a int, b int, c string, d timestamp"""),

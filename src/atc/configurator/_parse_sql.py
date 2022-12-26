@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Dict, Union
+from typing import Dict, Generator, Iterable, Iterator, List, Tuple, Union
 
 import yaml
 
@@ -23,12 +23,26 @@ from .sql import parse, sqlparse
 _magic_comment_start = "-- atc.configurator "
 
 
-def _extract_comment_attributes(stmt) -> Dict:
+def _meaningful_token_iter(tks: Iterable[sqlparse.tokens._TokenType]):
+    """Only return tokens that are potentially meaningful sql"""
+    for tk in tks:
+        if (
+            tk.ttype not in sqlparse.tokens.Whitespace
+            and tk.ttype not in sqlparse.tokens.Comment
+        ):
+            yield tk
+
+
+def _list_no_whitespace(
+    tokens: Iterable[sqlparse.tokens._TokenType],
+) -> List[sqlparse.tokens._TokenType]:
+    return [t for t in tokens if t.ttype != sqlparse.tokens.Whitespace]
+
+
+def _extract_comment_attributes(stmt: sqlparse.sql.Statement) -> Dict:
     _magic_comment_start_re = re.compile(_magic_comment_start, re.IGNORECASE)
     collected_lines = []
-    for token in stmt:
-        if token.ttype in sqlparse.tokens.Whitespace:
-            continue
+    for token in _list_no_whitespace(stmt):
         if token.ttype not in sqlparse.tokens.Comment:
             continue
         val: str = token.value.strip()
@@ -39,21 +53,125 @@ def _extract_comment_attributes(stmt) -> Dict:
     return yaml.load(yaml_document, Loader=yaml.FullLoader) or {}
 
 
+ENUM_ASC = 1
+ENUM_DESC = 2
+
+
+@dataclass
+class SortingCol:
+    name: str
+    ordering: int = ENUM_ASC
+
+
+@dataclass
+class ClusteredBy:
+    clustering_cols: List[str]
+    n_buckets: int = 0
+    sorting: List[SortingCol] = None
+
+
 @dataclass
 class StatementBlocks:
     schema: str = None
     using: str = None
-    options: str = None
-    partitioned_by: str = None
-    clustered_by: str = None
-    sorted_by: str = None
+    options: Dict[str, str] = None
+    partitioned_by: List[str] = None
+    clustered_by: ClusteredBy = None
     location: str = None
     comment: str = None
-    tblproperties: str = None
-    as_: str = None
+    tblproperties: Dict[str, str] = None
+    dbproperties: Dict[str, str] = None
+
+    def get_simple_structure(self):
+        object_details = {
+            "path": self.location,
+            "format": self.using.lower() if self.using else None,
+            "options": self.options,
+            "partitioned_by": self.partitioned_by,
+            "comment": self.comment,
+            "tblproperties": self.tblproperties,
+        }
+
+        if self.schema:
+            object_details["schema"] = {"sql": self.schema.strip("()")}
+            object_details["_raw_sql_schema"] = self.schema.strip("()")
+
+        if self.clustered_by:
+            object_details["clustered_by"] = {
+                "cols": self.clustered_by.clustering_cols,
+                "buckets": self.clustered_by.n_buckets,
+            }
+            if self.clustered_by.sorting:
+                object_details["clustered_by"]["sorted_by"] = []
+                for col in self.clustered_by.sorting:
+                    object_details["clustered_by"]["sorted_by"].append(
+                        dict(
+                            name=col.name,
+                            ordering=("ASC" if col.ordering == ENUM_ASC else "DESC"),
+                        )
+                    )
+
+        return {k: v for k, v in object_details.items() if v is not None}
 
 
-def _extract_optional_blocks(stmt) -> StatementBlocks:
+def _unpack_comma_separated_list_in_parens(
+    stmt: Iterator[sqlparse.tokens._TokenType],
+) -> Generator[List[sqlparse.tokens._TokenType], None, None]:
+    grouped_token = next(stmt)
+    if not isinstance(grouped_token, sqlparse.sql.Parenthesis):
+        AtcConfiguratorInvalidSqlException("expected parenthesis with list")
+
+    it = _meaningful_token_iter(grouped_token.flatten())
+    for token in it:
+        if token.value in "()":
+            continue
+        between_commas = [token]
+        for token in it:
+            if token.value == "," or token.value in "()":
+                break
+            between_commas.append(token)
+        yield between_commas
+
+
+def _unpack_list_of_single_variables(stmt: Iterator[sqlparse.tokens._TokenType]):
+    for tokens in _unpack_comma_separated_list_in_parens(stmt):
+        if len(tokens) != 1:
+            AtcConfiguratorInvalidSqlException(
+                "unexpected number of statements between commas"
+            )
+        yield tokens[0]
+
+
+def _unpack_list_of_sorting_statements(stmt: Iterator[sqlparse.tokens._TokenType]):
+    for tokens in _unpack_comma_separated_list_in_parens(stmt):
+        if len(tokens) not in [1, 2]:
+            AtcConfiguratorInvalidSqlException(
+                "unexpected number of statements between commas"
+            )
+
+        sort_col = SortingCol(tokens[0].value)
+        if len(tokens) == 2:
+            direction = tokens[1]
+            if direction.value.upper() == "ASC":
+                pass
+            elif direction.value.upper() == "DESC":
+                sort_col.ordering = ENUM_DESC
+            else:
+                AtcConfiguratorInvalidSqlException("unexpected ordering direction")
+        yield sort_col
+
+
+def _unpack_options(
+    stmt: Iterator[sqlparse.tokens._TokenType],
+) -> Generator[Tuple[str, str], None, None]:
+    for tokens in _unpack_comma_separated_list_in_parens(stmt):
+        if len(tokens) != 3 or tokens[1].value != "=":
+            raise AtcConfiguratorInvalidSqlException("expected assignments")
+        key, _, value = tokens
+        yield key.value.strip("\"'"), value.value.strip("\"'")
+
+
+def _extract_optional_blocks(stmt: sqlparse.sql.Statement) -> StatementBlocks:
     """After the initial "create table [if not exists] mytable",
     The statements can contain several blocks that are mostly optional,
     (check the documentation links at the top of this file)
@@ -67,37 +185,34 @@ def _extract_optional_blocks(stmt) -> StatementBlocks:
         val = token.value.upper()
         if val == "USING":
             blocks.using = next(stmt).value
-        elif isinstance(token, sqlparse.sql.Parenthesis):
-            blocks.schema = token.value
-        elif val == "OPTIONS":
-            options = next(stmt)
-            if not isinstance(options, sqlparse.sql.Parenthesis):
-                AtcConfiguratorInvalidSqlException("expected parenthesis with options")
-            blocks.options = options.value
-        elif val == "PARTITIONED BY":
-            partitions = next(stmt)
-            if not isinstance(partitions, sqlparse.sql.Parenthesis):
-                AtcConfiguratorInvalidSqlException(
-                    "expected parenthesis with partitions"
-                )
-            blocks.options = partitions.value
-        elif val == "CLUSTERED BY":
-            cluster_cols = next(stmt)
-            if not isinstance(cluster_cols, sqlparse.sql.Parenthesis):
-                AtcConfiguratorInvalidSqlException(
-                    "expected parenthesis with clustering cols"
-                )
+            continue
 
-            cluster_line = cluster_cols.value
+        if isinstance(token, sqlparse.sql.Parenthesis):
+            blocks.schema = token.value
+            continue
+
+        if val == "OPTIONS":
+            blocks.options = {}
+            for k, v in _unpack_options(stmt):
+                blocks.options[k] = v
+            continue
+
+        if re.match(r"PARTITIONED\s+BY", val):
+            blocks.partitioned_by = [
+                token.value for token in _unpack_list_of_single_variables(stmt)
+            ]
+            continue
+
+        if re.match(r"CLUSTERED\s+BY", val):
+            blocks.clustered_by = ClusteredBy(
+                [token.value for token in _unpack_list_of_single_variables(stmt)]
+            )
 
             peek = next(stmt)
-            if peek.value.upper() == "SORTED BY":
-                sort_cols = next(stmt)
-                if not isinstance(sort_cols, sqlparse.sql.Parenthesis):
-                    AtcConfiguratorInvalidSqlException(
-                        "expected parenthesis with sorting cols"
-                    )
-                cluster_line += "\nSORTED BY " + sort_cols.value
+            if re.match(r"SORTED\s+BY", peek.value.upper()):
+                blocks.clustered_by.sorting = []
+                for sort_col in _unpack_list_of_sorting_statements(stmt):
+                    blocks.clustered_by.sorting.append(sort_col)
                 into_token = next(stmt)
             else:
                 into_token = peek
@@ -105,44 +220,54 @@ def _extract_optional_blocks(stmt) -> StatementBlocks:
             if not into_token.value.upper() == "INTO":
                 AtcConfiguratorInvalidSqlException("expected INTO after clustering")
 
-            num_buckets = int(next(stmt).value)
+            try:
+                blocks.clustered_by.n_buckets = int(next(stmt).value)
+            except ValueError:
+                raise AtcConfiguratorInvalidSqlException(
+                    "Unable to extract ordering buckets"
+                )
 
             buckets_token = next(stmt)
             if not buckets_token.value.upper() == "BUCKETS":
                 AtcConfiguratorInvalidSqlException("expected BUCKETS after INTO n")
+            continue
 
-            cluster_line += f"\nINTO {num_buckets} BUCKETS"
-        elif val == "LOCATION":
+        if val == "LOCATION":
             blocks.location = next(stmt).value.strip("\"'")
-        elif val == "COMMENT":
+            continue
+
+        if val == "COMMENT":
             blocks.comment = next(stmt).value.strip("\"'")
-        elif val == "TBLPROPERTIES ":
-            tblproperties = next(stmt)
-            if not isinstance(tblproperties, sqlparse.sql.Parenthesis):
-                AtcConfiguratorInvalidSqlException(
-                    "expected options list after with TBLPROPERTIES"
-                )
-            blocks.tblproperties = tblproperties.value
-        elif val == "AS":
+            continue
+
+        if val == "TBLPROPERTIES":
+            blocks.tblproperties = {}
+            for k, v in _unpack_options(stmt):
+                blocks.tblproperties[k] = v
+            continue
+
+        if val == "DBPROPERTIES":
+            blocks.dbproperties = {}
+            for k, v in _unpack_options(stmt):
+                blocks.dbproperties[k] = v
+            continue
+
+        if val == "AS":
             raise NotImplementedError("Select AS not currently supported")
-        elif val == ";":
+
+        if val == ";":
             break
-        else:
-            raise AtcConfiguratorInvalidSqlException(
-                "Unknown statement form encountered."
-            )
+
+        print(val)
+        # if we got to here with no exception, break or continue something is wrong
+        raise AtcConfiguratorInvalidSqlException("Unknown statement form encountered.")
     return blocks
 
 
-def _walk_create_statement(statement) -> Dict:
+def _walk_create_statement(statement: sqlparse.sql.Statement) -> Dict:
     # create an iterator over all tokens in the statement
     # that are not whitespace
-    statement = (
-        token
-        for token in statement
-        if token.ttype not in sqlparse.tokens.Whitespace
-        and token.ttype not in sqlparse.tokens.Comment
-    )
+    statement: Iterator[sqlparse.tokens._TokenType] = _meaningful_token_iter(statement)
 
     # We are now ready to go through the statement
     # both create Table and create database must start with create
@@ -180,25 +305,21 @@ def _walk_create_statement(statement) -> Dict:
     if not is_table and blocks.schema is not None:
         raise AtcConfiguratorInvalidSqlException("A database cannot have a schema")
 
-    if is_table and blocks.using is None:
-        raise AtcConfiguratorInvalidSqlException("A table must have a using statement")
+    if is_table:
+        if blocks.using is None:
+            raise AtcConfiguratorInvalidSqlException(
+                "A table must have a using statement"
+            )
+    else:
+        blocks.using = "db"
 
     # all validation is completed.
     # construct the configurator object
 
-    object_details = {
-        "name": name,
-        "path": blocks.location,
-        "format": blocks.using.lower() if is_table else "db",
-        "options": blocks.options,
-        "partitioned_by": blocks.partitioned_by,
-        "clustered_by": blocks.clustered_by,
-        "sorted_by": blocks.clustered_by,
-        "comment": blocks.comment,
-        "tblproperties": blocks.tblproperties,
-        "schema": {"sql": blocks.schema.strip("()")} if blocks.schema else None,
-    }
-    return {k: v for k, v in object_details.items() if v is not None}
+    object_details = blocks.get_simple_structure()
+    object_details["name"] = name
+
+    return object_details
 
 
 def _parse_sql_to_config(resource_path: Union[str, ModuleType]) -> Dict:

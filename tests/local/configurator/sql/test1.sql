@@ -30,5 +30,12 @@ CREATE TABLE IF NOT EXISTS `{MySparkDb}.tbl1`
   d timestamp
 )
 USING DELTA
+OPTIONS (key1='val1', key2="val2")
+PARTITIONED BY ( a, b )
+CLUSTERED BY ( c,d )
+         SORTED BY ( a, b DESC )
+        INTO 5 BUCKETS
 COMMENT "Dummy Database 1 table 1"
-LOCATION "/{MNT}/foo/bar/my_db1/tbl1/";
+LOCATION "/{MNT}/foo/bar/my_db1/tbl1/"
+TBLPROPERTIES ( key1='val1', key2='val2' )
+;

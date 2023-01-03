@@ -24,3 +24,15 @@ UpsertLoaderDb:
 UpsertLoaderDummy:
   name: "{UpsertLoaderDb}.Dummy"
   path: "{UpsertLoaderDb_path}/dummy"
+
+IncrementalExtractorDb:
+  name: IncrementalExtractor{ID}
+  path: "/tmp/IncrementalExtractor{ID}.db/"
+
+IncrementalExtractorDummySource:
+  name: "{IncrementalExtractorDb}.DummySource"
+  path: "{IncrementalExtractorDb_path}/dummysource"
+
+IncrementalExtractorDummyTarget:
+  name: "{IncrementalExtractorDb}.DummyTarget"
+  path: "{IncrementalExtractorDb_path}/dummytarget"

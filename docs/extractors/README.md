@@ -4,6 +4,8 @@ This page documents all the atc extractors, following the OETL pattern.
 Extractors in atc-dataplatform:
 
 * [Eventhub stream extractor](#eventhub-stream-extractor)
+* [Incremental extractor](#incremental-extractor)
+
 
 ## Eventhub stream extractor
 This extractor reads data from an Azure eventhub and returns a structural streaming dataframe.
@@ -99,3 +101,10 @@ result = etl.execute()
 result.printSchema()
 result.show()
 ```
+
+
+## Incremental extractor
+
+This extractor only select the newest data from the source 
+by comparing with a target table.
+

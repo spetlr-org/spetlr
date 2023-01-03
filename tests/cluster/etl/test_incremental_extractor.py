@@ -48,7 +48,29 @@ class IncrementalExtractorTests(DataframeTestCase):
     )
 
     def test_01_can_perform_incremental_from_empty_source(self):
-        """Source is empty. Target has data. No data is read."""
+        """Source is empty. Target has data. No data is read.
+
+
+        Source has no data:
+
+        |id| stringcol    | timecol          |
+        |--|--------------|------------------|
+        |  |              |                  |
+
+        Target has the following data:
+
+        |id| stringcol    | timecol          |
+        |--|--------------|------------------|
+        |1 | "string1"    | 01.01.2021 10:50 |
+        |2| "string2"     | 01.01.2021 10:55 |
+
+        So an empty dataframe is read:
+
+        |id| stringcol    | timecol          |
+        |--|--------------|------------------|
+        |  |              |                  |
+
+        """
 
         source_test_handle = TestHandle(
             provides=DataframeCreator.make_partial(
@@ -74,7 +96,30 @@ class IncrementalExtractorTests(DataframeTestCase):
         self.assertDataframeMatches(df_result, None, [])
 
     def test_02_can_perform_incremental_on_empty_target(self):
-        """Source has data. Target is empty. All source data are read."""
+        """Source has data. Target is empty. All source data are read.
+
+        Source has the following data:
+
+        |id| stringcol    | timecol          |
+        |--|--------------|------------------|
+        |1 | "string1"    | 01.01.2021 10:50 |
+        |2| "string2"     | 01.01.2021 10:55 |
+        |3 | "string3"    | 01.01.2021 11:00 |
+
+        Target has no data:
+
+        |id| stringcol    | timecol          |
+        |--|--------------|------------------|
+        |  |              |                  |
+
+        The following data (all source data) is read:
+
+        |id| stringcol    | timecol          |
+        |--|--------------|------------------|
+        |1 | "string1"    | 01.01.2021 10:50 |
+        |2| "string2"     | 01.01.2021 10:55 |
+        |3 | "string3"    | 01.01.2021 11:00 |
+        """
         source_test_handle = TestHandle(
             provides=DataframeCreator.make_partial(
                 self.dummy_schema, self.dummy_columns, self.source1

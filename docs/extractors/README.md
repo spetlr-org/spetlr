@@ -13,6 +13,8 @@ This extractor reads data from an Azure eventhub and returns a structural stream
 Under the hood [spark azure eventhub](https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/PySpark/structured-streaming-pyspark.md) is used, and this [maven library](https://mvnrepository.com/artifact/com.microsoft.azure/azure-eventhubs-spark)
 
 ```python
+from atc.etl import Extractor
+
 class EventhubStreamExtractor(Extractor):
     def __init__(self, 
                  consumerGroup: str,
@@ -22,7 +24,7 @@ class EventhubStreamExtractor(Extractor):
                  accessKeyName: str = None,
                  accessKey: str = None,
                  maxEventsPerTrigger: int = 10000):
-    ...
+        ...
 ```
 
 Usage example with connection string:
@@ -66,7 +68,8 @@ from pyspark.sql.types import T
 import pyspark.sql.functions as F
 
 from atc.etl import Transformer, Loader, Orchestrator
-from atc.etl.eh import EventhubStreamExtractor
+from atc.extractors import EventhubStreamExtractor
+from atc.functions import init_dbutils
 
 class BasicTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
@@ -87,10 +90,10 @@ class NoopLoader(Loader):
 
 
 print('ETL Orchestrator using EventhubStreamExtractor')
-etl = (Orchestrator
+etl = (Orchestrator()
         .extract_from(EventhubStreamExtractor(
             consumerGroup="TestConsumerGroup",
-            connectionString=dbutils.secrets.get(scope = "TestScope", key = "TestSecretConnectionString"),
+            connectionString=init_dbutils().secrets.get(scope = "TestScope", key = "TestSecretConnectionString"),
             maxEventsPerTrigger = 100000
         ))
         .transform_with(BasicTransformer())

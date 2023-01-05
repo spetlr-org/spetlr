@@ -10,7 +10,8 @@ class IncrementalExtractor(Extractor):
     """This extractor will extract from any object that has a .read() method.
     Furthermore, it will use a target table for enabling incremental extraction.
 
-    NB: It is not recommended to use this on Eventhub data. Use EventHubCaptureExtractor instead.
+    NB: It is not recommended to use this on Eventhub data.
+        Use EventHubCaptureExtractor instead.
 
     """
 
@@ -30,7 +31,8 @@ class IncrementalExtractor(Extractor):
 
         if isinstance(self.handle_source, EventHubCapture):
             print(
-                "It is recommended to use EventHubCaptureExtractor for extracting eventhub data."
+                "It is recommended to use EventHubCaptureExtractor "
+                "for extracting eventhub data."
                 "EventHubCaptureExtractor is optimized for reading avro data."
             )
 

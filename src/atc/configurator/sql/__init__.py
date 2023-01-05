@@ -6,7 +6,6 @@ lex = Lexer.get_default_instance()
 lex.clear()
 
 my_regex = [
-    # (r"ZORDER\s+BY\b", tokens.Keyword),
     (r"IF\s+NOT\s+EXISTS\b", tokens.Keyword),
     (r"ZORDER\s+BY\b", tokens.Keyword),
     (r"PARTITIONED\s+BY\b", tokens.Keyword),

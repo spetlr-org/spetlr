@@ -17,7 +17,7 @@ before any reference to tables in made. Example:
 ```python
 from atc import Configurator
 tc = Configurator()
-tc.set_extra(ENV='prod')
+tc.register('ENV','myenv')
 tc.add_resource_path(my.resource.module)
 ```
 
@@ -26,9 +26,10 @@ tc.add_resource_path(my.resource.module)
 The `Configurator` can be configured with json or yaml files. The
 files must contain the following structure:
 - top level objects are resources
-- each resource must have one of three shapes:
-  - a single key named 'alias' to refer to another resource
-  - two keys called 'release' and 'debug', each containing resource details
+- each resource must have one of these shapes:
+  - a string (can contain substitutions, see below)
+  - a dict with a single key named 'alias' to refer to another resource
+  - a dict with two keys called 'release' and 'debug', each containing resource details
   - resource details consisting of a dictionary of attributes, in the case of 
     describing a hive table or database, a certain scheme needs to be followed as 
     described below. However, it is possible to use any structure to describe 
@@ -72,6 +73,22 @@ Beyond the resource definitions, the `Configurator` needs to be
 configured to return production or test versions of tables this is done
 at the start of your code. In your jobs you need to set `Configurator().set_prod()`
 whereas your unit-tests should call `Configurator().set_debug()`.
+
+### String substitutions
+
+As was already seen in the example above, all strings can contain python 
+format-string placeholders that reference other strings known to the configurator.
+The following rules apply:
+- Any value returned by the configurator will be fully resolved, meaning:
+  - all alias and release/debug redirections have been followed
+  - all `{}` substitutions have been applied
+  - since recursive substitutions are allowed, literal `{` or `}` can never be returned
+  - a stack is maintained internally to detect reference loops
+- any plain reference, like `{MyRecursing}` will resolve to either the entity itself 
+  (if it is a string), or to the `name` key of the fully resolved resource detail. .
+- any reference containing an underscore like `{MyRecursing_name}` will consider the 
+  part after the underscore to be a dictionary key and will return the fully resolved 
+  value. References to other parts of the same resource are allowed.
 
 ### Describing Hive tables
 
@@ -195,7 +212,8 @@ LOCATION "/{MNT}/foo/bar/my_db1/tbl1/";
 ```
 
 The example is quite complex and demonstrates a number of features:
-- the magic tag "-- ATC.CONFIGURATOR " is case-insensitive
+- the magic tag "-- ATC.CONFIGURATOR " is case-insensitive. The part after the tag 
+  is case-sensitive!
 - the key has to be specified as `-- ATC.CONFIGURATOR key: MyKey`.
 - any other attribute can be specified after the same magic tag and will be 
   available through the configurator. In fact, all comments with the magic tag will 
@@ -233,8 +251,8 @@ f"MERGE INTO {Configurator().table_name('MyTbl')} AS target ..."
 ## Further Features
 
 ### MNT key
-'MNT' is another special replacement, similar to "ID". In production it
-is replaced with the string 'mnt' while in debug it is replace with 'tmp'.
+'MNT' is another special replacement, similar to "ID". In production, it
+is replaced with the string 'mnt' while in debug it is replaced with 'tmp'.
 The intended usage is in paths where production tables are mounted on
 external storage, typically mounted under "/mnt" whereas test tables 
 should be written to "/tmp" you can use is as in this example:
@@ -244,31 +262,13 @@ MyTable:
   path: /{MNT}/somestorage{ENV}/mydb{ID}/data_table
 ```
 
-### Cross References
-In some cases it is useful to refer to other defined resources and their properties.
-This is fully supported as shown here:
-```yaml
-MyDb:
-  name: mydb{ID}
-  path: /{MNT}/storage{ENV}/mydb{ID}
-
-MyTable:
-  name: {MyDb}.mytable
-  path: {MyDb_path}/mytable
-```
-As shown here the "name" property can be accessed with the bare resouce key
-whereas other properties can be accessed by appending the property with an 
-underscore. (Optionally, appending "_name" is also supported to access the
-name, i.e. `{MyDb}` and `{MyDb_name}` are equivalent.)
-
 ### Extra details
-As already shown in the example above, there is a method to add
-further extra details such as an 'ENV' key. Note: The ENV key is not 
-a built-in special property. Use the `set_extra` method:
+Extra details are now deprecated. Simply register your extras as simple string resources.
+
 ```python
 from atc.config_master import Configurator
 tc = Configurator()
-tc.set_extra(ENV='prod')
+tc.register('ENV', 'prod')
 ```
 
 

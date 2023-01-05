@@ -85,9 +85,9 @@ class IncrementalExtractorTests(DataframeTestCase):
         )
 
         extractor = IncrementalExtractor(
-            handleSource=source_test_handle,
-            handleTarget=target_test_handle,
-            timeCol="timecol",
+            handle_source=source_test_handle,
+            handle_target=target_test_handle,
+            time_col="timecol",
             dataset_key="source",
         )
 
@@ -133,9 +133,9 @@ class IncrementalExtractorTests(DataframeTestCase):
         )
 
         extractor = IncrementalExtractor(
-            handleSource=source_test_handle,
-            handleTarget=target_test_handle,
-            timeCol="timecol",
+            handle_source=source_test_handle,
+            handle_target=target_test_handle,
+            time_col="timecol",
             dataset_key="source",
         )
 
@@ -181,9 +181,9 @@ class IncrementalExtractorTests(DataframeTestCase):
         )
 
         extractor = IncrementalExtractor(
-            handleSource=source_test_handle,
-            handleTarget=target_test_handle,
-            timeCol="timecol",
+            handle_source=source_test_handle,
+            handle_target=target_test_handle,
+            time_col="timecol",
             dataset_key="source",
         )
 

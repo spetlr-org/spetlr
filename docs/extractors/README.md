@@ -67,7 +67,6 @@ import pyspark.sql.functions as F
 
 from atc.etl import Transformer, Loader, Orchestrator
 from atc.etl.eh import EventhubStreamExtractor
-from atc.spark import Spark
 
 class BasicTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
@@ -96,10 +95,8 @@ etl = (Orchestrator
         ))
         .transform_with(BasicTransformer())
         .load_into(NoopLoader())
-        .build())
+        )
 result = etl.execute()
-result.printSchema()
-result.show()
 ```
 
 
@@ -158,9 +155,9 @@ class NoopLoader(Loader):
 
 etl = (Orchestrator
         .extract_from(IncrementalExtractor(
-            handleSource=DeltaHandle.from_tc("SourceId"),
-            handleTarget=DeltaHandle.from_tc("TargetId"),
-            timeCol="TimeColumn",
+            handle_source=DeltaHandle.from_tc("SourceId"),
+            handle_target=DeltaHandle.from_tc("TargetId"),
+            time_col="TimeColumn",
             dataset_key="source"
         ))
         .transform_with(BasicTransformer())

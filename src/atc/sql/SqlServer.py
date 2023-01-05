@@ -159,6 +159,12 @@ class SqlServer:
         ).mode("append" if append else "overwrite").option(
             "schemaCheckEnabled", False
         ).option(
+            # https://learn.microsoft.com/en-us/sql/connect/spark/connector?view=sql-server-ver16#supported-options
+            # https://github.com/microsoft/sql-spark-connector/blob/master/README.md
+            # Implements an insert with TABLOCK option to improve write performance
+            "tableLock",
+            True,
+        ).option(
             "batchSize", batch_size
         ).option(
             "truncate", not append

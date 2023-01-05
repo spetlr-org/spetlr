@@ -15,7 +15,6 @@ class OutputFilter:
     def __init__(self, varname="sql"):
         self.varname = self.varname_prefix + varname
         self.count = 0
-        print(f"init {self.__class__}")
 
     def _process(self, stream, varname, has_nl):
         raise NotImplementedError

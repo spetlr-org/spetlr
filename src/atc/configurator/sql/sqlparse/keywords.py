@@ -19,7 +19,7 @@ SQL_REGEX = [
     (r"(--|# ).*?(\r\n|\r|\n|$)", tokens.Comment.Single),
     (r"/\*[\s\S]*?\*/", tokens.Comment.Multiline),
     (r"(\r\n|\r|\n)", tokens.Newline),
-    (r"\s+", tokens.Whitespace),
+    (r"\s+?", tokens.Whitespace),
     (r":=", tokens.Assignment),
     (r"::", tokens.Punctuation),
     (r"\*", tokens.Wildcard),
@@ -30,7 +30,6 @@ SQL_REGEX = [
     (r"%(\(\w+\))?s", tokens.Name.Placeholder),
     (r"(?<!\w)[$:?]\w+", tokens.Name.Placeholder),
     (r"\\\w+", tokens.Command),
-    (r"(NOT\s+)?(IN)\b", tokens.Operator.Comparison),
     # FIXME(andi): VALUES shouldn't be listed here
     # see https://github.com/andialbrecht/sqlparse/pull/64
     # AS and IN are special, it may be followed by a parenthesis, but

@@ -2,7 +2,7 @@ from .sqlparse import engine, keywords, tokens
 from .sqlparse.engine import grouping
 from .sqlparse.lexer import Lexer
 
-lex = Lexer()
+lex = Lexer.get_default_instance()
 lex.clear()
 
 my_regex = [
@@ -25,6 +25,7 @@ lex.add_keywords(keywords.KEYWORDS_PLPGSQL)
 lex.add_keywords(keywords.KEYWORDS_HQL)
 lex.add_keywords(keywords.KEYWORDS_MSACCESS)
 lex.add_keywords(keywords.KEYWORDS)
+
 KEYWORDS_DBX = {
     "BLOOMFILTER": tokens.Keyword,
     "BUCKETS": tokens.Keyword,
@@ -41,6 +42,7 @@ KEYWORDS_DBX = {
     "VACUUM": tokens.Keyword,
     "ZORDER": tokens.Keyword,
 }
+
 lex.add_keywords(KEYWORDS_DBX)
 
 

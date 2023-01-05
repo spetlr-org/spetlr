@@ -23,7 +23,8 @@ import argparse
 import sys
 from io import TextIOWrapper
 
-import atc.configurator.sql.sqlparse as sqlparse
+import sqlparse
+
 from atc.configurator.sql.sqlparse.exceptions import SQLParseError
 
 

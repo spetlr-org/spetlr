@@ -157,7 +157,8 @@ etl = (Orchestrator
         .extract_from(IncrementalExtractor(
             handle_source=DeltaHandle.from_tc("SourceId"),
             handle_target=DeltaHandle.from_tc("TargetId"),
-            time_col="TimeColumn",
+            time_col_source="TimeColumn",
+            time_col_target="TimeColumn",
             dataset_key="source"
         ))
         .transform_with(BasicTransformer())

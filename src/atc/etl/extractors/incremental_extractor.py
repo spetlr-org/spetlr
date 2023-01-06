@@ -19,13 +19,15 @@ class IncrementalExtractor(Extractor):
         self,
         handle_source: Readable,
         handle_target: Readable,
-        time_col: str,
-        dataset_key: str,
+        time_col_source: str,
+        time_col_target: str,
+        dataset_key: str = None,
     ):
         super().__init__(dataset_key=dataset_key)
         self.handle_source = handle_source
         self.handle_target = handle_target
-        self._timecol = time_col
+        self._timecol_source = time_col_source
+        self._timecol_target = time_col_target
 
     def read(self) -> DataFrame:
 
@@ -41,12 +43,14 @@ class IncrementalExtractor(Extractor):
 
         # For incremental load, get the latest record from target table
         # In other words, get the maximum of the timestamp column
-        target_max_time = df_target.groupBy().agg(f.max(self._timecol)).collect()[0][0]
+        target_max_time = (
+            df_target.groupBy().agg(f.max(self._timecol_target)).collect()[0][0]
+        )
 
         # If the target table is empty, target_max_time will be None
         # Only filter the input dataframe if the table is non-empty
         # table non-empty = target_max_time not None
         if target_max_time:
-            df = df.where(f.col(self._timecol) > f.lit(target_max_time))
+            df = df.where(f.col(self._timecol_source) > f.lit(target_max_time))
 
         return df

@@ -1,8 +1,10 @@
 import unittest
 
-from atc import Configurator
+from pyspark.sql import types
 
-from . import tables1, tables2, tables3, tables4, tables5
+from atc import Configurator
+from atc.schema_manager import SchemaManager
+from tests.local.configurator import sql, tables1, tables2, tables3, tables4, tables5
 
 
 class TestConfigurator(unittest.TestCase):
@@ -90,3 +92,45 @@ class TestConfigurator(unittest.TestCase):
         c = Configurator()
 
         self.assertIs(tc, c)
+
+    def test_09_configure_from_sql(self):
+        c = Configurator()
+        c.clear_all_configurations()
+        c.add_sql_resource_path(sql)
+        c.set_prod()
+
+        self.assertEqual(c.get("MySparkDb", "name"), "my_db1")
+        self.assertEqual(c.get("MySparkDb", "path"), "/tmp/foo/bar/my_db1/")
+        self.assertEqual(c.get("MySparkDb", "format"), "db")
+
+        self.assertEqual(c.get("MySqlTable", "name"), "my_db1.tbl1")
+        c.set_debug()
+        self.assertEqual(c.get("MySqlTable", "path"), "/tmp/foo/bar/my_db1/tbl1/")
+
+        self.assertEqual(c.get("MySqlTable", "format"), "delta")
+        self.assertEqual(c.get("MySqlTable", "options"), dict(key1="val1", key2="val2"))
+        self.assertEqual(c.get("MySqlTable", "partitioned_by"), ["a", "b"])
+        self.assertEqual(
+            c.get("MySqlTable", "clustered_by"),
+            dict(
+                cols=["c", "d"],
+                sorted_by=[
+                    dict(name="a", ordering="ASC"),
+                    dict(name="b", ordering="DESC"),
+                ],
+                buckets=5,
+            ),
+        )
+        self.assertEqual(c.get("MySqlTable", "comment"), "Dummy Database 1 table 1")
+        self.assertEqual(
+            c.get("MySqlTable", "tblproperties"), dict(key1="val1", key2="val2")
+        )
+        self.assertEqual(
+            SchemaManager().get_schema("MySqlTable"),
+            types._parse_datatype_string("""a int, b int, c string, d timestamp"""),
+        )
+
+        self.assertEqual(
+            SchemaManager().get_schema_as_string("MyDetailsTable"),
+            """a int, b int, c string, d timestamp, another int""",
+        )

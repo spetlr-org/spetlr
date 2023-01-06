@@ -1,5 +1,4 @@
 import importlib.resources
-import json
 import uuid
 from pathlib import Path
 from string import Formatter
@@ -10,6 +9,8 @@ import yaml
 from deprecated import deprecated
 
 from atc.exceptions import NoSuchValueException
+
+from ._parse_sql import _parse_sql_to_config
 
 # recursive type definition of the details object
 TcDetails = Dict[str, Union[str, "TcDetails"]]
@@ -227,23 +228,20 @@ class Configurator(metaclass=ConfiguratorSingleton):
         try:
             for file_name in importlib.resources.contents(resource_path):
                 extension = Path(file_name).suffix
-                if extension in [".json", ".yaml", ".yml"]:
-                    with importlib.resources.path(
-                        resource_path, file_name
-                    ) as file_path:
-                        with open(file_path) as file:
-                            update = (
-                                json.load(file)
-                                if extension == ".json"
-                                else yaml.load(file, Loader=yaml.FullLoader)
-                            )
-                            if not isinstance(update, dict):
-                                raise ValueError(f"document in {file_path} is no dict.")
+                if extension not in [".json", ".yaml", ".yml"]:
+                    continue
+                with importlib.resources.path(resource_path, file_name) as file_path:
+                    with open(file_path) as file:
+                        # just use yaml since json is a subset of yaml
+                        update = yaml.load(file, Loader=yaml.FullLoader)
 
-                            for key, value in update.items():
-                                # we now support all bare value types in yaml.
-                                # no further checking
-                                self._raw_resource_details[key] = value
+                        if not isinstance(update, dict):
+                            raise ValueError(f"document in {file_path} is no dict.")
+
+                        for key, value in update.items():
+                            # we now support all bare value types in yaml.
+                            # no further checking
+                            self._raw_resource_details[key] = value
 
             # try re-building all details
             self.table_details = dict()
@@ -253,6 +251,9 @@ class Configurator(metaclass=ConfiguratorSingleton):
             # if any exception raised by the above code is caught.
             self._raw_resource_details = backup_details
             raise
+
+    def add_sql_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
+        self._raw_resource_details.update(_parse_sql_to_config(resource_path))
 
     ############################################
     # all methods below are interface and convenience methods

@@ -9,7 +9,7 @@ Utilities in atc-dataplatform:
 ## Api Auto Config
 
 Using the method `atc.db_auto.getDbApi()` gives access to a 
-`DatabricksAPI` instance thas has been pre-configured for the 
+`DatabricksAPI` instance that has been pre-configured for the 
 current databricks instance. See [databricks-api](https://pypi.org/project/databricks-api/)
 for usage documentation.
 

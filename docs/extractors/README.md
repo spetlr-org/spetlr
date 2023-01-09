@@ -4,6 +4,8 @@ This page documents all the atc extractors, following the OETL pattern.
 Extractors in atc-dataplatform:
 
 * [Eventhub stream extractor](#eventhub-stream-extractor)
+* [Incremental extractor](#incremental-extractor)
+
 
 ## Eventhub stream extractor
 This extractor reads data from an Azure eventhub and returns a structural streaming dataframe.
@@ -63,9 +65,8 @@ from pyspark.sql import DataFrame
 from pyspark.sql.types import T
 import pyspark.sql.functions as F
 
-from atc.etl import Transformer, Loader, Orchestration
-from atc.etl.extractos import EventhubStreamExtractor
-from atc.spark import Spark
+from atc.etl import Transformer, Loader, Orchestrator
+from atc.etl.eh import EventhubStreamExtractor
 
 class BasicTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
@@ -86,7 +87,7 @@ class NoopLoader(Loader):
 
 
 print('ETL Orchestrator using EventhubStreamExtractor')
-etl = (Orchestration
+etl = (Orchestrator
         .extract_from(EventhubStreamExtractor(
             consumerGroup="TestConsumerGroup",
             connectionString=dbutils.secrets.get(scope = "TestScope", key = "TestSecretConnectionString"),
@@ -94,8 +95,74 @@ etl = (Orchestration
         ))
         .transform_with(BasicTransformer())
         .load_into(NoopLoader())
-        .build())
+        )
 result = etl.execute()
-result.printSchema()
-result.show()
+```
+
+
+## Incremental extractor
+
+This extractor only select the newest data from the source 
+by comparing with a target table.
+
+### Example
+
+What is extracted?
+
+```python
+"""
+Source has the following data:
+
+|id| stringcol    | timecol          |
+|--|--------------|------------------|
+|1 | "string1"    | 01.01.2021 10:50 |
+|22| "string2inc" | 01.01.2021 10:56 |
+|3 | "string3"    | 01.01.2021 11:00 |
+
+Target has the following data
+
+|id| stringcol    | timecol          |
+|--|--------------|------------------|
+|1 | "string1"    | 01.01.2021 10:50 |
+|2| "string2"     | 01.01.2021 10:55 |
+
+So data from after 01.01.2021 10:55 should be read
+
+|id| stringcol    | timecol          |
+|--|--------------|------------------|
+|22| "string2inc" | 01.01.2021 10:56 |
+|3 | "string3"    | 01.01.2021 11:00 |
+"""
+```
+
+How to use it:
+```python
+from pyspark.sql import DataFrame
+import pyspark.sql.functions as f
+from atc.etl.extractors import IncrementalExtractor
+from atc.delta import DeltaHandle
+from atc.etl import Transformer, Loader, Orchestrator
+
+class BasicTransformer(Transformer):
+    def process(self, df: DataFrame) -> DataFrame:
+        df = df.withColumn('idAsString', f.col('id').cast("string"))
+        return df
+
+class NoopLoader(Loader):
+    def save(self, df: DataFrame) -> DataFrame:
+        df.write.format('noop').mode('overwrite').save()
+        return df
+
+etl = (Orchestrator
+        .extract_from(IncrementalExtractor(
+            handle_source=DeltaHandle.from_tc("SourceId"),
+            handle_target=DeltaHandle.from_tc("TargetId"),
+            time_col_source="TimeColumn",
+            time_col_target="TimeColumn",
+            dataset_key="source"
+        ))
+        .transform_with(BasicTransformer())
+        .load_into(NoopLoader())
+        )
+result = etl.execute()
 ```

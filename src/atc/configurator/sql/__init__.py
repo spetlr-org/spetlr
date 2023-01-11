@@ -18,6 +18,7 @@ my_regex = [
     (r"BLOOMFILTER\s+INDEX\b", tokens.Keyword),
     (r"(DEEP|SHALLOW)\s+CLONE\b", tokens.Keyword),
     (r"(MSCK|FSCK)\s+REPAIR\b", tokens.Keyword),
+    (r"[<>=~!]", tokens.Operator.Comparison),  # avoid >> being parsed as one token
 ]
 
 lex.set_SQL_REGEX(keywords.SQL_REGEX[:38] + my_regex + keywords.SQL_REGEX[38:])

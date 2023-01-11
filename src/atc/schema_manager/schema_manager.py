@@ -11,6 +11,7 @@ from atc.exceptions import (
     NoSuchValueException,
     UnregisteredSchemaDefinitionException,
 )
+from atc.schema_manager.spark_schema import get_schema
 from atc.singleton import Singleton
 
 
@@ -78,7 +79,7 @@ class SchemaManager(metaclass=Singleton):
             if replacements:
                 value = value.format(**replacements)
 
-            parsed_schema = T._parse_datatype_string(value)
+            parsed_schema = get_schema(value)
             if not isinstance(parsed_schema, T.StructType):
                 raise FalseSchemaDefinitionException()
             self._registered_schemas[schema_identifier] = parsed_schema

@@ -1,6 +1,6 @@
 import unittest
 
-from atc.schema_manager.schema import get_schema
+from atc.schema_manager.spark_schema import get_schema
 from atc.spark import Spark
 from atc.utils import DataframeCreator
 

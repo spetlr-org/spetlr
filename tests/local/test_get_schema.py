@@ -3,7 +3,7 @@ from textwrap import dedent
 
 from pyspark.sql import types as t
 
-from atc.schema_manager.schema import get_schema
+from atc.schema_manager.spark_schema import get_schema
 
 
 class TestGetSchema(unittest.TestCase):

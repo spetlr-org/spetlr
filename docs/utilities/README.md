@@ -33,10 +33,10 @@ This class allows the user to specify which columns she wants to give values for
 
 ```python3
 from atc.utils import DataframeCreator
-from atc.sql.schema import get_schema
+from atc.schema_manager.schema import get_schema
 
 df = DataframeCreator.make_partial(
-            schema=get_schema("""
+    schema=get_schema("""
                 Id INTEGER,
                 measured DOUBLE,
                 customer STRUCT<
@@ -48,18 +48,18 @@ df = DataframeCreator.make_partial(
                     name:STRING
                 >>
             """),
-            columns=[
-              "Id", 
-              # of the customer structure, only specify the name
-              ("customer", ["name"]),
-              # of the products array of structures, only specify the 'no' field in each row
-              ("product_nos", ["no"])
-            ],
-            data=[
-                (1, ("otto",), [(1,), (2,)]),
-                (2, ("max",), []),
-            ],
-        )
+    columns=[
+        "Id",
+        # of the customer structure, only specify the name
+        ("customer", ["name"]),
+        # of the products array of structures, only specify the 'no' field in each row
+        ("product_nos", ["no"])
+    ],
+    data=[
+        (1, ("otto",), [(1,), (2,)]),
+        (2, ("max",), []),
+    ],
+)
 df.show()
 ```
 Result:

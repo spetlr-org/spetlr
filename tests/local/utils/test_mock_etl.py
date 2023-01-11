@@ -3,8 +3,8 @@ import unittest
 from pyspark.sql import DataFrame
 
 from atc.etl import Orchestrator, Transformer
+from atc.schema_manager.schema import get_schema
 from atc.spark import Spark
-from atc.sql.schema import get_schema
 from atc.utils import DataframeCreator, MockExtractor, MockLoader
 
 

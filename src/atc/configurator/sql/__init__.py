@@ -1,6 +1,9 @@
+from typing import List
+
 from .sqlparse import engine, keywords, tokens
 from .sqlparse.engine import grouping
 from .sqlparse.lexer import Lexer
+from .sqlparse.sql import Statement
 
 lex = Lexer.get_default_instance()
 lex.clear()
@@ -85,5 +88,5 @@ def parsestream(stream, encoding=None):
         yield stmt
 
 
-def parse(sql, encoding=None):
-    return tuple(parsestream(sql, encoding))
+def parse(sql: str, encoding=None) -> List[Statement]:
+    return list(parsestream(sql, encoding))

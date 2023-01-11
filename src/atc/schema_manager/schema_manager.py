@@ -12,7 +12,6 @@ from atc.exceptions import (
     UnregisteredSchemaDefinitionException,
 )
 from atc.singleton import Singleton
-from atc.sql.schema import get_schema
 
 
 class SchemaManager(metaclass=Singleton):

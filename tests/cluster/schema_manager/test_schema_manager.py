@@ -4,7 +4,7 @@ from atc_tools.testing import DataframeTestCase
 from atc.configurator import Configurator
 from atc.delta import DeltaHandle
 from atc.schema_manager import SchemaManager
-from atc.sql.schema import get_schema
+from atc.schema_manager.schema import get_schema
 
 from . import extras
 from .SparkExecutor import SparkSqlExecutor

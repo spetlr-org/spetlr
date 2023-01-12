@@ -1,6 +1,9 @@
+from typing import List
+
 from .sqlparse import engine, keywords, tokens
 from .sqlparse.engine import grouping
 from .sqlparse.lexer import Lexer
+from .sqlparse.sql import Statement
 
 lex = Lexer.get_default_instance()
 lex.clear()
@@ -15,6 +18,7 @@ my_regex = [
     (r"BLOOMFILTER\s+INDEX\b", tokens.Keyword),
     (r"(DEEP|SHALLOW)\s+CLONE\b", tokens.Keyword),
     (r"(MSCK|FSCK)\s+REPAIR\b", tokens.Keyword),
+    (r"[<>=~!]", tokens.Operator.Comparison),  # avoid >> being parsed as one token
 ]
 
 lex.set_SQL_REGEX(keywords.SQL_REGEX[:38] + my_regex + keywords.SQL_REGEX[38:])
@@ -85,5 +89,5 @@ def parsestream(stream, encoding=None):
         yield stmt
 
 
-def parse(sql, encoding=None):
-    return tuple(parsestream(sql, encoding))
+def parse(sql: str, encoding=None) -> List[Statement]:
+    return list(parsestream(sql, encoding))

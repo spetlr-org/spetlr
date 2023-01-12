@@ -1,9 +1,8 @@
 import unittest
 
-from pyspark.sql import types
-
 from atc import Configurator
 from atc.schema_manager import SchemaManager
+from atc.schema_manager.spark_schema import get_schema
 from tests.local.configurator import sql, tables1, tables2, tables3, tables4, tables5
 
 
@@ -127,7 +126,7 @@ class TestConfigurator(unittest.TestCase):
         )
         self.assertEqual(
             SchemaManager().get_schema("MySqlTable"),
-            types._parse_datatype_string("""a int, b int, c string, d timestamp"""),
+            get_schema("""a int, b int, c string, d timestamp"""),
         )
 
         self.assertEqual(

@@ -1,7 +1,6 @@
 import unittest
 
-from pyspark.sql import types
-
+from atc.schema_manager.spark_schema import get_schema
 from atc.spark import Spark
 from atc.utils import DataframeCreator
 
@@ -11,7 +10,7 @@ class DataframeCreatorTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         Spark.get()
 
-        cls.schema = types._parse_datatype_string(
+        cls.schema = get_schema(
             """
             Id INTEGER,
             measured DOUBLE,

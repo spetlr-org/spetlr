@@ -23,7 +23,7 @@ from .sql import parse, sqlparse
 _magic_comment_start = "-- atc.configurator "
 
 
-def _meaningful_token_iter(tks: Iterable[sqlparse.tokens._TokenType]):
+def _meaningful_token_iter(tks):
     """Only return tokens that are potentially meaningful sql"""
     for tk in tks:
         if (

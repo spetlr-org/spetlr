@@ -155,7 +155,7 @@ class TestSelectAndCastColumns(DataframeTestCase):
                 1,
                 0,
                 datetime_to_use,
-                datetime_to_use.strftime("%Y-%m-%d %H:%M:%S.%f"),
+                datetime_to_use.strftime("%Y-%m-%d %H:%M:%S.%f").rstrip("0"),
             )
         ]
 

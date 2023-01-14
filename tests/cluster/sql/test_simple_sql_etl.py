@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from atc_tools.testing import DataframeTestCase
 from atc_tools.time import dt_utc
 from pyspark.sql import DataFrame
@@ -92,7 +94,7 @@ class SimpleSqlServerETLTests(DataframeTestCase):
 
         # Use transformer
         df_out = SimpleSqlServerTransformer(
-            table_id=self.table_id, server=self.sql_server
+            table_id=self.table_id, server=self.sql_server, ignoreCase=True
         ).process(df)
 
         SimpleLoader(handle=self.sql_server.from_tc(self.table_id)).save(df_out)
@@ -103,7 +105,7 @@ class SimpleSqlServerETLTests(DataframeTestCase):
         self.assertDataframeMatches(
             df_with_data,
             None,
-            [(123, 1001.322, "Hello", dt_utc(2021, 1, 1, 14, 45, 22, 32))],
+            [(123, Decimal("1001.322"), "Hello", dt_utc(2021, 1, 1, 14, 45, 22))],
         )
 
     def create_test_table(self):

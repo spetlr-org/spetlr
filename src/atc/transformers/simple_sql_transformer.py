@@ -7,15 +7,11 @@ from atc.utils import SelectAndCastColumns
 
 
 class SimpleSqlServerTransformer(Transformer):
-    def __init__(
-        self,
-        *,
-        table_id: str,
-        server: SqlServer,
-    ):
+    def __init__(self, *, table_id: str, server: SqlServer, ignoreCase=False):
         super().__init__()
         self.server = server
         self.table_id = table_id
+        self.ignoreCase = ignoreCase
 
     def process(self, df: DataFrame) -> DataFrame:
         # This transformation ensures that the selected columns
@@ -23,7 +19,9 @@ class SimpleSqlServerTransformer(Transformer):
         # [f.col("ColumnName).cast("string").alias("ColumnName"), ...]
 
         df = SelectAndCastColumns(
-            df=df, schema=self.server.read_table(self.table_id).schema
+            df=df,
+            schema=self.server.read_table(self.table_id).schema,
+            caseInsensitiveMatching=self.ignoreCase,
         )
 
         # If the format is timestamp, the seconds should be trunc

@@ -1,5 +1,6 @@
-import unittest
+from decimal import Decimal
 
+from atc_tools.testing import DataframeTestCase
 from atc_tools.time import dt_utc
 from pyspark.sql import DataFrame
 from pyspark.sql.types import (
@@ -15,12 +16,13 @@ from pyspark.sql.types import (
 from atc import Configurator
 from atc.etl.loaders import SimpleLoader
 from atc.functions import get_unique_tempview_name
+from atc.spark import Spark
 from atc.transformers.simple_sql_transformer import SimpleSqlServerTransformer
 from atc.utils import DataframeCreator
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
 
-class SimpleSqlServerETLTests(unittest.TestCase):
+class SimpleSqlServerETLTests(DataframeTestCase):
     tc = None
     sql_server = None
     table_name = "dbo.Test1" + get_unique_tempview_name()
@@ -78,11 +80,21 @@ class SimpleSqlServerETLTests(unittest.TestCase):
         self.assertEqual(df_out.schema, schema_expected)
 
     def test02_can_transform_and_load(self):
-        df = self.create_data()
+
+        # mix up the column spelling to test case-insensitive matching this time
+        df = Spark.get().createDataFrame(
+            [(123, 1001.322, "Hello", dt_utc(2021, 1, 1, 14, 45, 22, 32))],
+            """
+                TeStCoLuMn INT,
+                TESTcolumn2 DOUBLE,
+                testCOLUMN3 STRING,
+                TestColumn4 TIMESTAMP
+            """,
+        )
 
         # Use transformer
         df_out = SimpleSqlServerTransformer(
-            table_id=self.table_id, server=self.sql_server
+            table_id=self.table_id, server=self.sql_server, ignoreCase=True
         ).process(df)
 
         SimpleLoader(handle=self.sql_server.from_tc(self.table_id)).save(df_out)
@@ -90,7 +102,11 @@ class SimpleSqlServerETLTests(unittest.TestCase):
         df_with_data = self.sql_server.read_table(self.table_id)
 
         # Test that the datarow can be read
-        self.assertEqual(df_with_data.count(), 1)
+        self.assertDataframeMatches(
+            df_with_data,
+            None,
+            [(123, Decimal("1001.322"), "Hello", dt_utc(2021, 1, 1, 14, 45, 22))],
+        )
 
     def create_test_table(self):
         sql_argument = f"""

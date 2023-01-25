@@ -48,7 +48,8 @@ class TestDataFrameFilterTransformer(DataframeTestCase):
     def test_filter_with_default_column_name(self):
         """
         This test accepts only col_value and uses the default col_name='messageType' in
-        DataFrameFilterTransformer and checks if the output dataframe is correctly filtered.
+        DataFrameFilterTransformer and checks if the output dataframe is correctly
+        filtered.
         """
         input_schema = T.StructType(
             [

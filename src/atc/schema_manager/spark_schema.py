@@ -4,8 +4,8 @@ from typing import Optional
 from more_itertools import peekable
 from pyspark.sql import types as t
 
-from atc.configurator._parse_sql import _meaningful_token_iter
-from atc.configurator.sql import parse
+from atc.configurator.sql.init_sqlparse import parse
+from atc.configurator.sql.utils import _meaningful_token_iter
 
 
 class SchemaExtractionError(Exception):

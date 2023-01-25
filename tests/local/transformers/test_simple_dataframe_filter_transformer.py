@@ -36,8 +36,8 @@ class TestDataFrameFilterTransformer(DataframeTestCase):
         ).process(input_df)
 
         expected_data = [
-            ("Col1Data", 42, 13.37, "Col4Data", "Col5Data"),
-            ("Col1Data", 45, 20.15, "Col4Data_3rd", "Col5Data_3rd"),
+            input_data1,
+            input_data3,
         ]
 
         self.assertDataframeMatches(
@@ -74,8 +74,8 @@ class TestDataFrameFilterTransformer(DataframeTestCase):
         ).process(input_df)
 
         expected_data = [
-            ("Col1Data", 42, 13.37, "Col4Data", "Col5Data"),
-            ("Col1Data", 45, 20.15, "Col4Data_3rd", "Col5Data_3rd"),
+            input_data1,
+            input_data3,
         ]
 
         self.assertDataframeMatches(

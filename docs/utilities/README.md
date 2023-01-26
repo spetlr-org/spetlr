@@ -15,7 +15,7 @@ for usage documentation.
 
 Under the hood the function uses the job context to get the host and token
 when on the cluster. When using `atc` with databricks-connect, the `databricks-cli` is
-called to configure the client. Thus the function works without further configuration
+called to configure the client. Thus, the function works without further configuration
 in all contexts.
 
 ## Test Utilities

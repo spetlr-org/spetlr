@@ -53,7 +53,7 @@ The special case of the  **Orchestrator** is that it takes all its steps and exe
 in sequence on its inputs. Running in the default `execute()` method, the inputs are empty,
 but an orchestrator can also be added as part of another orchestrator with the `step` method.
 
-For the most general case of a many to many transformation, implement your step by inheriting
+For the most general case of a many-to-many transformation, implement your step by inheriting
 from the `EtlBase` class.
 
 
@@ -64,7 +64,7 @@ Here are some example usages and implementations of the ETL class provided
 ### Example-1
 
 Here's an example of reading data from a single location, transforming it once and saving to a single destination.
-This is the most simple elt case, and will be used as base for the below more complex examples.
+This is the most simple etl case, and will be used as base for the below more complex examples.
 
 ```python
 import pyspark.sql.functions as f
@@ -153,7 +153,7 @@ root
 
 ### Example-2
 
-Here's an example of having multiple `Transformer` implementations that is reused to change the data type of a given column,
+Here's an example of having multiple `Transformer` implementations that is reused to change the datatype of a given column,
 where the column name is parameterized.
 
 ```python
@@ -536,7 +536,7 @@ etl.execute()
 
 This example illustrates the use of `TransformerNC`.
 The job here is to join the two extracted dataframes - an employees dataframe and a birthdays dataframe.
-But, before the birthdays can be join onto the employees, the employees dataframe require a transformation step.
+But, before the birthdays can be joined onto the employees, the employees dataframe require a transformation step.
 As the transformation step of employees is handled by an `TransformerNC`, it does not consume the other inputs from the `dataset_group`.
 Hence, birthdays is still available from the inputs - even after the transformation of employees.
 Then both frames can be joined and the final dataframe saved via an `Loader`.
@@ -647,7 +647,6 @@ The principle is called composit orchestration:
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame
-from pyspark.sql.types import IntegerType
 
 from atc.etl import Extractor, Transformer, Loader, Orchestrator, dataset_group
 from atc.spark import Spark

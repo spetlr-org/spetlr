@@ -6,6 +6,7 @@ from atc import Configurator
 from atc.delta import DbHandle, DeltaHandle
 from atc.etl import Orchestrator
 from atc.etl.extractors import SimpleExtractor
+from atc.etl.extractors.schema_extractor import SchemaExtractor
 from atc.etl.loaders import SimpleLoader
 from atc.spark import Spark
 
@@ -81,6 +82,17 @@ class DeltaTests(unittest.TestCase):
     def test_04_read(self):
         df = DeltaHandle.from_tc("MyTbl").read()
         self.assertEqual(6, df.count())
+
+    def test_041_schema(self):
+        """Schema Extractor returns zero lines, but preserves the schema,
+        giving more readable orchestrators"""
+        df1 = SimpleExtractor(DeltaHandle.from_tc("MyTbl"), "MyTbl").read()
+        self.assertEqual(6, df1.count())
+
+        df2 = SchemaExtractor(DeltaHandle.from_tc("MyTbl"), "MyTbl").read()
+        self.assertEqual(0, df2.count())
+
+        self.assertEqual(df1.schema, df2.schema)
 
     def test_05_truncate(self):
         dh = DeltaHandle.from_tc("MyTbl")

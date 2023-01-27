@@ -17,7 +17,7 @@ Transformations in atc-dataplatform:
 
 *UPDATE: Pyspark has an equivalent implementation  `.unionByName(df, allowMissingColumns=False)`, see the [documentation](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrame.unionByName.html) for more information.*
 
-The transformation unions dataframes by appending the dataframes on eachother and keep all columns.
+The transformation unions dataframes by appending the dataframes on each other and keep all columns.
 
 
 ```python
@@ -214,10 +214,10 @@ The two other rows where inserted.
 
 ## DropOldestDuplicates
 
-This transformation helps dropping duplicates based on time. If there is multiple duplicates, 
+This transformation helps to drop duplicates based on time. If there is multiple duplicates, 
 only the newest row remain. In the example below, a dataframe has several duplicates - since a unique record is 
 defined by a combination of a guitar-id, model and brand. As times go by the amount
-of guitars available in a store changes. Lets assume that we only want the newest record
+of guitars available in a store changes. Let's assume that we only want the newest record
 and dropping the oldest duplicates:
 
 ``` python 

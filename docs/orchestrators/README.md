@@ -16,7 +16,7 @@ The arguments to this orchestrator consist of
 
 All important configurations follow from the schema and partitioning of the delta table.
 - The delta table must use one of the following partitioning sets
-  - either "y,m,d" or "y,m,d,h" whichever is used in the evenhub capture
+  - either "y,m,d" or "y,m,d,h" whichever is used in the eventhub capture
   - or "pdate" which is the timestamp, constructed from "ymd" or "ymdh"
   The capture files will be read from the latest partition in delta and forward, 
     only. (The latest partition will be truncated and re-read to ensure complete but 
@@ -27,7 +27,7 @@ All important configurations follow from the schema and partitioning of the delt
   and the body payload of the eventhub is extracted as a json document from which 
   these columns are then extracted.
 
-There may be cases where only a subset of rows are desired to be extracted in the 
+There may be cases where only a subset of rows is desired to be extracted in the 
 process. Here the orchestrator offers the method `.filter_with` which allows 
 additional transformation steps to be injected before the rows are finally appended 
 to the delta table.

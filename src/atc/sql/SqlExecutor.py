@@ -91,12 +91,16 @@ class SqlExecutor:
 
                     for statement in parse(sql_code):
                         cleaned_statement = (
-                            "".join(
-                                token.value
-                                for token in statement
-                                if token.ttype not in sqlparse.tokens.Comment
+                            (
+                                "".join(
+                                    token.value
+                                    for token in statement
+                                    if token.ttype not in sqlparse.tokens.Comment
+                                )
                             )
-                        ).strip()
+                            .strip()
+                            .strip(";")
+                        )
 
                         full_statement = "".join(token.value for token in statement)
 

@@ -81,6 +81,12 @@ class SqlExecutor:
                 with open(file_path) as file:
                     conts = file.read()
                     sql_code = conts.format(**replacements)
+
+                    # the sequence "-- COMMAND ----------" is used in jupyter notebooks
+                    # and separates cells.
+                    # We treat it as another way to end a statement
+                    sql_code = sql_code.replace("-- COMMAND ----------", ";")
+
                     for statement in sql_code.split(";"):
                         cleaned_statement = ""
                         for line in statement.splitlines(keepends=True):

@@ -5,6 +5,8 @@ from types import ModuleType
 from typing import Dict, Union
 
 from atc.configurator.configurator import Configurator
+from atc.configurator.sql import sqlparse
+from atc.configurator.sql.init_sqlparse import parse
 from atc.schema_manager import SchemaManager
 from atc.spark import Spark
 from atc.sql import BaseExecutor
@@ -87,15 +89,21 @@ class SqlExecutor:
                     # We treat it as another way to end a statement
                     sql_code = sql_code.replace("-- COMMAND ----------", ";")
 
-                    for statement in sql_code.split(";"):
-                        cleaned_statement = ""
-                        for line in statement.splitlines(keepends=True):
-                            if line.lstrip().startswith("-- "):
-                                continue
-                            elif line.strip():
-                                cleaned_statement += line
+                    for statement in parse(sql_code):
+                        cleaned_statement = (
+                            "".join(
+                                token.value
+                                for token in statement
+                                if token.ttype not in sqlparse.tokens.Comment
+                            )
+                        ).strip()
+
+                        full_statement = "".join(token.value for token in statement)
+
+                        # skip the statement unless it actually contains code.
+                        # spark.sql complains if you only give it comments
                         if cleaned_statement:
-                            yield statement
+                            yield full_statement
 
     def execute_sql_file(self, file_pattern: str, exclude_pattern: str = None):
         """

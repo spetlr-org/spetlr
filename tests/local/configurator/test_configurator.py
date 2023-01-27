@@ -1,8 +1,10 @@
 import unittest
+from textwrap import dedent
 
 from atc import Configurator
 from atc.schema_manager import SchemaManager
 from atc.schema_manager.spark_schema import get_schema
+from atc.sql import SqlExecutor
 from tests.local.configurator import sql, tables1, tables2, tables3, tables4, tables5
 
 
@@ -132,4 +134,23 @@ class TestConfigurator(unittest.TestCase):
         self.assertEqual(
             SchemaManager().get_schema_as_string("MyDetailsTable"),
             """a int, b int, c string, d timestamp, another int""",
+        )
+        c.set_prod()
+        self.assertEqual(
+            list(SqlExecutor(sql).get_statements("*"))[1],
+            dedent(
+                """\
+
+
+                        -- atc.Configurator key: MyDetailsTable
+                        CREATE TABLE IF NOT EXISTS my_db1.details
+                        (
+                          a int, b int, c string, d timestamp,
+                          another int
+                          -- comment with ;
+                        )
+                        USING DELTA
+                        COMMENT "Dummy Database 1 details"
+                        LOCATION "/mnt/foo/bar/my_db1/details/";"""
+            ),
         )

@@ -27,7 +27,14 @@ def _parse_sql_to_config(resource_path: Union[str, ModuleType]) -> Dict:
             continue
         with importlib.resources.path(resource_path, file_name) as file_path:
             with open(file_path) as file:
-                for statement in parse(file.read()):
+                sql_code = file.read()
+
+                # the sequence "-- COMMAND ----------" is used in jupyter notebooks
+                # and separates cells.
+                # We treat it as another way to end a statement
+                sql_code = sql_code.replace("-- COMMAND ----------", ";")
+
+                for statement in parse(sql_code):
 
                     comment_attributes = _extract_comment_attributes(statement)
                     if "key" not in comment_attributes:

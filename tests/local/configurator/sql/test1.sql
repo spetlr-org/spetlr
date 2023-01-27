@@ -2,7 +2,9 @@
 CREATE DATABASE IF NOT EXISTS my_db1{ID}
 COMMENT "Dummy Database 1"
 LOCATION "/tmp/foo/bar/my_db1/"
-WITH DBPROPERTIES ("property_name"="property_value");
+WITH DBPROPERTIES ("property_name"="property_value")
+
+-- COMMAND ----------
 
 -- atc.Configurator key: MyDetailsTable
 CREATE TABLE IF NOT EXISTS my_db1{ID}.details

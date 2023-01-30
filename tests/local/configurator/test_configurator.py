@@ -135,9 +135,12 @@ class TestConfigurator(unittest.TestCase):
             SchemaManager().get_schema_as_string("MyDetailsTable"),
             """a int, b int, c string, d timestamp, another int""",
         )
+
         c.set_prod()
+        statements = list(SqlExecutor(sql).get_statements("*"))
+        self.assertEqual(len(statements), 3)
         self.assertEqual(
-            list(SqlExecutor(sql).get_statements("*"))[1],
+            statements[1],
             dedent(
                 """\
 

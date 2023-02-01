@@ -40,5 +40,5 @@ CLUSTERED BY ( c,d )
         INTO 5 BUCKETS
 COMMENT "Dummy Database 1 table 1"
 LOCATION "/{MNT}/foo/bar/my_db1/tbl1/"
-TBLPROPERTIES ( key1='val1', key2='val2' )
+TBLPROPERTIES ( key1='val1', key2='val2', my.key.3=true )
 ;

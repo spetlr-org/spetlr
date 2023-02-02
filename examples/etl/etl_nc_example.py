@@ -55,7 +55,6 @@ class IntegerTransformerNC(TransformerNC):
 
 class JoinTransformerNC(TransformerNC):
     def process_many(self, dataset: dataset_group) -> DataFrame:
-
         df_employee = dataset["df_employee_transformed"]
         df_birthdays = dataset["df_birthdays"]
 

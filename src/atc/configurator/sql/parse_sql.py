@@ -35,7 +35,6 @@ def _parse_sql_to_config(resource_path: Union[str, ModuleType]) -> Dict:
                 sql_code = sql_code.replace("-- COMMAND ----------", ";")
 
                 for statement in parse(sql_code):
-
                     comment_attributes = _extract_comment_attributes(statement)
                     if "key" not in comment_attributes:
                         # if no magic comments were used on the statement,

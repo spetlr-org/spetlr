@@ -32,7 +32,6 @@ class ChildCacher(CachedLoader):
 
 
 class CachedLoaderTests(unittest.TestCase):
-
     params: CachedLoaderParameters
     old_cache = [
         (

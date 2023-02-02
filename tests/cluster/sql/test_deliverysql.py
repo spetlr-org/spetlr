@@ -11,7 +11,6 @@ from . import extras
 
 
 class DeliverySqlServerTests(DataframeTestCase):
-
     tc = None
     sql_server = None
     table_name = get_unique_tempview_name()
@@ -52,7 +51,6 @@ class DeliverySqlServerTests(DataframeTestCase):
         self.assertTrue(True)
 
     def test03_can_truncate_dummy(self):
-
         self.insert_single_row()
         df_with_data = self.sql_server.read_table_by_name(self.table_name)
         self.assertEqual(df_with_data.count(), 1)
@@ -97,7 +95,6 @@ class DeliverySqlServerTests(DataframeTestCase):
         self.assertIn("dbo.test2", test_name2)
 
     def test09_execute_sql_file(self):
-
         file_name = "test1"
         path_name = extras
 
@@ -118,7 +115,6 @@ class DeliverySqlServerTests(DataframeTestCase):
         self.assertEqual(df_with_data.count(), 1)
 
     def test12_truncate_w_id(self):
-
         # Truncate
         self.sql_server.truncate_table("SqlTestTable1")
         df_without_data = self.sql_server.read_table("SqlTestTable1")
@@ -173,7 +169,6 @@ class DeliverySqlServerTests(DataframeTestCase):
         self.assertEqual(table_exists.count(), 0)
 
     def test16_upsert_to_table_none_input(self):
-
         val_return = self.sql_server.upsert_to_table_by_name(
             df_source=None,
             table_name=self.table_upsert_name,
@@ -184,7 +179,6 @@ class DeliverySqlServerTests(DataframeTestCase):
         self.assertEqual(val_return, None)
 
     def test17_upsert_to_table(self):
-
         self.create_upsert_test_table()
 
         upsertTableSchema = StructType(
@@ -228,7 +222,6 @@ class DeliverySqlServerTests(DataframeTestCase):
         )
 
     def test18_upsert_to_table_with_join_cols_filter(self):
-
         upsertTableSchema = StructType(
             [
                 StructField("testid", IntegerType(), True),
@@ -269,7 +262,6 @@ class DeliverySqlServerTests(DataframeTestCase):
         )
 
     def test19_upsert_to_table_overwrite_empty_target(self):
-
         upsertTableSchema = StructType(
             [
                 StructField("testid", IntegerType(), True),

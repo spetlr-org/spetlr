@@ -16,7 +16,6 @@ class TestSelectAndCastColumns(DataframeTestCase):
             Spark.master("local[1]")
 
     def test_select_transformer(self):
-
         inputSchema = T.StructType(
             [
                 T.StructField("value1", T.StringType(), True),
@@ -53,7 +52,6 @@ class TestSelectAndCastColumns(DataframeTestCase):
         self.assertDataframeMatches(transformed_df, None, expectedData)
 
     def test_select_transformer_with_case_insensitive_matching(self):
-
         inputSchema = T.StructType(
             [
                 T.StructField("VALUE1", T.StringType(), True),
@@ -92,7 +90,6 @@ class TestSelectAndCastColumns(DataframeTestCase):
         self.assertDataframeMatches(transformed_df, None, expectedData)
 
     def test_cast_transformer_valid_type_cast(self):
-
         datetime_to_use = dt_utc()
 
         inputSchema = T.StructType(
@@ -163,7 +160,6 @@ class TestSelectAndCastColumns(DataframeTestCase):
         self.assertDataframeMatches(transformed_df, None, expectedData)
 
     def test_cast_transformer_invalid_type_cast(self):
-
         inputSchema = T.StructType(
             [
                 T.StructField("StrToInt", T.StringType(), True),

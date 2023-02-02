@@ -13,7 +13,6 @@ class DropOldestDuplicatesTransformer(Transformer):
         self.orderByColumn = orderByColumn
 
     def process(self, df: DataFrame) -> DataFrame:
-
         return DropOldestDuplicates(
             df=df, cols=self.cols, orderByColumn=self.orderByColumn
         )

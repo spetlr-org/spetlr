@@ -185,7 +185,6 @@ class SqlServer:
         batch_size: int = 10 * 1024,
         partition_count: int = 60,
     ):
-
         if df_source is None:
             return None
 
@@ -301,7 +300,6 @@ class SqlServer:
         sql_file: str,
         arguments: dict = None,
     ):
-
         for sql in self.get_sql_file(
             resource_path=resource_path, sql_file=sql_file, arguments=arguments
         ):

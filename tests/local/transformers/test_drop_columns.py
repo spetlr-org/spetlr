@@ -7,7 +7,6 @@ from atc.transformers import DropColumnsTransformerNC
 
 class TestDropColumnsTransformer(DataframeTestCase):
     def test_drop_columns_transformer(self):
-
         inputSchema = T.StructType(
             [
                 T.StructField("id", T.LongType(), True),

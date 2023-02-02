@@ -36,7 +36,6 @@ class TestSchemaManager(unittest.TestCase):
         self.assertIn("register_test", self.sc._registered_schemas)
 
     def test_get_registered_schema(self):
-
         schema = T.StructType(
             [
                 T.StructField("Column1", T.IntegerType(), True),

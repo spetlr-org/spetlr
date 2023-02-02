@@ -9,12 +9,10 @@ from atc.spark import Spark
 
 
 class ExtractorTests(unittest.TestCase):
-
     df: DataFrame = None
 
     @classmethod
     def setUpClass(cls):
-
         cls.df = create_dataframe()
         cls.extractor = MyTestExtractor1(cls.df)
         cls.keyed_extractor = MyTestExtractor2(cls.df)

@@ -19,7 +19,6 @@ class Loader(EtlBase):
         *,
         dataset_input_keys: Union[str, List[str]] = None,
     ):
-
         if dataset_input_keys is None:
             self.dataset_input_key_list = []
         elif isinstance(dataset_input_keys, str):
@@ -28,7 +27,6 @@ class Loader(EtlBase):
             self.dataset_input_key_list = dataset_input_keys
 
     def etl(self, inputs: dataset_group) -> dataset_group:
-
         if len(self.dataset_input_key_list) > 0:
             if len(self.dataset_input_key_list) == 1:
                 self.save(inputs[self.dataset_input_key_list[0]])

@@ -22,7 +22,6 @@ class SqlExecutor:
         self.server = server
 
     def _wildcard_string_to_regexp(self, instr: str) -> str:
-
         # prepare file pattern:
         if instr.endswith(".sql"):
             instr = instr[:-4]

@@ -15,7 +15,6 @@ from atc.utils import DataframeCreator
 
 
 class IncrementalExtractorTests(DataframeTestCase):
-
     date_row1 = dt_utc(2021, 1, 1, 10, 50)  # 1st of january 2021, 10:50
     date_row2 = dt_utc(2021, 1, 1, 10, 55)  # 1st of january 2021, 10:55
     date_row2Inc = dt_utc(2021, 1, 1, 10, 56)  # 1st of january 2021, 10:56

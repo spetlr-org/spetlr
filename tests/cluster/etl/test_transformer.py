@@ -11,7 +11,6 @@ from atc.spark import Spark
 class TransformerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-
         cls.transformer = TestTransformer()
         cls.df = create_dataframe()
 
@@ -41,7 +40,6 @@ class TestTransformer(Transformer):
 
 
 def create_dataframe():
-
     data = [(1, "1"), (2, "2"), (3, "3")]
 
     schema = StructType(

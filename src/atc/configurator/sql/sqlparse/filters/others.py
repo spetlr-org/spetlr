@@ -109,7 +109,6 @@ class StripWhitespaceFilter:
 class SpacesAroundOperatorsFilter:
     @staticmethod
     def _process(tlist):
-
         ttypes = (T.Operator, T.Comparison)
         tidx, token = tlist.token_next_by(t=ttypes)
         while token:

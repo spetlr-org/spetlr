@@ -35,7 +35,6 @@ class TransformerNC(EtlBase):
             self.dataset_input_key_list = dataset_input_keys
 
     def etl(self, inputs: dataset_group) -> dataset_group:
-
         if len(self.dataset_input_key_list) > 0:
             if len(self.dataset_input_key_list) == 1:
                 df = self.process(inputs[self.dataset_input_key_list[0]])

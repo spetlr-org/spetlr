@@ -30,7 +30,6 @@ class IncrementalExtractor(Extractor):
         self._timecol_target = time_col_target
 
     def read(self) -> DataFrame:
-
         if isinstance(self.handle_source, EventHubCapture):
             print(
                 "It is recommended to use EventHubCaptureExtractor "

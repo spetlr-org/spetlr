@@ -14,7 +14,6 @@ class DeliverySparkExecutorTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-
         # Register the delivery table for the table configurator
         cls.tc = Configurator()
         cls.tc.add_resource_path(extras)

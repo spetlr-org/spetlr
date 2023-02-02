@@ -260,6 +260,7 @@ class TokenList(Token):
         if *skip_cm* is ``True`` (default: ``False``), comments are
         ignored too.
         """
+
         # this on is inconsistent, using Comment instead of T.Comment...
         def matcher(tk):
             return not (

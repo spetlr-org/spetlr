@@ -46,7 +46,6 @@ class SlackNotifierTests(unittest.TestCase):
         self.HTTPHandler.called_data = {}
 
     def test_01_info_webhook(self):
-
         slack = SlackNotifier(self.hook_url)
 
         slack.notify_info("my nice message")

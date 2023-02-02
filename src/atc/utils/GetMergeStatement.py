@@ -11,7 +11,6 @@ def GetMergeStatement(
     update_cols: List[str] = None,
     special_update_set: str = None,
 ) -> str:
-
     assert merge_statement_type in {"delta", "sql"}
 
     merge_sql_statement = (

@@ -10,7 +10,6 @@ from atc.spark import Spark
 class LoaderTests(unittest.TestCase):
     @classmethod
     def setUp(self):
-
         self.loader = Loader()
         self.loader.save = MagicMock()
         self.loader.save_many = MagicMock()

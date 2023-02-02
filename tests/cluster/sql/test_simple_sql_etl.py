@@ -49,7 +49,6 @@ class SimpleSqlServerETLTests(DataframeTestCase):
         cls.tc.reset(debug=False)
 
     def test01_can_transform(self):
-
         self.create_test_table()
         df = self.create_data()
 
@@ -80,7 +79,6 @@ class SimpleSqlServerETLTests(DataframeTestCase):
         self.assertEqual(df_out.schema, schema_expected)
 
     def test02_can_transform_and_load(self):
-
         # mix up the column spelling to test case-insensitive matching this time
         df = Spark.get().createDataFrame(
             [(123, 1001.322, "Hello", dt_utc(2021, 1, 1, 14, 45, 22, 32))],

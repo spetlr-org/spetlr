@@ -59,7 +59,14 @@ def _unpack_options(
     stmt: _PeekableTokenList,
 ) -> Generator[Tuple[str, str], None, None]:
     for tokens in _unpack_comma_separated_list_in_parens(stmt):
-        if len(tokens) != 3 or tokens[1].value != "=":
-            raise AtcConfiguratorInvalidSqlException("expected assignments")
-        key, _, value = tokens
-        yield key.value.strip("\"'"), value.value.strip("\"'")
+        statement = str(sqlparse.sql.TokenList(tokens))
+        assignment = statement.split("=")
+
+        if len(assignment) != 2:
+            raise AtcConfiguratorInvalidSqlException(
+                f"expected assignments, got {statement}"
+            )
+
+        key, value = assignment
+
+        yield key.strip("\"'"), value.strip("\"'")

@@ -21,6 +21,7 @@ class IncrementalExtractor(Extractor):
         handle_target: Readable,
         time_col_source: str,
         time_col_target: str,
+        overlap_days: str = None,
         dataset_key: str = None,
     ):
         super().__init__(dataset_key=dataset_key)
@@ -28,6 +29,7 @@ class IncrementalExtractor(Extractor):
         self.handle_target = handle_target
         self._timecol_source = time_col_source
         self._timecol_target = time_col_target
+        self._overlap_days = overlap_days
 
     def read(self) -> DataFrame:
 

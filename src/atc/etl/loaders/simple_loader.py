@@ -1,4 +1,4 @@
-from typing import Protocol, Union
+from typing import List, Protocol, Union
 
 from pyspark.sql import DataFrame
 
@@ -17,9 +17,13 @@ class Appendable(Protocol):
 
 class SimpleLoader(Loader):
     def __init__(
-        self, handle: Union[Overwritable, Appendable], *, mode: str = "overwrite"
+        self,
+        handle: Union[Overwritable, Appendable],
+        *,
+        mode: str = "overwrite",
+        dataset_input_keys: Union[str, List[str]] = None,
     ):
-        super().__init__()
+        super().__init__(dataset_input_keys=dataset_input_keys)
         self.mode = mode
         self.handle = handle
 

@@ -41,8 +41,11 @@ class StatementBlocks:
         }
 
         if self.schema:
-            object_details["schema"] = {"sql": self.schema.strip("()")}
-            object_details["_raw_sql_schema"] = self.schema.strip("()")
+            self.schema = self.schema.strip()
+            if self.schema[0] == "(":
+                self.schema = self.schema[1:-1]
+            object_details["schema"] = {"sql": self.schema}
+            object_details["_raw_sql_schema"] = self.schema
 
         if self.clustered_by:
             object_details["clustered_by"] = {

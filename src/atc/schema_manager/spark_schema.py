@@ -14,8 +14,10 @@ class SchemaExtractionError(Exception):
 
 def get_schema(sql: str) -> t.StructType:
     """from sql table schema to structType"""
-
-    parsed_schema = parse(sql.strip().strip("()"))
+    sql = sql.strip()
+    if sql[0] == "(":
+        sql = sql[1:-1]
+    parsed_schema = parse(sql)
     if not len(parsed_schema) == 1:
         raise SchemaExtractionError("multiple statements")
     (tokenlist,) = parsed_schema

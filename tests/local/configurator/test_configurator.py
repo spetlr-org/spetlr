@@ -1,6 +1,8 @@
 import unittest
 from textwrap import dedent
 
+from pyspark.sql import types as t
+
 from atc import Configurator
 from atc.schema_manager import SchemaManager
 from atc.schema_manager.spark_schema import get_schema
@@ -78,8 +80,15 @@ class TestConfigurator(unittest.TestCase):
         tc.add_resource_path(tables5)
         self.assertEqual(tc.get("MyPlainLiteral"), "Bar")
         self.assertEqual(tc.get_all_details()["MyCompositeLiteral"], "FooBar")
+        st = SchemaManager().get_schema("MyComposite")
         self.assertEqual(
-            tc.get("MyComposite", "schema"), {"sql": "TODO: support this\n"}
+            st,
+            t.StructType(
+                [
+                    t.StructField("a", t.IntegerType()),
+                    t.StructField("b", t.DecimalType(12, 2)),
+                ]
+            ),
         )
         self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
 

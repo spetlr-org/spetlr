@@ -51,7 +51,7 @@ class IncrementalExtractor(Extractor):
             df_target.groupBy().agg(f.max(self._timecol_target)).collect()[0][0]
         )
 
-        # If overlap_days is defined extract it from target_max_time
+        # If overlap_period is defined extract it from target_max_time
         if self._overlap_period:
             target_max_time = target_max_time - self._overlap_period
 

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import List
 
 from atc_tools.testing import DataframeTestCase, TestHandle
@@ -245,7 +246,7 @@ class IncrementalExtractorTests(DataframeTestCase):
             time_col_source="timecol",
             time_col_target="timecol",
             dataset_key="source",
-            overlap_days=5,
+            overlap_period=timedelta(days=5),
         )
 
         df_extract = extractor.read()

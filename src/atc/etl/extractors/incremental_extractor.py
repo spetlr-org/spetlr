@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame

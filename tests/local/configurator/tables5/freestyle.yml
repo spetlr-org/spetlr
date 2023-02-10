@@ -7,4 +7,5 @@ MyComposite:
   name: otto{MyPlainLiteral}
   schema:
     sql: |
-      TODO: support this
+      a int,
+      b decimal(12,2)

@@ -115,7 +115,6 @@ class EhJsonToDeltaExtractor(Extractor):
         return self.eh.read(from_partition=read_from)
 
     def read(self) -> DataFrame:
-
         # we need to find out 2 things,
         # - what (if any) to truncate from the delta table,
         # - and where to read the eventhub from (or ead everything)

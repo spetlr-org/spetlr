@@ -9,7 +9,6 @@ from atc.exceptions.configurator_exceptions import AtcConfiguratorInvalidSqlExce
 
 
 def _walk_db_statement(statement: _PeekableTokenList) -> Dict:
-
     # for databases, we need to collect all tokens until the next database block matches
     name_parts = []
     blocks = StatementBlocks()

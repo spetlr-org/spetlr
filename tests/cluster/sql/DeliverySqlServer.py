@@ -12,7 +12,6 @@ class DeliverySqlServer(SqlServer):
         password: str = None,
         port: str = "1433",
     ):
-
         self.hostname = (
             f"{resourceName()}test.database.windows.net"
             if hostname is None

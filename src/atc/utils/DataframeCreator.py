@@ -40,7 +40,6 @@ class DataframeCreator:
     def _make_row(
         cls, schema: StructType, data_row: Tuple, columns: List[_column_selection]
     ) -> Row:
-
         schema_dict = {f.name: f.dataType for f in schema.fields}
         in_data = dict()
         for column, item in zip(columns, data_row):

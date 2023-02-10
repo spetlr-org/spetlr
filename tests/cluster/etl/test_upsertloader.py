@@ -51,7 +51,6 @@ class UpsertLoaderTests(DataframeTestCase):
         DbHandle.from_tc("UpsertLoaderDb").drop_cascade()
 
     def test_01_can_perform_incremental_on_empty(self):
-
         loader = UpsertLoader(handle=self.target_dh_dummy, join_cols=self.join_cols)
 
         df_source = DataframeCreator.make_partial(

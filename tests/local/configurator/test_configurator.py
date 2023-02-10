@@ -1,6 +1,8 @@
 import unittest
 from textwrap import dedent
 
+from pyspark.sql import types as t
+
 from atc import Configurator
 from atc.schema_manager import SchemaManager
 from atc.schema_manager.spark_schema import get_schema
@@ -78,8 +80,15 @@ class TestConfigurator(unittest.TestCase):
         tc.add_resource_path(tables5)
         self.assertEqual(tc.get("MyPlainLiteral"), "Bar")
         self.assertEqual(tc.get_all_details()["MyCompositeLiteral"], "FooBar")
+        st = SchemaManager().get_schema("MyComposite")
         self.assertEqual(
-            tc.get("MyComposite", "schema"), {"sql": "TODO: support this\n"}
+            st,
+            t.StructType(
+                [
+                    t.StructField("a", t.IntegerType()),
+                    t.StructField("b", t.DecimalType(12, 2)),
+                ]
+            ),
         )
         self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
 
@@ -109,7 +118,9 @@ class TestConfigurator(unittest.TestCase):
         self.assertEqual(c.get("MySqlTable", "path"), "/tmp/foo/bar/my_db1/tbl1/")
 
         self.assertEqual(c.get("MySqlTable", "format"), "delta")
-        self.assertEqual(c.get("MySqlTable", "options"), dict(key1="val1", key2="val2"))
+        self.assertEqual(
+            c.get("MySqlTable", "options"), {"key1": "val1", "key2": "val2"}
+        )
         self.assertEqual(c.get("MySqlTable", "partitioned_by"), ["a", "b"])
         self.assertEqual(
             c.get("MySqlTable", "clustered_by"),
@@ -124,7 +135,8 @@ class TestConfigurator(unittest.TestCase):
         )
         self.assertEqual(c.get("MySqlTable", "comment"), "Dummy Database 1 table 1")
         self.assertEqual(
-            c.get("MySqlTable", "tblproperties"), dict(key1="val1", key2="val2")
+            c.get("MySqlTable", "tblproperties"),
+            {"key1": "val1", "key2": "val2", "my.key.3": "true"},
         )
         self.assertEqual(
             SchemaManager().get_schema("MySqlTable"),

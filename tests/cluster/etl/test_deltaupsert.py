@@ -10,7 +10,6 @@ from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
 class DeltaUpsertTests(DataframeTestCase):
-
     target_id = "UpsertLoaderDummy"
 
     join_cols = ["col1", "col2"]

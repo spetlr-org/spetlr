@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from pyspark.sql import DataFrame
 
@@ -7,8 +7,13 @@ from atc.tables import TableHandle
 
 
 class UpsertLoader(Loader):
-    def __init__(self, handle: TableHandle, join_cols: List[str]):
-        super().__init__()
+    def __init__(
+        self,
+        handle: TableHandle,
+        join_cols: List[str],
+        dataset_input_keys: Union[str, List[str]] = None,
+    ):
+        super().__init__(dataset_input_keys=dataset_input_keys)
 
         self.handle = handle
         self.join_cols = join_cols

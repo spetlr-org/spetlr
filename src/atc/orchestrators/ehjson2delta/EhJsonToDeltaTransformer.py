@@ -7,10 +7,18 @@ from atc.etl import Transformer
 
 
 class EhJsonToDeltaTransformer(Transformer):
-    def __init__(self, eh: EventHubCaptureExtractor, target_dh: DeltaHandle):
+    def __init__(
+        self,
+        eh: EventHubCaptureExtractor,
+        target_dh: DeltaHandle,
+        keep_body_as_json: bool = False,
+    ):
         super().__init__()
         self.eh = eh
         self.target_dh = target_dh
+
+        # If true, the body is saved as a column called "BodyJson"
+        self._keep_body_as_json = keep_body_as_json
 
     def process(self, df: DataFrame) -> DataFrame:
         # use the schema from the target table to decide what to unpack
@@ -30,11 +38,18 @@ class EhJsonToDeltaTransformer(Transformer):
                     f"expected {source_type}, got {target_type}."
                 )
 
+        # The body is saved as string format as "BodyJson"
+        if self._keep_body_as_json:
+            df = df.withColumn("BodyJson", f.col("Body").cast("string"))
+
         if "Body" in direct_cols:
-            df = df.select(*direct_cols)
+            if self._keep_body_as_json:
+                df = df.select(*direct_cols, "BodyJson")
+            else:
+                df = df.select(*direct_cols)
         else:
             # every column that is in the target delta table and that is not a direct
-            # column from the source evenhtub DataFrame, is assumed to be a column whose
+            # column from the source eventhub DataFrame, is assumed to be a column whose
             # value can be unpacked from the json that is in the eventhub body
             body_cols = [
                 col for col in target_df.columns if col not in source_df.columns
@@ -43,6 +58,10 @@ class EhJsonToDeltaTransformer(Transformer):
             df = df.withColumn(
                 "Body",
                 f.from_json(f.decode("Body", "utf-8"), body_schema).alias("Body"),
-            ).select("Body.*", *direct_cols)
+            )
+            if self._keep_body_as_json:
+                df = df.select("Body.*", *direct_cols, "BodyJson")
+            else:
+                df = df.select("Body.*", *direct_cols)
 
         return df

@@ -7,26 +7,28 @@ from atc.etl import Transformer
 
 
 class EhJsonToDeltaTransformer(Transformer):
-    def __init__(
-        self,
-        eh: EventHubCaptureExtractor,
-        target_dh: DeltaHandle,
-        keep_body_as_json: bool = False,
-    ):
+    def __init__(self, eh: EventHubCaptureExtractor, target_dh: DeltaHandle):
         super().__init__()
         self.eh = eh
         self.target_dh = target_dh
-
-        # If true, the body is saved as a column called "BodyJson"
-        self._keep_body_as_json = keep_body_as_json
 
     def process(self, df: DataFrame) -> DataFrame:
         # use the schema from the target table to decide what to unpack
         target_df = self.target_dh.read()
         source_df = df
+        _keep_body_as_json = False
+
+        if "BodyJson" in target_df.columns:
+            _keep_body_as_json = True
 
         # these columns will be copied directly from the source data frame
-        direct_cols = [col for col in target_df.columns if col in source_df.columns]
+        # but BodyJson should NOT be unpacked as a struct
+        # the BodyJson is therefore removed from direct_cols
+        direct_cols = [
+            col
+            for col in target_df.columns
+            if col in source_df.columns and col != "BodyJson"
+        ]
         # verify that the schema of direct columns matches
         for col in direct_cols:
             target_type = target_df.select(col).schema.fields[0].dataType
@@ -39,11 +41,11 @@ class EhJsonToDeltaTransformer(Transformer):
                 )
 
         # The body is saved as string format as "BodyJson"
-        if self._keep_body_as_json:
+        if _keep_body_as_json:
             df = df.withColumn("BodyJson", f.col("Body").cast("string"))
 
         if "Body" in direct_cols:
-            if self._keep_body_as_json:
+            if _keep_body_as_json:
                 df = df.select(*direct_cols, "BodyJson")
             else:
                 df = df.select(*direct_cols)
@@ -59,7 +61,7 @@ class EhJsonToDeltaTransformer(Transformer):
                 "Body",
                 f.from_json(f.decode("Body", "utf-8"), body_schema).alias("Body"),
             )
-            if self._keep_body_as_json:
+            if _keep_body_as_json:
                 df = df.select("Body.*", *direct_cols, "BodyJson")
             else:
                 df = df.select("Body.*", *direct_cols)

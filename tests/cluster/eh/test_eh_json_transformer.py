@@ -22,6 +22,22 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         ]
     )
 
+    df_in = Spark.get().createDataFrame(
+        [
+            (
+                json.dumps(
+                    {
+                        "id": "1234",
+                        "name": "John",
+                    }
+                ).encode("utf-8"),
+                dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
+                dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
+            ),
+        ],
+        capture_eventhub_output_schema,
+    )
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.tc = Configurator()
@@ -64,25 +80,9 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
             """
         )
 
-    def test_transformer_w_body(self):
+    def test_01_transformer_w_body(self):
         """Tests whether the body is saved as BodyJson"""
         dh = DeltaHandle.from_tc("TblPdate1")
-
-        df_in = Spark.get().createDataFrame(
-            [
-                (
-                    json.dumps(
-                        {
-                            "id": "1234",
-                            "name": "John",
-                        }
-                    ).encode("utf-8"),
-                    dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
-                    dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
-                ),
-            ],
-            self.capture_eventhub_output_schema,
-        )
 
         expected = Spark.get().createDataFrame(
             [
@@ -102,30 +102,14 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
             dh.read().schema,
         )
 
-        df_result = EhJsonToDeltaTransformer(target_dh=dh).process(df_in)
+        df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
 
         # Check that data is correct
         self.assertDataframeMatches(df_result, None, expected)
 
-    def test_transformer(self):
+    def test_02_transformer(self):
         """Test if the data is correctly extracted"""
         dh = DeltaHandle.from_tc("TblPdate2")
-
-        df_in = Spark.get().createDataFrame(
-            [
-                (
-                    json.dumps(
-                        {
-                            "id": "1234",
-                            "name": "John",
-                        }
-                    ).encode("utf-8"),
-                    dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
-                    dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
-                )
-            ],
-            self.capture_eventhub_output_schema,
-        )
 
         expected = Spark.get().createDataFrame(
             [
@@ -139,31 +123,15 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
             dh.read().schema,
         )
 
-        df_result = EhJsonToDeltaTransformer(target_dh=dh).process(df_in)
+        df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
 
         # Check that data is correct
         self.assertDataframeMatches(df_result, None, expected)
 
-    def test_transformer_unknown_target_field(self):
+    def test_03_transformer_unknown_target_field(self):
         """This should test what happens if the target
         schema has a field that does not exist in the source dataframe."""
         dh = DeltaHandle.from_tc("TblPdate3")
-
-        df_in = Spark.get().createDataFrame(
-            [
-                (
-                    json.dumps(
-                        {
-                            "id": "1234",
-                            "name": "John",
-                        }
-                    ).encode("utf-8"),
-                    dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
-                    dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
-                )
-            ],
-            self.capture_eventhub_output_schema,
-        )
 
         expected = Spark.get().createDataFrame(
             [
@@ -178,7 +146,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
             dh.read().schema,
         )
 
-        df_result = EhJsonToDeltaTransformer(target_dh=dh).process(df_in)
+        df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
 
         # Check that data is correct
         self.assertDataframeMatches(df_result, None, expected)

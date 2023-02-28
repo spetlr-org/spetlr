@@ -1,14 +1,17 @@
 import json
-import unittest
-from unittest.mock import Mock
 
 from atc_tools.testing import DataframeTestCase
 from atc_tools.time import dt_utc
+from pyspark.sql.types import (
+    BinaryType,
+    DateType,
+    StructField,
+    StructType,
+    TimestampType,
+)
 
 from atc import Configurator
 from atc.delta import DeltaHandle
-from atc.eh import EventHubCaptureExtractor
-from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaExtractor
 from atc.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
     EhJsonToDeltaTransformer,
 )
@@ -17,6 +20,13 @@ from atc.spark import Spark
 
 class JsonEhTransformerUnitTests(DataframeTestCase):
     tc: Configurator
+    capture_eventhub_output_schema = StructType(
+        [
+            StructField("Body", BinaryType(), True),
+            StructField("pdate", DateType(), True),
+            StructField("EnqueuedTimestamp", TimestampType(), True),
+        ]
+    )
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -49,6 +59,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         )
 
     def test_transformer_w_body(self):
+        """Tests whether the body is saved as BodyJson"""
         dh = DeltaHandle.from_tc("TblPdate1")
 
         df_in = Spark.get().createDataFrame(
@@ -62,7 +73,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
                 dt_utc(2021, 10, 31, 0, 0, 0).date,  # pdate
                 dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
             ],
-            dh.read().schema,
+            self.capture_eventhub_output_schema,
         )
 
         expected = Spark.get().createDataFrame(
@@ -88,6 +99,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         self.assertDataframeMatches(df_result, expected)
 
     def test_transformer(self):
+        """Test if the data is correctly extracted"""
         dh = DeltaHandle.from_tc("TblPdate2")
 
         df_in = Spark.get().createDataFrame(
@@ -101,7 +113,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
                 dt_utc(2021, 10, 31, 0, 0, 0).date,  # pdate
                 dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
             ],
-            dh.read().schema,
+            self.capture_eventhub_output_schema,
         )
 
         expected = Spark.get().createDataFrame(
@@ -119,3 +131,8 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
         # Check that data is correct
         self.assertDataframeMatches(df_result, expected)
+
+    def test_transformer_unknown_target_field(self):
+        """This should test what happens if the target
+        schema has a field that does not exist in the source dataframe."""
+        pass

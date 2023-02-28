@@ -105,7 +105,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         df_result = EhJsonToDeltaTransformer(target_dh=dh).process(df_in)
 
         # Check that data is correct
-        self.assertDataframeMatches(df_result, expected)
+        self.assertDataframeMatches(df_result, None, expected)
 
     def test_transformer(self):
         """Test if the data is correctly extracted"""
@@ -142,7 +142,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         df_result = EhJsonToDeltaTransformer(target_dh=dh).process(df_in)
 
         # Check that data is correct
-        self.assertDataframeMatches(df_result, expected)
+        self.assertDataframeMatches(df_result, None, expected)
 
     def test_transformer_unknown_target_field(self):
         """This should test what happens if the target
@@ -181,4 +181,4 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         df_result = EhJsonToDeltaTransformer(target_dh=dh).process(df_in)
 
         # Check that data is correct
-        self.assertDataframeMatches(df_result, expected)
+        self.assertDataframeMatches(df_result, None, expected)

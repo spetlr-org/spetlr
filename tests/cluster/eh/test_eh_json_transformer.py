@@ -40,26 +40,28 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
         spark.sql(
             f"""
-            CREATE TABLE {cls.tc.table_name('TblPdate1')}
-            (id int, name string, BodyJson string, pdate timestamp, EnqueuedTimestamp timestamp)
-            PARTITIONED BY (pdate)
-        """
+                CREATE TABLE {cls.tc.table_name('TblPdate1')}
+                (id int, name string, BodyJson string, pdate timestamp,
+                EnqueuedTimestamp timestamp)
+                PARTITIONED BY (pdate)
+            """
         )
 
         spark.sql(
             f"""
-                    CREATE TABLE {cls.tc.table_name('TblPdate2')}
-                    (id int, name string, pdate timestamp, EnqueuedTimestamp timestamp)
-                    PARTITIONED BY (pdate)
-                """
+                CREATE TABLE {cls.tc.table_name('TblPdate2')}
+                (id int, name string, pdate timestamp, EnqueuedTimestamp timestamp)
+                PARTITIONED BY (pdate)
+            """
         )
 
         spark.sql(
             f"""
-                            CREATE TABLE {cls.tc.table_name('TblPdate3')}
-                            (id int, name string, pdate timestamp, EnqueuedTimestamp timestamp, Unknown string)
-                            PARTITIONED BY (pdate)
-                        """
+                CREATE TABLE {cls.tc.table_name('TblPdate3')}
+                (id int, name string, pdate timestamp, EnqueuedTimestamp timestamp,
+                Unknown string)
+                PARTITIONED BY (pdate)
+            """
         )
 
     def test_transformer_w_body(self):
@@ -111,14 +113,16 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
         df_in = Spark.get().createDataFrame(
             [
-                json.dumps(
-                    {
-                        "id": "1234",
-                        "name": "John",
-                    }
-                ).encode("utf-8"),
-                dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
-                dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
+                (
+                    json.dumps(
+                        {
+                            "id": "1234",
+                            "name": "John",
+                        }
+                    ).encode("utf-8"),
+                    dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
+                    dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
+                )
             ],
             self.capture_eventhub_output_schema,
         )
@@ -147,14 +151,16 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
         df_in = Spark.get().createDataFrame(
             [
-                json.dumps(
-                    {
-                        "id": "1234",
-                        "name": "John",
-                    }
-                ).encode("utf-8"),
-                dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
-                dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
+                (
+                    json.dumps(
+                        {
+                            "id": "1234",
+                            "name": "John",
+                        }
+                    ).encode("utf-8"),
+                    dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
+                    dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
+                )
             ],
             self.capture_eventhub_output_schema,
         )

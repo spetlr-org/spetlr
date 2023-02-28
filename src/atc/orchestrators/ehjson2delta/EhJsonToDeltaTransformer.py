@@ -52,7 +52,9 @@ class EhJsonToDeltaTransformer(Transformer):
             # column from the source eventhub DataFrame, is assumed to be a column whose
             # value can be unpacked from the json that is in the eventhub body
             body_cols = [
-                col for col in target_df.columns if col not in source_df.columns
+                col
+                for col in target_df.columns
+                if col not in source_df.columns and col != "BodyJson"
             ]
             body_schema = target_df.select(*body_cols).schema
             df = df.withColumn(

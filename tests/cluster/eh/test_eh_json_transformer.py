@@ -30,7 +30,9 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
                         "id": "1234",
                         "name": "John",
                     }
-                ).encode("utf-8"),
+                ).encode(
+                    "utf-8"
+                ),  # Body
                 dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
                 dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
             ),
@@ -82,6 +84,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
     def test_01_transformer_w_body(self):
         """Tests whether the body is saved as BodyJson"""
+
         dh = DeltaHandle.from_tc("TblPdate1")
 
         expected = Spark.get().createDataFrame(

@@ -87,7 +87,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
         dh = DeltaHandle.from_tc("TblPdate1")
 
-        expected = Spark.get().createDataFrame(
+        expected = (
             [
                 (
                     1234,
@@ -102,7 +102,6 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
                     dt_utc(2021, 10, 31, 0, 0, 0),
                 ),
             ],
-            dh.read().schema,
         )
 
         df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
@@ -114,17 +113,14 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         """Test if the data is correctly extracted"""
         dh = DeltaHandle.from_tc("TblPdate2")
 
-        expected = Spark.get().createDataFrame(
-            [
-                (
-                    1234,
-                    "John",
-                    dt_utc(2021, 10, 31, 0, 0, 0),
-                    dt_utc(2021, 10, 31, 0, 0, 0),
-                ),
-            ],
-            dh.read().schema,
-        )
+        expected = [
+            (
+                1234,
+                "John",
+                dt_utc(2021, 10, 31, 0, 0, 0),
+                dt_utc(2021, 10, 31, 0, 0, 0),
+            ),
+        ]
 
         df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
 
@@ -136,18 +132,15 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         schema has a field that does not exist in the source dataframe."""
         dh = DeltaHandle.from_tc("TblPdate3")
 
-        expected = Spark.get().createDataFrame(
-            [
-                (
-                    1234,
-                    "John",
-                    dt_utc(2021, 10, 31, 0, 0, 0),
-                    dt_utc(2021, 10, 31, 0, 0, 0),
-                    None,
-                ),
-            ],
-            dh.read().schema,
-        )
+        expected = [
+            (
+                1234,
+                "John",
+                dt_utc(2021, 10, 31, 0, 0, 0),
+                dt_utc(2021, 10, 31, 0, 0, 0),
+                None,
+            ),
+        ]
 
         df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
 

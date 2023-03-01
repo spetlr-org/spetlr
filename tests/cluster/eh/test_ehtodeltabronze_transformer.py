@@ -82,7 +82,6 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
                     }
                 ),
                 dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
-                None,  # Streamingtime (not tested with assertDataframeMatches)
                 dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
             ),
         ]

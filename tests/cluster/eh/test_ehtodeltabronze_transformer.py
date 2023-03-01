@@ -1,5 +1,5 @@
 import json
-from datetime import timedelta
+from datetime import timedelta, timezone
 
 from atc_tools.testing import DataframeTestCase
 from atc_tools.testing.TestHandle import TestHandle
@@ -96,5 +96,7 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
         # was less than 5 min ago
         test_time = dt_utc()
         self.assertLess(
-            test_time - df_result.collect()[0]["StreamingTime"], timedelta(minutes=5)
+            test_time
+            - df_result.collect()[0]["StreamingTime"].replace(tzinfo=timezone.utc),
+            timedelta(minutes=5),
         )

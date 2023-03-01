@@ -2,12 +2,12 @@ import pyspark.sql.functions as f
 from atc_tools.time import dt_utc
 from pyspark.sql import DataFrame
 
-from atc.delta import DeltaHandle
 from atc.etl import Transformer
+from atc.tables import TableHandle
 
 
 class EhToDeltaBronzeTransformer(Transformer):
-    def __init__(self, target_dh: DeltaHandle):
+    def __init__(self, target_dh: TableHandle):
         super().__init__()
         self.target_dh = target_dh
         self._eh_cols = [

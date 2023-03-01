@@ -38,7 +38,7 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
         # step 2,
         #  - use the target schema to select what to copy from capture files
         #  - anything that is not in the source df is used to unpack the body json
-        self.transform_with(EhJsonToDeltaTransformer(dh_target))
+        self.transform_with(EhJsonToDeltaTransformer(target_dh=dh_target))
 
         # the method filter_with can be used to insert any number of transformers here
 

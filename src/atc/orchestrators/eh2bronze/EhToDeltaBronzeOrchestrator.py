@@ -3,12 +3,9 @@ from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from atc.etl import EtlBase, Orchestrator
 from atc.etl.loaders import SimpleLoader
 from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaExtractor
-from atc.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
-    EhJsonToDeltaTransformer,
-)
 
 
-class EhJsonToDeltaOrchestrator(Orchestrator):
+class EhToDeltaBronzeOrchestrator(Orchestrator):
     def __init__(self, eh: EventHubCaptureExtractor, dh: DeltaHandle):
         super().__init__()
         self.eh = eh
@@ -19,11 +16,6 @@ class EhJsonToDeltaOrchestrator(Orchestrator):
         #  - truncate that partition
         #  - read the capture files from that partition
         self.extract_from(EhJsonToDeltaExtractor(eh, dh))
-
-        # step 2,
-        #  - use the target schema to select what to copy from capture files
-        #  - anything that is not in the source df is used to unpack the body json
-        self.transform_with(EhJsonToDeltaTransformer(dh))
 
         # the method filter_with can be used to insert any number of transformers here
 

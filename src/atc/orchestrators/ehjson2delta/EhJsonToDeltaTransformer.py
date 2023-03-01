@@ -2,14 +2,12 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 
 from atc.delta import DeltaHandle
-from atc.eh import EventHubCaptureExtractor
 from atc.etl import Transformer
 
 
 class EhJsonToDeltaTransformer(Transformer):
-    def __init__(self, eh: EventHubCaptureExtractor, target_dh: DeltaHandle):
+    def __init__(self, target_dh: DeltaHandle):
         super().__init__()
-        self.eh = eh
         self.target_dh = target_dh
 
     def process(self, df: DataFrame) -> DataFrame:

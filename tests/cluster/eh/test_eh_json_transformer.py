@@ -46,13 +46,24 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         cls.tc.set_debug()
         cls.tc.clear_all_configurations()
 
+        cls.tc.register("TblPdate1", {"name": "TablePdate1{ID}"})
         cls.tc.register("TblPdate2", {"name": "TablePdate2{ID}"})
         cls.tc.register("TblPdate3", {"name": "TablePdate3{ID}"})
 
         spark = Spark.get()
 
+        spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblPdate1')}")
         spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblPdate2')}")
         spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblPdate3')}")
+
+        spark.sql(
+            f"""
+                CREATE TABLE {cls.tc.table_name('TblPdate1')}
+                (id int, name string, BodyJson string, pdate timestamp,
+                EnqueuedTimestamp timestamp)
+                PARTITIONED BY (pdate)
+            """
+        )
 
         spark.sql(
             f"""
@@ -71,7 +82,32 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
             """
         )
 
-    def test_01_transformer(self):
+    def test_01_transformer_w_body(self):
+        """Tests whether the body is saved as BodyJson"""
+
+        dh = DeltaHandle.from_tc("TblPdate1")
+
+        expected = [
+            (
+                1234,
+                "John",
+                dt_utc(2021, 10, 31, 0, 0, 0),
+                dt_utc(2021, 10, 31, 0, 0, 0),
+                json.dumps(
+                    {
+                        "id": 1234,
+                        "name": "John",
+                    }
+                ),  # BodyJson is at the end of select statement
+            ),
+        ]
+
+        df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
+
+        # Check that data is correct
+        self.assertDataframeMatches(df_result, None, expected)
+
+    def test_02_transformer(self):
         """Test if the data is correctly extracted"""
         dh = DeltaHandle.from_tc("TblPdate2")
 
@@ -89,7 +125,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         # Check that data is correct
         self.assertDataframeMatches(df_result, None, expected)
 
-    def test_02_transformer_unknown_target_field(self):
+    def test_03_transformer_unknown_target_field(self):
         """This should test what happens if the target
         schema has a field that does not exist in the source dataframe."""
         dh = DeltaHandle.from_tc("TblPdate3")

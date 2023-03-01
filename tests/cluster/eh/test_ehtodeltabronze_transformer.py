@@ -72,22 +72,20 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
             self._capture_eventhub_output_schema,
         )
 
-        expected = (
-            [
-                (
-                    146072039196263699,  # BodyId
-                    json.dumps(  # Body (as string)
-                        {
-                            "id": "1234",
-                            "name": "John",
-                        }
-                    ),
-                    dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
-                    None,  # Streamingtime (not tested with assertDataframeMatches)
-                    dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
+        expected = [
+            (
+                146072039196263699,  # BodyId
+                json.dumps(  # Body (as string)
+                    {
+                        "id": "1234",
+                        "name": "John",
+                    }
                 ),
-            ],
-        )
+                dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
+                None,  # Streamingtime (not tested with assertDataframeMatches)
+                dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
+            ),
+        ]
 
         df_result = EhToDeltaBronzeTransformer(test_handle).process(df_in)
 

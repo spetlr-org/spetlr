@@ -92,14 +92,14 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
                 (
                     1234,
                     "John",
+                    dt_utc(2021, 10, 31, 0, 0, 0),
+                    dt_utc(2021, 10, 31, 0, 0, 0),
                     json.dumps(
                         {
                             "id": 1234,
                             "name": "John",
                         }
-                    ),
-                    dt_utc(2021, 10, 31, 0, 0, 0),
-                    dt_utc(2021, 10, 31, 0, 0, 0),
+                    ),  # BodyJson is at the end of select statement
                 ),
             ],
         )

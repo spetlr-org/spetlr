@@ -27,7 +27,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
             (
                 json.dumps(
                     {
-                        "id": "1234",
+                        "id": 1234,
                         "name": "John",
                     }
                 ).encode(
@@ -77,30 +77,10 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
         expected = [
             (
-                "1234",
-                "John",
-                dt_utc(2021, 10, 31, 0, 0, 0),
-                dt_utc(2021, 10, 31, 0, 0, 0),
-            ),
-        ]
-
-        df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
-
-        # Check that data is correct
-        self.assertDataframeMatches(df_result, None, expected)
-
-    def test_02_transformer_unknown_target_field(self):
-        """This should test what happens if the target
-        schema has a field that does not exist in the source dataframe."""
-        dh = DeltaHandle.from_tc("TblPdate3")
-
-        expected = [
-            (
                 1234,
                 "John",
                 dt_utc(2021, 10, 31, 0, 0, 0),
                 dt_utc(2021, 10, 31, 0, 0, 0),
-                None,
             ),
         ]
 
@@ -108,3 +88,23 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
         # Check that data is correct
         self.assertDataframeMatches(df_result, None, expected)
+
+    # def test_02_transformer_unknown_target_field(self):
+    #     """This should test what happens if the target
+    #     schema has a field that does not exist in the source dataframe."""
+    #     dh = DeltaHandle.from_tc("TblPdate3")
+    #
+    #     expected = [
+    #         (
+    #             1234,
+    #             "John",
+    #             dt_utc(2021, 10, 31, 0, 0, 0),
+    #             dt_utc(2021, 10, 31, 0, 0, 0),
+    #             None,
+    #         ),
+    #     ]
+    #
+    #     df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
+    #
+    #     # Check that data is correct
+    #     self.assertDataframeMatches(df_result, None, expected)

@@ -77,7 +77,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
         expected = [
             (
-                1234,
+                "1234",
                 "John",
                 dt_utc(2021, 10, 31, 0, 0, 0),
                 dt_utc(2021, 10, 31, 0, 0, 0),

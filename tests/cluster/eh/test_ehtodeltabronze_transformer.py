@@ -20,7 +20,7 @@ from atc.spark import Spark
 from atc.utils import DataframeCreator
 
 
-class JsonEhOrchestratorUnitTests(DataframeTestCase):
+class EhtoDeltaTransformerUnitTests(DataframeTestCase):
     _target_schema = StructType(
         [
             StructField("BodyId", LongType(), True),

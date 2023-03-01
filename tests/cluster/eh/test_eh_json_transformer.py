@@ -27,7 +27,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
             (
                 json.dumps(
                     {
-                        "id": "1234",
+                        "id": 1234,
                         "name": "John",
                     }
                 ).encode(
@@ -94,7 +94,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
                     "John",
                     json.dumps(
                         {
-                            "id": "1234",
+                            "id": 1234,
                             "name": "John",
                         }
                     ),

@@ -87,22 +87,20 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
         dh = DeltaHandle.from_tc("TblPdate1")
 
-        expected = (
-            [
-                (
-                    1234,
-                    "John",
-                    dt_utc(2021, 10, 31, 0, 0, 0),
-                    dt_utc(2021, 10, 31, 0, 0, 0),
-                    json.dumps(
-                        {
-                            "id": 1234,
-                            "name": "John",
-                        }
-                    ),  # BodyJson is at the end of select statement
-                ),
-            ],
-        )
+        expected = [
+            (
+                1234,
+                "John",
+                dt_utc(2021, 10, 31, 0, 0, 0),
+                dt_utc(2021, 10, 31, 0, 0, 0),
+                json.dumps(
+                    {
+                        "id": 1234,
+                        "name": "John",
+                    }
+                ),  # BodyJson is at the end of select statement
+            ),
+        ]
 
         df_result = EhJsonToDeltaTransformer(target_dh=dh).process(self.df_in)
 

@@ -98,6 +98,9 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
             (
                 1234,
                 "John",
+                # THe unknown column is extract as NONE here.
+                # Since pdate and EnqueuedTimestamp is always added at the end.
+                None,
                 dt_utc(2021, 10, 31, 0, 0, 0),
                 dt_utc(2021, 10, 31, 0, 0, 0),
             ),

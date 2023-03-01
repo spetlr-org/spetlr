@@ -8,13 +8,9 @@ from atc.etl import Transformer
 from atc.etl.extractors import IncrementalExtractor, SimpleExtractor
 from atc.etl.loaders import SimpleLoader
 from atc.etl.loaders.UpsertLoader import UpsertLoader
-from atc.orchestrators.eh2bronze.EhToDeltaBronzeOrchestrator import (
-    EhToDeltaBronzeOrchestrator,
-)
 from atc.orchestrators.eh2silver.EhToDeltaSilverOrchestrator import (
     EhToDeltaSilverOrchestrator,
 )
-from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaExtractor
 from atc.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
     EhJsonToDeltaTransformer,
 )

@@ -7,6 +7,9 @@ from pyspark.sql import functions as f
 from atc.etl import Transformer
 from atc.etl.loaders import SimpleLoader
 from atc.orchestrators import EhToDeltaBronzeOrchestrator
+from atc.orchestrators.eh2bronze.EhToDeltaBronzeTransformer import (
+    EhToDeltaBronzeTransformer,
+)
 from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaExtractor
 from atc.spark import Spark
 
@@ -20,13 +23,18 @@ class EhToDeltaBronzeOrchestratorTests(DataframeTestCase):
 
         with patch.object(EhJsonToDeltaExtractor, "read", return_value=None) as p1:
             with patch.object(SimpleLoader, "save", return_value=None) as p2:
-                orchestrator = EhToDeltaBronzeOrchestrator(eh=eh_mock, dh=dh_mock)
-                orchestrator.execute()
+                with patch.object(
+                    EhToDeltaBronzeTransformer, "process", return_value=None
+                ) as p3:
+                    orchestrator = EhToDeltaBronzeOrchestrator(eh=eh_mock, dh=dh_mock)
+                    orchestrator.execute()
 
-                # EhJsonToDeltaExtractor should be called once
-                p1.assert_called_once()
-                # SimpleLoader should be called once
-                p2.assert_called_once()
+                    # EhJsonToDeltaExtractor should be called once
+                    p1.assert_called_once()
+                    # SimpleLoader should be called once
+                    p2.assert_called_once()
+                    # The transformer should be called once
+                    p3.assert_called_once()
 
     def test_02_w_transformer(self):
         empty_df = Spark.get().createDataFrame([], schema="Id INTEGER")
@@ -49,13 +57,20 @@ class EhToDeltaBronzeOrchestratorTests(DataframeTestCase):
 
         with patch.object(EhJsonToDeltaExtractor, "read", return_value=empty_df) as p1:
             with patch.object(SimpleLoader, "save", return_value=None) as p2:
-                with patch.object(TestFilter, "process", return_value=empty_df) as p3:
-                    orchestrator = TestOrchestrator()
-                    orchestrator.execute()
+                with patch.object(
+                    EhToDeltaBronzeTransformer, "process", return_value=None
+                ) as p3:
+                    with patch.object(
+                        TestFilter, "process", return_value=empty_df
+                    ) as p4:
+                        orchestrator = TestOrchestrator()
+                        orchestrator.execute()
 
-                    # EhJsonToDeltaExtractor should be called once
-                    p1.assert_called_once()
-                    # SimpleLoader should be called once
-                    p2.assert_called_once()
-                    # The transformer should be called once
-                    p3.assert_called_once()
+                        # EhJsonToDeltaExtractor should be called once
+                        p1.assert_called_once()
+                        # SimpleLoader should be called once
+                        p2.assert_called_once()
+                        # The transformer should be called once
+                        p3.assert_called_once()
+                        # The test transformer should be called once
+                        p4.assert_called_once()

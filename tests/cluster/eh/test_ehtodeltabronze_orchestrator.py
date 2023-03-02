@@ -6,9 +6,7 @@ from pyspark.sql import functions as f
 
 from atc.etl import Transformer
 from atc.etl.loaders import SimpleLoader
-from atc.orchestrators.eh2bronze.EhToDeltaBronzeOrchestrator import (
-    EhToDeltaBronzeOrchestrator,
-)
+from atc.orchestrators import EhToDeltaBronzeOrchestrator
 from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaExtractor
 from atc.spark import Spark
 

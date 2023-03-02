@@ -1,3 +1,5 @@
+from typing import List
+
 from atc.delta import DeltaHandle
 from atc.etl import EtlBase, Orchestrator
 from atc.etl.extractors import IncrementalExtractor, SimpleExtractor
@@ -9,11 +11,26 @@ from atc.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
 
 
 class EhToDeltaSilverOrchestrator(Orchestrator):
+    """
+    This class has been designed to carry out the ETL task
+    of unpacking and transforming bronze eventhub data to the silver layer.
+
+    Parameters:
+
+    dh_source: DeltaHandle for the source delta table (bronze)
+    dh_target: DeltaHandle for the target delta table (silver)
+    upsert_join_cols: The columns used for upserting.
+    mode: The mode of data load (upsert, append, overwrite).
+
+    Returns:
+    Processed datasets of the super Orchestrator class
+    """
+
     def __init__(
         self,
         dh_source: DeltaHandle,
         dh_target: DeltaHandle,
-        upsert_join_cols=None,
+        upsert_join_cols: List[str] = None,
         mode: str = "upsert",
     ):
         super().__init__()
@@ -23,6 +40,7 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
         self.upsert_join_cols = upsert_join_cols
 
         # step 1
+        # Extracts the data from the bronze layer
         if mode != "upsert":
             self.extract_from(SimpleExtractor(dh_source, "EhDeltaBronze"))
         else:
@@ -43,7 +61,7 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
         # the method filter_with can be used to insert any number of transformers here
 
         # final step,
-        # append the rows to the delta table.
+        # by default upsert the rows to the silver delta table.
         if mode != "upsert":
             self._loader = SimpleLoader(dh_target, mode=self.mode)
         else:

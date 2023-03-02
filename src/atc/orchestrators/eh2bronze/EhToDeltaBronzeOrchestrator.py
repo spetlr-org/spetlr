@@ -6,6 +6,19 @@ from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaE
 
 
 class EhToDeltaBronzeOrchestrator(Orchestrator):
+    """
+
+    This class has been designed to carry out the ETL task
+    of ingest eventhub data to a bronze layer.
+
+    Parameters:
+    eh: EventHubCaptureExtractor for the eventhub data (raw)
+    dh: DeltaHandle for the target delta table (bronze)
+
+    Returns:
+    Processed datasets of the super Orchestrator class
+    """
+
     def __init__(self, eh: EventHubCaptureExtractor, dh: DeltaHandle):
         super().__init__()
         self.eh = eh

@@ -7,6 +7,23 @@ from atc.tables import TableHandle
 
 
 class EhToDeltaBronzeTransformer(Transformer):
+    """
+    This class transforms eventhub data into the following schema:
+
+    | BodyId | Body | EnqueuedTimestamp | StreamingTime | pdate |
+    |--------|------|-------------------|---------------|-------|
+    |...     |...   |...                |...            |...    |
+
+    Parameters:
+    target_dh: DeltaHandle for the target delta table (bronze)
+    df: A dataframe containing raw eventhub data
+
+    Returns:
+    A dataframe with the above mentioned schema
+
+
+    """
+
     def __init__(self, target_dh: TableHandle):
         super().__init__()
         self.target_dh = target_dh

@@ -2,6 +2,9 @@ from atc.delta import DeltaHandle
 from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from atc.etl import EtlBase, Orchestrator
 from atc.etl.loaders import SimpleLoader
+from atc.orchestrators.eh2bronze.EhToDeltaBronzeTransformer import (
+    EhToDeltaBronzeTransformer,
+)
 from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaExtractor
 
 
@@ -29,6 +32,10 @@ class EhToDeltaBronzeOrchestrator(Orchestrator):
         #  - truncate that partition
         #  - read the capture files from that partition
         self.extract_from(EhJsonToDeltaExtractor(eh, dh))
+
+        # Step 2,
+        # Transform the schema into a readable format
+        self.transform_with(EhToDeltaBronzeTransformer(target_dh=dh))
 
         # the method filter_with can be used to insert any number of transformers here
 

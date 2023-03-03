@@ -10,9 +10,13 @@ class EhToDeltaBronzeTransformer(Transformer):
     """
     This class transforms eventhub data into the following schema:
 
-    | BodyId | Body | EnqueuedTimestamp | StreamingTime | pdate |
-    |--------|------|-------------------|---------------|-------|
-    |...     |...   |...                |...            |...    |
+    | EventhubRowId | BodyId | Body | EnqueuedTimestamp | StreamingTime |->
+    |---------------|--------|------|-------------------|---------------|->
+    |...            |...     |...   |...                |...            |->
+
+    | SequenceNumber | Offset | SystemProperties | Properties| pdate |
+    |----------------|--------|------------------|-----------|-------|
+    |...             |...     |...               |...        |...    |
 
     Parameters:
     target_dh: DeltaHandle for the target delta table (bronze)

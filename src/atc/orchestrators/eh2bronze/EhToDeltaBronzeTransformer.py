@@ -32,6 +32,10 @@ class EhToDeltaBronzeTransformer(Transformer):
             "Body",
             "EnqueuedTimestamp",
             "StreamingTime",
+            "SequenceNumber",
+            "Offset",
+            "SystemProperties",
+            "Properties",
             "pdate",
         ]
 
@@ -41,6 +45,7 @@ class EhToDeltaBronzeTransformer(Transformer):
         assert set(self._eh_cols).issubset(target_df.columns)
 
         # Generate id for the eventhub rows using hashed body
+        # Can be used for identify rows with same body
         df = df.withColumn(
             "BodyId",
             f.conv(
@@ -64,6 +69,10 @@ class EhToDeltaBronzeTransformer(Transformer):
             f.col("Body").cast("string"),
             f.col("EnqueuedTimestamp"),
             f.col("StreamingTime"),
+            f.col("SequenceNumber"),
+            f.col("Offset"),
+            f.col("SystemProperties"),
+            f.col("Properties"),
             f.col("pdate"),
         )
 

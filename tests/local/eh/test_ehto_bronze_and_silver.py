@@ -31,6 +31,10 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
             StructField("Body", StringType(), True),
             StructField("EnqueuedTimestamp", TimestampType(), True),
             StructField("StreamingTime", TimestampType(), True),
+            StructField("SequenceNumber", LongType(), True),
+            StructField("Offset", StringType(), True),
+            StructField("SystemProperties", StringType(), True),
+            StructField("Properties", StringType(), True),
             StructField("pdate", TimestampType(), True),
         ]
     )
@@ -40,6 +44,10 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
         "Body",
         "EnqueuedTimestamp",
         "StreamingTime",
+        "SequenceNumber",
+        "Offset",
+        "SystemProperties",
+        "Properties",
         "pdate",
     ]
 

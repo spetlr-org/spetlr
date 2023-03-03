@@ -27,6 +27,10 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
             StructField("Body", StringType(), True),
             StructField("EnqueuedTimestamp", TimestampType(), True),
             StructField("StreamingTime", TimestampType(), True),
+            StructField("SequenceNumber", LongType(), True),
+            StructField("Offset", StringType(), True),
+            StructField("SystemProperties", StringType(), True),
+            StructField("Properties", StringType(), True),
             StructField("pdate", TimestampType(), True),
         ]
     )
@@ -36,11 +40,19 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
         "Body",
         "EnqueuedTimestamp",
         "StreamingTime",
+        "SequenceNumber",
+        "Offset",
+        "SystemProperties",
+        "Properties",
         "pdate",
     ]
 
     _capture_eventhub_output_schema = StructType(
         [
+            StructField("SequenceNumber", LongType(), True),
+            StructField("Offset", StringType(), True),
+            StructField("SystemProperties", StringType(), True),
+            StructField("Properties", StringType(), True),
             StructField("Body", BinaryType(), True),
             StructField("pdate", TimestampType(), True),
             StructField("EnqueuedTimestamp", TimestampType(), True),
@@ -57,6 +69,10 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
         df_in = Spark.get().createDataFrame(
             [
                 (
+                    22222,
+                    "OffsetTest",
+                    "SystemPropertiesTest",
+                    "PropertiesTest",
                     json.dumps(
                         {
                             "id": "1234",
@@ -82,6 +98,10 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
                     }
                 ),
                 dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
+                22222,
+                "OffsetTest",
+                "SystemPropertiesTest",
+                "PropertiesTest",
                 dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
             ),
         ]
@@ -89,7 +109,18 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
         df_result = EhToDeltaBronzeTransformer(test_handle).process(df_in)
 
         self.assertDataframeMatches(
-            df_result, ["BodyId", "Body", "EnqueuedTimestamp", "pdate"], expected
+            df_result,
+            [
+                "BodyId",
+                "Body",
+                "EnqueuedTimestamp",
+                "SequenceNumber",
+                "Offset",
+                "SystemProperties",
+                "Properties",
+                "pdate",
+            ],
+            expected,
         )
 
         # The streaming is tested assuming that the time of the transformation

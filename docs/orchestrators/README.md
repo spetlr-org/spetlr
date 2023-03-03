@@ -50,15 +50,24 @@ The class `EhToDeltaBronzeOrchestrator` has been designed to carry out the task 
 
 [Source: Databricks.com](https://www.databricks.com/glossary/medallion-architecture)
 
+The schema of the captured eventhub data can be found here: [Exploring captured Avro files in Azure Event Hubs](
+https://learn.microsoft.com/en-us/azure/event-hubs/explore-captured-avro-files). Explanation of some of the columns can be found [here](https://learn.microsoft.com/en-us/dotnet/api/microsoft.azure.eventhubs.eventdata.systempropertiescollection?view=azure-dotnet) and [here](https://learn.microsoft.com/en-us/dotnet/api/azure.messaging.eventhubs.eventdata.properties?view=azure-dotnet).
+
+
 Using the orchestrator without adding any filtering `.filter_with` the output schema is the following:
 
 | **Column Name**   | **Data type** | **Explanation**                                                                                                    |
 |-------------------|---------------|--------------------------------------------------------------------------------------------------------------------|
-| BodyId            | Long          | A ID generated to give a unique id for each row in the bronze table.  Calculated based on sha2 hashing the *Body*. |
-| Body              | String        | The eventhub body casted as a string - for readability and searchability.                                          |
-| EnqueuedTimestamp | Timestamp     | The enqueueded time of the eventhub row.                                                                           |
+| BodyId            | Long          | An ID generated to give a unique id for each unique *Body* message. Calculated based on sha2 hashing the *Body*. Can be used for identify rows with same *Body*. |
+| Body              | String        | The eventhub body casted as a string - for readability and searchability. Transformed version of the [binary body](https://learn.microsoft.com/en-us/dotnet/api/azure.messaging.eventhubs.eventdata.eventbody?view=azure-dotnet).                                          |
+| EnqueuedTimestamp | Timestamp     | The enqueueded time of the eventhub row. This is a transformation of the [EnqueuedTime](https://learn.microsoft.com/en-us/dotnet/api/azure.messaging.eventhubs.eventdata.enqueuedtime?view=azure-dotnet), which is the date and time, in UTC, of when the event was enqueued in the Event Hub partition.                                                                         |
 | StreamingTime     | Timestamp     | A timestamp added in the moment the orchestrator processed eventhub data.                                          |
-| pdate             | Timestamp     | A transformation of the eventhub partitioning set to a timestamp. See [previous section](#-EventHub-to-Delta)                                                 |
+|[SequenceNumber](https://learn.microsoft.com/en-us/dotnet/api/azure.messaging.eventhubs.eventdata.sequencenumber?view=azure-dotnet)| Long | Gets the logical sequence number of the event within the partition stream of the Event Hub.|
+|[Offset](https://learn.microsoft.com/en-us/dotnet/api/azure.messaging.eventhubs.eventdata.offset?view=azure-dotnet)| String | Gets the offset of the data relative to the Event Hub partition stream. The offset is a marker or identifier for an event within the Event Hubs stream. The identifier is unique within a partition of the Event Hubs stream.|
+|[SystemProperties](https://learn.microsoft.com/en-us/dotnet/api/azure.messaging.eventhubs.eventdata.systemproperties?view=azure-dotnet)|String | The set of free-form event properties which were provided by the Event Hubs service to pass metadata associated with the event or associated Event Hubs operation.|
+|[Properties](https://learn.microsoft.com/en-us/dotnet/api/azure.messaging.eventhubs.eventdata.properties?view=azure-dotnet)| String | The set of free-form properties which may be used for associating metadata with the event that is meaningful within the application context.|
+| pdate             | Timestamp     | A transformation of the eventhub partitioning set to a timestamp. See [previous section](#-EventHub-to-Delta).                                                 | 
+|
 
 
 

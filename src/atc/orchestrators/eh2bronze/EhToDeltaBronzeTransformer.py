@@ -28,6 +28,7 @@ class EhToDeltaBronzeTransformer(Transformer):
         super().__init__()
         self.target_dh = target_dh
         self._eh_cols = [
+            "EventhubRowId",
             "BodyId",
             "Body",
             "EnqueuedTimestamp",
@@ -43,6 +44,28 @@ class EhToDeltaBronzeTransformer(Transformer):
         target_df = self.target_dh.read()
 
         assert set(self._eh_cols).issubset(target_df.columns)
+
+        # Generate Unique id for the eventhub rows
+        df = df.withColumn(
+            "EventhubRowId",
+            f.conv(
+                f.concat_ws(
+                    "",
+                    f.lit("0"),
+                    f.substring(
+                        f.concat_ws(
+                            "",
+                            f.sha2(f.col("Body").cast("string"), 256),
+                            f.sha2(f.col("EnqueuedTimestamp").cast("string"), 256),
+                        ),
+                        -15,
+                        15,
+                    ),
+                ),
+                16,
+                10,
+            ).cast("long"),
+        )
 
         # Generate id for the eventhub rows using hashed body
         # Can be used for identify rows with same body
@@ -65,6 +88,7 @@ class EhToDeltaBronzeTransformer(Transformer):
 
         # Cast body to string
         df = df.select(
+            f.col("EventhubRowId"),
             f.col("BodyId"),
             f.col("Body").cast("string"),
             f.col("EnqueuedTimestamp"),

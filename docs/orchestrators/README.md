@@ -58,6 +58,7 @@ Using the orchestrator without adding any filtering `.filter_with` the output sc
 
 | **Column Name**   | **Data type** | **Explanation**                                                                                                    |
 |-------------------|---------------|--------------------------------------------------------------------------------------------------------------------|
+| EventhubRowId            | Long          | An ID generated to give a unique id for row in the bronze table. Calculated based on sha2 hashing the *Body* and *EnqueuedTimestamp*. _NB: There is a possibility for non-uniqueness._ |
 | BodyId            | Long          | An ID generated to give a unique id for each unique *Body* message. Calculated based on sha2 hashing the *Body*. Can be used for identify rows with same *Body*. |
 | Body              | String        | The eventhub body casted as a string - for readability and searchability. Transformed version of the [binary body](https://learn.microsoft.com/en-us/dotnet/api/azure.messaging.eventhubs.eventdata.eventbody?view=azure-dotnet).                                          |
 | EnqueuedTimestamp | Timestamp     | The enqueueded time of the eventhub row. This is a transformation of the [EnqueuedTime](https://learn.microsoft.com/en-us/dotnet/api/azure.messaging.eventhubs.eventdata.enqueuedtime?view=azure-dotnet), which is the date and time, in UTC, of when the event was enqueued in the Event Hub partition.                                                                         |
@@ -69,6 +70,33 @@ Using the orchestrator without adding any filtering `.filter_with` the output sc
 | pdate             | Timestamp     | A transformation of the eventhub partitioning set to a timestamp. See [previous section](#-EventHub-to-Delta).                                                 | 
 |
 
+The bronze schema should "at least" contain the following schema. The columns of this schema is asserted in the bronze transformer step.
+
+```python
+from pyspark.sql.types import (
+    LongType,
+    StringType,
+    StructField,
+    StructType,
+    TimestampType,
+)
+
+schema_bronze = StructType(
+        [
+            StructField("EventhubRowId", LongType(), True),
+            StructField("BodyId", LongType(), True),
+            StructField("Body", StringType(), True),
+            StructField("EnqueuedTimestamp", TimestampType(), True),
+            StructField("StreamingTime", TimestampType(), True),
+            StructField("SequenceNumber", LongType(), True),
+            StructField("Offset", StringType(), True),
+            StructField("SystemProperties", StringType(), True),
+            StructField("Properties", StringType(), True),
+            StructField("pdate", TimestampType(), True),
+        ]
+    )
+
+```
 
 
 ### Example

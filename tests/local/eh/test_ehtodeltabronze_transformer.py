@@ -23,6 +23,7 @@ from atc.utils import DataframeCreator
 class EhtoDeltaTransformerUnitTests(DataframeTestCase):
     _target_schema = StructType(
         [
+            StructField("EventhubRowId", LongType(), True),
             StructField("BodyId", LongType(), True),
             StructField("Body", StringType(), True),
             StructField("EnqueuedTimestamp", TimestampType(), True),
@@ -36,6 +37,7 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
     )
 
     _target_cols = [
+        "EventhubRowId",
         "BodyId",
         "Body",
         "EnqueuedTimestamp",
@@ -90,6 +92,7 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
 
         expected = [
             (
+                298587303917952901,  # EventhubRowId
                 146072039196263699,  # BodyId
                 json.dumps(  # Body (as string)
                     {
@@ -108,9 +111,11 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
 
         df_result = EhToDeltaBronzeTransformer(test_handle).process(df_in)
 
+        # Assert on all column except streaming time
         self.assertDataframeMatches(
             df_result,
             [
+                "EventhubRowId",
                 "BodyId",
                 "Body",
                 "EnqueuedTimestamp",

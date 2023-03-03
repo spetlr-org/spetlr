@@ -27,6 +27,7 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
 
     _target_schema_bronze = StructType(
         [
+            StructField("EventhubRowId", LongType(), True),
             StructField("BodyId", LongType(), True),
             StructField("Body", StringType(), True),
             StructField("EnqueuedTimestamp", TimestampType(), True),
@@ -40,6 +41,7 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
     )
 
     _target_cols_bronze = [
+        "EventhubRowId",
         "BodyId",
         "Body",
         "EnqueuedTimestamp",
@@ -63,6 +65,10 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
 
     _capture_eventhub_output_schema = StructType(
         [
+            StructField("SequenceNumber", LongType(), True),
+            StructField("Offset", StringType(), True),
+            StructField("SystemProperties", StringType(), True),
+            StructField("Properties", StringType(), True),
             StructField("Body", BinaryType(), True),
             StructField("pdate", TimestampType(), True),
             StructField("EnqueuedTimestamp", TimestampType(), True),
@@ -87,6 +93,10 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
         df_in = Spark.get().createDataFrame(
             [
                 (
+                    22222,
+                    "OffsetTest",
+                    "SystemPropertiesTest",
+                    "PropertiesTest",
                     json.dumps(
                         {
                             "Id": "1234",
@@ -104,7 +114,7 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
 
         expected_silver = [
             (
-                "1234",  # id
+                "1234",  # Id
                 dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
                 dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
             ),

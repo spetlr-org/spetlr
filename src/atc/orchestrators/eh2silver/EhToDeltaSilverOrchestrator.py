@@ -44,6 +44,7 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
         if mode != "upsert":
             self.extract_from(SimpleExtractor(dh_source, "EhDeltaBronze"))
         else:
+            assert upsert_join_cols is not None, "You must specify upsert_join_cols"
             self.extract_from(
                 IncrementalExtractor(
                     handle_source=self.dh_source,

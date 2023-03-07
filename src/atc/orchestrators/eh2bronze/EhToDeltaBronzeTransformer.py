@@ -92,16 +92,16 @@ class EhToDeltaBronzeTransformer(Transformer):
 
         # Cast body to string
         df = df.select(
-            f.col("EventhubRowId").cast("long"),
-            f.col("BodyId").cast("long"),
-            f.col("Body").cast("string"),
-            f.col("EnqueuedTimestamp").cast("timestamp"),
-            f.col("StreamingTime").cast("timestamp"),
-            f.col("SequenceNumber").cast("long"),
-            f.col("Offset").cast("string"),
-            f.col("SystemProperties").cast("string"),
-            f.col("Properties").cast("string"),
-            f.col("pdate").cast("timestamp"),
+            f.col("EventhubRowId").cast("long").alias("EventhubRowId"),
+            f.col("BodyId").cast("long").alias("BodyId"),
+            f.col("Body").cast("string").alias("Body"),
+            f.col("EnqueuedTimestamp").cast("timestamp").alias("EnqueuedTimestamp"),
+            f.col("StreamingTime").cast("timestamp").alias("StreamingTime"),
+            f.col("SequenceNumber").cast("long").alias("SequenceNumber"),
+            f.col("Offset").cast("string").alias("Offset"),
+            f.col("SystemProperties").cast("string").alias("SystemProperties"),
+            f.col("Properties").cast("string").alias("Properties"),
+            f.col("pdate").cast("timestamp").alias("pdate"),
         )
 
         # Ensure that cols are selected correctly

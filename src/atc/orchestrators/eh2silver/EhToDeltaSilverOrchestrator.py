@@ -41,9 +41,8 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
 
         # step 1
         # Extracts the data from the bronze layer
-        if mode != "upsert":
-            self.extract_from(SimpleExtractor(dh_source, "EhDeltaBronze"))
-        else:
+        if mode == "upsert":
+            assert upsert_join_cols is not None, "You must specify upsert_join_cols"
             self.extract_from(
                 IncrementalExtractor(
                     handle_source=self.dh_source,
@@ -52,6 +51,9 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
                     time_col_target="EnqueuedTimestamp",
                 )
             )
+
+        else:
+            self.extract_from(SimpleExtractor(dh_source, "EhDeltaBronze"))
 
         # step 2,
         #  - use the target schema to select what to copy from capture files
@@ -62,10 +64,10 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
 
         # final step,
         # by default upsert the rows to the silver delta table.
-        if mode != "upsert":
-            self._loader = SimpleLoader(dh_target, mode=self.mode)
-        else:
+        if mode == "upsert":
             self._loader = UpsertLoader(dh_target, self.upsert_join_cols)
+        else:
+            self._loader = SimpleLoader(dh_target, mode=self.mode)
 
         self.load_into(self._loader)
 

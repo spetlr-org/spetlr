@@ -17,7 +17,9 @@ from atc.spark import Spark
 
 class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
     def test_01_default_upsert(self):
-        test_df = Spark.get().createDataFrame([], schema="EnqueuedTimestamp timestamp")
+        test_df = Spark.get().createDataFrame(
+            [], schema="id string, EnqueuedTimestamp timestamp"
+        )
         dh_source_mock = Mock()
         dh_source_mock.read = Mock(return_value=test_df)
         dh_target_mock = Mock()
@@ -29,7 +31,9 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
             ) as p1:
                 with patch.object(UpsertLoader, "save", return_value=test_df) as p2:
                     orchestrator = EhToDeltaSilverOrchestrator(
-                        dh_source=dh_source_mock, dh_target=dh_target_mock
+                        dh_source=dh_source_mock,
+                        dh_target=dh_target_mock,
+                        upsert_join_cols=["id"],
                     )
                     orchestrator.execute()
 
@@ -38,7 +42,9 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
                     p2.assert_called_once()
 
     def test_02_w_transformer(self):
-        test_df = Spark.get().createDataFrame([], schema="EnqueuedTimestamp timestamp")
+        test_df = Spark.get().createDataFrame(
+            [], schema="id string, EnqueuedTimestamp timestamp"
+        )
         dh_source_mock = Mock()
         dh_source_mock.read = Mock(return_value=test_df)
         dh_target_mock = Mock()
@@ -50,7 +56,11 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
 
         class TestOrchestrator(EhToDeltaSilverOrchestrator):
             def __init__(self):
-                super().__init__(dh_source=dh_source_mock, dh_target=dh_target_mock)
+                super().__init__(
+                    dh_source=dh_source_mock,
+                    dh_target=dh_target_mock,
+                    upsert_join_cols=["id"],
+                )
                 self.filter_with(TestFilter())
 
         with patch.object(
@@ -66,7 +76,9 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
                 p3.assert_called_once()
 
     def test_03_append(self):
-        test_df = Spark.get().createDataFrame([], schema="EnqueuedTimestamp timestamp")
+        test_df = Spark.get().createDataFrame(
+            [], schema="id string, EnqueuedTimestamp timestamp"
+        )
         dh_source_mock = Mock()
         dh_source_mock.read = Mock(return_value=test_df)
         dh_target_mock = Mock()

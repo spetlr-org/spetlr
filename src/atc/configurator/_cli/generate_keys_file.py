@@ -26,9 +26,11 @@ def generate_keys_file(self, options):
               the generate file contents are printed to the console
             - check True/False, don't generate the file, verify an existing one.
     """
+    keys = list(self.all_keys())
+    keys.sort()
     new_conts = "\n".join(
         ["# AUTO GENERATED FILE", "# contains all atc.Configurator keys", ""]
-        + [f"{key} = {repr(key)}" for key in self.all_keys()]
+        + [f"{key} = {repr(key)}" for key in keys]
     )
 
     # if black is installed, use it to format the contents

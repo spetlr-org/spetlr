@@ -2,10 +2,10 @@ import unittest
 
 from pyspark.sql import DataFrame
 
-from atc.etl import Orchestrator, Transformer
-from atc.schema_manager.spark_schema import get_schema
-from atc.spark import Spark
-from atc.utils import DataframeCreator, MockExtractor, MockLoader
+from spetlr.etl import Orchestrator, Transformer
+from spetlr.schema_manager.spark_schema import get_schema
+from spetlr.spark import Spark
+from spetlr.utils import DataframeCreator, MockExtractor, MockLoader
 
 
 class MockEtlTest(unittest.TestCase):

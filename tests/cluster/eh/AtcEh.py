@@ -1,14 +1,15 @@
 """
-This file sets up the EventHub that is deployed as part of the atc integration pipeline
+This file sets up the EventHub that is deployed
+as part of the spetlr integration pipeline
 """
-from atc.eh import EventHubStream
-from atc.functions import init_dbutils
+from spetlr.eh import EventHubStream
+from spetlr.functions import init_dbutils
 
 
 class AtcEh(EventHubStream):
     def __init__(self):
         super().__init__(
             connection_str=init_dbutils().secrets.get("secrets", "EventHubConnection"),
-            entity_path="atceh",
+            entity_path="spetlreh",
             consumer_group="$Default",
         )

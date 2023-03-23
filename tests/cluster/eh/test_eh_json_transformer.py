@@ -1,15 +1,15 @@
 import json
 
-from atc_tools.testing import DataframeTestCase
-from atc_tools.time import dt_utc
 from pyspark.sql.types import BinaryType, StructField, StructType, TimestampType
+from spetlr_tools.testing import DataframeTestCase
+from spetlr_tools.time import dt_utc
 
-from atc import Configurator
-from atc.delta import DeltaHandle
-from atc.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
+from spetlr import Configurator
+from spetlr.delta import DeltaHandle
+from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
     EhJsonToDeltaTransformer,
 )
-from atc.spark import Spark
+from spetlr.spark import Spark
 
 
 class JsonEhTransformerUnitTests(DataframeTestCase):

@@ -1,9 +1,6 @@
 import json
 from unittest.mock import Mock, patch
 
-from atc_tools.testing import DataframeTestCase
-from atc_tools.testing.TestHandle import TestHandle
-from atc_tools.time import dt_utc
 from pyspark.sql.types import (
     BinaryType,
     LongType,
@@ -12,11 +9,19 @@ from pyspark.sql.types import (
     StructType,
     TimestampType,
 )
+from spetlr_tools.testing import DataframeTestCase
+from spetlr_tools.testing.TestHandle import TestHandle
+from spetlr_tools.time import dt_utc
 
-from atc.orchestrators import EhToDeltaBronzeOrchestrator, EhToDeltaSilverOrchestrator
-from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaExtractor
-from atc.spark import Spark
-from atc.utils import DataframeCreator
+from spetlr.orchestrators import (
+    EhToDeltaBronzeOrchestrator,
+    EhToDeltaSilverOrchestrator,
+)
+from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import (
+    EhJsonToDeltaExtractor,
+)
+from spetlr.spark import Spark
+from spetlr.utils import DataframeCreator
 
 
 class EhtoBronzeAndSilverUnitTests(DataframeTestCase):

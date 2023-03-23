@@ -1,6 +1,6 @@
 # Transformations documentation
 
-Transformations in atc-dataplatform:
+Transformations in spetlr:
 
 - [Transformations documentation](#transformations-documentation)
   - [Concatenate data frames](#concatenate-data-frames)
@@ -66,7 +66,7 @@ df2 = Spark.get().createDataFrame(
 ```
 Concatenate (union) the two dataframes:
 ``` python
- # ATC's "concat_dfs"
+ # SPETLR's "concat_dfs"
  result = concat_dfs([df1,df2])
  
  # pyspark's unionByName
@@ -122,7 +122,7 @@ Given a dataframe `df`, this code renames all columns:
 |   1|    2|   foo|
 |   3|    4|   bar|
 +----+-----+------+
->>> from atc.transformers.fuzzy_select import FuzzySelectTransformer
+>>> from spetlr.transformers.fuzzy_select import FuzzySelectTransformer
 >>> ft = FuzzySelectTransformer(["Index", "Count", "Label"])
 >>> ft.process(df).show()
 +-----+-----+-----+
@@ -221,7 +221,7 @@ of guitars available in a store changes. Let's assume that we only want the newe
 and dropping the oldest duplicates:
 
 ``` python 
-from atc.utils.DropOldestDuplicates import DropOldestDuplicates
+from spetlr.utils.DropOldestDuplicates import DropOldestDuplicates
 data =
 
 | id| model|     brand|amount|         timecolumn|
@@ -259,7 +259,7 @@ latitude or longitude value is *None*, the returned timezone will also be *None*
 
 
 ``` python 
-from atc.transformers import TimeZoneTransformer
+from spetlr.transformers import TimeZoneTransformer
 data =
 
 |   latitude| longitude|
@@ -295,7 +295,7 @@ on pyspark schema.
 If case-insensitive matching is desired, caseInsensitiveMatching can be set to True
 
 ``` python 
-from atc.transformers import SelectAndCastColumnsTransformer
+from spetlr.transformers import SelectAndCastColumnsTransformer
 data =
 
 |         id|    number|     value|

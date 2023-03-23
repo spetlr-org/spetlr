@@ -1,6 +1,6 @@
 # Utilities documentation
 
-Utilities in atc-dataplatform:
+Utilities in spetlr:
 
 * [Api Auto Config](#api-auto-config)
 * [Test Utilities](#test-utilities)
@@ -8,13 +8,13 @@ Utilities in atc-dataplatform:
 
 ## Api Auto Config
 
-Using the method `atc.db_auto.getDbApi()` gives access to a 
+Using the method `spetlr.db_auto.getDbApi()` gives access to a 
 `DatabricksAPI` instance that has been pre-configured for the 
 current databricks instance. See [databricks-api](https://pypi.org/project/databricks-api/)
 for usage documentation.
 
 Under the hood the function uses the job context to get the host and token
-when on the cluster. When using `atc` with databricks-connect, the `databricks-cli` is
+when on the cluster. When using `spetlr` with databricks-connect, the `databricks-cli` is
 called to configure the client. Thus, the function works without further configuration
 in all contexts.
 
@@ -32,8 +32,8 @@ This class allows the user to specify which columns she wants to give values for
 #### Usage:
 
 ```python3
-from atc.utils import DataframeCreator
-from atc.schema_manager.schema import get_schema
+from spetlr.utils import DataframeCreator
+from spetlr.schema_manager.schema import get_schema
 
 df = DataframeCreator.make_partial(
     schema=get_schema("""
@@ -79,9 +79,9 @@ A set of standard git hooks are included to provide useful functionality
 
 To use the hooks, they can be installed in any repository by executing this command from a path inside the repository:
 
-    atc-dataplatform-git-hooks
+    spetlr-git-hooks
 
 To uninstall the hooks, simply run this command
 
-    atc-dataplatform-git-hooks uninstall
+    spetlr-git-hooks uninstall
 

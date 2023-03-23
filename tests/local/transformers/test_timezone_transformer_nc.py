@@ -1,8 +1,8 @@
-from atc_tools.testing import DataframeTestCase
 from pyspark.sql import types as T
+from spetlr_tools.testing import DataframeTestCase
 
-from atc.spark import Spark
-from atc.transformers import TimeZoneTransformerNC
+from spetlr.spark import Spark
+from spetlr.transformers import TimeZoneTransformerNC
 
 
 class TimeZoneTransformerNCTest(DataframeTestCase):

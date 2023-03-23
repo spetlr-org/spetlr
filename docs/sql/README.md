@@ -1,8 +1,8 @@
-# Atc SQL documentation
+# Spetlr SQL documentation
 
 SQL methods ovrview:
 
-- [Atc SQL documentation](#atc-sql-documentation)
+- [Spetlr SQL documentation](#spetlr-sql-documentation)
   - [SQL Server Class](#sql-server-class)
     - [SQL Upsert](#sql-upsert)
   - [SqlExecutor](#sqlexecutor)
@@ -11,7 +11,7 @@ SQL methods ovrview:
 Let's say you have an Azure SQL server called *youservername* with an associated database *yourdatabase*. The username is explicitly defined here as *customusername* and the password as *[REDACTED]*. Variables related to security challenges like passwords are recommended to be located in e.g. [databricks secrets](https://docs.databricks.com/security/secrets/index.html). Here is a usage example:
  
 ```python
-from atc.sql import SqlServer
+from spetlr.sql import SqlServer
 class ExampleSqlServer(SqlServer):
     def __init__(
         self,
@@ -79,7 +79,7 @@ sql-files which can be executed into the *base_module*-variable.
 ```python
 from tests.cluster.sql import extras
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
-from atc.sql import SqlExecutor
+from spetlr.sql import SqlExecutor
 
 class DeliverySqlExecutor(SqlExecutor):
     def __init__(self):
@@ -87,9 +87,9 @@ class DeliverySqlExecutor(SqlExecutor):
 ```
 
 If one need to execute sql queries in Databricks using Spark, there is no need for 
-providing a server. By default, the class uses the atc Spark class. 
+providing a server. By default, the class uses the spetlr Spark class. 
 ```python
-from atc.sql import SqlExecutor
+from spetlr.sql import SqlExecutor
 
 class SparkSqlExecutor(SqlExecutor):
     def __init__(self):
@@ -99,7 +99,7 @@ class SparkSqlExecutor(SqlExecutor):
 In the setup job, one could consider to create all delivery SQL tables:
 
 ```python
-from atc.configurator import Configurator
+from spetlr.configurator import Configurator
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 from tests.cluster.sql.DeliverySqlExecutor import DeliverySqlExecutor
 

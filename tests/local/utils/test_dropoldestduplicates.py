@@ -1,5 +1,3 @@
-from atc_tools.testing import DataframeTestCase
-from atc_tools.time import dt_utc
 from pyspark.sql.types import (
     IntegerType,
     StringType,
@@ -7,9 +5,11 @@ from pyspark.sql.types import (
     StructType,
     TimestampType,
 )
+from spetlr_tools.testing import DataframeTestCase
+from spetlr_tools.time import dt_utc
 
-from atc.spark import Spark
-from atc.utils import DropOldestDuplicates
+from spetlr.spark import Spark
+from spetlr.utils import DropOldestDuplicates
 
 
 class TestDropOldestDuplicates(DataframeTestCase):

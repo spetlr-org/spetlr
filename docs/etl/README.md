@@ -24,10 +24,10 @@ Each layer may have a single or multiple implementations, and this is handled au
 ## Orchestration Fluent Interface
 
 This library provides common simple implementations and base classes for implementing the OETL design pattern. 
-To simplify object construction, we provide the **Orchestrator** fluent interface from `atc.etl`
+To simplify object construction, we provide the **Orchestrator** fluent interface from `spetlr.etl`
 
 ```python
-from atc.etl import Extractor, Transformer, Loader, Orchestrator
+from spetlr.etl import Extractor, Transformer, Loader, Orchestrator
 
 (Orchestrator()
     .extract_from(Extractor())
@@ -71,8 +71,8 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType
 
-from atc.etl import Extractor, Transformer, Loader, Orchestrator
-from atc.spark import Spark
+from spetlr.etl import Extractor, Transformer, Loader, Orchestrator
+from spetlr.spark import Spark
 
 
 class GuitarExtractor(Extractor):
@@ -161,8 +161,8 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Transformer, Loader, Orchestrator
-from atc.spark import Spark
+from spetlr.etl import Extractor, Transformer, Loader, Orchestrator
+from spetlr.spark import Spark
 
 
 class GuitarExtractor(Extractor):
@@ -230,8 +230,8 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, StringType
 
-from atc.etl import Extractor, Loader, Orchestrator, Transformer
-from atc.spark import Spark
+from spetlr.etl import Extractor, Loader, Orchestrator, Transformer
+from spetlr.spark import Spark
 
 
 class AmericanGuitarExtractor(Extractor):
@@ -327,8 +327,8 @@ Here's an example of data raw ingestion without applying any transformations.
 ```python
 from pyspark.sql import DataFrame
 
-from atc.etl import Extractor, Loader, Orchestrator
-from atc.spark import Spark
+from spetlr.etl import Extractor, Loader, Orchestrator
+from spetlr.spark import Spark
 
 
 class GuitarExtractor(Extractor):
@@ -367,8 +367,8 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Transformer, Loader, Orchestrator
-from atc.spark import Spark
+from spetlr.etl import Extractor, Transformer, Loader, Orchestrator
+from spetlr.spark import Spark
 
 
 class GuitarExtractor(Extractor):
@@ -443,8 +443,8 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-from atc.etl import Extractor, Transformer, Loader, Orchestrator
-from atc.spark import Spark
+from spetlr.etl import Extractor, Transformer, Loader, Orchestrator
+from spetlr.spark import Spark
 
 
 class AmericanGuitarExtractor(Extractor):
@@ -548,9 +548,9 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from atc.etl import Extractor, Loader, Orchestrator, TransformerNC
-from atc.etl.types import dataset_group
-from atc.spark import Spark
+from spetlr.etl import Extractor, Loader, Orchestrator, TransformerNC
+from spetlr.etl.types import dataset_group
+from spetlr.spark import Spark
 
 
 class OfficeEmployeeExtractor(Extractor):
@@ -648,8 +648,8 @@ import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame
 
-from atc.etl import Extractor, Transformer, Loader, Orchestrator, dataset_group
-from atc.spark import Spark
+from spetlr.etl import Extractor, Transformer, Loader, Orchestrator, dataset_group
+from spetlr.spark import Spark
 
 
 class AmericanGuitarExtractor(Extractor):

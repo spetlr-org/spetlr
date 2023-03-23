@@ -1,8 +1,8 @@
 import unittest
 
-from atc.schema_manager.spark_schema import get_schema
-from atc.spark import Spark
-from atc.utils import DataframeCreator
+from spetlr.schema_manager.spark_schema import get_schema
+from spetlr.spark import Spark
+from spetlr.utils import DataframeCreator
 
 
 class DataframeCreatorTest(unittest.TestCase):

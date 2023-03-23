@@ -1,10 +1,10 @@
 import unittest
 
 import pyspark.sql.types as T
-from atc_tools.testing import DataframeTestCase
+from spetlr_tools.testing import DataframeTestCase
 
-from atc.spark import Spark
-from atc.transformers import SelectAndCastColumnsTransformerNC
+from spetlr.spark import Spark
+from spetlr.transformers import SelectAndCastColumnsTransformerNC
 
 
 class TestSelectAndCastColumnsTransformerNC(DataframeTestCase):

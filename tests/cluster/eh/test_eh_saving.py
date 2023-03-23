@@ -2,18 +2,18 @@ import time
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from atc_tools.time import dt_utc
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
+from spetlr_tools.time import dt_utc
 
-from atc import Configurator
-from atc.delta import DeltaHandle
-from atc.eh import EventHubCapture, EventHubJsonPublisher
-from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
-from atc.etl import Transformer
-from atc.functions import init_dbutils
-from atc.orchestrators import EhJsonToDeltaOrchestrator
-from atc.spark import Spark
+from spetlr import Configurator
+from spetlr.delta import DeltaHandle
+from spetlr.eh import EventHubCapture, EventHubJsonPublisher
+from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
+from spetlr.etl import Transformer
+from spetlr.functions import init_dbutils
+from spetlr.orchestrators import EhJsonToDeltaOrchestrator
+from spetlr.spark import Spark
 from tests.cluster.values import resourceName
 
 from .AtcEh import AtcEh
@@ -57,7 +57,7 @@ class EventHubsTests(unittest.TestCase):
             "AtcEh",
             {
                 "name": "AtcEh",
-                "path": f"/mnt/{resourceName()}/silver/{resourceName()}/atceh",
+                "path": f"/mnt/{resourceName()}/silver/{resourceName()}/spetlreh",
                 "format": "avro",
                 "partitioning": "ymd",
             },
@@ -76,7 +76,7 @@ class EventHubsTests(unittest.TestCase):
         tc.register(
             "AtcEh",
             {
-                "path": f"/mnt/{resourceName()}/silver/{resourceName()}/atceh",
+                "path": f"/mnt/{resourceName()}/silver/{resourceName()}/spetlreh",
                 "format": "avro",
                 "partitioning": "ymd",
             },

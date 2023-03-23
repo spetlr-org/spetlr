@@ -1,6 +1,6 @@
 import unittest
 
-from atc.utils.GetMergeStatement import GetMergeStatement
+from spetlr.utils.GetMergeStatement import GetMergeStatement
 
 
 class GetMergeStatementTest(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from atc.sql import SqlExecutor
+from spetlr.sql import SqlExecutor
 from tests.local.sql import sql
 
 

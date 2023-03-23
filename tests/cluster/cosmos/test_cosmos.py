@@ -2,13 +2,13 @@ import unittest
 
 from azure.cosmos.exceptions import CosmosHttpResponseError
 
-import atc.cosmos
+import spetlr.cosmos
 from atc import Configurator
-from atc.functions import init_dbutils
-from atc.spark import Spark
+from spetlr.functions import init_dbutils
+from spetlr.spark import Spark
 
 
-class TestCosmos(atc.cosmos.CosmosDb):
+class TestCosmos(spetlr.cosmos.CosmosDb):
     def __init__(self):
         dbutils = init_dbutils()
         super().__init__(

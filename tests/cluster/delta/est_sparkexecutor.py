@@ -1,8 +1,8 @@
 import unittest
 
-from atc import Configurator
-from atc.delta import DbHandle, DeltaHandle
-from atc.spark import Spark
+from spetlr import Configurator
+from spetlr.delta import DbHandle, DeltaHandle
+from spetlr.spark import Spark
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 

@@ -1,5 +1,5 @@
-from atc.functions import init_dbutils
-from atc.sql.SqlServer import SqlServer
+from spetlr.functions import init_dbutils
+from spetlr.sql.SqlServer import SqlServer
 from tests.cluster.values import resourceName
 
 

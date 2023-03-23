@@ -6,7 +6,7 @@
 #az login
 #az account list
 ## find the corect one
-#az account set --subscription $myAtcAzureSubscription
+#az account set --subscription $mySpetlrAzureSubscription
 Write-Host "Check correct subsctiption is selected."
 $account = az account show | ConvertFrom-Json
 Write-Host "Current subscription is $($account.name)"
@@ -19,7 +19,7 @@ if ($account.name -notmatch "ATC"){
 ####################################################################################
 ## Step 2. Create app registration
 Write-Host "Check if app regisration already exists." -ForegroundColor DarkGreen
-$appRegName = "AtcGithubPipe"
+$appRegName = "SpetlrGithubPipe"
 $appId = az ad app list `
   --display-name $appRegName `
   --query [-1].appId `
@@ -28,7 +28,7 @@ $appId = az ad app list `
 if ($null -eq $appId)
 {
   Write-Host "Creating SPN Registration" -ForegroundColor DarkGreen
-  $appId = az ad app create --display-name "AtcGithubPipe" `
+  $appId = az ad app create --display-name "SpetlrGithubPipe" `
       --query appId `
       --out tsv
 

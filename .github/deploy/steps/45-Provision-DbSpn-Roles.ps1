@@ -1,4 +1,4 @@
-Write-Host "  Assigning Databricks Service Principal as Contributor for Atc"
+Write-Host "  Assigning Databricks Service Principal as Contributor for spetlr"
 
 $output = az role assignment create `
   --role "Contributor" `

@@ -1,10 +1,10 @@
 import pyspark.sql.types as T
-from atc_tools.testing import DataframeTestCase
+from spetlr_tools.testing import DataframeTestCase
 
-from atc.configurator import Configurator
-from atc.delta import DeltaHandle
-from atc.schema_manager import SchemaManager
-from atc.schema_manager.spark_schema import get_schema
+from spetlr.configurator import Configurator
+from spetlr.delta import DeltaHandle
+from spetlr.schema_manager import SchemaManager
+from spetlr.schema_manager.spark_schema import get_schema
 
 from . import extras
 from .SparkExecutor import SparkSqlExecutor

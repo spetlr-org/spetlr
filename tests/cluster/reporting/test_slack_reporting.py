@@ -8,7 +8,7 @@ import threading
 import unittest
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from atc.reporting import SlackNotifier
+from spetlr.reporting import SlackNotifier
 
 
 class SlackNotifierTests(unittest.TestCase):

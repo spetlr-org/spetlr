@@ -1,5 +1,5 @@
 """
-Replace whatever version is in atc/__init__.py
+Replace whatever version is in src/VERSION.txt
 with a version that is larger than whatever is already published on test.pypi.org
 This facilitates continuous release.
 """
@@ -34,7 +34,7 @@ def get_local_version():
 
 def get_version(host):
     try:
-        test_pypi = json.load(urlopen(f"https://{host}/pypi/atc-dataplatform/json"))
+        test_pypi = json.load(urlopen(f"https://{host}/pypi/spetlr/json"))
         test_pypi_version = parse(test_pypi["info"]["version"])
         return test_pypi_version
     except:  # noqa: E722

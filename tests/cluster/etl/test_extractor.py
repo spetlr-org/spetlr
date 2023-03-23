@@ -3,9 +3,9 @@ import unittest
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from atc.etl import Extractor
-from atc.etl.types import dataset_group
-from atc.spark import Spark
+from spetlr.etl import Extractor
+from spetlr.etl.types import dataset_group
+from spetlr.spark import Spark
 
 
 class ExtractorTests(unittest.TestCase):

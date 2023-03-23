@@ -2,8 +2,8 @@ import unittest
 
 import pyspark.sql.types as T
 
-from atc.configurator import Configurator
-from atc.schema_manager import SchemaManager
+from spetlr.configurator import Configurator
+from spetlr.schema_manager import SchemaManager
 
 from . import extras
 from .extras import initSchemaManager

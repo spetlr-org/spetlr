@@ -1,4 +1,4 @@
-from atc import Configurator
+from spetlr import Configurator
 
 from . import extras
 from .DeliverySqlServerSpn import DeliverySqlServerSpn

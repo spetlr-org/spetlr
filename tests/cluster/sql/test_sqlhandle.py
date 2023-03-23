@@ -2,14 +2,14 @@ import random
 import unittest
 from unittest.mock import create_autospec
 
-from atc_tools.testing.DataframeTestCase import DataframeTestCase
 from pyspark.sql.types import IntegerType, StructField, StructType
+from spetlr_tools.testing.DataframeTestCase import DataframeTestCase
 
-from atc.functions import get_unique_tempview_name
-from atc.spark import Spark
-from atc.sql import SqlHandle
-from atc.sql.sql_handle import SqlHandleInvalidName
-from atc.sql.SqlBaseServer import SqlBaseServer
+from spetlr.functions import get_unique_tempview_name
+from spetlr.spark import Spark
+from spetlr.sql import SqlHandle
+from spetlr.sql.sql_handle import SqlHandleInvalidName
+from spetlr.sql.SqlBaseServer import SqlBaseServer
 
 
 class SqlHandleTests(DataframeTestCase):

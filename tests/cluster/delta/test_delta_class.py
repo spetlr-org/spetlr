@@ -2,13 +2,13 @@ import unittest
 
 from pyspark.sql.utils import AnalysisException
 
-from atc import Configurator
-from atc.delta import DbHandle, DeltaHandle
-from atc.etl import Orchestrator
-from atc.etl.extractors import SimpleExtractor
-from atc.etl.extractors.schema_extractor import SchemaExtractor
-from atc.etl.loaders import SimpleLoader
-from atc.spark import Spark
+from spetlr import Configurator
+from spetlr.delta import DbHandle, DeltaHandle
+from spetlr.etl import Orchestrator
+from spetlr.etl.extractors import SimpleExtractor
+from spetlr.etl.extractors.schema_extractor import SchemaExtractor
+from spetlr.etl.loaders import SimpleLoader
+from spetlr.spark import Spark
 
 
 class DeltaTests(unittest.TestCase):
@@ -19,14 +19,14 @@ class DeltaTests(unittest.TestCase):
     def test_01_configure(self):
         tc = Configurator()
         tc.register(
-            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/atc/silver/testdb{ID}"}
+            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/spetlr/silver/testdb{ID}"}
         )
 
         tc.register(
             "MyTbl",
             {
                 "name": "TestDb{ID}.TestTbl",
-                "path": "/mnt/atc/silver/testdb{ID}/testtbl",
+                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl",
             },
         )
 
@@ -40,7 +40,7 @@ class DeltaTests(unittest.TestCase):
         tc.register(
             "MyTbl3",
             {
-                "path": "/mnt/atc/silver/testdb/testtbl3",
+                "path": "/mnt/spetlr/silver/testdb/testtbl3",
             },
         )
 

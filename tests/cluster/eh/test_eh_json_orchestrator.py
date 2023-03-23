@@ -1,13 +1,15 @@
 import unittest
 from unittest.mock import Mock
 
-from atc_tools.time import dt_utc
+from spetlr_tools.time import dt_utc
 
-from atc import Configurator
-from atc.delta import DeltaHandle
-from atc.eh import EventHubCaptureExtractor
-from atc.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import EhJsonToDeltaExtractor
-from atc.spark import Spark
+from spetlr import Configurator
+from spetlr.delta import DeltaHandle
+from spetlr.eh import EventHubCaptureExtractor
+from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import (
+    EhJsonToDeltaExtractor,
+)
+from spetlr.spark import Spark
 
 
 class JsonEhOrchestratorUnitTests(unittest.TestCase):

@@ -111,9 +111,9 @@ additional transformation steps to be injected before the rows are finally appen
 
 
 ```python
-from atc.delta import DeltaHandle
-from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
-from atc.orchestrators import EhToDeltaBronzeOrchestrator
+from spetlr.delta import DeltaHandle
+from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
+from spetlr.orchestrators import EhToDeltaBronzeOrchestrator
 
 eh=EventHubCaptureExtractor.from_tc("eh_id")
 dh=DeltaHandle.from_tc("dh_id")
@@ -147,8 +147,8 @@ The arguments to this orchestrator consist of
 *The schema of `dh_target` defines how the eventhub data is unpacked.*
 
 ```python
-from atc.delta import DeltaHandle
-from atc.orchestrators import EhToDeltaSilverOrchestrator
+from spetlr.delta import DeltaHandle
+from spetlr.orchestrators import EhToDeltaSilverOrchestrator
 
 dh_source=DeltaHandle.from_tc("dh_source_id")
 dh_target=DeltaHandle.from_tc("dh_target_id")

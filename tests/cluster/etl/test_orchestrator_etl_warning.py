@@ -3,7 +3,7 @@ import warnings
 
 from pyspark.sql import DataFrame
 
-from atc.etl import Extractor, Orchestrator
+from spetlr.etl import Extractor, Orchestrator
 
 
 class OrchestratorEtlTests(unittest.TestCase):

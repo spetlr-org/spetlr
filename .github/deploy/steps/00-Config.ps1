@@ -11,11 +11,11 @@ if(-not $secrets){
 $repoRoot = (git rev-parse --show-toplevel)
 $sqlSourceDir = Resolve-Path $PSScriptRoot/sql
 
-$permanentResourceName       = "githubatc"
-$permanentResourceGroup       = "atc-permanent"
+$permanentResourceName       = "githubspetlr"
+$permanentResourceGroup       = "spetlr-permanent"
 
 # at some point, the following will be made variable between deployments
-$resourceName                 = "githubatc$uniqueRunId"
+$resourceName                 = "githubspetlr$uniqueRunId"
 $resourceGroupName            = $resourceName
 
 
@@ -37,20 +37,20 @@ $secrets.addSecret("SqlServer--DataPlatformAdminPassword", $sqlServerAdminPasswo
 $ehNamespace                  = $resourceName
 
 # The SPN whose role will be used to access the storage account
-$mountSpnName                 = "AtcMountSpn"
+$mountSpnName                 = "SpetlrMountSpn"
 
 # This SPn will be used to deploy databricks
 # The reason fo using a subsidiary SPN for this is that SPN can pull a databricks
 # token from an API with no human in the loop. So if the identity that runs the
 # deployment is a person, using this SPN allows us to still do this.
-$dbDeploySpnName              = "AtcDbSpn"
+$dbDeploySpnName              = "SpetlrDbSpn"
 
 # The SPN that runs the github pipeline
-$cicdSpnName                  = "AtcGithubPipe"
+$cicdSpnName                  = "SpetlrGithubPipe"
 
 $cosmosName                   = $permanentResourceName
 
-$keyVaultName                 = "atcGithubCiCd"
+$keyVaultName                 = "spetlrGithubCiCd"
 
 # Use eastus because of free azure subscription
 # note, we no longer use a free subscription
@@ -58,7 +58,7 @@ $location                     = "westeurope"
 
 $resourceTags = @{
   Owner='Auto Deployed'
-  System='ATC-NET'
+  System='SPETLR-ORG'
   Service='Data Platform'
   deployedAt="$(Get-Date -Format "o" -AsUTC)"
 }
@@ -72,7 +72,7 @@ $dataLakeContainersJson = ($dataLakeContainers | ConvertTo-Json -Depth 4 -Compre
 
 $eventHubConfig = (,@(
     @{
-      "name"="atceh"
+      "name"="spetlreh"
       "namespace"=$ehNamespace
       "captureLocation" = "silver"
     }

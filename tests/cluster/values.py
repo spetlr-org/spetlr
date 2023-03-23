@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from atc.functions import init_dbutils
+from spetlr.functions import init_dbutils
 
 
 @lru_cache

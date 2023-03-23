@@ -7,8 +7,8 @@ delta tables, two convenience classes, `DeltaHandle` and `DbHandle`, have
 been provided. Use the classes like this
 
 ```python
-from atc import Configurator
-from atc.delta import DeltaHandle, DbHandle
+from spetlr import Configurator
+from spetlr.delta import DeltaHandle, DbHandle
 
 tc = Configurator()
 tc.add_resource_path('/my/config/files')

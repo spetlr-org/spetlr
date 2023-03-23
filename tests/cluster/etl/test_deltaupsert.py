@@ -1,10 +1,10 @@
 from typing import List
 
-from atc_tools.testing import DataframeTestCase
+from spetlr_tools.testing import DataframeTestCase
 
-from atc import Configurator
-from atc.delta import DbHandle, DeltaHandle
-from atc.utils import DataframeCreator
+from spetlr import Configurator
+from spetlr.delta import DbHandle, DeltaHandle
+from spetlr.utils import DataframeCreator
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 

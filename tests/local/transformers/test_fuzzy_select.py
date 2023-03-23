@@ -2,8 +2,8 @@ import unittest
 
 from pyspark.sql import types as t
 
-import atc.spark
-from atc.transformers.fuzzy_select import FuzzySelectTransformer
+import spetlr.spark
+from spetlr.transformers.fuzzy_select import FuzzySelectTransformer
 
 
 class FuzzySelectorTest(unittest.TestCase):
@@ -28,7 +28,7 @@ class FuzzySelectorTest(unittest.TestCase):
         res = dict(zip(in_columns, target_columns))
 
         self.assertRaises(
-            atc.transformers.fuzzy_select.NonUniqueException,
+            spetlr.transformers.fuzzy_select.NonUniqueException,
             FuzzySelectTransformer(target_columns).find_best_mapping,
             in_columns,
         )
@@ -54,7 +54,7 @@ class FuzzySelectorTest(unittest.TestCase):
         )
 
         result = ft.process(
-            atc.spark.Spark.get().createDataFrame(
+            spetlr.spark.Spark.get().createDataFrame(
                 [(1, 2, "foo"), (3, 4, "bar")],
                 t.StructType(
                     [

@@ -24,10 +24,10 @@ Each layer may have a single or multiple implementations, and this is handled au
 ## Orchestration Fluent Interface
 
 This library provides common simple implementations and base classes for implementing the OETL design pattern. 
-To simplify object construction, we provide the **Orchestrator** fluent interface from `atc.etl`
+To simplify object construction, we provide the **Orchestrator** fluent interface from `spetlr.etl`
 
 ```python
-from atc.etl import Extractor, Transformer, Loader, Orchestrator
+from spetlr.etl import Extractor, Transformer, Loader, Orchestrator
 
 (Orchestrator()
     .extract_from(Extractor())

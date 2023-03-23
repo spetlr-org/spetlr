@@ -1,6 +1,6 @@
 # Functions documentation
 
-Functions in atc-dataplatform:
+Functions in spetlr:
 
 * [Drop table cascade](#drop-table-cascade)
 

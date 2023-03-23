@@ -3,8 +3,8 @@ import unittest
 from tempfile import NamedTemporaryFile
 from textwrap import dedent
 
-from atc import Configurator
-from atc.exceptions.cli_exceptions import AtcCliCheckFailed
+from spetlr import Configurator
+from spetlr.exceptions.cli_exceptions import AtcCliCheckFailed
 
 from . import tables1
 
@@ -37,12 +37,12 @@ class TestConfiguratorCli(unittest.TestCase):
             expected = dedent(
                 """\
                 # AUTO GENERATED FILE
-                # contains all atc.Configurator keys
+                # contains all spetlr.Configurator keys
 
                 ID = "ID"
                 MNT = "MNT"
-                MyAlias = "MyAlias"
                 MyFirst = "MyFirst"
+                MyAlias = "MyAlias"
                 MyForked = "MyForked"
                 MyRecursing = "MyRecursing"
                 MySecond = "MySecond"

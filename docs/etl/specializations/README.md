@@ -5,7 +5,7 @@ solve specific generic tasks.
 
 ## Cache Loader
 
-The Cache Loader is provided as `atc.cache.CacheLoader`. The cached loader 
+The Cache Loader is provided as `spetlr.cache.CacheLoader`. The cached loader 
 passes only some rows on to the write operation, and not all. This can give 
 optimizations for cases where the write operation is costly, such as writes 
 to eventhub or cosmos. 
@@ -22,7 +22,7 @@ The cached loader supports the following use-cases:
   - changed wrt. the cache table
 - delete rows that are in the cache table but not in the data.
 
-Use the class `atc.cache.CacheLoaderParameters` to configure all these features.
+Use the class `spetlr.cache.CacheLoaderParameters` to configure all these features.
 See the unittests for a full example for how to use the CachedLoader.
 
 As a user of this base-class, inherit from it and override the methods 
@@ -72,11 +72,11 @@ Any object with a `.read()` method can be passed to the `SimpleExtractor`.
 Any object with a `.overwrite(df)` of a `.append(df)` method can be passed
 to the `SimpleLoader`. See the following example:
 ```python
-from atc.eh import EventHubCapture
-from atc.delta import DeltaHandle
-from atc.etl.loaders import SimpleLoader
-from atc.etl.extractors import SimpleExtractor
-from atc.etl import Orchestrator
+from spetlr.eh import EventHubCapture
+from spetlr.delta import DeltaHandle
+from spetlr.etl.loaders import SimpleLoader
+from spetlr.etl.extractors import SimpleExtractor
+from spetlr.etl import Orchestrator
 
 class MyOrchestrator(Orchestrator):
   def __init__(self):

@@ -5,5 +5,5 @@ black
 isort
 flake8
 dbx
-atc-dataplatform-tools
+spetlr-tools
 timezonefinder==6.0.2

@@ -5,6 +5,6 @@ Requirements:
 - tests shall be in `tests/`
 - databricks connect needs to be set up.
 
-The scripts were cleaned up to contain no reference to atc-dataplatform 
+The scripts were cleaned up to contain no reference to spetlr 
 library names. Please let us know if you needed any major modifications 
 to get this to work.

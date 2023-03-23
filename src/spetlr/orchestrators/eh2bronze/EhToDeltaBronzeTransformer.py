@@ -1,6 +1,6 @@
 import pyspark.sql.functions as f
-from atc_tools.time import dt_utc
 from pyspark.sql import DataFrame
+from spetlrtools.time import dt_utc
 
 from spetlr.etl import Transformer
 from spetlr.tables import TableHandle

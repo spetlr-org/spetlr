@@ -7,7 +7,7 @@ from spetlr.functions import init_dbutils
 
 
 def main():
-    parser = argparse.ArgumentParser(description="atc-dataplatform mountpoint setup.")
+    parser = argparse.ArgumentParser(description="spetlr mountpoint setup.")
     parser.add_argument(
         "path",
         nargs="+",
@@ -16,8 +16,8 @@ def main():
         """Example json contents:
 [
   {
-    "storageAccountName":"atc",
-    "secretScope":"atc",
+    "storageAccountName":"spetlr",
+    "secretScope":"spetlr",
     "clientIdName":"Databricks--ClientId",
     "clientSecretName":"Databricks--ClientSecret",
     "tenantIdName":"Databricks--TenantId",

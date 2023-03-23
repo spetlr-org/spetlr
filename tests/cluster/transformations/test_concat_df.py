@@ -3,7 +3,7 @@ import unittest
 import pyspark.sql.functions as f
 from pyspark.sql.types import StringType, StructField, StructType
 
-import spetlr.transformations as atc_transform
+import spetlr.transformations as spetlr_transform
 from spetlr.spark import Spark
 
 
@@ -15,7 +15,7 @@ class ConcatDfTest(unittest.TestCase):
         cls.df3 = create_df3()
 
     def test_concat_one_df(self):
-        result = atc_transform.concat_dfs([self.df1])
+        result = spetlr_transform.concat_dfs([self.df1])
 
         # Test that the columns are there
         cols = result.columns
@@ -41,7 +41,7 @@ class ConcatDfTest(unittest.TestCase):
         self.assertEqual(1, cols.count("year"))
 
     def test_concat_two_df(self):
-        result = atc_transform.concat_dfs([self.df1, self.df2])
+        result = spetlr_transform.concat_dfs([self.df1, self.df2])
 
         # Test that the columns are there
         cols = result.columns
@@ -79,7 +79,7 @@ class ConcatDfTest(unittest.TestCase):
         self.assertEqual(1, cols.count("size"))
 
     def test_concat_three_df(self):
-        result = atc_transform.concat_dfs([self.df1, self.df2, self.df3])
+        result = spetlr_transform.concat_dfs([self.df1, self.df2, self.df3])
 
         # Test that the columns are there
         cols = result.columns

@@ -6,7 +6,7 @@ from spetlr.eh import EventHubStream
 from spetlr.functions import init_dbutils
 
 
-class AtcEh(EventHubStream):
+class SpetlrEh(EventHubStream):
     def __init__(self):
         super().__init__(
             connection_str=init_dbutils().secrets.get("secrets", "EventHubConnection"),

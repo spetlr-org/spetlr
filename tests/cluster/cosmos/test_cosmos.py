@@ -3,7 +3,7 @@ import unittest
 from azure.cosmos.exceptions import CosmosHttpResponseError
 
 import spetlr.cosmos
-from atc import Configurator
+from spetlr import Configurator
 from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 
@@ -14,7 +14,7 @@ class TestCosmos(spetlr.cosmos.CosmosDb):
         super().__init__(
             endpoint=dbutils.secrets.get("values", "Cosmos--Endpoint"),
             account_key=dbutils.secrets.get("secrets", "Cosmos--AccountKey"),
-            database="AtcCosmosContainer",
+            database="SpetlrCosmosContainer",
             catalog_name=None,
         )
 

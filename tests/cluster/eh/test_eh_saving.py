@@ -16,7 +16,7 @@ from spetlr.orchestrators import EhJsonToDeltaOrchestrator
 from spetlr.spark import Spark
 from tests.cluster.values import resourceName
 
-from .AtcEh import AtcEh
+from .SpetlrEh import SpetlrEh
 
 
 class EventHubsTests(unittest.TestCase):
@@ -25,7 +25,7 @@ class EventHubsTests(unittest.TestCase):
         Configurator().clear_all_configurations()
 
     def test_01_publish(self):
-        eh = AtcEh()
+        eh = SpetlrEh()
 
         df = Spark.get().createDataFrame([(1, "a"), (2, "b")], "id int, name string")
         publisher = EventHubJsonPublisher(eh)
@@ -54,15 +54,15 @@ class EventHubsTests(unittest.TestCase):
     def test_03_read_eh_capture(self):
         tc = Configurator()
         tc.register(
-            "AtcEh",
+            "SpetlrEh",
             {
-                "name": "AtcEh",
+                "name": "SpetlrEh",
                 "path": f"/mnt/{resourceName()}/silver/{resourceName()}/spetlreh",
                 "format": "avro",
                 "partitioning": "ymd",
             },
         )
-        eh = EventHubCapture.from_tc("AtcEh")
+        eh = EventHubCapture.from_tc("SpetlrEh")
         df = eh.read()
 
         df = df.select(f.from_json("body", "id int, name string").alias("body")).select(
@@ -74,14 +74,14 @@ class EventHubsTests(unittest.TestCase):
     def test_04_read_eh_capture_extractor(self):
         tc = Configurator()
         tc.register(
-            "AtcEh",
+            "SpetlrEh",
             {
                 "path": f"/mnt/{resourceName()}/silver/{resourceName()}/spetlreh",
                 "format": "avro",
                 "partitioning": "ymd",
             },
         )
-        eh = EventHubCaptureExtractor.from_tc("AtcEh")
+        eh = EventHubCaptureExtractor.from_tc("SpetlrEh")
         df = eh.read()
         self.assertTrue(df.count(), 2)
 
@@ -127,7 +127,7 @@ class EventHubsTests(unittest.TestCase):
         """
         )
 
-        eh_orch = EhJsonToDeltaOrchestrator.from_tc("AtcEh", "CpTblYMD")
+        eh_orch = EhJsonToDeltaOrchestrator.from_tc("SpetlrEh", "CpTblYMD")
         eh_orch.execute()
 
         df = DeltaHandle.from_tc("CpTblYMD").read().select("id", "name")
@@ -155,7 +155,7 @@ class EventHubsTests(unittest.TestCase):
             def process(self, df: DataFrame) -> DataFrame:
                 return df.filter("id>1")
 
-        eh_orch2 = EhJsonToDeltaOrchestrator.from_tc("AtcEh", "CpTblDate")
+        eh_orch2 = EhJsonToDeltaOrchestrator.from_tc("SpetlrEh", "CpTblDate")
         eh_orch2.filter_with(IdFilter())
         eh_orch2.execute()
 

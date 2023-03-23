@@ -46,7 +46,7 @@ $mountSpnName                 = "SpetlrMountSpn"
 $dbDeploySpnName              = "SpetlrDbSpn"
 
 # The SPN that runs the github pipeline
-$cicdSpnName                  = "SpetlrGithubPipe"
+$cicdSpnName                  = "AtcGithubPipe"
 
 $cosmosName                   = $permanentResourceName
 

@@ -29,12 +29,12 @@ def pre_commit():
     This pre-commit hook runs the black code formatter on all changed files
     that end in ".py"
     """
-    print("atc-dataplatform pre-commit hook")
+    print("spetlr pre-commit hook")
 
     # this command
     # $> git diff --cached --name-only --diff-filter=d
     # results in an output like
-    # src/atc/formatting/git_hooks.py
+    # src/spetlr/formatting/git_hooks.py
     # with one line per Modified or New file, deleted files are excluded
     # we don't want to reformat deleted files, all others should be formatted.
     files_to_check = []

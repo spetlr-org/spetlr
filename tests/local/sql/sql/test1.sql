@@ -22,7 +22,7 @@ LOCATION "/mnt/foo/bar/my_db1/details/";
 ;
 
 
--- ATC.CONFIGURATOR key: MySqlTable
+-- SPETLR.CONFIGURATOR key: MySqlTable
 -- spetlr.Configurator delete_on_delta_schema_mismatch: true
 CREATE TABLE IF NOT EXISTS my_db1.tbl1
 (

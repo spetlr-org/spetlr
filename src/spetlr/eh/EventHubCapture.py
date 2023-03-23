@@ -8,7 +8,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 from pyspark.sql.utils import AnalysisException
 
-from atc import dbg
+from spetlr import dbg
 from spetlr.configurator.configurator import Configurator
 from spetlr.eh.eh_exceptions import SpetlrEhInitException, SpetlrEhLogicException
 from spetlr.eh.PartitionSpec import PartitionSpec

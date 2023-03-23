@@ -1,5 +1,5 @@
 import pyspark.sql.types as T
-from spetlr_tools.testing import DataframeTestCase
+from spetlrtools.testing import DataframeTestCase
 
 from spetlr.configurator import Configurator
 from spetlr.delta import DeltaHandle

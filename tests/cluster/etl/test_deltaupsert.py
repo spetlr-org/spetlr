@@ -1,6 +1,6 @@
 from typing import List
 
-from spetlr_tools.testing import DataframeTestCase
+from spetlrtools.testing import DataframeTestCase
 
 from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle

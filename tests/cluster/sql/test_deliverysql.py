@@ -1,6 +1,6 @@
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
-from spetlr_tools.testing.DataframeTestCase import DataframeTestCase
+from spetlrtools.testing.DataframeTestCase import DataframeTestCase
 
 from spetlr import Configurator
 from spetlr.functions import get_unique_tempview_name

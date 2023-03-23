@@ -1,8 +1,8 @@
 import json
 
 from pyspark.sql.types import BinaryType, StructField, StructType, TimestampType
-from spetlr_tools.testing import DataframeTestCase
-from spetlr_tools.time import dt_utc
+from spetlrtools.testing import DataframeTestCase
+from spetlrtools.time import dt_utc
 
 from spetlr import Configurator
 from spetlr.delta import DeltaHandle

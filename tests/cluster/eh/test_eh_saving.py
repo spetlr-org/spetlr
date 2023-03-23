@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
-from spetlr_tools.time import dt_utc
+from spetlrtools.time import dt_utc
 
 from spetlr import Configurator
 from spetlr.delta import DeltaHandle

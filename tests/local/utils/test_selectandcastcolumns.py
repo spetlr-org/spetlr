@@ -1,8 +1,8 @@
 import unittest
 
 import pyspark.sql.types as T
-from spetlr_tools.testing import DataframeTestCase
-from spetlr_tools.time import dt_utc
+from spetlrtools.testing import DataframeTestCase
+from spetlrtools.time import dt_utc
 
 from spetlr.spark import Spark
 from spetlr.utils import SelectAndCastColumns

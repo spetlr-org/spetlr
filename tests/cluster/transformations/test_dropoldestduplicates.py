@@ -5,8 +5,8 @@ from pyspark.sql.types import (
     StructType,
     TimestampType,
 )
-from spetlr_tools.testing import DataframeTestCase
-from spetlr_tools.time import dt_utc
+from spetlrtools.testing import DataframeTestCase
+from spetlrtools.time import dt_utc
 
 from spetlr.spark import Spark
 from spetlr.transformers.drop_oldest_duplicate_transformer import (

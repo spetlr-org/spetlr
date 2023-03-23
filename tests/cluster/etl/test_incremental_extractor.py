@@ -8,8 +8,8 @@ from pyspark.sql.types import (
     StructType,
     TimestampType,
 )
-from spetlr_tools.testing import DataframeTestCase, TestHandle
-from spetlr_tools.time import dt_utc
+from spetlrtools.testing import DataframeTestCase, TestHandle
+from spetlrtools.time import dt_utc
 
 from spetlr.etl.extractors.incremental_extractor import IncrementalExtractor
 from spetlr.utils import DataframeCreator

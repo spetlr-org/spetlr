@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from spetlr_tools.time import dt_utc
+from spetlrtools.time import dt_utc
 
 from spetlr import Configurator
 from spetlr.delta import DeltaHandle

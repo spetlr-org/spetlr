@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
-from spetlr_tools.testing import DataframeTestCase
+from spetlrtools.testing import DataframeTestCase
 
 from spetlr.etl import Transformer
 from spetlr.etl.loaders import SimpleLoader

@@ -9,9 +9,9 @@ from pyspark.sql.types import (
     StructType,
     TimestampType,
 )
-from spetlr_tools.testing import DataframeTestCase
-from spetlr_tools.testing.TestHandle import TestHandle
-from spetlr_tools.time import dt_utc
+from spetlrtools.testing import DataframeTestCase
+from spetlrtools.testing.TestHandle import TestHandle
+from spetlrtools.time import dt_utc
 
 from spetlr.orchestrators import (
     EhToDeltaBronzeOrchestrator,

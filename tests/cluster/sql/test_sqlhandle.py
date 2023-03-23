@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import create_autospec
 
 from pyspark.sql.types import IntegerType, StructField, StructType
-from spetlr_tools.testing.DataframeTestCase import DataframeTestCase
+from spetlrtools.testing.DataframeTestCase import DataframeTestCase
 
 from spetlr.functions import get_unique_tempview_name
 from spetlr.spark import Spark

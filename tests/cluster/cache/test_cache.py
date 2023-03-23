@@ -2,7 +2,7 @@ import unittest
 
 from pyspark.sql import functions as f
 from pyspark.sql.dataframe import DataFrame
-from spetlr_tools.time import dt_utc
+from spetlrtools.time import dt_utc
 
 from spetlr import Configurator
 from spetlr.cache import CachedLoader, CachedLoaderParameters

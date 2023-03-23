@@ -28,7 +28,7 @@ def generate_keys_file(self, options):
     """
     new_conts = "\n".join(
         ["# AUTO GENERATED FILE", "# contains all spetlr.Configurator keys", ""]
-        + [f"{key} = {repr(key)}" for key in self.all_keys()]
+        + [f"{key} = {repr(key)}" for key in sorted(self.all_keys())]
     )
 
     # if black is installed, use it to format the contents

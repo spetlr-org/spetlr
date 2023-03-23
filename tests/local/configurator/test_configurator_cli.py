@@ -41,8 +41,8 @@ class TestConfiguratorCli(unittest.TestCase):
 
                 ID = "ID"
                 MNT = "MNT"
-                MyFirst = "MyFirst"
                 MyAlias = "MyAlias"
+                MyFirst = "MyFirst"
                 MyForked = "MyForked"
                 MyRecursing = "MyRecursing"
                 MySecond = "MySecond"

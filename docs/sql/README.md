@@ -8,9 +8,10 @@ SQL methods ovrview:
   - [SqlExecutor](#sqlexecutor)
 
 ## SQL Server Class
-Lets say you have a Azure SQL server called *youservername* with an associated database *yourdatabase*. The username is explicitly defined here as *customusername* and the password as *[REDACTED]*. Variables related to security challenges like passwords are recommended to be located in e.g. [databricks secrets](https://docs.databricks.com/security/secrets/index.html). Here is a usage example:
+Let's say you have an Azure SQL server called *youservername* with an associated database *yourdatabase*. The username is explicitly defined here as *customusername* and the password as *[REDACTED]*. Variables related to security challenges like passwords are recommended to be located in e.g. [databricks secrets](https://docs.databricks.com/security/secrets/index.html). Here is a usage example:
  
 ```python
+from atc.sql import SqlServer
 class ExampleSqlServer(SqlServer):
     def __init__(
         self,
@@ -35,7 +36,7 @@ class ExampleSqlServer(SqlServer):
 ```
 ### Using SPN to connect
 
-If you are using a Service Principal to create conection to the server/database, you should set the ```spnid = "yourspnid", spnpassword = "[REDACTED]"``` instead. The SqlServer class ensures to connect properly via the JDBC/ODBC drivers. Note, you must use either SQL user credentials or SPN credentials - never both. 
+If you are using a Service Principal to create connection to the server/database, you should set the ```spnid = "yourspnid", spnpassword = "[REDACTED]"``` instead. The SqlServer class ensures to connect properly via the JDBC/ODBC drivers. Note, you must use either SQL user credentials or SPN credentials - never both. 
 
 ### SQL Upsert
 
@@ -53,9 +54,9 @@ def upsert_to_table_by_name(
     ...
 ```
 
-If 'filter_join_cols' is True, the dataframe will be filteret to not contain Null values in sql merge operation. This can be set to False to save compute if this check is already handled.
+If 'filter_join_cols' is True, the dataframe will be filtered to not contain Null values in sql merge operation. This can be set to `False` to save compute if this check is already handled.
 
-If 'overwrite_if_target_is_empty' is True, the first row of the target table is read and if empty the dataframe is overwritten to the table instead of doing a merge. This can be set to False to save compute if the programmer knows the target never will be empty.
+If 'overwrite_if_target_is_empty' is True, the first row of the target table is read and if empty the dataframe is overwritten to the table instead of doing a merge. This can be set to `False` to save compute if the programmer knows the target never will be empty.
 
 Usage example:
 ``` python
@@ -76,9 +77,9 @@ In the example below the SqlExecutor is inherited, and your sql server is used
 sql-files which can be executed into the *base_module*-variable.  
  
 ```python
-from atc.sql.SqlExecutor import SqlExecutor
 from tests.cluster.sql import extras
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
+from atc.sql import SqlExecutor
 
 class DeliverySqlExecutor(SqlExecutor):
     def __init__(self):
@@ -88,6 +89,8 @@ class DeliverySqlExecutor(SqlExecutor):
 If one need to execute sql queries in Databricks using Spark, there is no need for 
 providing a server. By default, the class uses the atc Spark class. 
 ```python
+from atc.sql import SqlExecutor
+
 class SparkSqlExecutor(SqlExecutor):
     def __init__(self):
         super().__init__(base_module=extras)
@@ -96,6 +99,10 @@ class SparkSqlExecutor(SqlExecutor):
 In the setup job, one could consider to create all delivery SQL tables:
 
 ```python
+from atc.configurator import Configurator
+from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
+from tests.cluster.sql.DeliverySqlExecutor import DeliverySqlExecutor
+
 # In setup.py
 def setup_production_tables():
     Configurator().set_prod()

@@ -9,7 +9,6 @@ from atc.transformers import SelectAndCastColumnsTransformerNC
 
 class TestSelectAndCastColumnsTransformerNC(DataframeTestCase):
     def test_select_transformer(self):
-
         inputSchema = T.StructType(
             [
                 T.StructField("id", T.IntegerType(), True),
@@ -48,7 +47,6 @@ class TestSelectAndCastColumnsTransformerNC(DataframeTestCase):
         self.assertDataframeMatches(transformed_df, None, expectedData)
 
     def test_cast_transformer(self):
-
         inputSchema = T.StructType(
             [
                 T.StructField("id", T.IntegerType(), True),

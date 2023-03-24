@@ -1,10 +1,13 @@
 -- atc.Configurator key: MySparkDb
-CREATE DATABASE IF NOT EXISTS `my_db1{ID}`
+CREATE DATABASE IF NOT EXISTS my_db1{ID}
 COMMENT "Dummy Database 1"
-LOCATION "/tmp/foo/bar/my_db1/";
+LOCATION "/tmp/foo/bar/my_db1/"
+WITH DBPROPERTIES ("property_name"="property_value")
+
+-- COMMAND ----------
 
 -- atc.Configurator key: MyDetailsTable
-CREATE TABLE IF NOT EXISTS `my_db1{ID}.details`
+CREATE TABLE IF NOT EXISTS my_db1{ID}.details
 (
   {MyAlias_schema},
   another int
@@ -22,7 +25,7 @@ LOCATION "/{MNT}/foo/bar/my_db1/details/";
 
 -- ATC.CONFIGURATOR key: MySqlTable
 -- atc.Configurator delete_on_delta_schema_mismatch: true
-CREATE TABLE IF NOT EXISTS `{MySparkDb}.tbl1`
+CREATE TABLE IF NOT EXISTS {MySparkDb}.tbl1
 (
   a int,
   b int,
@@ -37,5 +40,5 @@ CLUSTERED BY ( c,d )
         INTO 5 BUCKETS
 COMMENT "Dummy Database 1 table 1"
 LOCATION "/{MNT}/foo/bar/my_db1/tbl1/"
-TBLPROPERTIES ( key1='val1', key2='val2' )
+TBLPROPERTIES ( key1='val1', key2='val2', my.key.3=true )
 ;

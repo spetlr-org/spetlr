@@ -161,7 +161,6 @@ class DeltaHandle(TableHandle):
         df: DataFrame,
         join_cols: List[str],
     ) -> Union[DataFrame, None]:
-
         if df is None:
             return None
 

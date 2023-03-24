@@ -134,7 +134,6 @@ class CosmosDb(CosmosBaseServer):
     def delete_item(
         self, table_id: str, id: Union[int, str], pk: Union[int, str] = None
     ):
-
         cntr = self.db_client.get_container_client(Configurator().table_name(table_id))
         cntr.delete_item(id, partition_key=pk)
 
@@ -142,7 +141,6 @@ class CosmosDb(CosmosBaseServer):
         self.delete_container_by_name(Configurator().table_name(table_id))
 
     def delete_container_by_name(self, table_name: str):
-
         self.db_client.delete_container(table_name)
 
     def recreate_container_by_name(self, table_name: str):

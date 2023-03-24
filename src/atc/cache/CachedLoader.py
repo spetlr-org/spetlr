@@ -38,7 +38,6 @@ class CachedLoader(Loader):
         p = self.params
         df = Spark.get().table(p.cache_table_name)
         try:
-
             assert set(df.columns) == set(
                 p.key_cols + p.cache_id_cols + [p.rowHash, p.loadedTime, p.deletedTime]
             )
@@ -141,7 +140,6 @@ class CachedLoader(Loader):
         )
 
     def _load_cache(self, cache_to_load: DataFrame) -> None:
-
         view_name = get_unique_tempview_name()
 
         merge_sql_statement = (

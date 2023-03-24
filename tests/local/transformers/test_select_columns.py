@@ -7,7 +7,6 @@ from atc.transformers import SelectColumnsTransformerNC
 
 class TestSelectColumnsTransformer(DataframeTestCase):
     def test_select_columns_transformer(self):
-
         inputSchema = T.StructType(
             [
                 T.StructField("Col1", T.StringType(), True),

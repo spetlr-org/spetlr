@@ -45,7 +45,6 @@ class FuzzySelectorTest(unittest.TestCase):
         )
 
     def test_transform(self):
-
         ft = FuzzySelectTransformer(
             [
                 "Index",

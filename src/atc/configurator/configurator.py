@@ -8,9 +8,8 @@ from typing import Dict, Set, Union
 import yaml
 from deprecated import deprecated
 
+from atc.configurator.sql import _parse_sql_to_config
 from atc.exceptions import NoSuchValueException
-
-from ._parse_sql import _parse_sql_to_config
 
 # recursive type definition of the details object
 TcDetails = Dict[str, Union[str, "TcDetails"]]

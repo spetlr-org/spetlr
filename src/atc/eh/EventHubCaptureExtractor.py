@@ -132,7 +132,6 @@ class EventHubCaptureExtractor:
         # we now take bites out of this slice until the slice is closed.
         # in each iteration we take the biggest bite that we can,
         while fp != tp and fp < self._now_utc():
-
             # consider a year-sized bite
             # does fp represent a lower edge of a year slice:
             if fp.month == 1 and fp.day == 1 and fp.hour == 0:

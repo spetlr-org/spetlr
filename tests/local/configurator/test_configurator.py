@@ -1,9 +1,12 @@
 import unittest
+from textwrap import dedent
 
-from pyspark.sql import types
+from pyspark.sql import types as t
 
 from atc import Configurator
 from atc.schema_manager import SchemaManager
+from atc.schema_manager.spark_schema import get_schema
+from atc.sql import SqlExecutor
 from tests.local.configurator import sql, tables1, tables2, tables3, tables4, tables5
 
 
@@ -77,8 +80,15 @@ class TestConfigurator(unittest.TestCase):
         tc.add_resource_path(tables5)
         self.assertEqual(tc.get("MyPlainLiteral"), "Bar")
         self.assertEqual(tc.get_all_details()["MyCompositeLiteral"], "FooBar")
+        st = SchemaManager().get_schema("MyComposite")
         self.assertEqual(
-            tc.get("MyComposite", "schema"), {"sql": "TODO: support this\n"}
+            st,
+            t.StructType(
+                [
+                    t.StructField("a", t.IntegerType()),
+                    t.StructField("b", t.DecimalType(12, 2)),
+                ]
+            ),
         )
         self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
 
@@ -108,7 +118,9 @@ class TestConfigurator(unittest.TestCase):
         self.assertEqual(c.get("MySqlTable", "path"), "/tmp/foo/bar/my_db1/tbl1/")
 
         self.assertEqual(c.get("MySqlTable", "format"), "delta")
-        self.assertEqual(c.get("MySqlTable", "options"), dict(key1="val1", key2="val2"))
+        self.assertEqual(
+            c.get("MySqlTable", "options"), {"key1": "val1", "key2": "val2"}
+        )
         self.assertEqual(c.get("MySqlTable", "partitioned_by"), ["a", "b"])
         self.assertEqual(
             c.get("MySqlTable", "clustered_by"),
@@ -123,14 +135,37 @@ class TestConfigurator(unittest.TestCase):
         )
         self.assertEqual(c.get("MySqlTable", "comment"), "Dummy Database 1 table 1")
         self.assertEqual(
-            c.get("MySqlTable", "tblproperties"), dict(key1="val1", key2="val2")
+            c.get("MySqlTable", "tblproperties"),
+            {"key1": "val1", "key2": "val2", "my.key.3": "true"},
         )
         self.assertEqual(
             SchemaManager().get_schema("MySqlTable"),
-            types._parse_datatype_string("""a int, b int, c string, d timestamp"""),
+            get_schema("""a int, b int, c string, d timestamp"""),
         )
 
         self.assertEqual(
             SchemaManager().get_schema_as_string("MyDetailsTable"),
             """a int, b int, c string, d timestamp, another int""",
+        )
+
+        c.set_prod()
+        statements = list(SqlExecutor(sql).get_statements("*"))
+        self.assertEqual(len(statements), 3)
+        self.assertEqual(
+            statements[1],
+            dedent(
+                """\
+
+
+                        -- atc.Configurator key: MyDetailsTable
+                        CREATE TABLE IF NOT EXISTS my_db1.details
+                        (
+                          a int, b int, c string, d timestamp,
+                          another int
+                          -- comment with ;
+                        )
+                        USING DELTA
+                        COMMENT "Dummy Database 1 details"
+                        LOCATION "/mnt/foo/bar/my_db1/details/";"""
+            ),
         )

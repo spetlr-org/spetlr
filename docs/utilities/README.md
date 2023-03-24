@@ -15,7 +15,7 @@ for usage documentation.
 
 Under the hood the function uses the job context to get the host and token
 when on the cluster. When using `atc` with databricks-connect, the `databricks-cli` is
-called to configure the client. Thus the function works without further configuration
+called to configure the client. Thus, the function works without further configuration
 in all contexts.
 
 ## Test Utilities
@@ -33,10 +33,10 @@ This class allows the user to specify which columns she wants to give values for
 
 ```python3
 from atc.utils import DataframeCreator
-from pyspark.sql import types
+from atc.schema_manager.schema import get_schema
 
 df = DataframeCreator.make_partial(
-            schema=types._parse_datatype_string("""
+    schema=get_schema("""
                 Id INTEGER,
                 measured DOUBLE,
                 customer STRUCT<
@@ -48,18 +48,18 @@ df = DataframeCreator.make_partial(
                     name:STRING
                 >>
             """),
-            columns=[
-              "Id", 
-              # of the customer structure, only specify the name
-              ("customer", ["name"]),
-              # of the products array of structures, only specify the 'no' field in each row
-              ("product_nos", ["no"])
-            ],
-            data=[
-                (1, ("otto",), [(1,), (2,)]),
-                (2, ("max",), []),
-            ],
-        )
+    columns=[
+        "Id",
+        # of the customer structure, only specify the name
+        ("customer", ["name"]),
+        # of the products array of structures, only specify the 'no' field in each row
+        ("product_nos", ["no"])
+    ],
+    data=[
+        (1, ("otto",), [(1,), (2,)]),
+        (2, ("max",), []),
+    ],
+)
 df.show()
 ```
 Result:

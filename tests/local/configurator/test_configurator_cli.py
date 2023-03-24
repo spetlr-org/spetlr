@@ -41,11 +41,11 @@ class TestConfiguratorCli(unittest.TestCase):
 
                 ID = "ID"
                 MNT = "MNT"
-                MySecond = "MySecond"
-                MyFirst = "MyFirst"
                 MyAlias = "MyAlias"
+                MyFirst = "MyFirst"
                 MyForked = "MyForked"
                 MyRecursing = "MyRecursing"
+                MySecond = "MySecond"
             """
             )
             self.assertEqual(conts, expected)

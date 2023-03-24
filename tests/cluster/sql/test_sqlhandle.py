@@ -13,7 +13,6 @@ from atc.sql.SqlBaseServer import SqlBaseServer
 
 
 class SqlHandleTests(DataframeTestCase):
-
     sql_server_mock = None
     table_handle = None
     test_table_name = get_unique_tempview_name()
@@ -56,7 +55,6 @@ class SqlHandleTests(DataframeTestCase):
         self.assertTrue(True)
 
     def test_04_read(self):
-
         self.sql_server_mock.read_table_by_name.return_value = self.test_df
 
         df_return = self.table_handle.read()
@@ -67,7 +65,6 @@ class SqlHandleTests(DataframeTestCase):
         self.assertEqual(args["table_name"], self.test_table_name)
 
     def test_04_overwrite(self):
-
         self.table_handle.overwrite(df=self.test_df)
 
         self.assertEqual(self.sql_server_mock.write_table_by_name.call_count, 1)
@@ -80,7 +77,6 @@ class SqlHandleTests(DataframeTestCase):
         self.assertFalse(args["append"])
 
     def test_05_append(self):
-
         self.table_handle.append(df=self.test_df)
 
         self.assertEqual(self.sql_server_mock.write_table_by_name.call_count, 1)
@@ -93,7 +89,6 @@ class SqlHandleTests(DataframeTestCase):
         self.assertTrue(args["append"])
 
     def test_06_write_or_append_overwrite(self):
-
         self.table_handle.write_or_append(df=self.test_df, mode="overwrite")
 
         self.assertEqual(self.sql_server_mock.write_table_by_name.call_count, 1)
@@ -106,7 +101,6 @@ class SqlHandleTests(DataframeTestCase):
         self.assertFalse(args["append"])
 
     def test_07_write_or_append_append(self):
-
         self.table_handle.write_or_append(df=self.test_df, mode="append")
 
         self.assertEqual(self.sql_server_mock.write_table_by_name.call_count, 1)
@@ -119,7 +113,6 @@ class SqlHandleTests(DataframeTestCase):
         self.assertTrue(args["append"])
 
     def test_07_upsert(self):
-
         self.table_handle.upsert(df=self.test_df, join_cols=self.test_join_cols)
 
         self.assertEqual(self.sql_server_mock.upsert_to_table_by_name.call_count, 1)
@@ -132,7 +125,6 @@ class SqlHandleTests(DataframeTestCase):
         self.assertEqual(args["join_cols"], self.test_join_cols)
 
     def test_08_truncate(self):
-
         self.table_handle.truncate()
 
         self.assertEqual(self.sql_server_mock.truncate_table_by_name.call_count, 1)
@@ -141,7 +133,6 @@ class SqlHandleTests(DataframeTestCase):
         self.assertEqual(args["table_name"], self.test_table_name)
 
     def test_09_drop(self):
-
         self.table_handle.drop()
 
         self.assertEqual(self.sql_server_mock.drop_table_by_name.call_count, 1)
@@ -150,7 +141,6 @@ class SqlHandleTests(DataframeTestCase):
         self.assertEqual(args["table_name"], self.test_table_name)
 
     def test_10_drop_and_delete(self):
-
         self.table_handle.drop_and_delete()
 
         self.assertEqual(self.sql_server_mock.drop_table_by_name.call_count, 1)

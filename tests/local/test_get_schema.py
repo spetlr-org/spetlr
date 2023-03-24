@@ -3,14 +3,15 @@ from textwrap import dedent
 
 from pyspark.sql import types as t
 
-from atc.sql.schema import get_schema
+from atc.schema_manager.spark_schema import get_schema
 
 
 class TestGetSchema(unittest.TestCase):
     def test_01_schema1(self):
         sql = dedent(
             r"""
-            a int,
+            a int NOT
+            NULL,
             b int COMMENT "really? is that it?",
             c string,
             cplx struct< -- irrelevant comment
@@ -22,15 +23,15 @@ class TestGetSchema(unittest.TestCase):
             d timestamp,
             m map<int,string>,
             p decimal(10,3),
-            final string
-
-        """
+            final string,
+            gen DATE GENERATED ALWAYS AS (CAST(d AS DATE))
+            """
         )
         struct = get_schema(sql)
         self.assertEqual(
             t.StructType(
                 [
-                    t.StructField("a", t.IntegerType(), True),
+                    t.StructField("a", t.IntegerType(), False),
                     t.StructField(
                         "b",
                         t.IntegerType(),
@@ -64,6 +65,7 @@ class TestGetSchema(unittest.TestCase):
                     ),
                     t.StructField("p", t.DecimalType(10, 3), True),
                     t.StructField("final", t.StringType(), True),
+                    t.StructField("gen", t.DateType(), True),
                 ]
             ).json(),
             struct.json(),

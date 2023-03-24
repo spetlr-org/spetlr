@@ -203,9 +203,7 @@ class EventHubCaptureExtractor:
             else:
                 df = df.unionByName(self._add_columns(part_df))
 
-        if df is None:
-            raise Exception("The selected slice returned no data.")
-
+        # Note: return value can be None!
         return df
 
     def read(
@@ -255,7 +253,12 @@ class EventHubCaptureExtractor:
         # and the function above must return some partitions
         assert len(parts_to_load)
 
-        return self._load_union_of_parts(parts_to_load)
+        df = self._load_union_of_parts(parts_to_load)
+        if df is None:
+            schema = Spark.get().read.format("avro").load(self.path).schema
+            df = Spark.get().createDataFrame([], schema)
+
+        return df
 
     def get_partitioning(self):
         return list(self.partitioning)

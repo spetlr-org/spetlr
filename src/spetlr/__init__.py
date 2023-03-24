@@ -1,6 +1,6 @@
 """
-A common set of python libraries for spark etl.
-See https://github.com/spetlr/spetlr for details
+A python SPark ETL libRary (SPETLR) for Databricks.
+See https://github.com/spetlr-org/spetlr for details
 """
 
 from spetlr import etl, functions, spark, sql  # noqa: F401

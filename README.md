@@ -1,5 +1,5 @@
 # spetlr
-A common set of python libraries for Databricks. 
+A python SPark ETL libRary (SPETLR) for Databricks. 
 
 ## Important Notes
 
@@ -39,11 +39,11 @@ please include tests for these features.
 
 
 ### General Project Info
-[![Github top language](https://img.shields.io/github/languages/top/atc-net/atc-dataplatform)](https://github.com/atc-net/atc-dataplatform)
-[![Github stars](https://img.shields.io/github/stars/atc-net/atc-dataplatform)](https://github.com/atc-net/atc-dataplatform)
-[![Github forks](https://img.shields.io/github/forks/atc-net/atc-dataplatform)](https://github.com/atc-net/atc-dataplatform)
-[![Github size](https://img.shields.io/github/repo-size/atc-net/atc-dataplatform)](https://github.com/atc-net/atc-dataplatform)
-[![Issues Open](https://img.shields.io/github/issues/atc-net/atc-dataplatform.svg?logo=github)](https://github.com/atc-net/atc-dataplatform/issues)
+[![Github top language](https://img.shields.io/github/languages/top/spetlr-org/spetlr)](https://github.com/spetlr-org/spetlr)
+[![Github stars](https://img.shields.io/github/stars/spetlr-org/spetlr)](https://github.com/spetlr-org/spetlr)
+[![Github forks](https://img.shields.io/github/forks/spetlr-org/spetlr)](https://github.com/spetlr-org/spetlr)
+[![Github size](https://img.shields.io/github/repo-size/spetlr-org/spetlr)](https://github.com/spetlr-org/spetlr)
+[![Issues Open](https://img.shields.io/github/issues/spetlr-org/spetlr.svg?logo=github)](https://github.com/spetlr-org/spetlr/issues)
 
 ### Packages
 

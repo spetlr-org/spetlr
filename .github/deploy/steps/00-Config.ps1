@@ -11,8 +11,9 @@ if(-not $secrets){
 $repoRoot = (git rev-parse --show-toplevel)
 $sqlSourceDir = Resolve-Path $PSScriptRoot/sql
 
-$permanentResourceName       = "githubspetlr"
-$permanentResourceGroup       = "spetlr-permanent"
+$permanentResourceName       = "githubatc"
+$permanentResourceGroup       = "atc-permanent"
+$keyVaultName                 = "atcGithubCiCd"
 
 # at some point, the following will be made variable between deployments
 $resourceName                 = "githubspetlr$uniqueRunId"
@@ -46,11 +47,11 @@ $mountSpnName                 = "SpetlrMountSpn"
 $dbDeploySpnName              = "SpetlrDbSpn"
 
 # The SPN that runs the github pipeline
-$cicdSpnName                  = "AtcGithubPipe"
+$cicdSpnName                  = "SpetlrGithubPipe"
 
 $cosmosName                   = $permanentResourceName
 
-$keyVaultName                 = "spetlrGithubCiCd"
+
 
 # Use eastus because of free azure subscription
 # note, we no longer use a free subscription

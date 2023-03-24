@@ -1,6 +1,7 @@
+import datetime
+
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
-from spetlrtools.time import dt_utc
 
 from spetlr.etl import Transformer
 from spetlr.tables import TableHandle
@@ -87,7 +88,9 @@ class EhToDeltaBronzeTransformer(Transformer):
         )
 
         # Add streaming time
-        streaming_time = dt_utc().replace(microsecond=0)
+        streaming_time = datetime.datetime.now(datetime.timezone.utc).replace(
+            microsecond=0
+        )
         df = df.withColumn("StreamingTime", f.lit(streaming_time))
 
         # Cast body to string

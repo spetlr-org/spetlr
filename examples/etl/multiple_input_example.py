@@ -2,8 +2,8 @@ import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StringType, StructField, StructType
 
-from atc.etl import Extractor, Loader, Orchestrator, Transformer
-from atc.spark import Spark
+from spetlr.etl import Extractor, Loader, Orchestrator, Transformer
+from spetlr.spark import Spark
 
 
 class AmericanGuitarExtractor(Extractor):

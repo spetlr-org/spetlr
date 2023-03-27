@@ -6,7 +6,7 @@
 
 The architectiure of the integration pipeline is described in the following diagram
 
-![ATC architecture](atc_architecture.drawio.png)
+![SPETLR architecture](spetlr_architecture.drawio.png)
 
 ## Secrets
 You need an Azure Service Principal to run the pipeline in Github.

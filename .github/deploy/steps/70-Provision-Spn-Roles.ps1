@@ -1,4 +1,4 @@
-Write-Host "  Assigning Service Principal as Contributor for Atc"
+Write-Host "  Assigning Service Principal as Contributor for Spetlr"
 
 $output = az role assignment create `
   --role "Storage Blob Data Contributor" `

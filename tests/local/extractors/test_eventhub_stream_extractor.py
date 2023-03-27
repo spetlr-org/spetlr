@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from atc.extractors import (
+from spetlr.extractors import (
     EventhubStreamExtractor,
     InvalidEventhubStreamExtractorParameters,
 )

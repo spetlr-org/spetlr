@@ -1,6 +1,6 @@
 import unittest
 
-from atc.sql import SqlServer
+from spetlr.sql import SqlServer
 
 
 class DeliverySqlServerTests(unittest.TestCase):

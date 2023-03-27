@@ -3,10 +3,10 @@ import unittest
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StringType, StructField, StructType
 
-from atc.functions import get_unique_tempview_name
-from atc.spark import Spark
-from atc.transformations import merge_df_into_target
-from atc.utils import DataframeCreator
+from spetlr.functions import get_unique_tempview_name
+from spetlr.spark import Spark
+from spetlr.transformations import merge_df_into_target
+from spetlr.utils import DataframeCreator
 
 
 class MergeDfIntoTargetTest(unittest.TestCase):

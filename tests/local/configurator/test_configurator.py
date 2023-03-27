@@ -3,10 +3,10 @@ from textwrap import dedent
 
 from pyspark.sql import types as t
 
-from atc import Configurator
-from atc.schema_manager import SchemaManager
-from atc.schema_manager.spark_schema import get_schema
-from atc.sql import SqlExecutor
+from spetlr import Configurator
+from spetlr.schema_manager import SchemaManager
+from spetlr.schema_manager.spark_schema import get_schema
+from spetlr.sql import SqlExecutor
 from tests.local.configurator import sql, tables1, tables2, tables3, tables4, tables5
 
 
@@ -93,8 +93,8 @@ class TestConfigurator(unittest.TestCase):
         self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
 
     def test_08_test_deprecated_import(self):
-        from atc import Configurator
-        from atc.config_master import TableConfigurator
+        from spetlr import Configurator
+        from spetlr.config_master import TableConfigurator
 
         tc = TableConfigurator()
         self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
@@ -157,7 +157,7 @@ class TestConfigurator(unittest.TestCase):
                 """\
 
 
-                        -- atc.Configurator key: MyDetailsTable
+                        -- spetlr.Configurator key: MyDetailsTable
                         CREATE TABLE IF NOT EXISTS my_db1.details
                         (
                           a int, b int, c string, d timestamp,

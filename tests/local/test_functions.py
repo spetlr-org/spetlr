@@ -2,17 +2,17 @@ import unittest
 
 from pyspark.sql.types import StructType
 
-import atc
+import spetlr
 
 
 class TestFunctions(unittest.TestCase):
     def test_spark(self):
-        spark = atc.spark.Spark.master("local[*]").get()
+        spark = spetlr.spark.Spark.master("local[*]").get()
 
         # construct an empty dataframe with three rows
         df = spark.createDataFrame([(), (), ()], StructType())
 
-        df = df.withColumn("uuid", atc.functions.uuid()).cache()
+        df = df.withColumn("uuid", spetlr.functions.uuid()).cache()
         df.show()
 
         value = df.take(1)[0][0]

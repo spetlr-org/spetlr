@@ -1,7 +1,7 @@
 from pyspark.sql import DataFrame
 
-from atc.etl import Extractor, Loader, Orchestrator
-from atc.spark import Spark
+from spetlr.etl import Extractor, Loader, Orchestrator
+from spetlr.spark import Spark
 
 
 class GuitarExtractor(Extractor):

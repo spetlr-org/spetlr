@@ -2,11 +2,11 @@ import unittest
 
 from pyspark.sql import DataFrame
 
-from atc.etl import Orchestrator
-from atc.etl.extractors import SimpleExtractor
-from atc.etl.loaders import SimpleLoader
-from atc.spark import Spark
-from atc.transformers import UnionTransformer
+from spetlr.etl import Orchestrator
+from spetlr.etl.extractors import SimpleExtractor
+from spetlr.etl.loaders import SimpleLoader
+from spetlr.spark import Spark
+from spetlr.transformers import UnionTransformer
 
 
 class MergeDfIntoTargetTest(unittest.TestCase):

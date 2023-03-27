@@ -1,6 +1,6 @@
 import unittest
 
-from atc import Configurator
+from spetlr import Configurator
 from tests.cluster.sql.DeliverySqlExecutor import DeliverySqlExecutor
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 

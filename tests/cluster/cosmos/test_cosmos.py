@@ -2,19 +2,19 @@ import unittest
 
 from azure.cosmos.exceptions import CosmosHttpResponseError
 
-import atc.cosmos
-from atc import Configurator
-from atc.functions import init_dbutils
-from atc.spark import Spark
+import spetlr.cosmos
+from spetlr import Configurator
+from spetlr.functions import init_dbutils
+from spetlr.spark import Spark
 
 
-class TestCosmos(atc.cosmos.CosmosDb):
+class TestCosmos(spetlr.cosmos.CosmosDb):
     def __init__(self):
         dbutils = init_dbutils()
         super().__init__(
             endpoint=dbutils.secrets.get("values", "Cosmos--Endpoint"),
             account_key=dbutils.secrets.get("secrets", "Cosmos--AccountKey"),
-            database="AtcCosmosContainer",
+            database="SpetlrCosmosContainer",
             catalog_name=None,
         )
 

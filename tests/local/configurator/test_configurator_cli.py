@@ -3,8 +3,8 @@ import unittest
 from tempfile import NamedTemporaryFile
 from textwrap import dedent
 
-from atc import Configurator
-from atc.exceptions.cli_exceptions import AtcCliCheckFailed
+from spetlr import Configurator
+from spetlr.exceptions.cli_exceptions import SpetlrCliCheckFailed
 
 from . import tables1
 
@@ -25,7 +25,7 @@ class TestConfiguratorCli(unittest.TestCase):
             name = nf.name
             nf.close()
             sys.argv = ["mycliprog", "generate-keys-file", "-c", "-o", name]
-            with self.assertRaises(AtcCliCheckFailed):
+            with self.assertRaises(SpetlrCliCheckFailed):
                 # file did not exist. exit code 1
                 c.cli()
 
@@ -37,7 +37,7 @@ class TestConfiguratorCli(unittest.TestCase):
             expected = dedent(
                 """\
                 # AUTO GENERATED FILE
-                # contains all atc.Configurator keys
+                # contains all spetlr.Configurator keys
 
                 ID = "ID"
                 MNT = "MNT"
@@ -59,6 +59,6 @@ class TestConfiguratorCli(unittest.TestCase):
                 f.write(expected[:-10])  # bad contents
 
             sys.argv = ["mycliprog", "generate-keys-file", "-c", "-o", name]
-            with self.assertRaises(AtcCliCheckFailed):
+            with self.assertRaises(SpetlrCliCheckFailed):
                 # file had bad contents
                 c.cli()

@@ -1,7 +1,5 @@
 from decimal import Decimal
 
-from atc_tools.testing import DataframeTestCase
-from atc_tools.time import dt_utc
 from pyspark.sql import DataFrame
 from pyspark.sql.types import (
     DecimalType,
@@ -12,13 +10,15 @@ from pyspark.sql.types import (
     StructType,
     TimestampType,
 )
+from spetlrtools.testing import DataframeTestCase
+from spetlrtools.time import dt_utc
 
-from atc import Configurator
-from atc.etl.loaders import SimpleLoader
-from atc.functions import get_unique_tempview_name
-from atc.spark import Spark
-from atc.transformers.simple_sql_transformer import SimpleSqlServerTransformer
-from atc.utils import DataframeCreator
+from spetlr import Configurator
+from spetlr.etl.loaders import SimpleLoader
+from spetlr.functions import get_unique_tempview_name
+from spetlr.spark import Spark
+from spetlr.transformers.simple_sql_transformer import SimpleSqlServerTransformer
+from spetlr.utils import DataframeCreator
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
 

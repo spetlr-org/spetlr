@@ -3,8 +3,8 @@ from datetime import datetime
 
 import pyspark.sql.types as T
 
-from atc.spark import Spark
-from atc.transformations import join_time_series_dataframes
+from spetlr.spark import Spark
+from spetlr.transformations import join_time_series_dataframes
 
 
 class TestFunctions(unittest.TestCase):

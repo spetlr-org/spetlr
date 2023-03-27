@@ -1,4 +1,4 @@
-from atc.schema_manager import SchemaManager
+from spetlr.schema_manager import SchemaManager
 
 from .python_schemas import python_test_schema
 

@@ -1,13 +1,13 @@
 import unittest
 
-from atc_tools.time import dt_utc
 from pyspark.sql import functions as f
 from pyspark.sql.dataframe import DataFrame
+from spetlrtools.time import dt_utc
 
-from atc import Configurator
-from atc.cache import CachedLoader, CachedLoaderParameters
-from atc.delta import DbHandle, DeltaHandle
-from atc.spark import Spark
+from spetlr import Configurator
+from spetlr.cache import CachedLoader, CachedLoaderParameters
+from spetlr.delta import DbHandle, DeltaHandle
+from spetlr.spark import Spark
 
 
 class ChildCacher(CachedLoader):

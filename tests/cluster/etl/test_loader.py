@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from atc.etl import Loader
-from atc.spark import Spark
+from spetlr.etl import Loader
+from spetlr.spark import Spark
 
 
 class LoaderTests(unittest.TestCase):

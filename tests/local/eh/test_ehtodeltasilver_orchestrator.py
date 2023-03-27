@@ -1,18 +1,18 @@
 from unittest.mock import Mock, patch
 
-from atc_tools.testing import DataframeTestCase
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
+from spetlrtools.testing import DataframeTestCase
 
-from atc.etl import Transformer
-from atc.etl.extractors import IncrementalExtractor, SimpleExtractor
-from atc.etl.loaders import SimpleLoader
-from atc.etl.loaders.UpsertLoader import UpsertLoader
-from atc.orchestrators import EhToDeltaSilverOrchestrator
-from atc.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
+from spetlr.etl import Transformer
+from spetlr.etl.extractors import IncrementalExtractor, SimpleExtractor
+from spetlr.etl.loaders import SimpleLoader
+from spetlr.etl.loaders.UpsertLoader import UpsertLoader
+from spetlr.orchestrators import EhToDeltaSilverOrchestrator
+from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
     EhJsonToDeltaTransformer,
 )
-from atc.spark import Spark
+from spetlr.spark import Spark
 
 
 class EhToDeltaSilverOrchestratorTests(DataframeTestCase):

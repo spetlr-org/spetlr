@@ -1,6 +1,6 @@
 [
   {
-    "storageAccountName":"githubatc",
+    "storageAccountName":"githubspetlr",
     "secretScope":"secrets",
     "clientIdName":"Databricks--ClientId",
     "clientSecretName":"Databricks--ClientSecret",

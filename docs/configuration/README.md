@@ -15,7 +15,7 @@ The `Configurator` is a singleton class that you need to instantiate
 and configure once in your project. Make sure this code is always executed
 before any reference to tables in made. Example:
 ```python
-from atc import Configurator
+from spetlr import Configurator
 tc = Configurator()
 tc.register('ENV','myenv')
 tc.add_resource_path(my.resource.module)
@@ -119,7 +119,7 @@ CREATE TABLE [ IF NOT EXISTS ] table_identifier
 The logic in this library expects the information in the above statements to be 
 reproduced in yaml in the following structure:
 ```yaml
-MyAtcDbReference:
+MySpetlrDbReference:
   name: database_name
   comment: database_comment
   path: database_directory
@@ -127,7 +127,7 @@ MyAtcDbReference:
   dbproperties:
     property_name: property_value
 
-MyAtcTableReference:
+MySpetlrTableReference:
   name: table_identifier
   path: path
   format: data_source
@@ -172,15 +172,15 @@ Configurator().add_sql_resource_path(my_sql_folder)
 A sql CREATE statement already contains all information that the configurator needs 
 except the key, aka. table_id, that shall be used to refer to the table.
 This key needs to be added to the sql in the form of a comment with a magic prefix
-`"-- atc.Configurator "` (note the spaces. not case-sensitive.) See the following 
+`"-- spetlr.Configurator "` (note the spaces. not case-sensitive.) See the following 
 example:
 ```sparksql
--- atc.Configurator key: MySparkDb
+-- spetlr.Configurator key: MySparkDb
 CREATE DATABASE IF NOT EXISTS `my_db1{ID}`
 COMMENT "Dummy Database 1"
 LOCATION "/tmp/foo/bar/my_db1/";
 
--- atc.Configurator key: MyDetailsTable
+-- spetlr.Configurator key: MyDetailsTable
 CREATE TABLE IF NOT EXISTS `my_db1{ID}.details`
 (
   {MyAlias_schema},
@@ -192,13 +192,13 @@ COMMENT "Dummy Database 1 details"
 LOCATION "/{MNT}/foo/bar/my_db1/details/";
 
 -- pure configurator magic in this statement
--- atc.Configurator key: MyAlias
--- atc.Configurator alias: MySqlTable
+-- spetlr.Configurator key: MyAlias
+-- spetlr.Configurator alias: MySqlTable
 ;
 
 
--- ATC.CONFIGURATOR key: MySqlTable
--- atc.Configurator delete_on_delta_schema_mismatch: true
+-- SPETLR.CONFIGURATOR key: MySqlTable
+-- spetlr.Configurator delete_on_delta_schema_mismatch: true
 CREATE TABLE IF NOT EXISTS `{MySparkDb}.tbl1`
 (
   a int,
@@ -212,9 +212,9 @@ LOCATION "/{MNT}/foo/bar/my_db1/tbl1/";
 ```
 
 The example is quite complex and demonstrates a number of features:
-- the magic tag "-- ATC.CONFIGURATOR " is case-insensitive. The part after the tag 
+- the magic tag "-- SPETLR.CONFIGURATOR " is case-insensitive. The part after the tag 
   is case-sensitive!
-- the key has to be specified as `-- ATC.CONFIGURATOR key: MyKey`.
+- the key has to be specified as `-- SPETLR.CONFIGURATOR key: MyKey`.
 - any other attribute can be specified after the same magic tag and will be 
   available through the configurator. In fact, all comments with the magic tag will 
   be collected together and will be interpreted as a `yaml` document, so more 
@@ -230,21 +230,21 @@ described in the section on hive-table specification.
 ## Using the Configurator
 
 Once configured, the table configurator is often not used directly.
-Other classes in the atc framework use it when configured with a resource
+Other classes in the spetlr framework use it when configured with a resource
 ID. You can find examples in the eventhub unittests:
 ```python
-from atc.eh import EventHubCapture
-EventHubCapture.from_tc("AtcEh")
+from spetlr.eh import EventHubCapture
+EventHubCapture.from_tc("SpetlrEh")
 ```
 or in the delta handle unit-tests:
 ```python
-from atc.delta import DeltaHandle
+from spetlr.delta import DeltaHandle
 DeltaHandle.from_tc("MyTbl")
 ```
 But sometimes you still need to call the table configurator methods
 e.g. when constructing your own sql:
 ```python
-from atc.config_master import Configurator
+from spetlr.config_master import Configurator
 f"MERGE INTO {Configurator().table_name('MyTbl')} AS target ..."
 ```
 
@@ -266,7 +266,7 @@ MyTable:
 Extra details are now deprecated. Simply register your extras as simple string resources.
 
 ```python
-from atc.config_master import Configurator
+from spetlr.config_master import Configurator
 tc = Configurator()
 tc.register('ENV', 'prod')
 ```
@@ -309,7 +309,7 @@ $> my_config generate-keys-file -o keys.py
 This will create the file `keys.py` with the following example contents:
 ```python
 # AUTO GENERATED FILE.
-# contains all atc.Configurator keys
+# contains all spetlr.Configurator keys
 
 MyFirst = "MyFirst"
 MySecond = "MySecond"

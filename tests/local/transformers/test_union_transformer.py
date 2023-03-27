@@ -1,8 +1,8 @@
 import pyspark.sql.types as T
-from atc_tools.testing import DataframeTestCase
+from spetlrtools.testing import DataframeTestCase
 
-from atc.spark import Spark
-from atc.transformers import UnionTransformer
+from spetlr.spark import Spark
+from spetlr.transformers import UnionTransformer
 
 
 class TestUnionTransformer(DataframeTestCase):

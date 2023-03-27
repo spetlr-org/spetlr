@@ -1,11 +1,11 @@
 import unittest
 
-import atc
+import spetlr
 
 
 class TestSparkImport(unittest.TestCase):
     def test_spark(self):
-        spark = atc.spark.Spark.master("local[*]").get()
+        spark = spetlr.spark.Spark.master("local[*]").get()
         df = spark.sql("select 42")
         self.assertEqual(42, df.collect()[0][0])
 

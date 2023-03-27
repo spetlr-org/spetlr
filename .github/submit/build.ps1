@@ -15,9 +15,9 @@ if (Test-Path -Path build)
 {
     Remove-Item -Force -Recurse build
 } 
-if (Test-Path -Path src\atc_dataplatform.egg-info)
+if (Test-Path -Path src\spetlr.egg-info)
 {
-    Remove-Item -Force -Recurse src\atc_dataplatform.egg-info 
+    Remove-Item -Force -Recurse src\spetlr.egg-info
 }
   
 pyclean -v .

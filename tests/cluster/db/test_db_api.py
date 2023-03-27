@@ -1,6 +1,6 @@
 import unittest
 
-from atc.db_auto import getDbApi
+from spetlr.db_auto import getDbApi
 
 
 class ApiTests(unittest.TestCase):

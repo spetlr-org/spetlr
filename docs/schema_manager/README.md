@@ -1,5 +1,5 @@
 ## The Schema Manager Class
-The Schema Manager class is the intended way to retrieve schemas in atc. It can be desirable to retrieve the schemas of dataframes at various times, for example to ensure that the data has the correct form before being written to a table or to be able to reason on the columns included in incoming data.
+The Schema Manager class is the intended way to retrieve schemas in spetlr. It can be desirable to retrieve the schemas of dataframes at various times, for example to ensure that the data has the correct form before being written to a table or to be able to reason on the columns included in incoming data.
 
 The `SchemaManager` class is a singleton class that can be invoked anywhere to get any schema defined in a dataplatform using offline methods.
 

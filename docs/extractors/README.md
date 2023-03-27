@@ -1,7 +1,7 @@
 # Extractors documentation
-This page documents all the atc extractors, following the OETL pattern. 
+This page documents all the spetlr extractors, following the OETL pattern. 
 
-Extractors in atc-dataplatform:
+Extractors in spetlr:
 
 * [Eventhub stream extractor](#eventhub-stream-extractor)
 * [Incremental extractor](#incremental-extractor)
@@ -13,7 +13,7 @@ This extractor reads data from an Azure eventhub and returns a structural stream
 Under the hood [spark azure eventhub](https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/PySpark/structured-streaming-pyspark.md) is used, and this [maven library](https://mvnrepository.com/artifact/com.microsoft.azure/azure-eventhubs-spark)
 
 ```python
-from atc.etl import Extractor
+from spetlr.etl import Extractor
 
 class EventhubStreamExtractor(Extractor):
     def __init__(self, 
@@ -67,9 +67,9 @@ from pyspark.sql import DataFrame
 from pyspark.sql.types import T
 import pyspark.sql.functions as F
 
-from atc.etl import Transformer, Loader, Orchestrator
-from atc.extractors import EventhubStreamExtractor
-from atc.functions import init_dbutils
+from spetlr.etl import Transformer, Loader, Orchestrator
+from spetlr.extractors import EventhubStreamExtractor
+from spetlr.functions import init_dbutils
 
 class BasicTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
@@ -142,9 +142,9 @@ How to use it:
 ```python
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as f
-from atc.etl.extractors import IncrementalExtractor
-from atc.delta import DeltaHandle
-from atc.etl import Transformer, Loader, Orchestrator
+from spetlr.etl.extractors import IncrementalExtractor
+from spetlr.delta import DeltaHandle
+from spetlr.etl import Transformer, Loader, Orchestrator
 
 class BasicTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:

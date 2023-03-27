@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime as dt
 from datetime import timezone
 
-from atc.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
+from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 
 utc = timezone.utc
 

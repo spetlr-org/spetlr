@@ -1,6 +1,6 @@
 import unittest
 
-from atc.entry_points.task_entry_point import TaskEntryPoint
+from spetlr.entry_points.task_entry_point import TaskEntryPoint
 
 
 class TestModuleHelper(unittest.TestCase):

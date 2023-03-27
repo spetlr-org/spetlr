@@ -1,10 +1,10 @@
-from atc_tools.testing.DataframeTestCase import DataframeTestCase
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+from spetlrtools.testing.DataframeTestCase import DataframeTestCase
 
-from atc import Configurator
-from atc.functions import get_unique_tempview_name
-from atc.utils import DataframeCreator
+from spetlr import Configurator
+from spetlr.functions import get_unique_tempview_name
+from spetlr.utils import DataframeCreator
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
 from . import extras

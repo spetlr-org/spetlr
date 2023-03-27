@@ -1,4 +1,4 @@
--- atc.Configurator key: MySparkDb
+-- spetlr.Configurator key: MySparkDb
 CREATE DATABASE IF NOT EXISTS my_db1
 COMMENT "Dummy Database 1"
 LOCATION "/tmp/foo/bar/my_db1/"
@@ -6,7 +6,7 @@ WITH DBPROPERTIES ("property_name"="property_value")
 
 -- COMMAND ----------
 
--- atc.Configurator key: MyDetailsTable
+-- spetlr.Configurator key: MyDetailsTable
 CREATE TABLE IF NOT EXISTS my_db1.details
 (
   another int
@@ -17,13 +17,13 @@ COMMENT "Dummy Database 1 details"
 LOCATION "/mnt/foo/bar/my_db1/details/";
 
 -- pure configurator magic in this statement
--- atc.Configurator key: MyAlias
--- atc.Configurator alias: MySqlTable
+-- spetlr.Configurator key: MyAlias
+-- spetlr.Configurator alias: MySqlTable
 ;
 
 
--- ATC.CONFIGURATOR key: MySqlTable
--- atc.Configurator delete_on_delta_schema_mismatch: true
+-- SPETLR.CONFIGURATOR key: MySqlTable
+-- spetlr.Configurator delete_on_delta_schema_mismatch: true
 CREATE TABLE IF NOT EXISTS my_db1.tbl1
 (
   a int,

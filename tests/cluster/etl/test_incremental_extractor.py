@@ -1,8 +1,6 @@
 from datetime import timedelta
 from typing import List
 
-from atc_tools.testing import DataframeTestCase, TestHandle
-from atc_tools.time import dt_utc
 from pyspark.sql.types import (
     IntegerType,
     StringType,
@@ -10,9 +8,11 @@ from pyspark.sql.types import (
     StructType,
     TimestampType,
 )
+from spetlrtools.testing import DataframeTestCase, TestHandle
+from spetlrtools.time import dt_utc
 
-from atc.etl.extractors.incremental_extractor import IncrementalExtractor
-from atc.utils import DataframeCreator
+from spetlr.etl.extractors.incremental_extractor import IncrementalExtractor
+from spetlr.utils import DataframeCreator
 
 
 class IncrementalExtractorTests(DataframeTestCase):

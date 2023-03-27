@@ -21,7 +21,7 @@ param (
   [string]
   $testJobDetails= "test_job_details.json",
 
-  # in the atc pipeline we wish to test with multiple versions.
+  # in the pipeline we wish to test with multiple versions.
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
   [string]

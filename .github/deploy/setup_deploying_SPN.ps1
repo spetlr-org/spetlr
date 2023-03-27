@@ -6,7 +6,7 @@
 #az login
 #az account list
 ## find the corect one
-#az account set --subscription $myAtcAzureSubscription
+#az account set --subscription $mySpetlrAzureSubscription
 Write-Host "Check correct subsctiption is selected."
 $account = az account show | ConvertFrom-Json
 Write-Host "Current subscription is $($account.name)"
@@ -19,7 +19,7 @@ if ($account.name -notmatch "ATC"){
 ####################################################################################
 ## Step 2. Create app registration
 Write-Host "Check if app regisration already exists." -ForegroundColor DarkGreen
-$appRegName = "AtcGithubPipe"
+$appRegName = "SpetlrGithubPipe"
 $appId = az ad app list `
   --display-name $appRegName `
   --query [-1].appId `
@@ -28,7 +28,7 @@ $appId = az ad app list `
 if ($null -eq $appId)
 {
   Write-Host "Creating SPN Registration" -ForegroundColor DarkGreen
-  $appId = az ad app create --display-name "AtcGithubPipe" `
+  $appId = az ad app create --display-name $appRegName `
       --query appId `
       --out tsv
 
@@ -54,13 +54,13 @@ az ad app permission admin-consent --id $appId
 
 #####################################################################################
 Write-Host "Adding Owner rights. Needed to deploy resources." -ForegroundColor DarkGreen
-az role assignment create --assignee $appId --role "Owner" --scope $account.id
+az role assignment create --assignee $appId --role "Owner" --subscription $account.id
 
 #######################################################################################
 Write-Host "Adding Microsoft graph permissions." -ForegroundColor DarkGreen
 # this is needed to be able to create other service principals for mounting
 
-$graph = az ad sp list | ConvertFrom-Json | Where-Object {$_.displayName -eq "Microsoft Graph"}
+$graph = az ad sp list --all | ConvertFrom-Json | Where-Object {$_.displayName -eq "Microsoft Graph"}
 
 # get the permission ID that we need:
 
@@ -72,7 +72,7 @@ $graph = az ad sp list | ConvertFrom-Json | Where-Object {$_.displayName -eq "Mi
 $permission_id = "18a4783c-866b-4cc7-a460-3d5e5662c884"
 
 az ad app permission add --id $appId --api $graph.appId --api-permission "$($permission_id)=Role"
-az ad app permission grant --id $appId  --api $graph.appId
+az ad app permission grant --id $appId  --api $graph.appId --scope $account.id
 
 #######################################################################################
 Write-Host "# please add these secrets to your github environment"

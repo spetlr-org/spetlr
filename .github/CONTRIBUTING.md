@@ -1,3 +1,5 @@
-# Before creating a release
+# Version
 
-- Make sure you increment the `__version__`, otherwise the release pipeline will fail.
+- The pipeline will automtically increment the patch version
+- increment the minor version when adding a new feature
+- the major version should only be incremented if and only if features are removed.

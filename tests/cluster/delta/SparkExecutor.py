@@ -1,4 +1,4 @@
-from atc.sql.SqlExecutor import SqlExecutor
+from spetlr.sql.SqlExecutor import SqlExecutor
 from tests.cluster.delta import extras
 
 

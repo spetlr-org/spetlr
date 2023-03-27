@@ -1,1 +1,1 @@
-atc-dataplatform-tools
+spetlr-tools

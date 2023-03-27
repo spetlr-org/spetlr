@@ -17,8 +17,8 @@ $workspaceUrl = az resource show `
   --resource-group $resourceGroupName `
   --name $databricksName `
   --resource-type "Microsoft.Databricks/workspaces" `
-  --query properties.workspaceUrl
-$workspaceUrl = $workspaceUrl.Replace('"','')
+  --query properties.workspaceUrl `
+  --out tsv
 
 Throw-WhenError -output $workspaceUrl
 

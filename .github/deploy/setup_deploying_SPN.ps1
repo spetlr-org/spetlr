@@ -44,7 +44,7 @@ if ($null -eq $appId)
 
 Write-Host "  Generating SPN secret (Client App ID: $appId)" -ForegroundColor DarkYellow
 $clientSecret = az ad app credential reset --id $appId --query password --out tsv
-$SPNobjectId = az ad sp show --id $appId --query objectId --out tsv
+$resourceId = az ad sp show --id $appId --query id --out tsv
 $tenantId = (az account show | ConvertFrom-Json).tenantId
 
 ####################################################################################
@@ -76,6 +76,12 @@ $permission_id = "18a4783c-866b-4cc7-a460-3d5e5662c884"
 
 az ad app permission add --id $appId --api $graph.appId --api-permission "$($permission_id)=Role"
 az ad app permission grant --id $appId  --api $graph.appId --scope $account.id
+
+# Add the Privileged Role Administrator to the spn
+# This allows it to add the sql server to the role of Directory Reader
+$roleId = "e8611ab8-c189-46e8-94e1-60213ab1f814"
+Graph-CreateRole -principalId $resourceId  -roleDefinitionId $roleId
+
 
 #######################################################################################
 Write-Host "# please add these secrets to your github environment"

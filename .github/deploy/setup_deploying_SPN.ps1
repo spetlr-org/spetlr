@@ -44,7 +44,7 @@ if ($null -eq $appId)
 
 Write-Host "  Generating SPN secret (Client App ID: $appId)" -ForegroundColor DarkYellow
 $clientSecret = az ad app credential reset --id $appId --query password --out tsv
-$SPNobjectId = az ad sp show --id $appId --query objectId --out tsv
+$resourceId = az ad sp show --id $appId --query id --out tsv
 $tenantId = (az account show | ConvertFrom-Json).tenantId
 
 ####################################################################################
@@ -54,28 +54,40 @@ az ad app permission admin-consent --id $appId
 
 #####################################################################################
 Write-Host "Adding Owner rights. Needed to deploy resources." -ForegroundColor DarkGreen
-az role assignment create --assignee $appId --role "Owner" --subscription $account.id
+az role assignment create `
+  --assignee $appId `
+  --role "Owner" `
+  --subscription $account.id `
+  --scope "/subscriptions/$($account.id)"
 
 #######################################################################################
 Write-Host "Adding Microsoft graph permissions." -ForegroundColor DarkGreen
 # this is needed to be able to create other service principals for mounting
 
-$graph = az ad sp list --all | ConvertFrom-Json | Where-Object {$_.displayName -eq "Microsoft Graph"}
-
 # get the permission ID that we need:
-
 ## this was a detour that did not quite turn up the needed ID
-#$permissions = (az ad sp show --id $graph.appId | ConvertFrom-Json).oauth2permissions
+#$graph = az ad sp list --all --filter "displayName eq 'Microsoft Graph'" | ConvertFrom-Json
+#$permissions = (az ad sp show --id $graph.appId | ConvertFrom-Json).oauth2PermissionScopes
 #$permission = $permissions | Where-Object {$_.value -eq "Application.ReadWrite.All"}
 
 # This is the id of Application.ReadWrite.OwnedBy
 $permission_id = "18a4783c-866b-4cc7-a460-3d5e5662c884"
+#$permission_id = $permission.id
 
 az ad app permission add --id $appId --api $graph.appId --api-permission "$($permission_id)=Role"
 az ad app permission grant --id $appId  --api $graph.appId --scope $account.id
+
+# Add the Privileged Role Administrator to the spn
+# This allows it to add the sql server to the role of Directory Reader
+$roleId = "e8611ab8-c189-46e8-94e1-60213ab1f814"
+Graph-CreateRole -principalId $resourceId  -roleDefinitionId $roleId
+
 
 #######################################################################################
 Write-Host "# please add these secrets to your github environment"
 Write-Host "`$clientId = '$appId'"
 Write-Host "`$clientSecret = '$clientSecret'"
 Write-Host "`$tenantId = '$tenantId'"
+
+Write-Host "Try logging in:"
+Write-Host "az login --service-principal -u $appId -p $clientSecret --tenant $tenantId"

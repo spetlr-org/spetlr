@@ -81,5 +81,8 @@ class SqlHandle(TableHandle):
     def delete_data(
         self, comparison_col: str, comparison_limit: Any, comparison_operator: str
     ) -> None:
-        sql_str = f"DELETE FROM {self._name} WHERE {comparison_col} {comparison_operator} {comparison_limit};"
+        sql_str = (
+            f"DELETE FROM {self._name}"
+            f"WHERE {comparison_col}{comparison_operator} {comparison_limit};"
+        )
         self._sql_server.execute_sql(sql_str)

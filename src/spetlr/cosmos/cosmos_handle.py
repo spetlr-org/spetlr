@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Any
 
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType
@@ -67,3 +67,8 @@ class CosmosHandle(TableHandle):
 
     def get_tablename(self) -> str:
         return self._name
+
+    def delete_data(
+        self, comparison_col: str, comparison_limit: Any, comparison_operator: str
+    ) -> None:
+        raise NotImplementedError("Method not yet implemented in Cosmos")

@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import List, Union
+from typing import List, Union, Any
 
 from pyspark.sql import DataFrame
 
@@ -30,4 +30,9 @@ class TableHandle(ABC):
         pass
 
     def get_tablename(self) -> str:
+        pass
+
+    def delete_data(
+        self, comparison_col: str, comparison_limit: Any, comparison_operator: str
+    ) -> None:
         pass

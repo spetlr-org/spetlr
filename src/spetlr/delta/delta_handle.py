@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Any
 
 from pyspark.sql import DataFrame
 
@@ -213,3 +213,9 @@ class DeltaHandle(TableHandle):
         print("Incremental Base - incremental load with merge")
 
         return df
+
+    def delete_data(
+        self, comparison_col: str, comparison_limit: Any, comparison_operator: str
+    ) -> None:
+        sql_str = f"DELETE FROM {self._name} WHERE {comparison_col} {comparison_operator} {comparison_limit};"
+        Spark.get().sql(sql_str)

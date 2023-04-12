@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Any
 
 from pyspark.sql import DataFrame
 
@@ -77,3 +77,9 @@ class SqlHandle(TableHandle):
 
     def get_tablename(self) -> str:
         return self._name
+
+    def delete_data(
+        self, comparison_col: str, comparison_limit: Any, comparison_operator: str
+    ) -> None:
+        sql_str = f"DELETE FROM {self._name} WHERE {comparison_col} {comparison_operator} {comparison_limit};"
+        self._sql_server.execute_sql(sql_str)

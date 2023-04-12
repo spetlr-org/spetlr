@@ -217,8 +217,13 @@ class DeltaHandle(TableHandle):
     def delete_data(
         self, comparison_col: str, comparison_limit: Any, comparison_operator: str
     ) -> None:
+        limit = (
+            f"'{comparison_limit}'"
+            if isinstance(comparison_limit, str)
+            else comparison_limit
+        )
         sql_str = (
             f"DELETE FROM {self._name}"
-            f"WHERE {comparison_col} {comparison_operator} {comparison_limit};"
+            f" WHERE {comparison_col} {comparison_operator} {limit};"
         )
         Spark.get().sql(sql_str)

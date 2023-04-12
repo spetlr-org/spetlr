@@ -1,8 +1,9 @@
 from typing import Any, List, Union
 
-from atc.etl import Loader, dataset_group
-from atc.tables import TableHandle
 from pyspark.sql import DataFrame
+
+from spetlr.etl import Loader, dataset_group
+from spetlr.tables import TableHandle
 
 
 class DeleteDataLoader(Loader):
@@ -25,7 +26,7 @@ class DeleteDataLoader(Loader):
         self.save(None)
 
     def save(self, df: DataFrame) -> None:
-        """Delete old data from  a single dataframe to the target table."""
+        """Delete old data from a given table."""
         self.handle.delete_data(
             self.comparison_col, self.comparison_limit, self.comparison_operator
         )

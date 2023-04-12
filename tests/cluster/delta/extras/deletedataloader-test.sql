@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS {DeleteDataLoaderDummy}
 (
     col1 INTEGER,
     col2 FLOAT,
-    col3 TIMESTAMP
-    col4 NVARCHAR(255)
+    col3 STRING,
+    col4 TIMESTAMP
 )
 USING DELTA
 COMMENT "Contains DeleteDataLoader Base test data"

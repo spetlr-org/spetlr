@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from spetlrtools.testing import DataframeTestCase
@@ -5,36 +6,34 @@ from spetlrtools.testing import DataframeTestCase
 from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl.loaders.DeleteDataLoader import DeleteDataLoader
-from spetlr.etl.loaders.simple_loader import SimpleLoader
 from spetlr.utils import DataframeCreator
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
-from datetime import datetime
 
 class UpsertLoaderTests(DataframeTestCase):
     target_id = "DeleteDataLoaderDummy"
 
     input_data = [
-        (43, 43.0, "42", datetime(2023, 04, 14, 0, 0, 0)),
-        (42, 42.0, "42", datetime(2023, 04, 13, 0, 0, 0)),
-        (41, 41.0, "42", datetime(2023, 04, 12, 0, 0, 0)),
-        (40, 40.0, "42", datetime(2023, 04, 11, 0, 0, 0)),
+        (43, 43.0, "42", datetime(2023, 4, 14, 0, 0, 0)),
+        (42, 42.0, "42", datetime(2023, 4, 13, 0, 0, 0)),
+        (41, 41.0, "42", datetime(2023, 4, 12, 0, 0, 0)),
+        (40, 40.0, "42", datetime(2023, 4, 11, 0, 0, 0)),
     ]
 
     data1 = [
-        (43, 43.0, "42", datetime(2023, 04, 14, 0, 0, 0)),
-        (42, 42.0, "42", datetime(2023, 04, 13, 0, 0, 0)),
-        (41, 41.0, "42", datetime(2023, 04, 12, 0, 0, 0)),
+        (43, 43.0, "42", datetime(2023, 4, 14, 0, 0, 0)),
+        (42, 42.0, "42", datetime(2023, 4, 13, 0, 0, 0)),
+        (41, 41.0, "42", datetime(2023, 4, 12, 0, 0, 0)),
     ]
 
     data2 = [
-        (42, 42.0, "42", datetime(2023, 04, 13, 0, 0, 0)),
-        (41, 41.0, "42", datetime(2023, 04, 12, 0, 0, 0)),
+        (42, 42.0, "42", datetime(2023, 4, 13, 0, 0, 0)),
+        (41, 41.0, "42", datetime(2023, 4, 12, 0, 0, 0)),
     ]
 
     data3 = [
-        (42, 42.0, "42", datetime(2023, 04, 13, 0, 0, 0)),
+        (42, 42.0, "42", datetime(2023, 4, 13, 0, 0, 0)),
     ]
 
     data4 = []
@@ -65,7 +64,7 @@ class UpsertLoaderTests(DataframeTestCase):
                 cls.dummy_schema, cls.dummy_columns, cls.data1
             )
         )
-        
+
     @classmethod
     def tearDownClass(cls) -> None:
         DbHandle.from_tc("UpsertLoaderDb").drop_cascade()
@@ -75,7 +74,7 @@ class UpsertLoaderTests(DataframeTestCase):
             handle=self.target_dh_dummy,
             comparison_col="col1",
             comparison_limit=41,
-            comparison_operator="<"    
+            comparison_operator="<",
         )
 
         loader.save(None)
@@ -86,7 +85,7 @@ class UpsertLoaderTests(DataframeTestCase):
             handle=self.target_dh_dummy,
             comparison_col="col2",
             comparison_limit=42.0,
-            comparison_operator=">"    
+            comparison_operator=">",
         )
 
         loader.save(None)
@@ -97,18 +96,18 @@ class UpsertLoaderTests(DataframeTestCase):
             handle=self.target_dh_dummy,
             comparison_col="col3",
             comparison_limit="42",
-            comparison_operator="="    
+            comparison_operator="=",
         )
 
         loader.save(None)
         self.assertDataframeMatches(self.target_dh_dummy.read(), None, self.data3)
 
-    def test_04_can_delete_timestamp(self):
+    def test_4_can_delete_timestamp(self):
         loader = DeleteDataLoader(
             handle=self.target_dh_dummy,
             comparison_col="col4",
-            comparison_limit=datetime(2023, 04, 14, 0, 0, 0),
-            comparison_operator="<"    
+            comparison_limit=datetime(2023, 4, 14, 0, 0, 0),
+            comparison_operator="<",
         )
 
         loader.save(None)

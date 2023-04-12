@@ -1,10 +1,8 @@
-from datetime import datetime
 from typing import Any, List, Union
-
-from pyspark.sql import DataFrame
 
 from atc.etl import Loader, dataset_group
 from atc.tables import TableHandle
+from pyspark.sql import DataFrame
 
 
 class DeleteDataLoader(Loader):
@@ -24,7 +22,7 @@ class DeleteDataLoader(Loader):
         self.comparison_operator = comparison_operator
 
     def save_many(self, datasets: dataset_group) -> None:
-        raise NotImplementedError()
+        self.save(None)
 
     def save(self, df: DataFrame) -> None:
         """Delete old data from  a single dataframe to the target table."""

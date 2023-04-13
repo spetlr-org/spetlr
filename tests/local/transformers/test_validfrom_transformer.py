@@ -1,6 +1,4 @@
 import pyspark.sql.functions as f
-from spetlr_tools.testing import DataframeTestCase
-from spetlr_tools.time import dt_utc
 from pyspark.sql.types import (
     IntegerType,
     StringType,
@@ -8,6 +6,8 @@ from pyspark.sql.types import (
     StructType,
     TimestampType,
 )
+from spetlr_tools.testing import DataframeTestCase
+from spetlr_tools.time import dt_utc
 
 from spetlr.spark import Spark
 from spetlr.transformers.validfrom_transformer import ValidFromToTransformer

@@ -1,33 +1,35 @@
-from abc import ABC
 from typing import List, Union
 
 from pyspark.sql import DataFrame
 
 
-class TableHandle(ABC):
+class TableHandle:
     def read(self) -> DataFrame:
-        pass
+        raise NotImplementedError()
 
     def overwrite(self, df: DataFrame) -> None:
-        pass
+        raise NotImplementedError()
 
     def append(self, df: DataFrame) -> None:
-        pass
+        raise NotImplementedError()
 
     def truncate(self) -> None:
-        pass
+        raise NotImplementedError()
 
     def drop(self) -> None:
-        pass
+        raise NotImplementedError()
 
     def drop_and_delete(self) -> None:
-        pass
+        raise NotImplementedError()
 
     def write_or_append(self, df: DataFrame, mode: str) -> None:
-        pass
+        raise NotImplementedError()
 
     def upsert(self, df: DataFrame, join_cols: List[str]) -> Union[DataFrame, None]:
-        pass
+        raise NotImplementedError()
 
     def get_tablename(self) -> str:
-        pass
+        raise NotImplementedError()
+
+    def read_stream(self):
+        raise NotImplementedError()

@@ -9,9 +9,7 @@ from spetlr.spark import Spark
 from spetlr.tables.TableHandle import TableHandle
 from spetlr.utils.CheckDfMerge import CheckDfMerge
 from spetlr.utils.GetMergeStatement import GetMergeStatement
-
-
-class DeltaHandleException(SpetlrException):
+class DeltaHandleException(AtcException):
     pass
 
 
@@ -24,14 +22,38 @@ class DeltaHandleInvalidFormat(DeltaHandleException):
 
 
 class DeltaHandle(TableHandle):
-    def __init__(self, name: str, location: str = None, data_format: str = "delta"):
+    def __init__(
+        self,
+        name: str,
+        location: str = None,
+        data_format: str = "delta",
+        options_dict: dict = None,
+        ignore_changes: bool = True,
+        stream_start: datetime = None,
+        max_bytes_per_trigger: int = None,
+        # checkpoint_path: str = None,
+    ):
+        """ """
         self._name = name
         self._location = location
         self._data_format = data_format
 
         self._partitioning: Optional[List[str]] = None
-
         self._validate()
+
+        self._options_dict = (
+            {} if options_dict is None or options_dict == "" else options_dict
+        )
+
+        self._options_dict.update({"ignoreChanges": str(ignore_changes)})
+
+        if stream_start and stream_start != "":
+            self._options_dict["startingTimestamp"] = stream_start.strftime(
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
+
+        if max_bytes_per_trigger and max_bytes_per_trigger != "":
+            self._options_dict["maxBytesPerTrigger"] = max_bytes_per_trigger
 
     @classmethod
     def from_tc(cls, id: str) -> "DeltaHandle":
@@ -40,6 +62,10 @@ class DeltaHandle(TableHandle):
             name=tc.table_property(id, "name", ""),
             location=tc.table_property(id, "path", ""),
             data_format=tc.table_property(id, "format", "delta"),
+            options_dict=tc.table_property(id, "options_dict", ""),
+            ignore_changes=tc.table_property(id, "ignore_changes", "True"),
+            stream_start=tc.table_property(id, "stream_start", ""),
+            max_bytes_per_trigger=tc.table_property(id, "max_bytes_per_trigger", ""),
         )
 
     def _validate(self):
@@ -94,8 +120,11 @@ class DeltaHandle(TableHandle):
     def truncate(self) -> None:
         Spark.get().sql(f"TRUNCATE TABLE {self._name};")
 
+        # self.remove_checkpoint()
+
     def drop(self) -> None:
         Spark.get().sql(f"DROP TABLE IF EXISTS {self._name};")
+        # self.remove_checkpoint()
 
     def drop_and_delete(self) -> None:
         self.drop()
@@ -103,6 +132,7 @@ class DeltaHandle(TableHandle):
             init_dbutils().fs.rm(self._location, True)
 
     def create_hive_table(self) -> None:
+        # self.remove_checkpoint()
         sql = f"CREATE TABLE IF NOT EXISTS {self._name} "
         if self._location:
             sql += f" USING DELTA LOCATION '{self._location}'"
@@ -193,7 +223,7 @@ class DeltaHandle(TableHandle):
             return self.write_or_append(df, mode="append")
 
         temp_view_name = get_unique_tempview_name()
-        df.createOrReplaceTempView(temp_view_name)
+        df.createOrReplaceGlobalTempView(temp_view_name)
 
         target_table_name = self.get_tablename()
         non_join_cols = [col for col in df.columns if col not in join_cols]
@@ -201,7 +231,7 @@ class DeltaHandle(TableHandle):
         merge_sql_statement = GetMergeStatement(
             merge_statement_type="delta",
             target_table_name=target_table_name,
-            source_table_name=temp_view_name,
+            source_table_name="global_temp." + temp_view_name,
             join_cols=join_cols,
             insert_cols=df.columns,
             update_cols=non_join_cols,
@@ -213,3 +243,24 @@ class DeltaHandle(TableHandle):
         print("Incremental Base - incremental load with merge")
 
         return df
+
+    def read_stream(self) -> DataFrame:
+        assert (
+            Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4
+        ), f"Streaming not available for Spark version {Spark.version()}"
+
+        reader = (
+            Spark.get()
+            .readStream.format(self._data_format)
+            .options(**self._options_dict)
+        )
+        if self._location:
+            df = reader.load(self._location)
+        else:
+            df = reader.table(self._table_name)
+
+        return df
+
+    # def remove_checkpoint(self):
+    #    if not file_exists(self._checkpoint_path):
+    #        init_dbutils().fs.mkdirs(self._checkpoint_path)

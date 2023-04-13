@@ -8,6 +8,7 @@ from spetlr.etl.loaders.UpsertLoader import UpsertLoader
 from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
     EhJsonToDeltaTransformer,
 )
+from spetlr.exceptions import MissingUpsertJoinColumns
 
 
 class EhToDeltaSilverOrchestrator(Orchestrator):
@@ -64,7 +65,10 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
 
         # final step,
         # by default upsert the rows to the silver delta table.
-        if mode == "upsert":
+        if mode == "upsert" or mode == "append":
+            if mode == "upsert":
+                if upsert_join_cols is None:
+                    raise MissingUpsertJoinColumns
             self._loader = UpsertLoader(dh_target, self.upsert_join_cols)
         else:
             self._loader = SimpleLoader(dh_target, mode=self.mode)

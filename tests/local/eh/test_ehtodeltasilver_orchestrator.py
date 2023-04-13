@@ -41,7 +41,60 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
                     p1.assert_called_once()
                     p2.assert_called_once()
 
-    def test_02_w_transformer(self):
+    def test_02_input_upsert(self):
+        test_df = Spark.get().createDataFrame(
+            [], schema="id string, EnqueuedTimestamp timestamp"
+        )
+        dh_source_mock = Mock()
+        dh_source_mock.read = Mock(return_value=test_df)
+        dh_target_mock = Mock()
+        dh_target_mock.read = Mock(return_value=test_df)
+
+        with patch.object(IncrementalExtractor, "read", return_value=test_df) as p0:
+            with patch.object(
+                EhJsonToDeltaTransformer, "process", return_value=test_df
+            ) as p1:
+                with patch.object(UpsertLoader, "save", return_value=test_df) as p2:
+                    orchestrator = EhToDeltaSilverOrchestrator(
+                        dh_source=dh_source_mock,
+                        dh_target=dh_target_mock,
+                        mode="upsert",
+                        upsert_join_cols=["id"],
+                    )
+                    orchestrator.execute()
+
+                    p0.assert_called_once()
+                    p1.assert_called_once()
+                    p2.assert_called_once()
+
+    def test_03_upsert_missing_upsert_cols(self):
+        test_df = Spark.get().createDataFrame(
+            [], schema="id string, EnqueuedTimestamp timestamp"
+        )
+        dh_source_mock = Mock()
+        dh_source_mock.read = Mock(return_value=test_df)
+        dh_target_mock = Mock()
+        dh_target_mock.read = Mock(return_value=test_df)
+
+        with patch.object(IncrementalExtractor, "read", return_value=test_df) as p0:
+            with patch.object(
+                EhJsonToDeltaTransformer, "process", return_value=test_df
+            ) as p1:
+                with patch.object(UpsertLoader, "save", return_value=test_df) as p2:
+                    with self.assertRaises(MissingUpsertJoinColumns) as cm:
+                        orchestrator = EhToDeltaSilverOrchestrator(
+                            dh_source=dh_source_mock,
+                            dh_target=dh_target_mock,
+                            mode="upsert",
+                        )
+                        orchestrator.execute()
+
+                        p0.assert_called_once()
+                        p1.assert_called_once()
+                        p2.assert_called_once()
+                        cm.exception = "You must specify upsert_join_cols"
+
+    def test_04_w_transformer(self):
         test_df = Spark.get().createDataFrame(
             [], schema="id string, EnqueuedTimestamp timestamp"
         )
@@ -75,7 +128,32 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
                 dh_target_mock.upsert.assert_called_once()
                 p3.assert_called_once()
 
-    def test_03_append(self):
+    def test_05_append(self):
+        test_df = Spark.get().createDataFrame(
+            [], schema="id string, EnqueuedTimestamp timestamp"
+        )
+        dh_source_mock = Mock()
+        dh_source_mock.read = Mock(return_value=test_df)
+        dh_target_mock = Mock()
+        dh_target_mock.read = Mock(return_value=test_df)
+
+        with patch.object(IncrementalExtractor, "read", return_value=test_df) as p0:
+            with patch.object(
+                EhJsonToDeltaTransformer, "process", return_value=test_df
+            ) as p1:
+                with patch.object(SimpleLoader, "save", return_value=test_df) as p2:
+                    orchestrator = EhToDeltaSilverOrchestrator(
+                        dh_source=dh_source_mock,
+                        dh_target=dh_target_mock,
+                        mode="append",
+                    )
+                    orchestrator.execute()
+
+                    p0.assert_called_once()
+                    p1.assert_called_once()
+                    p2.assert_called_once()
+
+    def test_06_overwrite(self):
         test_df = Spark.get().createDataFrame(
             [], schema="id string, EnqueuedTimestamp timestamp"
         )
@@ -92,7 +170,7 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
                     orchestrator = EhToDeltaSilverOrchestrator(
                         dh_source=dh_source_mock,
                         dh_target=dh_target_mock,
-                        mode="append",
+                        mode="overwrite",
                     )
                     orchestrator.execute()
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional, Union
 
 from pyspark.sql import DataFrame
@@ -9,7 +10,9 @@ from spetlr.spark import Spark
 from spetlr.tables.TableHandle import TableHandle
 from spetlr.utils.CheckDfMerge import CheckDfMerge
 from spetlr.utils.GetMergeStatement import GetMergeStatement
-class DeltaHandleException(AtcException):
+
+
+class DeltaHandleException(SpetlrException):
     pass
 
 

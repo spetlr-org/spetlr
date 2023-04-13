@@ -5,10 +5,10 @@ from spetlr.etl import EtlBase, Orchestrator
 from spetlr.etl.extractors import IncrementalExtractor, SimpleExtractor
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.UpsertLoader import UpsertLoader
+from spetlr.exceptions import MissingUpsertJoinColumns
 from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
     EhJsonToDeltaTransformer,
 )
-from spetlr.exceptions import MissingUpsertJoinColumns
 
 
 class EhToDeltaSilverOrchestrator(Orchestrator):

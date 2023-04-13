@@ -8,6 +8,7 @@ from spetlr.etl import Transformer
 from spetlr.etl.extractors import IncrementalExtractor, SimpleExtractor
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.UpsertLoader import UpsertLoader
+from spetlr.exceptions import MissingUpsertJoinColumns
 from spetlr.orchestrators import EhToDeltaSilverOrchestrator
 from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
     EhJsonToDeltaTransformer,

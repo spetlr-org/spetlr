@@ -24,3 +24,20 @@ UpsertLoaderDb:
 UpsertLoaderDummy:
   name: "{UpsertLoaderDb}.Dummy"
   path: "{UpsertLoaderDb_path}/dummy"
+  format: "delta"
+  checkpoint_path: /tmp/checkpoints/_upsertcheckpoints
+  await_termination: True
+
+UpsertLoaderStreamingSource:
+  name: "{UpsertLoaderDb}.StreamingSource"
+  path: "{UpsertLoaderDb_path}/StreamingSource"
+  format: "delta"
+  checkpoint_path: "{UpsertLoaderDb_path}/_checkpoints"
+  await_termination: True
+
+UpsertLoaderStreamingTarget:
+  name: "{UpsertLoaderDb}.StreamingTarget"
+  path: "{UpsertLoaderDb_path}/StreamingTarget"
+  format: "delta"
+  checkpoint_path: "{UpsertLoaderDb_path}/_checkpoints"
+  await_termination: True

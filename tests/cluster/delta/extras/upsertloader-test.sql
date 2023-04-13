@@ -9,5 +9,26 @@ CREATE TABLE IF NOT EXISTS {UpsertLoaderDummy}
     col3 STRING
 )
 USING DELTA
-COMMENT "Contains Incremental Base test data"
-LOCATION "{UpsertLoaderDummy_path}"
+COMMENT "Contains UpsertLoader test data"
+LOCATION "{UpsertLoaderDummy_path}";
+
+CREATE TABLE IF NOT EXISTS {UpsertLoaderStreamingSource}
+(
+    col1 INTEGER,
+    col2 INTEGER,
+    col3 STRING
+)
+USING DELTA
+COMMENT "Contains streaming UpsertLoader test data"
+LOCATION "{UpsertLoaderStreamingSource_path}";
+
+
+CREATE TABLE IF NOT EXISTS {UpsertLoaderStreamingTarget}
+(
+    col1 INTEGER,
+    col2 INTEGER,
+    col3 STRING
+)
+USING DELTA
+COMMENT "Contains streaming UpsertLoader test data"
+LOCATION "{UpsertLoaderStreamingTarget_path}";

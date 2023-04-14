@@ -1,4 +1,4 @@
-from atc.spark import Spark
+from spetlr.spark import Spark
 
 
 def stop_all_streams():

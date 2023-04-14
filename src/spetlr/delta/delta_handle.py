@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from typing import Any, List, Optional, Union
 
 from pyspark.sql import DataFrame
@@ -217,11 +218,12 @@ class DeltaHandle(TableHandle):
     def delete_data(
         self, comparison_col: str, comparison_limit: Any, comparison_operator: str
     ) -> None:
-        limit = (
-            f"'{comparison_limit}'"
-            if isinstance(comparison_limit, str)
-            else comparison_limit
+        needs_quotes = (
+            isinstance(comparison_limit, str)
+            or isinstance(comparison_limit, date)
+            or isinstance(comparison_limit, datetime)
         )
+        limit = f"'{comparison_limit}'" if needs_quotes else comparison_limit
         sql_str = (
             f"DELETE FROM {self._name}"
             f" WHERE {comparison_col} {comparison_operator} {limit};"

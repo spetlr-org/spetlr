@@ -120,7 +120,7 @@ class DeleteDataLoaderDeltaTests(DataframeTestCase):
         loader = DeleteDataLoader(
             handle=self.target_dh_dummy,
             comparison_col="col4",
-            comparison_limit=f"{datetime(2023,4,13,0,0,0)}",
+            comparison_limit=datetime(2023,4,13,0,0,0),
             comparison_operator="<",
         )
 

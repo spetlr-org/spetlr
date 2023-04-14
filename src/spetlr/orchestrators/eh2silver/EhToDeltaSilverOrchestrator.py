@@ -42,8 +42,10 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
 
         # step 1
         # Extracts the data from the bronze layer
-        if mode == "upsert":
-            assert upsert_join_cols is not None, "You must specify upsert_join_cols"
+        if mode == "upsert" or mode == "append":
+            if mode == "upsert":
+                if upsert_join_cols is None:
+                    raise MissingUpsertJoinColumns
             self.extract_from(
                 IncrementalExtractor(
                     handle_source=self.dh_source,
@@ -65,10 +67,7 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
 
         # final step,
         # by default upsert the rows to the silver delta table.
-        if mode == "upsert" or mode == "append":
-            if mode == "upsert":
-                if upsert_join_cols is None:
-                    raise MissingUpsertJoinColumns
+        if mode == "upsert":
             self._loader = UpsertLoader(dh_target, self.upsert_join_cols)
         else:
             self._loader = SimpleLoader(dh_target, mode=self.mode)

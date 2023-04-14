@@ -1,0 +1,28 @@
+
+# This pipeline can be runned if the SPNs needs to be destroyed
+# In this way, it is easier to clean up the SPNs, instead of manually removing them in the portal
+name: Spn-Cleanup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: azure-integration
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Log in to azure
+        shell: pwsh
+        run: |
+          az login --service-principal `
+            -u ${{ secrets.SPN_CLIENT_ID }} `
+            -p ${{ secrets.SPN_CLIENT_SECRET }} `
+            --tenant ${{ secrets.SPN_TENANT_ID }}
+      - name: Delete Deployment
+        shell: pwsh
+        run: |
+          .github/deploy/destroy-spns.ps1

@@ -116,11 +116,11 @@ class DeleteDataLoaderDeltaTests(DataframeTestCase):
         loader.save(None)
         self.assertDataframeMatches(self.target_dh_dummy.read(), None, self.data3)
 
-    def test_4_can_delete_timestamp(self):
+    def test_04_can_delete_timestamp(self):
         loader = DeleteDataLoader(
             handle=self.target_dh_dummy,
             comparison_col="col4",
-            comparison_limit=datetime(2023,4,13,0,0,0),
+            comparison_limit=datetime(2023, 4, 13, 0, 0, 0),
             comparison_operator="<",
         )
 

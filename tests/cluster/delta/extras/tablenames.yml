@@ -24,3 +24,11 @@ UpsertLoaderDb:
 UpsertLoaderDummy:
   name: "{UpsertLoaderDb}.Dummy"
   path: "{UpsertLoaderDb_path}/dummy"
+
+DeleteDataLoaderDb:
+  name: DeleteDataLoader{ID}
+  path: "/tmp/DeleteDataLoader{ID}.db/"
+
+DeleteDataLoaderDummy:
+  name: "{DeleteDataLoaderDb}.Dummy"
+  path: "{DeleteDataLoaderDb_path}/dummy"

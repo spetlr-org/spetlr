@@ -1,4 +1,5 @@
-from typing import List, Optional, Union
+from datetime import date, datetime
+from typing import Any, List, Optional, Union
 
 from pyspark.sql import DataFrame
 
@@ -213,3 +214,18 @@ class DeltaHandle(TableHandle):
         print("Incremental Base - incremental load with merge")
 
         return df
+
+    def delete_data(
+        self, comparison_col: str, comparison_limit: Any, comparison_operator: str
+    ) -> None:
+        needs_quotes = (
+            isinstance(comparison_limit, str)
+            or isinstance(comparison_limit, date)
+            or isinstance(comparison_limit, datetime)
+        )
+        limit = f"'{comparison_limit}'" if needs_quotes else comparison_limit
+        sql_str = (
+            f"DELETE FROM {self._name}"
+            f" WHERE {comparison_col} {comparison_operator} {limit};"
+        )
+        Spark.get().sql(sql_str)

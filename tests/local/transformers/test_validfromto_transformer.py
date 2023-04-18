@@ -10,7 +10,7 @@ from spetlrtools.testing import DataframeTestCase
 from spetlrtools.time import dt_utc
 
 from spetlr.spark import Spark
-from spetlr.transformers.validfrom_transformer import ValidFromToTransformer
+from spetlr.transformers.validfromto_transformer import ValidFromToTransformer
 
 
 class ValidFromToTransformerTest(DataframeTestCase):

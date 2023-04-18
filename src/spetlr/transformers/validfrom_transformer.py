@@ -14,7 +14,7 @@ class ValidFromToTransformer(Transformer):
         ValidFrom
         ValidTo
         IsCurrent
-    NB: Be aware, if incremental extraction is used, the logic does not work properly
+    NB: Be aware, if incremental extraction is used, the logic does not work
     """
 
     def __init__(self, time_col: str, wnd_cols: List[str]):
@@ -40,8 +40,8 @@ class ValidFromToTransformer(Transformer):
         # When .collect() the data, the pyspark/sql/types.py
         # find it as an "Invalid argument"
 
-        # Therefore, this class uses the maz time from pandas
-        # as it seems to allign with pyspark
+        # Therefore, this class uses the max time from pandas
+        # as it seems to align with pyspark
         # https://pandas.pydata.org/docs/reference/api/pandas.Timestamp.max.html
 
         max_time = datetime(2262, 4, 11, tzinfo=timezone.utc)

@@ -12,6 +12,7 @@ Transformations in spetlr:
   - [DropOldestDuplicates](#dropoldestduplicates)
   - [TimeZoneTransformer](#timezonetransformer)
   - [SelectAndCastColumnsTransformer](#selectandcastcolumnstransformer)
+  - [ValidFromToTransformer](#validfromtotransformer)
 
 ## Concatenate data frames
 
@@ -322,4 +323,63 @@ df.show()
 |       "1" |     True |
 |       "2" |    False |
 +-----------+----------+
+```
+
+## ValidFromToTransformer
+
+This transformer introduces Slowly Changing Dimension 2 (SCD2) columns to a dataframe. The three introduced SCD2 columns are: *ValidFrom*, *ValidTo* and *IsCurrent*. The logic build the SCD2 history based on a time formatted column (the parameter *time_col*). One can easily extract only active (current) data by applying *.filter("iscurrent=1")* on the dataframe. 
+
+**Disclaimer:** Use only on "full loading" / overwrite.
+
+Usage example:
+
+
+``` python 
+from spetlr.transformers.ValidFromToTransformer import ValidFromToTransformer
+data =
+
+| id| model|     brand|amount|         timecolumn|
++---+------+----------+------+-------------------+
+|  1|Fender|Telecaster|     5|2021-07-01 10:00:00|
+|  1|Fender|Telecaster|     5|2021-07-01 10:00:00|
+|  1|Fender|Telecaster|     4|2021-07-01 11:00:00|
+|  2|Gibson|  Les Paul|    27|2021-07-01 11:00:00|
+|  3|Ibanez|        RG|    22|2021-08-01 11:00:00|
+|  3|Ibanez|        RG|    26|2021-09-01 11:00:00|
+|  3|Ibanez|        RG|    18|2021-10-01 11:00:00|
++---+------+----------+------+-------------------+
+
+
+df = ValidFromToTransformer(
+            time_col="timecolumn",
+            wnd_cols=["id", "model", "brand"]
+            )
+            .process(data)
+            .drop("timecolumn")
+            .orderBy(f.col("ValidFrom").asc(), f.col("ValidTo").asc())
+
+df.show()
+
+| id| model|     brand|amount|          validfrom|            validto|iscurrent|
++---+------+----------+------+-------------------+-------------------+---------+
+|  1|Fender|Telecaster|     5|2021-07-01 10:00:00|2021-07-01 11:00:00|    false|
+|  1|Fender|Telecaster|     4|2021-07-01 11:00:00|2262-04-11 00:00:00|     true|
+|  2|Gibson|  Les Paul|    27|2021-07-01 11:00:00|2262-04-11 00:00:00|     true|
+|  3|Ibanez|        RG|    22|2021-08-01 11:00:00|2021-09-01 11:00:00|    false|
+|  3|Ibanez|        RG|    26|2021-09-01 11:00:00|2021-10-01 11:00:00|    false|
+|  3|Ibanez|        RG|    18|2021-10-01 11:00:00|2262-04-11 00:00:00|     true|
++---+------+----------+------+-------------------+-------------------+---------+
+
+
+# Select only the active (current) rows in the dataframe
+
+df.filter("iscurrent=1").show()
+
+ +---+------+----------+------+-------------------+-------------------+---------+
+| id| model|     brand|amount|          validfrom|            validto|iscurrent|
++---+------+----------+------+-------------------+-------------------+---------+
+|  1|Fender|Telecaster|     4|2021-07-01 11:00:00|2262-04-11 00:00:00|     true|
+|  2|Gibson|  Les Paul|    27|2021-07-01 11:00:00|2262-04-11 00:00:00|     true|
+|  3|Ibanez|        RG|    18|2021-10-01 11:00:00|2262-04-11 00:00:00|     true|
++---+------+----------+------+-------------------+-------------------+---------+
 ```

@@ -13,3 +13,21 @@ class EtlBase:
     @abstractmethod
     def etl(self, inputs: dataset_group) -> dataset_group:
         raise NotImplementedError()
+
+
+class MLBase:
+    def __init__(self):
+        super().__init__()
+
+    @abstractmethod
+    def pipe(self, input_pipe: Pipeline) -> Pipeline:
+        raise NotImplementedError()
+
+
+class MLModelBase:
+    def __init__(self):
+        super().__init__()
+
+    @abstractmethod
+    def pipe(self, input: DataFrame, input_pipe: Pipeline) -> Pipeline:
+        raise NotImplementedError()

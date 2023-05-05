@@ -20,6 +20,7 @@ class SqlServerStreamingTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         DbHandle.from_tc("MyDb").drop_cascade()
+        DeliverySqlServer().drop_table_by_name(Configurator().table_name("MSSQL"))
         stop_all_streams()
 
     def test_01_configure(self):

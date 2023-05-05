@@ -85,8 +85,6 @@ class StreamLoader(Loader):
         # "continuous" is not available when using foreachBatch()
         valid_trigger_types = {"availablenow", "once", "processingtime"}
 
-        NotAValidStreamTriggerType()
-
         if self._trigger_type not in valid_trigger_types:
             raise NotAValidStreamTriggerType()
 

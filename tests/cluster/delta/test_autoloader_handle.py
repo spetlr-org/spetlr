@@ -54,7 +54,7 @@ class AutoloaderTests(unittest.TestCase):
     def test_01_configure(self):
         tc = Configurator()
         tc.register(
-            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/atc/silver/testdb{ID}"}
+            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/spetlr/silver/testdb{ID}"}
         )
         # add avro source
         tc.register(
@@ -70,7 +70,7 @@ class AutoloaderTests(unittest.TestCase):
 
         # Add sink table
         self.sink_checkpoint_path = (
-            "/mnt/atc/silver/testdb{ID}/_checkpoint_path_avrosink"
+            "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_avrosink"
         )
 
         # add eventhub sink

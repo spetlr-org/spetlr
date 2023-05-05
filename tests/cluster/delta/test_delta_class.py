@@ -20,14 +20,14 @@ class DeltaTests(unittest.TestCase):
     def test_01_configure(self):
         tc = Configurator()
         tc.register(
-            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/atc/silver/testdb{ID}"}
+            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/spetlr/silver/testdb{ID}"}
         )
 
         tc.register(
             "MyTbl",
             {
                 "name": "TestDb{ID}.TestTbl",
-                "path": "/mnt/atc/silver/testdb{ID}/testtbl",
+                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl",
             },
         )
 
@@ -41,7 +41,7 @@ class DeltaTests(unittest.TestCase):
         tc.register(
             "MyTbl3",
             {
-                "path": "/mnt/atc/silver/testdb{ID}/testtbl3",
+                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl3",
             },
         )
 

@@ -31,25 +31,25 @@ class DeltaStreamTests(unittest.TestCase):
     def test_01_configure(self):
         tc = Configurator()
         tc.register(
-            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/atc/silver/testdb{ID}"}
+            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/spetlr/silver/testdb{ID}"}
         )
 
         tc.register(
             "MyTbl",
             {
                 "name": "TestDb{ID}.TestTbl",
-                "path": "/mnt/atc/silver/testdb{ID}/testtbl",
+                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl",
                 "format": "delta",
-                "checkpoint_path": "/mnt/atc/silver/testdb{ID}/_checkpoint_path_tbl",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl",
             },
         )
 
-        mirror_cp_path = "/mnt/atc/silver/testdb{ID}/_checkpoint_path_tblmirror"
+        mirror_cp_path = "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tblmirror"
         tc.register(
             "MyTblMirror",
             {
                 "name": "TestDb{ID}.TestTblMirror",
-                "path": "/mnt/atc/silver/testdb{ID}/testtblmirror",
+                "path": "/mnt/spetlr/silver/testdb{ID}/testtblmirror",
                 "format": "delta",
                 "checkpoint_path": mirror_cp_path,
                 "await_termination": True,
@@ -61,16 +61,16 @@ class DeltaStreamTests(unittest.TestCase):
             {
                 "name": "TestDb{ID}.TestTbl2",
                 "format": "delta",
-                "checkpoint_path": "/mnt/atc/silver/testdb{ID}/_checkpoint_path_tbl2",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl2",
             },
         )
 
         tc.register(
             "MyTbl3",
             {
-                "path": "/mnt/atc/silver/testdb{ID}/testtbl3",
+                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl3",
                 "format": "delta",
-                "checkpoint_path": "/mnt/atc/silver/testdb{ID}/_checkpoint_path_tbl3",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl3",
                 "await_termination": True,
             },
         )
@@ -79,9 +79,9 @@ class DeltaStreamTests(unittest.TestCase):
             "MyTbl4",
             {
                 "name": "TestDb{ID}.TestTbl4",
-                "path": "/mnt/atc/silver/testdb{ID}/testtbl4",
+                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl4",
                 "format": "delta",
-                "checkpoint_path": "/mnt/atc/silver/testdb{ID}/_checkpoint_path_tbl4",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl4",
             },
         )
 
@@ -89,9 +89,9 @@ class DeltaStreamTests(unittest.TestCase):
             "MyTbl5",
             {
                 "name": "TestDb{ID}.TestTbl5",
-                "path": "/mnt/atc/silver/testdb{ID}/testtbl5",
+                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl5",
                 "format": "delta",
-                "checkpoint_path": "/mnt/atc/silver/testdb{ID}/_checkpoint_path_tbl5",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl5",
             },
         )
 

@@ -51,7 +51,7 @@ class IncrementalExtractor(Extractor):
         )
 
         # If overlap_period is defined extract it from target_max_time
-        if self._overlap_period:
+        if self._overlap_period and target_max_time is not None:
             target_max_time = target_max_time - self._overlap_period
 
         # If the target table is empty, target_max_time will be None

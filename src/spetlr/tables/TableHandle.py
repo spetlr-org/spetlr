@@ -1,4 +1,6 @@
 from typing import List, Union
+from abc import ABC
+from typing import Any, List, Union
 
 from pyspark.sql import DataFrame
 
@@ -33,3 +35,9 @@ class TableHandle:
 
     def read_stream(self):
         raise NotImplementedError()
+        pass
+
+    def delete_data(
+        self, comparison_col: str, comparison_limit: Any, comparison_operator: str
+    ) -> None:
+        pass

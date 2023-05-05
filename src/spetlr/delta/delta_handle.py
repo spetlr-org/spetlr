@@ -242,7 +242,7 @@ class DeltaHandle(TableHandle):
             special_update_set="",
         )
 
-        Spark.get().sql(merge_sql_statement)
+        df._jdf.sparkSession().sql(merge_sql_statement)
 
         print("Incremental Base - incremental load with merge")
 

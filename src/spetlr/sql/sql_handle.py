@@ -1,4 +1,5 @@
-from typing import List, Union
+from datetime import date, datetime
+from typing import Any, List, Union
 
 from pyspark.sql import DataFrame
 
@@ -77,3 +78,18 @@ class SqlHandle(TableHandle):
 
     def get_tablename(self) -> str:
         return self._name
+
+    def delete_data(
+        self, comparison_col: str, comparison_limit: Any, comparison_operator: str
+    ) -> None:
+        needs_quotes = (
+            isinstance(comparison_limit, str)
+            or isinstance(comparison_limit, date)
+            or isinstance(comparison_limit, datetime)
+        )
+        limit = f"'{comparison_limit}'" if needs_quotes else comparison_limit
+        sql_str = (
+            f"DELETE FROM {self._name}"
+            f" WHERE {comparison_col} {comparison_operator} {limit};"
+        )
+        self._sql_server.execute_sql(sql_str)

@@ -61,7 +61,8 @@ class DeltaStreamTests(unittest.TestCase):
             {
                 "name": "TestDb{ID}.TestTbl2",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl2",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
+                "_checkpoint_path_tbl2",
             },
         )
 
@@ -70,7 +71,8 @@ class DeltaStreamTests(unittest.TestCase):
             {
                 "path": "/mnt/spetlr/silver/testdb{ID}/testtbl3",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl3",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
+                "_checkpoint_path_tbl3",
                 "await_termination": True,
             },
         )
@@ -81,7 +83,8 @@ class DeltaStreamTests(unittest.TestCase):
                 "name": "TestDb{ID}.TestTbl4",
                 "path": "/mnt/spetlr/silver/testdb{ID}/testtbl4",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl4",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
+                "_checkpoint_path_tbl4",
             },
         )
 
@@ -91,7 +94,8 @@ class DeltaStreamTests(unittest.TestCase):
                 "name": "TestDb{ID}.TestTbl5",
                 "path": "/mnt/spetlr/silver/testdb{ID}/testtbl5",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl5",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}"
+                "/_checkpoint_path_tbl5",
             },
         )
 

@@ -12,10 +12,11 @@ from pyspark.sql import DataFrame
 from spetlr.configurator.configurator import Configurator
 from spetlr.spark import Spark
 from spetlr.sql.sql_handle import SqlHandle
+from spetlr.sql.SqlBaseServer import SqlBaseServer
 from spetlr.utils import GetMergeStatement
 
 
-class SqlServer:
+class SqlServer(SqlBaseServer):
     def __init__(
         self,
         hostname: str = None,

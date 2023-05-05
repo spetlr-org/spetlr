@@ -7,10 +7,10 @@
 
 
 ## Delta streaming
-Since Spetlr primarily is built as batch-processing ETL, structured streaming available in the following way:
+Since Spetlr primarily is built as batch-processing ETL, structured streaming is available in the following way:
 
-- The `DeltaHandle` class has a method called `.read_stream()` which is used for reading a stream.
-- Since streaming behave different that batch process, a stream needs both a read and a write. This means that the delta-handle is unable to have a write-stream - just to emphasize - the DeltaHandle does NOT have a stream write function. In order to make streaming work for the Spetlr ETL framework the `foreachbatch` stream method is applied. The class `StreamLoader()` should be used in the ETL as the `load_into()` method. 
+- The `DeltaHandle` class includes a method `.read_stream()` for reading a stream.
+- However, because streaming behaves differently than batch processing, a stream requires both a read and a write. As a result, the delta-handle is unable to have a write stream method. To make streaming work for the Spetlr ETL framework, the `foreachbatch` stream method is utilized. The class `StreamLoader()` should be used in the ETL as the `load_into()` method. 
 
 ### Example: Delta streaming
 ```python
@@ -41,8 +41,8 @@ Orchestrator()
 
 The databricks autoloader can *"(...) incrementally and efficiently processes new data files as they arrive in cloud storage without any additional setup."* - [link](https://docs.databricks.com/ingestion/auto-loader/index.html). The autoloader is implemented as a handle class as follows:
 
-- A handle class called `AutoloaderHandle`
-- `AutoloaderHandle` has a `.read_stream()` method
+- A handle class called `AutoloaderHandle`.
+- `AutoloaderHandle` has a `.read_stream()` method.
 
 The autoloader is combined with the `StreamLoader()` when used in the Spetlr ETL framework - [see previous section](#delta-streaming).
 

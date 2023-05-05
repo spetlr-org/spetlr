@@ -265,9 +265,6 @@ class DeltaHandle(TableHandle):
 
         return df
 
-    def get_checkpoint_path(self) -> None:
-        return self._checkpoint_path
-
     def remove_checkpoint(self) -> None:
         # Consider implementing:
         #    if not file_exists(self._checkpoint_path):

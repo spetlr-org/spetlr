@@ -6,6 +6,7 @@ from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
+from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.spark import Spark
 from spetlr.utils.stop_all_streams import stop_all_streams
@@ -165,6 +166,33 @@ class DeltaStreamTests(unittest.TestCase):
         o.load_into(
             StreamLoader(
                 handle=dh3,
+                options_dict={},
+                format="delta",
+                await_termination=True,
+                mode="append",
+                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
+            ),
+        )
+        o.execute()
+
+        # Read data from mytbl3
+        result = dh3.read()
+        self.assertEqual(2, result.count())
+
+    def test_08_write_with_loader(self):
+        self._overwrite_two_rows_to_table("MyTbl")
+        # check that we can write to the table with no "name" property
+        dh1 = DeltaHandle.from_tc("MyTbl")
+
+        dh3 = DeltaHandle.from_tc("MyTbl3")
+
+        # dsh3.append(ah, mergeSchema=True)
+
+        o = Orchestrator()
+        o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
+        o.load_into(
+            StreamLoader(
+                loader=SimpleLoader(dh3),
                 options_dict={},
                 format="delta",
                 await_termination=True,

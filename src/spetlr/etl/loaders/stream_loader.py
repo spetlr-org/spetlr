@@ -14,14 +14,14 @@ from spetlr.utils.FileExists import file_exists
 class StreamLoader(Loader):
     def __init__(
         self,
-        handle: TableHandle,
         *,
         format: str,
         options_dict: dict,
         checkpoint_path: str,
         mode: str = "overwrite",
         trigger_type: str = "availablenow",
-        # loader: Loader = None,
+        handle: TableHandle=None,
+        loader: Loader = None,
         trigger_time_seconds: int = None,
         outputmode: str = "update",
         query_name: str = None,
@@ -53,10 +53,12 @@ class StreamLoader(Loader):
         self._trigger_type = trigger_type
         self._trigger_time_seconds = trigger_time_seconds
         self._query_name = query_name or str(_uuid.uuid4().hex)
-        # self._loader = loader
-        self._checkpoint_path = checkpoint_path
+        self._loader = loader
+        self._checkpoint_path = checkpoint_path #or self._handle.get_checkpoint_path()
         self._await_termination = await_termination
         self._join_cols = upsert_join_cols
+
+        assert self._handle is None and self._loader is None, "StreamLoader requires either a handle or a loader as input."
 
         assert (
             Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4
@@ -101,7 +103,9 @@ class StreamLoader(Loader):
         df: DataFrame,
         batchId: int = None,
     ):
-        if self._mode == "append":
+        if self._loader:
+          self._loader.save(df)
+        elif self._mode == "append":
             self._handle.append(df)
         elif self._mode == "overwrite":
             self._handle.overwrite(df)

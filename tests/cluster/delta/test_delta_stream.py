@@ -1,3 +1,4 @@
+import time
 import unittest
 
 from pyspark.sql.utils import AnalysisException
@@ -206,7 +207,66 @@ class DeltaStreamTests(unittest.TestCase):
         result = dh3.read()
         self.assertEqual(2, result.count())
 
-    def test_08_delete(self):
+    def test_09_trigger_once(self):
+        self._overwrite_two_rows_to_table("MyTbl")
+        # check that we can write to the table with no "name" property
+        dh1 = DeltaHandle.from_tc("MyTbl")
+
+        dh3 = DeltaHandle.from_tc("MyTbl3")
+
+        # dsh3.append(ah, mergeSchema=True)
+
+        o = Orchestrator()
+        o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
+        o.load_into(
+            StreamLoader(
+                loader=SimpleLoader(dh3),
+                options_dict={},
+                format="delta",
+                await_termination=True,
+                mode="append",
+                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
+                trigger_type="once",
+            ),
+        )
+        o.execute()
+
+        # wait 20 sec for the stream to start
+        time.sleep(secs=20)
+
+        stop_all_streams()
+
+    def test_09_trigger_processing_time(self):
+        self._overwrite_two_rows_to_table("MyTbl")
+        # check that we can write to the table with no "name" property
+        dh1 = DeltaHandle.from_tc("MyTbl")
+
+        dh3 = DeltaHandle.from_tc("MyTbl3")
+
+        # dsh3.append(ah, mergeSchema=True)
+
+        o = Orchestrator()
+        o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
+        o.load_into(
+            StreamLoader(
+                loader=SimpleLoader(dh3),
+                options_dict={},
+                format="delta",
+                await_termination=True,
+                mode="append",
+                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
+                trigger_type="processingtime",
+                trigger_time_seconds=5,
+            ),
+        )
+        o.execute()
+
+        # wait 60 sec for the stream to start
+        time.sleep(secs=60)
+
+        stop_all_streams()
+
+    def test_10_delete(self):
         dh = DeltaHandle.from_tc("MyTbl")
         dh.drop_and_delete()
         with self.assertRaises(AnalysisException):

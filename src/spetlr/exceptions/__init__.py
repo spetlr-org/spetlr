@@ -55,3 +55,30 @@ class NoSuchValueException(SpetlrKeyError):
 class MissingUpsertJoinColumns(SpetlrKeyError):
     value = "You must specify upsert_join_cols"
     pass
+
+
+class MissingEitherStreamLoaderOrHandle(SpetlrException):
+    value = "StreamLoader requires either a handle or a loader as input."
+    pass
+
+
+class AmbiguousLoaderInput(SpetlrException):
+    value = "StreamLoader requires either a handle or a loader as input."
+    pass
+
+
+class NotAValidStreamTriggerType(SpetlrException):
+    value = "Trigger_type should either be {'availablenow', 'once', 'processingtime'}"
+    pass
+
+
+class NeedTriggerTimeWhenProcessingType(SpetlrException):
+    value = "Trigger_time_seconds must be specified if trigger_type = 'processingtype'"
+    pass
+
+
+class UnknownStreamOutputMode(SpetlrException):
+    value = (
+        "Output mode should be one of the following ['complete', 'append', 'update']"
+    )
+    pass

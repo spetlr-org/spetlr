@@ -40,7 +40,7 @@ class DeltaHandle(TableHandle):
         self._name = name
         self._location = location
         self._data_format = data_format
-        #self._checkpoint_path or self._location+"/_checkpoints"
+        # self._checkpoint_path or self._location+"/_checkpoints"
 
         self._partitioning: Optional[List[str]] = None
         self._validate()
@@ -264,7 +264,7 @@ class DeltaHandle(TableHandle):
             df = reader.table(self._table_name)
 
         return df
-    
+
     def get_checkpoint_path(self) -> None:
         return self._checkpoint_path
 
@@ -272,4 +272,7 @@ class DeltaHandle(TableHandle):
         # Consider implementing:
         #    if not file_exists(self._checkpoint_path):
         #        init_dbutils().fs.mkdirs(self._checkpoint_path)
-        print("Remember to drop the checkpoint path, if the checkpoint path is NOT <table_name>/_checkpoints.")
+        print(
+            "Remember to drop the checkpoint path, "
+            "if the checkpoint path is NOT <table_name>/_checkpoints."
+        )

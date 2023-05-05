@@ -5,6 +5,13 @@ from pyspark.sql import DataFrame
 from pyspark.sql.streaming import DataStreamWriter
 
 from spetlr.etl import Loader
+from spetlr.exceptions import (
+    AmbiguousLoaderInput,
+    MissingEitherStreamLoaderOrHandle,
+    NeedTriggerTimeWhenProcessingType,
+    NotAValidStreamTriggerType,
+    UnknownStreamOutputMode,
+)
 from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 from spetlr.tables import TableHandle
@@ -20,7 +27,7 @@ class StreamLoader(Loader):
         checkpoint_path: str,
         mode: str = "overwrite",
         trigger_type: str = "availablenow",
-        handle: TableHandle=None,
+        handle: TableHandle = None,
         loader: Loader = None,
         trigger_time_seconds: int = None,
         outputmode: str = "update",
@@ -54,11 +61,15 @@ class StreamLoader(Loader):
         self._trigger_time_seconds = trigger_time_seconds
         self._query_name = query_name or str(_uuid.uuid4().hex)
         self._loader = loader
-        self._checkpoint_path = checkpoint_path #or self._handle.get_checkpoint_path()
+        self._checkpoint_path = checkpoint_path  # or self._handle.get_checkpoint_path()
         self._await_termination = await_termination
         self._join_cols = upsert_join_cols
 
-        assert self._handle is None and self._loader is None, "StreamLoader requires either a handle or a loader as input."
+        if self._handle is None and self._loader is None:
+            raise MissingEitherStreamLoaderOrHandle
+
+        if self._handle is not None and self._loader is not None:
+            raise AmbiguousLoaderInput
 
         assert (
             Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4
@@ -71,16 +82,21 @@ class StreamLoader(Loader):
         )
         self._options_dict["checkpointLocation"] = self._checkpoint_path
 
-        valid_trigger_types = {"availablenow", "once", "processingtime", "continuous"}
-        assert (
-            self._trigger_type in valid_trigger_types
-        ), f"Triggertype should either be {valid_trigger_types}"
+        # "continuous" is not available when using foreachBatch()
+        valid_trigger_types = {"availablenow", "once", "processingtime"}
 
-        # if trigger type is processingtime, then it should have a trigger time
-        assert (self._trigger_type == "processingtime") is (
-            self._trigger_time_seconds is not None
-        )
-        assert self._outputmode in ["complete", "append", "update"]
+        NotAValidStreamTriggerType()
+
+        if self._trigger_type not in valid_trigger_types:
+            raise NotAValidStreamTriggerType()
+
+        if (self._trigger_type == "processingtime") and (
+            self._trigger_time_seconds is None
+        ):
+            raise NeedTriggerTimeWhenProcessingType
+
+        if self._outputmode not in {"complete", "append", "update"}:
+            raise UnknownStreamOutputMode
 
         df_stream = (
             df.writeStream.format(self._format)
@@ -104,7 +120,7 @@ class StreamLoader(Loader):
         batchId: int = None,
     ):
         if self._loader:
-          self._loader.save(df)
+            self._loader.save(df)
         elif self._mode == "append":
             self._handle.append(df)
         elif self._mode == "overwrite":
@@ -123,8 +139,11 @@ class StreamLoader(Loader):
             return writer.trigger(
                 processingTime=f"{self._trigger_time_seconds} seconds",
             )
-        elif self._trigger_type == "continuous":
-            return writer.trigger(continuous=f"{self._trigger_time_seconds} seconds")
+        # Continuous is not availble when using foreachBatch()
+        # https://docs.databricks.com/structured-streaming/foreach.html#apply-additional-dataframe-operations
+
+        # elif self._trigger_type == "continuous":
+        #    return writer.trigger(continuous=f"{self._trigger_time_seconds} seconds")
         else:
             raise ValueError("Unknown trigger type.")
 

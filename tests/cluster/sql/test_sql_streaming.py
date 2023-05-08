@@ -25,6 +25,10 @@ class SqlServerStreamingTests(unittest.TestCase):
     def tearDownClass(cls) -> None:
         DbHandle.from_tc("MyDb").drop_cascade()
         DeliverySqlServer().drop_table("MSSQL")
+
+        # NB: This function will interfere with active streaming
+        # if tests is parallelized, consider creation a function
+        # that only stops streaming set up in this class
         stop_all_streams()
 
     def test_01_configure(self):
@@ -52,7 +56,7 @@ class SqlServerStreamingTests(unittest.TestCase):
             f"""
                CREATE TABLE {dh.get_tablename()}
                (
-               id int
+               testcolumn int
                )
                LOCATION '{Configurator().get("MyTbl", "path")}'
            """

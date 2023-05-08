@@ -227,7 +227,7 @@ class DeltaStreamTests(unittest.TestCase):
                 loader=SimpleLoader(dh3),
                 options_dict={},
                 format="delta",
-                await_termination=True,
+                await_termination=False,
                 mode="append",
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
                 trigger_type="once",
@@ -236,7 +236,7 @@ class DeltaStreamTests(unittest.TestCase):
         o.execute()
 
         # wait 20 sec for the stream to start
-        time.sleep(secs=20)
+        time.sleep(20)
 
         stop_all_streams()
 
@@ -256,7 +256,7 @@ class DeltaStreamTests(unittest.TestCase):
                 loader=SimpleLoader(dh3),
                 options_dict={},
                 format="delta",
-                await_termination=True,
+                await_termination=False,
                 mode="append",
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
                 trigger_type="processingtime",
@@ -266,7 +266,7 @@ class DeltaStreamTests(unittest.TestCase):
         o.execute()
 
         # wait 60 sec for the stream to start
-        time.sleep(secs=60)
+        time.sleep(60)
 
         stop_all_streams()
 

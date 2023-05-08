@@ -236,7 +236,7 @@ class DeltaStreamTests(unittest.TestCase):
         o.execute()
 
         # wait 20 sec for the stream to start
-        time.sleep(secs=20)
+        time.sleep(20)
 
         stop_all_streams()
 
@@ -266,7 +266,7 @@ class DeltaStreamTests(unittest.TestCase):
         o.execute()
 
         # wait 60 sec for the stream to start
-        time.sleep(secs=60)
+        time.sleep(60)
 
         stop_all_streams()
 

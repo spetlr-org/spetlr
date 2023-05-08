@@ -13,7 +13,7 @@ from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
 @unittest.skipUnless(
     Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4,
-    f"DeltaStreamHandle not available for Spark version {Spark.version()}",
+    f"Spetlr Streaming not available for Spark version {Spark.version()}",
 )
 class SqlServerStreamingTests(unittest.TestCase):
     @classmethod
@@ -24,7 +24,7 @@ class SqlServerStreamingTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         DbHandle.from_tc("MyDb").drop_cascade()
-        DeliverySqlServer().drop_table_by_name(Configurator().table_name("MSSQL"))
+        DeliverySqlServer().drop_table("MSSQL")
         stop_all_streams()
 
     def test_01_configure(self):
@@ -43,6 +43,8 @@ class SqlServerStreamingTests(unittest.TestCase):
                 "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl",
             },
         )
+
+        DbHandle.from_tc("MyDb").create()
 
         dh = DeltaHandle.from_tc("MyTbl")
 

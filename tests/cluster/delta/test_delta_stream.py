@@ -15,7 +15,7 @@ from spetlr.utils.stop_all_streams import stop_all_streams
 
 @unittest.skipUnless(
     Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4,
-    f"DeltaStreamHandle not available for Spark version {Spark.version()}",
+    f"Spetlr Streaming not available for Spark version {Spark.version()}",
 )
 class DeltaStreamTests(unittest.TestCase):
     @classmethod

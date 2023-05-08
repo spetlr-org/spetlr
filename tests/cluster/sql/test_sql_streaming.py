@@ -11,6 +11,10 @@ from spetlr.utils.stop_all_streams import stop_all_streams
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
 
+@unittest.skipUnless(
+    Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4,
+    f"DeltaStreamHandle not available for Spark version {Spark.version()}",
+)
 class SqlServerStreamingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

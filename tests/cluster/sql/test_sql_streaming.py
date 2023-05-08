@@ -48,7 +48,7 @@ class SqlServerStreamingTests(unittest.TestCase):
                (
                id int
                )
-               LOCATION '{Configurator().get("MyTblMirror", "path")}'
+               LOCATION '{Configurator().get("MyTbl", "path")}'
            """
         )
 

@@ -13,7 +13,6 @@ from spetlr.configurator.configurator import Configurator
 from spetlr.spark import Spark
 from spetlr.sql.sql_handle import SqlHandle
 from spetlr.utils import GetMergeStatement
-
 from src.spetlr.sql.SqlServerBaseOptions import SqlServerBaseOptions
 
 

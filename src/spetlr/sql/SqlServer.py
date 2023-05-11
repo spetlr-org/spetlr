@@ -12,6 +12,7 @@ from pyspark.sql import DataFrame
 from spetlr.configurator.configurator import Configurator
 from spetlr.spark import Spark
 from spetlr.sql.sql_handle import SqlHandle
+from spetlr.sql.SqlServerBaseOptions import SqlServerBaseOptions
 from spetlr.utils import GetMergeStatement
 
 
@@ -27,10 +28,13 @@ class SqlServer:
         *,
         spnid: str = None,
         spnpassword: str = None,
+        options: SqlServerBaseOptions = None,
     ):
         """Create object to interact with sql servers. Pass all but
         connection_string to connect via values or pass only the
         connection_string as a keyword param to connect via connection string"""
+        self.options = options or SqlServerBaseOptions()
+
         if connection_string is not None:
             hostname, port, username, password, database = self.from_connection_string(
                 connection_string
@@ -41,13 +45,12 @@ class SqlServer:
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
 
-        jdbc_driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
         self.url = (
             f"jdbc:sqlserver://{hostname}:{port};"
             f"database={database};"
             f"queryTimeout=0;"
             f"loginTimeout={self.timeout};"
-            f"driver={jdbc_driver};"
+            f"driver={self.options.jdbc_driver};"
         )
 
         if spnpassword and spnid and not password and not username:
@@ -68,7 +71,7 @@ class SqlServer:
             raise ValueError("Use either SPN or SQL user - never both")
 
         self.odbc = (
-            "DRIVER={ODBC Driver 17 for SQL Server};"
+            f"DRIVER={{{self.options.pyodbc_driver}}};"
             f"SERVER={hostname};"
             f"DATABASE={database};"
             f"PORT={port};"

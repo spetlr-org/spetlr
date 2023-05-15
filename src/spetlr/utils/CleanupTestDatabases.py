@@ -8,7 +8,8 @@ _time_spent = 0
 
 def CleanupTestDatabases():
     """
-    This function can be applied for removing test databases in the Databricks Environment.
+    This function can be applied for removing test databases
+    in the Databricks Environment.
     """
 
     c = Configurator()

@@ -121,3 +121,15 @@ class ExampleTests(DataframeTestCase):
         SqlCleanupSingleTestTables(server).execute()
 ```
 
+### Remove expired test tables
+If you want to remove expired Sql Server test tables,
+that somehow was not removed during test, you could introduce,
+this in your setup environment job:
+
+```python
+from spetlr.utils import SqlCleanupTestTables
+from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
+
+# Replace the DeliverySqlServer with your server
+SqlCleanupTestTables(DeliverySqlServer()).execute()
+```

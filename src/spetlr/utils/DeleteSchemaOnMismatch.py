@@ -1,9 +1,15 @@
+import json
+from textwrap import dedent, indent
 from typing import List
+
+from pyspark.sql.utils import AnalysisException
 
 from spetlr import Configurator
 from spetlr.delta import DeltaHandle
 from spetlr.delta.delta_handle import DeltaHandleInvalidName
+from spetlr.spark import Spark
 from spetlr.sql import SqlExecutor, SqlServer
+from spetlr.utils import SqlCleanupSingleTestTables
 
 
 def get_table_ids_to_check():
@@ -66,7 +72,7 @@ def delete_mismatched_schemas(
 
     # cleanup
     if is_delivery:
-        DeliveryCleanerSingle().execute()
+        SqlCleanupSingleTestTables(delivery_server).execute()
     else:
         test_dbs = Spark.get().sql(f"SHOW SCHEMAS LIKE '*__{configurator._unique_id}*'")
         for row in test_dbs.collect():
@@ -78,7 +84,7 @@ def delete_mismatched_schemas(
     for tbl_id in table_ids_to_check:
         try:
             prod_schema = (
-                Delivery().read_table(tbl_id).schema
+                delivery_server.read_table(tbl_id).schema
                 if is_delivery
                 else DeltaHandle.from_tc(tbl_id).read().schema
             )
@@ -99,7 +105,7 @@ def delete_mismatched_schemas(
                 indent(json.dumps(schemas[tbl_id].jsonValue(), indent=4), "  "),
             )
             if is_delivery:
-                Delivery().drop_table(tbl_id)
+                delivery_server.drop_table(tbl_id)
             else:
                 DeltaHandle.from_tc(tbl_id).drop_and_delete()
             affected_keys.append(tbl_id)

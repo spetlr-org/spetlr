@@ -32,3 +32,12 @@ DeleteDataLoaderDb:
 DeleteDataLoaderDummy:
   name: "{DeleteDataLoaderDb}.Dummy"
   path: "{DeleteDataLoaderDb_path}/dummy"
+
+SparkTestDbMismatch:
+  name: my_db1_mismatch{ID}
+  path: /tmp/foo/bar/my_db_mismatch{}/
+
+MismatchSparkTestTable:
+  name: "{SparkTestDbMismatch}.tbl"
+  path: "{SparkTestDb_path}/tbl"
+  delete_on_delta_schema_mismatch: true

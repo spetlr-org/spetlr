@@ -1,5 +1,5 @@
 import json
-from textwrap import dedent, indent
+from textwrap import indent
 from typing import List
 
 from pyspark.sql.utils import AnalysisException
@@ -35,7 +35,8 @@ def delete_mismatched_schemas(
     It is the responsibility of the developer to only add tables here where the
     code has the property that it can rebuild dropped tables.
 
-    Tables can be flagged by using ´delete_on_delta_schema_mismatch´ as Configurator property.
+    Tables can be flagged by using ´delete_on_delta_schema_mismatch´
+    as Configurator property.
 
     """
 

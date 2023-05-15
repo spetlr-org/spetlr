@@ -5,6 +5,7 @@ Utilities in spetlr:
 * [Api Auto Config](#api-auto-config)
 * [Test Utilities](#test-utilities)
 * [Git Hooks](#git-hooks)
+* [Cleanup Test Tables](#cleanup-test-tables)
 
 ## Api Auto Config
 
@@ -84,4 +85,39 @@ To use the hooks, they can be installed in any repository by executing this comm
 To uninstall the hooks, simply run this command
 
     spetlr-git-hooks uninstall
+
+## Cleanup Test Tables
+When using the SPETLR Configurator to create abstraction of tables (test/debug tables),
+it becomes handy to have an easy way of removing the test tables.
+
+This can be done in the following ways:
+
+
+### Delta Tables
+
+```python
+from spetlrtools.testing import DataframeTestCase
+from spetlr.utils import CleanupTestDatabases
+
+class ExampleTests(DataframeTestCase):
+    
+    @classmethod
+    def tearDownClass(cls) -> None:
+        CleanupTestDatabases()
+```
+
+### Sql Server tables
+
+```python
+from spetlrtools.testing import DataframeTestCase
+from spetlr.utils import SqlCleanupSingleTestTables
+from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
+
+class ExampleTests(DataframeTestCase):
+    
+    @classmethod
+    def tearDownClass(cls) -> None:
+        server= DeliverySqlServer()
+        SqlCleanupSingleTestTables(server).execute()
+```
 

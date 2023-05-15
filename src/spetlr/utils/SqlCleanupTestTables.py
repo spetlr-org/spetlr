@@ -1,7 +1,7 @@
 from spetlr import Configurator
 from spetlr.sql import SqlServer
 from spetlr.sql.SqlExecutor import SqlExecutor
-from spetlr.utils.sqlcleantables import sqlcleanall, sqlcleansingle
+from spetlr.utils.sqlcleantables import sqlcleanall
 
 
 class SqlCleanupTestTables(SqlExecutor):

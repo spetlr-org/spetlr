@@ -9,7 +9,8 @@ class SqlCleanupSingleTestTables(SqlExecutor):
     This class can be used for removing SOME SPETLR test
     tables from a SqlServer database.
 
-    SOME: The tests tables that are removed, are those who are registered with the current
+    SOME: The tests tables that are removed,
+    are those who are registered with the current
     UUID from the SPETLR Configurator.
 
     """

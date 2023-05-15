@@ -1,5 +1,6 @@
 from .CleanupTestDatabases import CleanupTestDatabases
 from .DataframeCreator import DataframeCreator
+from .DeleteSchemaOnMismatch import delete_mismatched_schemas
 from .DropOldestDuplicates import DropOldestDuplicates
 from .GetMergeStatement import GetMergeStatement
 from .MockExtractor import MockExtractor
@@ -18,4 +19,5 @@ __all__ = [
     CleanupTestDatabases,
     SqlCleanupSingleTestTables,
     SqlCleanupTestTables,
+    delete_mismatched_schemas,
 ]

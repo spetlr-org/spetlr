@@ -6,6 +6,7 @@ Utilities in spetlr:
 * [Test Utilities](#test-utilities)
 * [Git Hooks](#git-hooks)
 * [Cleanup Test Tables](#cleanup-test-tables)
+* [Delete Mismatched Schemas](#delete-mismatched-schemas)
 
 ## Api Auto Config
 
@@ -133,3 +134,51 @@ from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 # Replace the DeliverySqlServer with your server
 SqlCleanupTestTables(DeliverySqlServer()).execute()
 ```
+
+## Delete Mismatched Schemas
+If the dataplatform needs an dynamic approach to automatically drop
+and recreate a table, if the table defined in code and the table
+that exists in production mismatches. Then, you can use `delete_mismatched_schemas`.
+
+*It is the responsibility of the developer to only add tables,
+where the code has the property that it can rebuild dropped tables.*
+
+Run this in your setup job:
+
+```python
+from spetlr.utils import delete_mismatched_schemas
+from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
+
+# Replace the SparkSqlExecutor with your dataplatform executor
+delete_mismatched_schemas(spark_executor=SparkSqlExecutor())
+```
+
+If the tables must not be down for too long (e.g Sql Server tables used in reports).
+One could do the mismatch deletion in the ETL job:
+
+```python
+from spetlr.utils import delete_mismatched_schemas
+from tests.cluster.sql.DeliverySqlExecutor import DeliverySqlExecutor
+
+# Replace the SparkSqlExecutor with your dataplatform executor
+delete_mismatched_schemas(table_ids_to_check=["SqlServerTableId"],
+                          sqlserver_executor=DeliverySqlExecutor())
+# Recreate the table
+DeliverySqlExecutor().execute_sql_file("some-file")
+```
+
+To configure which tables to delete on mismatch either you define it in the SPETLR yml configuration:
+
+```yaml
+SparkTestTable1:
+  name: "{SparkTestDb}.tbl1"
+  path: "{SparkTestDb_path}/tbl1"
+  delete_on_delta_schema_mismatch: true
+```
+
+or, you give the ids as input:
+````python
+from spetlr.utils import delete_mismatched_schemas
+
+delete_mismatched_schemas(["TABLEID"])
+````

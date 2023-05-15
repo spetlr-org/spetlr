@@ -40,7 +40,10 @@ def delete_mismatched_schemas(
     """
 
     if spark_executor and sqlserver_executor:
-        raise ValueError("Only provide a spark_executor or sqlserver_executor")
+        raise ValueError("Only provide a spark_executor or sqlserver_executor.")
+
+    if spark_executor is None and sqlserver_executor is None:
+        raise ValueError("spark_executor or sqlserver_executor should be set.")
 
     if sqlserver_executor:
         is_delivery = True

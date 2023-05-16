@@ -1,6 +1,6 @@
 import time
 
-from spetlr import Configurator
+from spetlr.config_master import Configurator
 from spetlr.spark import Spark
 
 _time_spent = 0

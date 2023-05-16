@@ -1,4 +1,4 @@
-from spetlr import Configurator
+from spetlr.config_master import Configurator
 from spetlr.sql import SqlServer
 from spetlr.sql.SqlExecutor import SqlExecutor
 from spetlr.utils.sqlcleantables import sqlcleansingle

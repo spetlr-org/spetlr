@@ -28,19 +28,37 @@ def main():
 
     kwargs = {}
     entry_point = None
+    # sys.argv will contain strings like
+    # [ "--entry_point=my.module:main", "--myarg=myval" ]
     for arg in sys.argv:
+        # parameters of any other form are ignored
         if not arg.startswith("--"):
             continue
-        k, v = arg[2:].split("=")
+        if arg.find("=") < 0:
+            continue
+
+        k, v = arg[2:].split("=", 1)
+
         if k == ENTRY_POINT:
+            # magic mandatory parameter
             entry_point = v
         else:
+            # any other custom parameters
             kwargs[k] = v
+
     if entry_point is None:
         raise Exception("No entry_point specified.")
 
-    mod_name, func_name = entry_point.split(":")
-    mod = importlib.import_module(mod_name)
-    func = getattr(mod, func_name)
+    # entry_point looks like "my.module:main"
+    mod_name, func_name = entry_point.split(":", 1)
 
+    mod = importlib.import_module(mod_name)
+
+    # we actually allow other forms of main, such as "MyClass.staticmethod"
+    # extract the callable
+    func = mod
+    for part in func_name.split("."):
+        func = getattr(func, part)
+
+    # call the callable with custom parameters
     return func(**kwargs)

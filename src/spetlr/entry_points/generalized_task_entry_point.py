@@ -50,15 +50,12 @@ def main():
         raise Exception("No entry_point specified.")
 
     # entry_point looks like "my.module:main"
-    mod_name, func_name = entry_point.split(":", 1)
+    modname, qualname_separator, qualname = entry_point.partition(":")
 
-    mod = importlib.import_module(mod_name)
-
-    # we actually allow other forms of main, such as "MyClass.staticmethod"
-    # extract the callable
-    func = mod
-    for part in func_name.split("."):
-        func = getattr(func, part)
+    obj = importlib.import_module(modname)
+    if qualname_separator:
+        for attr in qualname.split("."):
+            obj = getattr(obj, attr)
 
     # call the callable with custom parameters
-    return func(**kwargs)
+    return obj(**kwargs)

@@ -31,8 +31,8 @@ the `setup.cfg` file. To skip this part, spetlr provides a standard entry point,
 If you want to call this function:
 
 ```python
-    def myfunction(myarg='default'): 
-        pass
+def myfunction(myarg='default'): 
+    pass
 ```
 
 that is residing in the file `mylib.myfolder.myfile`,
@@ -52,6 +52,7 @@ then specify your task as follows:
 ```
 
 The `"package_name": "spetlr"` and  `"entry_point": "spetlr_task"` should always be 
-kept. The mandatory parameter 'entry_point' then points to the code to be called. 
+kept. The mandatory parameter 'entry_point' then points to the code to be called 
+[using standard format](https://packaging.python.org/en/latest/specifications/entry-points/). 
 All further arguments, all of type `string`, will be passed to the called function as 
 named parameters.

@@ -34,7 +34,7 @@ class SqlServer:
         connection_string to connect via values or pass only the
         connection_string as a keyword param to connect via connection string"""
         self.options = options or SqlServerBaseOptions()
-        self._use_builtin_driver = Spark.get().version >= Spark.DATABRICKS_RUNTIME_11_3
+        self._use_builtin_driver = Spark.version() >= Spark.DATABRICKS_RUNTIME_11_3
 
         if connection_string is not None:
             hostname, port, username, password, database = self.from_connection_string(
@@ -99,7 +99,7 @@ class SqlServer:
             bool(self.password),
             bool(self.username),
         )
-        if not any(*usage):
+        if not any(usage):
             raise ValueError("No auth information supplied")
         if usage not in [(True, True, False, False), (False, False, True, True)]:
             raise ValueError("Use either SPN or SQL user - never both")

@@ -39,7 +39,6 @@ class TestConfiguratorCli(unittest.TestCase):
                 # AUTO GENERATED FILE
                 # contains all spetlr.Configurator keys
 
-                Config_UUID_SPETLR = "Config_UUID_SPETLR"
                 ID = "ID"
                 MNT = "MNT"
                 MyAlias = "MyAlias"

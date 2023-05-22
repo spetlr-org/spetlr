@@ -68,7 +68,6 @@ class Configurator(metaclass=ConfiguratorSingleton):
     def _set_extras(self):
         self.register("ID", {"release": "", "debug": f"__{self._unique_id}"})
         self.register("MNT", {"release": "mnt", "debug": "tmp"})
-        self.register("Config_UUID_SPETLR", f"__{self._unique_id}")
 
     @deprecated(
         reason="use .get('ENV') to get literal values.",

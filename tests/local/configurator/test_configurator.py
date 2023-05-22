@@ -204,35 +204,3 @@ class TestConfigurator(unittest.TestCase):
 
         self.assertEqual(first_extension, "")
         self.assertEqual(second_extension, "")
-
-    def test_12_get_config_uuid_spetlr_debug(self):
-        """
-        The UUID can also be reached as a
-        fictive table name 'Config_UUID_SPETLR'.
-
-        In debug, ID and Config_UUID_SPETLR is equal.
-        """
-        c = Configurator()
-        c.clear_all_configurations()
-        c.set_debug()
-
-        id_extension = c.get_all_details()["ID"]
-        config_uuid_spetlr = c.get_all_details()["Config_UUID_SPETLR"]
-
-        self.assertEqual(id_extension, config_uuid_spetlr)
-
-    def test_13_get_config_uuid_spetlr_prod(self):
-        """
-        The UUID can also be reached as a
-        fictive table name 'Config_UUID_SPETLR'.
-
-        In production, ID and Config_UUID_SPETLR is different.
-        """
-        c = Configurator()
-        c.clear_all_configurations()
-        c.set_prod()
-
-        id_extension = c.get_all_details()["ID"]
-        config_uuid_spetlr = c.get_all_details()["Config_UUID_SPETLR"]
-
-        self.assertNotEqual(id_extension, config_uuid_spetlr)

@@ -87,7 +87,9 @@ class SqlCleanTablesTests(unittest.TestCase):
 
         # The new tables should be dropped
 
+        # ## This should make the test fail.. but it doesnt ##
         self.sql_server.read_table_by_name(new_table_name_1)
+        # ###################################################
 
         self.assert_sql_table_not_exists(new_table_name_1)
         self.assert_sql_table_not_exists(new_table_name_2)

@@ -68,6 +68,7 @@ class Configurator(metaclass=ConfiguratorSingleton):
     def _set_extras(self):
         self.register("ID", {"release": "", "debug": f"__{self._unique_id}"})
         self.register("MNT", {"release": "mnt", "debug": "tmp"})
+        self.register("Config_UUID_SPETLR", f"__{self._unique_id}")
 
     @deprecated(
         reason="use .get('ENV') to get literal values.",
@@ -395,5 +396,9 @@ class Configurator(metaclass=ConfiguratorSingleton):
                         self.table_details[f"{table_id}_{property_name}"] = str(item)
 
         return self.table_details
+
+    def regenerate_unique_id_and_clear_conf(self):
+        self._unique_id = uuid.uuid4().hex
+        self.clear_all_configurations()
 
     from ._cli import cli

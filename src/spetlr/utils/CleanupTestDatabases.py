@@ -1,5 +1,3 @@
-import time
-
 from spetlr.config_master import Configurator
 from spetlr.exceptions import OnlyUseInSpetlrDebugMode
 from spetlr.spark import Spark

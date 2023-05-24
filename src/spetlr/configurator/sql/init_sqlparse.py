@@ -1,9 +1,9 @@
 from typing import List
 
-from .sqlparse import engine, keywords, tokens
-from .sqlparse.engine import grouping
-from .sqlparse.lexer import Lexer
-from .sqlparse.sql import Statement
+from sqlparse import engine, keywords, tokens
+from sqlparse.engine import grouping
+from sqlparse.lexer import Lexer
+from sqlparse.sql import Statement
 
 lex = Lexer.get_default_instance()
 my_regex = [

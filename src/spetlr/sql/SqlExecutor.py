@@ -5,8 +5,9 @@ from pathlib import Path
 from types import ModuleType
 from typing import Dict, List, Optional, Union
 
+import sqlparse
+
 from spetlr.configurator.configurator import Configurator
-from spetlr.configurator.sql import sqlparse
 from spetlr.configurator.sql.init_sqlparse import parse
 from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark

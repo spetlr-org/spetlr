@@ -40,7 +40,7 @@ class DeltaTests(unittest.TestCase):
         tc.register(
             "MyTbl3",
             {
-                "path": "/mnt/spetlr/silver/testdb/testtbl3",
+                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl3",
             },
         )
 
@@ -51,6 +51,9 @@ class DeltaTests(unittest.TestCase):
 
     def test_02_write(self):
         dh = DeltaHandle.from_tc("MyTbl")
+        dh2 = DeltaHandle.from_tc("MyTbl2")
+        dh.drop_and_delete()
+        dh2.drop_and_delete()
 
         df = Spark.get().createDataFrame([(1, "a"), (2, "b")], "id int, name string")
 
@@ -70,6 +73,7 @@ class DeltaTests(unittest.TestCase):
 
     def test_03_create(self):
         db = DbHandle.from_tc("MyDb")
+        db.drop_cascade()
         db.create()
 
         dh = DeltaHandle.from_tc("MyTbl")

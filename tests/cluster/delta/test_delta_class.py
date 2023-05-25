@@ -14,7 +14,9 @@ from spetlr.spark import Spark
 class DeltaTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        Configurator().clear_all_configurations()
+        c = Configurator()
+        c.clear_all_configurations()
+        c.set_debug()
 
     def test_01_configure(self):
         tc = Configurator()
@@ -80,7 +82,7 @@ class DeltaTests(unittest.TestCase):
         dh.create_hive_table()
 
         # test hive access:
-        df = Spark.get().table("TestDb.TestTbl")
+        df = Spark.get().table(dh._name)
         self.assertTrue(6, df.count())
 
     def test_04_read(self):

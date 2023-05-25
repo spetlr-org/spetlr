@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 from spetlr.configurator.configurator import Configurator
 from spetlr.exceptions import SpetlrException
@@ -56,7 +56,7 @@ class DbHandle:
         return cls(
             name=name, location=location, comment=comment, data_format=data_format
         )
-
+`
     @classmethod
     def from_spark(cls, name: str):
         """Construct a Database(aka Schema) object based hive data."""
@@ -105,6 +105,15 @@ class DbHandle:
 
     def drop_cascade(self) -> None:
         Spark.get().sql(f"DROP DATABASE IF EXISTS {self.name} CASCADE;")
+
+    def getTables(self)->List:
+        """Return the list of DeltaHandle
+        representing all the tables in this database"""
+        from spetlr.delta import DeltaHandle
+
+        return [
+            DeltaHandle.from_spark(f"{self.name}.{tbl}") for (tbl,) in
+            Spark.get().sql(f"SHOW TABLES FROM {self.name}").select('tableName').collect()]
 
     def create(self) -> None:
         Spark.get().sql(self.get_create_sql())

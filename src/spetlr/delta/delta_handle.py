@@ -1,11 +1,13 @@
 from datetime import date, datetime
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pyspark.sql import DataFrame
+from pyspark.sql.types import StructField
 
 from spetlr.configurator.configurator import Configurator
 from spetlr.exceptions import SpetlrException
 from spetlr.functions import get_unique_tempview_name, init_dbutils
+from spetlr.repr.sql_types import repr_sql_types
 from spetlr.spark import Spark
 from spetlr.tables.TableHandle import TableHandle
 from spetlr.utils.CheckDfMerge import CheckDfMerge
@@ -24,15 +26,69 @@ class DeltaHandleInvalidFormat(DeltaHandleException):
     pass
 
 
-class DeltaHandle(TableHandle):
-    def __init__(self, name: str, location: str = None, data_format: str = "delta"):
-        self._name = name
-        self._location = location
-        self._data_format = data_format
+from dataclasses import dataclass, field
 
-        self._partitioning: Optional[List[str]] = None
+
+@dataclass
+class DeltaHandle(TableHandle):
+    name: str
+    location: str = None
+    data_format: str = None
+    columns: List[StructField] = field(default_factory=list)
+    options: Dict[str, str] = field(default_factory=dict)
+    partitioned_by: List[StructField] = field(default_factory=list)
+    tblproperties: Dict[str, str] = field(default_factory=dict)
+
+    def __init__(
+        self,
+        name: str,
+        location: str = None,
+        data_format: str = "delta",
+        *,
+        columns: List[StructField] = None,
+        options: Dict[str, str] = None,
+        partitioned_by: List[StructField] = None,
+        tblproperties: Dict[str, str] = None,
+    ):
+        self.name = name
+        self.location = location
+        self.data_format = data_format
+        self.columns = columns or []
+        self.options = options or {}
+        self.partitioned_by = partitioned_by or []
+        self.tblproperties = tblproperties or []
 
         self._validate()
+
+    def __repr__(self):
+        column_part = ""
+        if self.columns:
+            description = ", ".join(repr_sql_types(col) for col in self.columns)
+            column_part = f"columns=[{description}], "
+
+        partitioned_by_part = ""
+        if self.partitioned_by:
+            description = ", ".join(repr_sql_types(col) for col in self.partitioned_by)
+            partitioned_by_part = f"partitioned_by=[{description}], "
+
+        return (
+            ", ".join(
+                part
+                for part in [
+                    f'DeltaHandle(table_name="{self.name}"',
+                    column_part,
+                    f"data_source={repr(self.data_format)}" if self.data_format else "",
+                    f"options={repr(self.options)}" if self.options else "",
+                    partitioned_by_part,
+                    f"tblproperties={repr(self.tblproperties)}"
+                    if self.tblproperties
+                    else "",
+                    f'location="{self.location}"' if self.location else "",
+                ]
+                if part
+            )
+            + ")"
+        )
 
     @classmethod
     def from_tc(cls, id: str) -> "DeltaHandle":

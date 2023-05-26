@@ -14,35 +14,17 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
         )
 
         inputData = [
-            (
-                "England"
-            ),
-            (
-                "Denmark"
-            ),
-            (
-                "Germany"
-            ),
+            ("England"),
+            ("Denmark"),
+            ("Germany"),
         ]
 
         df_input = Spark.get().createDataFrame(data=inputData, schema=inputSchema)
 
-        expectedData = [
-            (
-                "GB"
-            ),
-            (
-                "DK"
-            ),
-            (
-                "DE"
-            )
-        ]
+        expectedData = [("GB"), ("DK"), ("DE")]
 
-        df_transformed = CountryToAlphaCodeTransformerNC(
-            col_name="countryCol"
-        ).process(df_input)
-
-        print(df_transformed)
+        df_transformed = CountryToAlphaCodeTransformerNC(col_name="countryCol").process(
+            df_input
+        )
 
         self.assertDataframeMatches(df_transformed, None, expectedData)

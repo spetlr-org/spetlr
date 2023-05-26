@@ -20,7 +20,7 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
 
         df_input = Spark.get().createDataFrame(data=inputData, schema=inputSchema)
 
-        expectedData = [("DK"), ("DE")]
+        expectedData = [("DK",), ("DE",)]
 
         df_transformed = CountryToAlphaCodeTransformerNC(col_name="countryCol").process(
             df_input

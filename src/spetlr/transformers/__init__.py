@@ -1,4 +1,6 @@
-from .country_to_alphacode_transformer_nc import CountryToAlphaCodeTransformerNC
+from .country_to_alphacode_transformer_nc import (  # noqa: F401
+    CountryToAlphaCodeTransformerNC,
+)
 from .drop_oldest_duplicate_transformer import (  # noqa: F401
     DropOldestDuplicatesTransformer,
 )

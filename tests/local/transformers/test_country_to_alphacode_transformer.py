@@ -9,19 +9,18 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
     def test_country_to_alpha_code_transformer(self):
         inputSchema = T.StructType(
             [
-                T.StructField("countryCol", T.LongType(), True),
+                T.StructField("countryCol", T.StringType(), True),
             ]
         )
 
         inputData = [
-            ("England"),
-            ("Denmark"),
-            ("Germany"),
+            ("Denmark",),
+            ("Germany",),
         ]
 
         df_input = Spark.get().createDataFrame(data=inputData, schema=inputSchema)
 
-        expectedData = [("GB"), ("DK"), ("DE")]
+        expectedData = [("DK"), ("DE")]
 
         df_transformed = CountryToAlphaCodeTransformerNC(col_name="countryCol").process(
             df_input

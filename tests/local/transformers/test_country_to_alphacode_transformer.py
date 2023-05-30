@@ -28,6 +28,37 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
 
         self.assertDataframeMatches(df_transformed, None, expectedData)
 
+    def test_country_to_alpha_code_transformer_new_col(self):
+        inputSchema = T.StructType(
+            [
+                T.StructField("countryCol", T.StringType(), True),
+            ]
+        )
+
+        inputData = [
+            ("Denmark",),
+            ("Germany",),
+        ]
+
+        df_input = Spark.get().createDataFrame(data=inputData, schema=inputSchema)
+
+        expectedData = [
+            (
+                "Denmark",
+                "DK",
+            ),
+            (
+                "Germany",
+                "DE",
+            ),
+        ]
+
+        df_transformed = CountryToAlphaCodeTransformerNC(
+            col_name="countryCol", output_col_name="alphaCodeCol"
+        ).process(df_input)
+
+        self.assertDataframeMatches(df_transformed, None, expectedData)
+
     def test_country_to_alpha_code_transformer_failure(self):
         inputSchema = T.StructType(
             [

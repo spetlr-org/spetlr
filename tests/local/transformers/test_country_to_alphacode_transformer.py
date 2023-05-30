@@ -44,4 +44,4 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
         with self.assertRaises(AttributeError):
             CountryToAlphaCodeTransformerNC(col_name="countryCol").process(
                 df_input
-            ).count()
+            ).show()

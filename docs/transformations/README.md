@@ -430,3 +430,44 @@ transformed_df.display()
 +--------+----+-----+------------+------------+
 
 ```
+
+## CountryToAlphaCodeTransformerNC
+
+This is a simple transformer for translating country names to their alpha-2 code equivalent.
+
+Usage example
+
+```python
+from spetlr.transformers import CountryToAlphaCodeTransformerNC
+import pyspark.sql.types as T
+
+from spetlr.spark import Spark
+input_schema = T.StructType(
+    [
+        T.StructField("countryCol", T.StringType(), True),
+    ]
+)
+
+input_data = [
+    ("Denmark",),
+    ("Germany",)
+]
+
+input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
+
+transformed_df = CountryToAlphaCodeTransformerNC(
+    col_name="countryCol",
+    output_col_name="alphaCodeCol
+).process(df_input)
+
+
+transformed_df.display()
+
++----------+------------+
+|countryCol|alphaCodeCol|
++----------+------------+
+|   Denmark|          DK|
+|   Germany|          DE|
++----------+------------+
+
+```

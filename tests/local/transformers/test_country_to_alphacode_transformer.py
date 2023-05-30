@@ -27,3 +27,21 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
         )
 
         self.assertDataframeMatches(df_transformed, None, expectedData)
+
+    def test_country_to_alpha_code_transformer_failure(self):
+        inputSchema = T.StructType(
+            [
+                T.StructField("countryCol", T.StringType(), True),
+            ]
+        )
+
+        inputData = [
+            ("NotACountry",),
+        ]
+
+        df_input = Spark.get().createDataFrame(data=inputData, schema=inputSchema)
+
+        with self.assertRaises(AttributeError):
+            CountryToAlphaCodeTransformerNC(col_name="countryCol").process(
+                df_input
+            ).count()

@@ -55,4 +55,9 @@ The `"package_name": "spetlr"` and  `"entry_point": "spetlr_task"` should always
 kept. The mandatory parameter 'entry_point' then points to the code to be called 
 [using standard format](https://packaging.python.org/en/latest/specifications/entry-points/). 
 All further arguments, all of type `string`, will be passed to the called function as 
-named parameters.
+named parameters, if the function can accept them. 
+
+Parameters that are given in the configuration item above, but are not part of the 
+call signature of the callable object will be discarded with a warning. This allows 
+multi-task jobs to share a common set of parameters, even though only a subset are 
+used by any given task.

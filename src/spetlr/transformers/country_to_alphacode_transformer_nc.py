@@ -9,8 +9,18 @@ from spetlr.etl import TransformerNC
 
 
 def translate_country_to_alpha2(country_name: str) -> str:
-    """Translate a simple country name into an alpha-2 code"""
-    return pycountry.countries.get(name=country_name).alpha_2
+    """
+    Method to translate country names to alpha-2 codes
+    Args:
+        country_name: The name of the country
+    Returns:
+        The corresponding alpha-2 code or an empty string if an invalid name was given
+    """
+    country = pycountry.countries.get(name=country_name)
+    if country:
+        return country.alpha_2
+    else:
+        return ""
 
 
 translateUDF = F.udf(lambda z: translate_country_to_alpha2(z), T.StringType())

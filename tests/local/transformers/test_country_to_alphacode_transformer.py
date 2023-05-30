@@ -41,7 +41,12 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
 
         df_input = Spark.get().createDataFrame(data=inputData, schema=inputSchema)
 
-        with self.assertRaises(AttributeError):
-            CountryToAlphaCodeTransformerNC(col_name="countryCol").process(
-                df_input
-            ).show()
+        expectedData = [
+            ("",),
+        ]
+
+        df_transformed = CountryToAlphaCodeTransformerNC(col_name="countryCol").process(
+            df_input
+        )
+
+        self.assertDataframeMatches(df_transformed, None, expectedData)

@@ -51,7 +51,22 @@ class DeltaTests(unittest.TestCase):
         DeltaHandle.from_tc("MyTbl")
         DeltaHandle.from_tc("MyTbl2")
 
-    def test_02_write(self):
+    def test_02_DbCreation(self):
+        db = DbHandle.from_tc("MyDb")
+
+        self.assertFalse(db.exists())
+        db.create()
+        self.assertTrue(db.exists())
+
+        self.assertTrue(db.matches_spark())
+        db.comment = "changed comment"
+        self.assertFalse(db.matches_spark())
+
+        db_real = DbHandle.from_spark(db.name)
+        self.assertEqual(db_real, DbHandle.from_tc("MyDb"))
+        db_real.drop_cascade()
+
+    def test_03_write(self):
         dh = DeltaHandle.from_tc("MyTbl")
         dh2 = DeltaHandle.from_tc("MyTbl2")
         dh.drop_and_delete()
@@ -73,7 +88,7 @@ class DeltaTests(unittest.TestCase):
 
         dh.append(df, mergeSchema=True)
 
-    def test_03_create(self):
+    def test_04_create(self):
         db = DbHandle.from_tc("MyDb")
         db.drop_cascade()
         db.create()
@@ -85,11 +100,11 @@ class DeltaTests(unittest.TestCase):
         df = Spark.get().table(dh._name)
         self.assertTrue(6, df.count())
 
-    def test_04_read(self):
+    def test_05_read(self):
         df = DeltaHandle.from_tc("MyTbl").read()
         self.assertEqual(6, df.count())
 
-    def test_041_schema(self):
+    def test_06_schema(self):
         """Schema Extractor returns zero lines, but preserves the schema,
         giving more readable orchestrators"""
         df1 = SimpleExtractor(DeltaHandle.from_tc("MyTbl"), "MyTbl").read()
@@ -100,13 +115,13 @@ class DeltaTests(unittest.TestCase):
 
         self.assertEqual(df1.schema, df2.schema)
 
-    def test_05_truncate(self):
+    def test_07_truncate(self):
         dh = DeltaHandle.from_tc("MyTbl")
         dh.truncate()
         df = dh.read()
         self.assertEqual(0, df.count())
 
-    def test_06_etl(self):
+    def test_08_etl(self):
         o = Orchestrator()
         o.extract_from(
             SimpleExtractor(DeltaHandle.from_tc("MyTbl"), dataset_key="MyTbl")
@@ -114,7 +129,7 @@ class DeltaTests(unittest.TestCase):
         o.load_into(SimpleLoader(DeltaHandle.from_tc("MyTbl"), mode="overwrite"))
         o.execute()
 
-    def test_07_write_path_only(self):
+    def test_09_write_path_only(self):
         # check that we can write to the table with no path
         df = DeltaHandle.from_tc("MyTbl").read()
 
@@ -125,14 +140,14 @@ class DeltaTests(unittest.TestCase):
         df = dh3.read()
         df.show()
 
-    def test_08_delete(self):
+    def test_10_delete(self):
         dh = DeltaHandle.from_tc("MyTbl")
         dh.drop_and_delete()
 
         with self.assertRaises(AnalysisException):
             dh.read()
 
-    def test_09_partitioning(self):
+    def test_11_partitioning(self):
         dh = DeltaHandle.from_tc("MyTbl")
         Spark.get().sql(
             f"""

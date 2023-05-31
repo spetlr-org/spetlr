@@ -34,41 +34,49 @@ class SqlServer:
         connection_string to connect via values or pass only the
         connection_string as a keyword param to connect via connection string"""
         self.options = options or SqlServerBaseOptions()
+        self._use_builtin_driver = Spark.version() >= Spark.DATABRICKS_RUNTIME_11_3
 
         if connection_string is not None:
             hostname, port, username, password, database = self.from_connection_string(
                 connection_string
             )
-        if not (hostname and database and port):
+        self.hostname = hostname
+        self.username = username
+        self.password = password
+        self.database = database
+        self.port = port
+        self.spnid = spnid
+        self.spnpassword = spnpassword
+
+        if not (self.hostname and self.database and self.port):
             raise ValueError("Hostname or database parameters missing.")
+
+        self._vaidate_auth_usage()
 
         self.timeout = 180  # 180 sec due to serverless
         self.sleep_time = 5  # Every 5 seconds the connection tries to be established
 
         self.url = (
-            f"jdbc:sqlserver://{hostname}:{port};"
-            f"database={database};"
+            f"jdbc:sqlserver://{self.hostname}:{self.port};"
+            f"database={self.database};"
             f"queryTimeout=0;"
             f"loginTimeout={self.timeout};"
             f"driver={self.options.jdbc_driver};"
         )
 
-        if spnpassword and spnid and not password and not username:
+        if self._use_spn():
             # Use spn
             self.url += (
-                f"AADSecurePrincipalId={spnid};"
-                f"AADSecurePrincipalSecret={spnpassword};"
+                f"AADSecurePrincipalId={self.spnid};"
+                f"AADSecurePrincipalSecret={self.spnpassword};"
                 f"encrypt=true;"
                 f"trustServerCertificate=false;"
                 f"hostNameInCertificate=*.database.windows.net;"
                 f"authentication=ActiveDirectoryServicePrincipal"
             )
-
-        elif password and username and not spnpassword and not spnid:
+        else:
             # Use SQL admin
             self.url += f"user={username};password={password}"
-        else:
-            raise ValueError("Use either SPN or SQL user - never both")
 
         self.odbc = (
             f"DRIVER={{{self.options.pyodbc_driver}}};"
@@ -81,8 +89,44 @@ class SqlServer:
         )
 
         # If it is a SPN user, then it should use AD SPN authentication
-        if spnid:
+        if self._use_spn():
             self.odbc += ";Authentication=ActiveDirectoryServicePrincipal"
+
+    def _vaidate_auth_usage(self):
+        usage = (
+            bool(self.spnpassword),
+            bool(self.spnid),
+            bool(self.password),
+            bool(self.username),
+        )
+        if not any(usage):
+            raise ValueError("No auth information supplied")
+        if usage not in [(True, True, False, False), (False, False, True, True)]:
+            raise ValueError("Use either SPN or SQL user - never both")
+
+    def _use_spn(self):
+        return bool(self.spnid)
+
+    def _add_sqlserver_auth(self, writer_or_reader):
+        """should only be used in connectiuon with .format("sqlserver")"""
+        writer_or_reader = (
+            writer_or_reader.option("host", self.hostname)
+            .option("port", self.port)
+            .option("database", self.database)
+        )
+        if self._use_spn():
+            return (
+                writer_or_reader.option("AADSecurePrincipalId", self.spnid)
+                .option("AADSecurePrincipalSecret", self.spnpassword)
+                .option("encrypt", "true")
+                .option("trustServerCertificate", "false")
+                .option("hostNameInCertificate", "*.database.windows.net")
+                .option("authentication", "ActiveDirectoryServicePrincipal")
+            )
+        else:
+            return writer_or_reader.option("user", self.username).option(
+                "password", self.password
+            )
 
     @staticmethod
     def from_connection_string(connection_string):
@@ -144,7 +188,12 @@ class SqlServer:
         return Spark.get().read.jdbc(url=self.url, table=sql)
 
     def read_table_by_name(self, table_name: str):
-        return self.load_sql(f"(SELECT * FROM {table_name}) target")
+        if self._use_builtin_driver:
+            return self._add_sqlserver_auth(
+                Spark.get().read.format("sqlserver").option("dbtable", table_name)
+            ).load()
+        else:
+            return self.load_sql(f"(SELECT * FROM {table_name}) target")
 
     def write_table_by_name(
         self,
@@ -157,25 +206,29 @@ class SqlServer:
     ):
         self.test_odbc_connection()
 
-        df_source.repartition(partition_count).write.format(
-            "com.microsoft.sqlserver.jdbc.spark" if big_data_set else "jdbc"
-        ).mode("append" if append else "overwrite").option(
-            "schemaCheckEnabled", False
-        ).option(
-            # https://learn.microsoft.com/en-us/sql/connect/spark/connector?view=sql-server-ver16#supported-options
-            # https://github.com/microsoft/sql-spark-connector/blob/master/README.md
-            # Implements an insert with TABLOCK option to improve write performance
-            "tableLock",
-            True,
-        ).option(
-            "batchSize", batch_size
-        ).option(
-            "truncate", not append
-        ).option(
-            "url", self.url
-        ).option(
-            "dbtable", table_name
-        ).save()
+        writer = df_source.repartition(partition_count).write
+        if self._use_builtin_driver:
+            writer = self._add_sqlserver_auth(writer.format("sqlserver"))
+        else:
+            writer = writer.format(
+                "com.microsoft.sqlserver.jdbc.spark" if big_data_set else "jdbc"
+            ).option("url", self.url)
+
+        (
+            writer.mode("append" if append else "overwrite")
+            .option("schemaCheckEnabled", False)
+            .option(
+                # https://learn.microsoft.com/en-us/sql/connect/spark/connector?view=sql-server-ver16#supported-options
+                # https://github.com/microsoft/sql-spark-connector/blob/master/README.md
+                # Implements an insert with TABLOCK option to improve write performance
+                "tableLock",
+                True,
+            )
+            .option("batchSize", batch_size)
+            .option("truncate", not append)
+            .option("dbtable", table_name)
+            .save()
+        )
 
     def upsert_to_table_by_name(
         self,

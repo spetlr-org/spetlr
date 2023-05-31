@@ -91,10 +91,10 @@ To uninstall the hooks, simply run this command
 When using the SPETLR Configurator to create abstraction of tables (test/debug tables),
 it becomes handy to have an easy way of removing the test tables.
 
-This can be done in the following ways:
+This can be achieved in the following ways:
 
 
-### Delta Tables
+### Delta Databases (and their tables)
 
 ```python
 from spetlrtools.testing import DataframeTestCase

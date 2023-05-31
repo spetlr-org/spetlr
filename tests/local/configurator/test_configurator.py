@@ -169,3 +169,38 @@ class TestConfigurator(unittest.TestCase):
                         LOCATION "/mnt/foo/bar/my_db1/details/";"""
             ),
         )
+
+    def test_10_generate_new_UUID_debug(self):
+        """
+        The UUID should be regenerated
+        when applying .regenerate_unique_id_and_clear_conf(),
+        and the Configurator is in debug mode.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.set_debug()
+
+        first_extension = c.get_all_details()["ID"]
+        c.regenerate_unique_id_and_clear_conf()
+        second_extension = c.get_all_details()["ID"]
+
+        self.assertNotEqual(first_extension, second_extension)
+
+    def test_11_generate_new_UUID_prod(self):
+        """
+        The UUID should be regenerated
+        when applying .regenerate_unique_id_and_clear_conf(),
+        and the Configurator is in debug mode.
+
+        But, in production mode, the ID should still be empty string.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.set_prod()
+
+        first_extension = c.get_all_details()["ID"]
+        c.regenerate_unique_id_and_clear_conf()
+        second_extension = c.get_all_details()["ID"]
+
+        self.assertEqual(first_extension, "")
+        self.assertEqual(second_extension, "")

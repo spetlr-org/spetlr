@@ -204,3 +204,16 @@ class TestConfigurator(unittest.TestCase):
 
         self.assertEqual(first_extension, "")
         self.assertEqual(second_extension, "")
+
+    def test_12_define_nameless(self):
+        """The value of the tableId may not be interesting.
+        When defined in this way, the `tbl` object can be
+        inspected with IntelliSense."""
+
+        c = Configurator()
+        c.clear_all_configurations()
+        c.set_prod()
+
+        tbl = c.define(name="MyDb.MyTable{ID}", path="/mnt/path/to{ID}/data")
+
+        self.assertEqual(c.get(tbl, "name"), "MyDb.MyTable")

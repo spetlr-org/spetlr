@@ -10,6 +10,7 @@ from deprecated import deprecated
 from spetlr.configurator._cli.ConfiguratorCli import ConfiguratorCli
 from spetlr.configurator.sql import _parse_sql_to_config
 from spetlr.exceptions import NoSuchValueException
+from spetlr.functions import json_hash
 
 # recursive type definition of the details object
 TcDetails = Dict[str, Union[str, "TcDetails"]]
@@ -310,11 +311,16 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         self.table_details = dict()
         return key
 
-    def define(self, key: str, **value):
+    def define(self, **kwargs):
         """
-        Register a new item by keys
+        Register a new item based on its properties only.
+        The returned key is a hash-like string depending only on the values.
         """
-        return self.register(key, value)
+        if not kwargs:
+            raise ValueError("No value passed.")
+
+        key = json_hash(kwargs)
+        return self.register(key, kwargs)
 
     def table_property(
         self, table_id: str, property_name: str, default_value: str = None

@@ -429,3 +429,8 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     def regenerate_unique_id_and_clear_conf(self):
         self._unique_id = uuid.uuid4().hex
         self.clear_all_configurations()
+
+    # this import at the class level is intentional
+    from ._cli import cli
+
+    # it adds further methods to this class that logically belong together.

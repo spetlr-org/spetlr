@@ -255,6 +255,23 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     def add_sql_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
         self._raw_resource_details.update(_parse_sql_to_config(resource_path))
 
+    def key_from(self, attribute: str, value: str):
+        """Obtain the key of the first registered item that has a given attribute
+        set to a given value. Uniqueness of the match is the responsibility of
+        the library user.
+
+        This function is slow as it performs a linear search. It is intended for use in
+        setup code.
+        """
+        for key, object in self._raw_resource_details.items():
+            try:
+                if object[attribute] == value:
+                    return key
+            except (KeyError, TypeError):
+                continue
+        else:
+            raise KeyError(f"No key with attribute {attribute}={repr(value)}")
+
     ############################################
     # all methods below are interface and convenience methods
     ############################################

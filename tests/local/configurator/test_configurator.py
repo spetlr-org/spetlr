@@ -217,3 +217,17 @@ class TestConfigurator(unittest.TestCase):
         tbl = c.define(name="MyDb.MyTable{ID}", path="/mnt/path/to{ID}/data")
 
         self.assertEqual(c.get(tbl, "name"), "MyDb.MyTable")
+    
+    
+    def test_13_test_keyof(self):
+        """Test the ability to extract the key of an object for which only
+        the defined name is known."""
+        c = Configurator()
+        c.clear_all_configurations()
+
+        c.register("MySecretKey", {"name": "MyDb.MyTable{ID}", "path": "/mnt/to/data"})
+
+        key = c.key_from("name", "MyDb.MyTable{ID}")
+
+        self.assertEqual(key, "MySecretKey")
+        self.assertEqual(c.get(key, "path"), "/mnt/to/data")

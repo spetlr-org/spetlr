@@ -74,6 +74,57 @@ configured to return production or test versions of tables this is done
 at the start of your code. In your jobs you need to set `Configurator().set_prod()`
 whereas your unit-tests should call `Configurator().set_debug()`.
 
+For production: set this in the `__init__.py` where the .yml files is located: 
+
+```python
+from spetlr import Configurator
+
+# config is your dataplatform
+# configurations that you define
+from dataplatform.env import config, databases, config
+
+def init_configurator():
+    c = Configurator()
+    c.register("ENV", config.environment.environment_name.lower())
+    c.add_resource_path(table_names)
+    c.add_sql_resource_path(databases)
+    return c
+```
+
+For testing create this (kind of) function:
+
+```python
+from spetlr import Configurator
+from dataplatform.env.table_names import init_configurator
+
+# Maybe import some test databases and tables
+from . import databases
+
+
+def debug_configurator():
+    c = init_configurator()
+    c.add_sql_resource_path(databases)
+    c.set_debug()
+    return c
+
+```
+
+In the tests you then use the debug_configurator:
+
+```python
+from dataplatform.test import debug_configurator
+from spetlrtools.testing import DataframeTestCase
+
+class ExampleTests(DataframeTestCase):
+    @classmethod
+    def setUpClass(cls):
+        debug_configurator()
+
+    ...
+```
+
+
+
 ### String substitutions
 
 As was already seen in the example above, all strings can contain python 

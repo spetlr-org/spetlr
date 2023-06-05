@@ -396,4 +396,8 @@ class Configurator(metaclass=ConfiguratorSingleton):
 
         return self.table_details
 
+    def regenerate_unique_id_and_clear_conf(self):
+        self._unique_id = uuid.uuid4().hex
+        self.clear_all_configurations()
+
     from ._cli import cli

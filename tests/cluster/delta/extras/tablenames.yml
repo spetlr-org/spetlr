@@ -1,6 +1,6 @@
 SparkTestDb:
   name: my_db1{ID}
-  path: /tmp/foo/bar/my_db1/
+  path: /tmp/foo/bar/my_db1{ID}/
 
 SparkTestTable1:
   name: "{SparkTestDb}.tbl1"
@@ -11,7 +11,7 @@ SparkTestTable11:
 
 SparkTestDb2:
   name: my_db2{ID}
-  path: /tmp/foo/bar/my_db2/
+  path: /tmp/foo/bar/my_db2{ID}/
 
 SparkTestTable2:
   name: "{SparkTestDb2}.tbl2"

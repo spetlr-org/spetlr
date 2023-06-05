@@ -13,6 +13,7 @@ Transformations in spetlr:
   - [TimeZoneTransformer](#timezonetransformer)
   - [SelectAndCastColumnsTransformer](#selectandcastcolumnstransformer)
   - [ValidFromToTransformer](#validfromtotransformer)
+  - [DataFrameFilterTransformer](#DataFrameFilterTransformer)
 
 ## Concatenate data frames
 
@@ -382,4 +383,91 @@ df.filter("iscurrent=1").show()
 |  2|Gibson|  Les Paul|    27|2021-07-01 11:00:00|2262-04-11 00:00:00|     true|
 |  3|Ibanez|        RG|    18|2021-10-01 11:00:00|2262-04-11 00:00:00|     true|
 +---+------+----------+------+-------------------+-------------------+---------+
+```
+
+
+## DataFrameFilterTransformer
+
+This is a simple transformer for filtering a single column with a single value.
+
+Usage example
+
+```python
+from spetlr.transformers import DataFrameFilterTransformer
+import pyspark.sql.types as T
+
+from spetlr.spark import Spark
+input_schema = T.StructType(
+            [
+                T.StructField("Col1", T.StringType(), True),
+                T.StructField("Col2", T.IntegerType(), True),
+                T.StructField("Col3", T.DoubleType(), True),
+                T.StructField("Col4", T.StringType(), True),
+                T.StructField("Col5", T.StringType(), True),
+            ]
+        )
+
+input_data1 = ("Col1Data", 42, 13.37, "Col4Data", "Col5Data")
+input_data2 = ("Col1Data_2nd", 43, 23.37, "Col4Data_2nd", "Col5Data_2nd")
+input_data3 = ("Col1Data", 45, 20.15, "Col4Data_3rd", "Col5Data_3rd")
+
+input_data = [input_data1, input_data2, input_data3]
+
+input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
+
+transformed_df = DataFrameFilterTransformer(
+            col_value="Col1Data", col_name="Col1"
+        ).process(input_df)
+
+
+transformed_df.display()
+
++--------+----+-----+------------+------------+
+|    Col1|Col2| Col3|        Col4|        Col5|
++--------+----+-----+------------+------------+
+|Col1Data|  42|13.37|    Col4Data|    Col5Data|
+|Col1Data|  45|20.15|Col4Data_3rd|Col5Data_3rd|
++--------+----+-----+------------+------------+
+
+```
+
+## CountryToAlphaCodeTransformerNC
+
+This is a simple transformer for translating country names to their alpha-2 code equivalent.
+
+Usage example
+
+```python
+from spetlr.transformers import CountryToAlphaCodeTransformerNC
+import pyspark.sql.types as T
+
+from spetlr.spark import Spark
+input_schema = T.StructType(
+    [
+        T.StructField("countryCol", T.StringType(), True),
+    ]
+)
+
+input_data = [
+    ("Denmark",),
+    ("Germany",)
+]
+
+input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
+
+transformed_df = CountryToAlphaCodeTransformerNC(
+    col_name="countryCol",
+    output_col_name="alphaCodeCol
+).process(df_input)
+
+
+transformed_df.display()
+
++----------+------------+
+|countryCol|alphaCodeCol|
++----------+------------+
+|   Denmark|          DK|
+|   Germany|          DE|
++----------+------------+
+
 ```

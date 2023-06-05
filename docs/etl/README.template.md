@@ -110,7 +110,7 @@ the `process_many` method.
 The `read()` function in `Extractor` will return a dictionary that uses the type name of the `Extractor` 
 as the key, and a `DataFrame` as its value, the used kan can be overridden in the constructor.
 
-`Transformer` provides the function `process_many(dataset: {{}})` and returns a single `DataFrame`.
+`Transformer` provides the function `process_many(datasets: dataset_group)` and returns a single `DataFrame`.
 
 ```
 {multiple_input_example}

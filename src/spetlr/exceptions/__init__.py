@@ -57,6 +57,9 @@ class MissingUpsertJoinColumns(SpetlrKeyError):
     pass
 
 
+class OnlyUseInSpetlrDebugMode(SpetlrKeyError):
+    value = "Only call this if the configurator is in debug"
+    
 class MissingEitherStreamLoaderOrHandle(SpetlrException):
     value = "StreamLoader requires either a handle or a loader as input."
     pass

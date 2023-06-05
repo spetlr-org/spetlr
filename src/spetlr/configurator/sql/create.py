@@ -1,8 +1,8 @@
 from typing import Dict
 
+import sqlparse
 from more_itertools import peekable
 
-from spetlr.configurator.sql import sqlparse
 from spetlr.configurator.sql.db import _walk_db_statement
 from spetlr.configurator.sql.table import _walk_table_statement
 from spetlr.configurator.sql.utils import _meaningful_token_iter

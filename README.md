@@ -1,5 +1,7 @@
 # spetlr
-A python SPark ETL libRary (SPETLR) for Databricks. 
+A python ETL libRary (SPETLR) for Databricks powered by Apache SPark. 
+
+Visit SPETLR official webpage: [https://spetlr.com/](https://spetlr.com/)
 
 ## Important Notes
 

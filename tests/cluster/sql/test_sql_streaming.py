@@ -62,7 +62,7 @@ class SqlServerStreamingTests(unittest.TestCase):
            """
         )
 
-        df = Spark.get().createDataFrame([(1,), (2,)], "id int")
+        df = Spark.get().createDataFrame([(1,), (2,)], "testcolumn int")
 
         dh.overwrite(df, mergeSchema=True)
 

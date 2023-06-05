@@ -21,8 +21,6 @@ class CaptureHistoryTransformerTest(DataframeTestCase):
 
         self.columns = ["id", "firstName", "lastName", "age"]
 
-        self.ignorecolums = ["md5_target", "md5_source"]
-
         row_1_1 = (1, "Peter", "Plys", 7)
         row_1_2 = (1, "Peter", "Plys", 8)
         row_2_1 = (2, "Peter", "Pan", 14)

@@ -135,7 +135,6 @@ c = Configurator()
 tbl = c.define(name="ByDb.Table", path="/mnt/{ENV}/path/to/table")
 
 dh = delta.DeltaHandle.from_tc(tbl)
-
 ```
 
 The highly useful property of this approach in modern IDEs is that the definition of 
@@ -143,7 +142,15 @@ The highly useful property of this approach in modern IDEs is that the definitio
 to jump straight to the definition of the table from any code that deals with the key.
 
 The case of `.define()` takes this approach even further by auto-generating a key 
-that will never be used or viewed manually anyway.
+that will never be used or viewed manually anyway. Together with it the `.key_of()` 
+method allows the user to recover the key of an entry provided any property value is 
+known.
+```python
+from spetlr import Configurator
+c = Configurator()
+tbl = c.define(name="ByDb.Table", path="/mnt/{ENV}/path/to/table")
+assert tbl == c.key_of("name", "ByDb.Table")
+```
 
 ### String substitutions
 

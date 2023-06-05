@@ -123,6 +123,26 @@ class ExampleTests(DataframeTestCase):
     ...
 ```
 
+### Configuration Objects
+
+It is possible to skip the use of yaml or sql files and to set all the 
+configurations using the API command `.register()` or `.define()`.
+Both of these return a smart `ConfigObject` which can be used in the following ways
+```python
+from spetlr import Configurator, delta
+c = Configurator()
+
+tbl = c.define("MyTable", name="ByDb.Table", path="/mnt/{ENV}/path/to/table")
+
+dh = delta.DeltaHandle.from_tc(tbl)
+
+assert tbl.name == "ByDb.Table"
+```
+
+The highly useful property of this approach in modern IDEs is that the definition of 
+`tbl` can be viewed in context highlighting for the object `tbl` and it its possible 
+to jump straight to the definition of the table from any code that deals with this 
+`ConfigObject`.
 
 
 ### String substitutions

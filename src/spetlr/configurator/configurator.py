@@ -8,6 +8,7 @@ from typing import Dict, Set, Union
 import yaml
 from deprecated import deprecated
 
+from spetlr.configurator._config_object import ConfigObject
 from spetlr.configurator._cli.ConfiguratorCli import ConfiguratorCli
 from spetlr.configurator.sql import _parse_sql_to_config
 from spetlr.exceptions import NoSuchValueException
@@ -307,8 +308,16 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         """
         Register a new item.
         """
+        key = str(key)
         self._raw_resource_details[key] = value
         self.table_details = dict()
+        return ConfigObject(key, self)
+
+    def define(self, key: str, **value):
+        """
+        Register a new item by keys
+        """
+        return self.register(key, value)
 
     def table_property(
         self, table_id: str, property_name: str, default_value: str = None
@@ -322,6 +331,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
             if the property is missing.
         :return: str: property value
         """
+        table_id = str(table_id)
         property_value = self.get_all_details().get(
             f"{table_id}_{property_name}", default_value
         )
@@ -352,7 +362,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         return self.get(table_id, "path")
 
     def get(self, table_id: str, property: str = "") -> str:
-        return self._get_item_property(table_id, property)
+        return self._get_item_property(str(table_id), property)
 
     def get_all_details(self):
         """

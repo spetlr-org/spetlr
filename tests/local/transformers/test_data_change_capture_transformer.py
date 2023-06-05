@@ -1,30 +1,33 @@
-from pyspark.sql.types import StructType, IntegerType, StructField, StringType
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 from spetlrtools.testing import DataframeTestCase
+
 from spetlr.spark import Spark
-from spetlr.transformers.data_change_capture_transformer import DataChangeCaptureTransformer
+from spetlr.transformers.data_change_capture_transformer import (
+    DataChangeCaptureTransformer,
+)
 
 
 class CaptureHistoryTransformerTest(DataframeTestCase):
     def setUp(self):
         self.transformer = DataChangeCaptureTransformer("id")
         self.schema = StructType(
-            [StructField("id", IntegerType(), True),
-             StructField("firstName", StringType(), True),
-             StructField("lastName", StringType(), True),
-             StructField("age", IntegerType(), True)]
+            [
+                StructField("id", IntegerType(), True),
+                StructField("firstName", StringType(), True),
+                StructField("lastName", StringType(), True),
+                StructField("age", IntegerType(), True),
+            ]
         )
 
         self.columns = ["id", "firstName", "lastName", "age"]
 
         self.ignorecolums = ["md5_target", "md5_source"]
 
-
-        row_1_1 = (1,"Peter", "Plys", 7)
+        row_1_1 = (1, "Peter", "Plys", 7)
         row_1_2 = (1, "Peter", "Plys", 8)
         row_2_1 = (2, "Peter", "Pan", 14)
         row_2_2 = (2, "Peter", "PanCake", 14)
         row_3_1 = (3, "Ole", "Lukoje", 98)
-        row_3_2 = (3, "Oline", "Lukoje", 99)
 
         # Test data test_01
         self.source1 = [row_1_1]
@@ -47,8 +50,7 @@ class CaptureHistoryTransformerTest(DataframeTestCase):
         self.expected4 = []
 
     def test_01_capture_new_rows(self):
-        """Target is empty, return all records from source
-        """
+        """Target is empty, return all records from source"""
 
         df_source = Spark.get().createDataFrame(data=self.source1, schema=self.schema)
         df_target = Spark.get().createDataFrame(data=self.target1, schema=self.schema)
@@ -57,11 +59,12 @@ class CaptureHistoryTransformerTest(DataframeTestCase):
 
         result_df = self.transformer.process_many(dataset_group)
 
-        self.assertDataframeMatches(df=result_df, columns=self.columns, expected_data=self.expected1)
+        self.assertDataframeMatches(
+            df=result_df, columns=self.columns, expected_data=self.expected1
+        )
 
     def test_02_capture_new_and_modified_rows(self):
-        """returns modified and new rows
-                """
+        """returns modified and new rows"""
 
         df_source = Spark.get().createDataFrame(data=self.source2, schema=self.schema)
         df_target = Spark.get().createDataFrame(data=self.target2, schema=self.schema)
@@ -70,27 +73,26 @@ class CaptureHistoryTransformerTest(DataframeTestCase):
 
         result_df = self.transformer.process_many(dataset_group)
 
-        self.assertDataframeMatches(df=result_df, columns=self.columns, expected_data=self.expected2)
-
+        self.assertDataframeMatches(
+            df=result_df, columns=self.columns, expected_data=self.expected2
+        )
 
     def test_03_capture_new_and_modified_rows_ignore_existing(self):
-        """returns modified and new rows, and ignore existing, that is unchanged.
-                """
+        """returns modified and new rows, and ignore existing, that is unchanged."""
 
         df_source = Spark.get().createDataFrame(data=self.source3, schema=self.schema)
         df_target = Spark.get().createDataFrame(data=self.target3, schema=self.schema)
-
 
         dataset_group = {"source": df_source, "target": df_target}
 
         result_df = self.transformer.process_many(dataset_group)
 
-        self.assertDataframeMatches(df=result_df, columns=self.columns, expected_data=self.expected3)
-
+        self.assertDataframeMatches(
+            df=result_df, columns=self.columns, expected_data=self.expected3
+        )
 
     def test_04_no_changes(self):
-        """returning dataframe is empty, since no changes have been detected.
-                """
+        """returning dataframe is empty, since no changes have been detected."""
 
         df_source = Spark.get().createDataFrame(data=self.source4, schema=self.schema)
         df_target = Spark.get().createDataFrame(data=self.target4, schema=self.schema)
@@ -99,14 +101,6 @@ class CaptureHistoryTransformerTest(DataframeTestCase):
 
         result_df = self.transformer.process_many(dataset_group)
 
-        self.assertDataframeMatches(df=result_df, columns=self.columns, expected_data=self.expected4)
-
-
-
-
-
-
-
-
-
-
+        self.assertDataframeMatches(
+            df=result_df, columns=self.columns, expected_data=self.expected4
+        )

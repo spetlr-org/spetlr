@@ -1,7 +1,9 @@
 import warnings
 from typing import List
-from pyspark.sql.functions import md5, concat_ws, col
+
 from pyspark.sql import DataFrame
+from pyspark.sql.functions import concat_ws, md5
+
 from spetlr.etl.transformer import Transformer
 from spetlr.etl.types import dataset_group
 
@@ -40,14 +42,14 @@ class DataChangeCaptureTransformer(Transformer):
         # Add an md5 hash column to both DataFrames
         df_source = self._md5_hash(df_source, "md5_source")
         df_target = self._md5_hash(df_target, "md5_target")
-        df_joined_2 = df_source.join(df_target, self.primary_key, "left_outer")
         df_joined = df_source.join(
             df_target.select("md5_target", self.primary_key),
             self.primary_key,
             "left_outer",
         )
 
-        # Filter out rows where the MD5 hash values are different or the target values are null
+        # Filter out rows where the MD5 hash values are different
+        # or the target values are null
         df = df_joined.filter(
             (df_joined.md5_source != df_joined.md5_target)
             | df_joined.md5_target.isNull()

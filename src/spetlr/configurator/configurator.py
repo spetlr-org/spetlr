@@ -7,8 +7,6 @@ from typing import Dict, Set, Union
 
 import yaml
 from deprecated import deprecated
-
-from spetlr.configurator._config_object import ConfigObject
 from spetlr.configurator._cli.ConfiguratorCli import ConfiguratorCli
 from spetlr.configurator.sql import _parse_sql_to_config
 from spetlr.exceptions import NoSuchValueException
@@ -311,7 +309,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         key = str(key)
         self._raw_resource_details[key] = value
         self.table_details = dict()
-        return ConfigObject(key, self)
+        return key
 
     def define(self, key: str, **value):
         """

@@ -17,18 +17,20 @@ def setup_parser(parser: argparse.ArgumentParser):
     parser.set_defaults(check=False)
 
 
-def generate_keys_file(self, options):
+def generate_keys_file(options):
     """Generate a keys file from configured keys.
     The arguments are as follows:
-        - self refers to the configurator object
         - options is a SimpleNamespace, expected to contain these attributes
             - output_file - str - the name of the output file, if none given,
               the generate file contents are printed to the console
             - check True/False, don't generate the file, verify an existing one.
     """
+    from spetlr import Configurator  # prevent circular import
+
+    c = Configurator()
     new_conts = "\n".join(
         ["# AUTO GENERATED FILE", "# contains all spetlr.Configurator keys", ""]
-        + [f"{key} = {repr(key)}" for key in sorted(self.all_keys())]
+        + [f"{key} = {repr(key)}" for key in sorted(c.all_keys())]
     )
 
     # if black is installed, use it to format the contents

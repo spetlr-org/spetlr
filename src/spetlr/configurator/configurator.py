@@ -306,7 +306,6 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         """
         Register a new item.
         """
-        key = str(key)
         self._raw_resource_details[key] = value
         self.table_details = dict()
         return key
@@ -329,7 +328,6 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
             if the property is missing.
         :return: str: property value
         """
-        table_id = str(table_id)
         property_value = self.get_all_details().get(
             f"{table_id}_{property_name}", default_value
         )
@@ -360,7 +358,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         return self.get(table_id, "path")
 
     def get(self, table_id: str, property: str = "") -> str:
-        return self._get_item_property(str(table_id), property)
+        return self._get_item_property(table_id, property)
 
     def get_all_details(self):
         """

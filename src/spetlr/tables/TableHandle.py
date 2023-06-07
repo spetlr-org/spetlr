@@ -39,3 +39,6 @@ class TableHandle:
         self, comparison_col: str, comparison_limit: Any, comparison_operator: str
     ) -> None:
         pass
+
+    def get_table_id(self):
+        raise NotImplementedError()

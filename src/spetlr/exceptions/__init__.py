@@ -71,6 +71,13 @@ class AmbiguousLoaderInput(SpetlrException):
     pass
 
 
+class StreamLoaderNeedsFormatAndCheckpoint(SpetlrException):
+    value = (
+        "StreamLoader requires either format and checkpoint when using Loader as input."
+    )
+    pass
+
+
 class NotAValidStreamTriggerType(SpetlrException):
     value = "Trigger_type should either be {'availablenow', 'once', 'processingtime'}"
     pass

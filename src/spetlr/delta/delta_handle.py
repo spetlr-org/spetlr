@@ -34,13 +34,11 @@ class DeltaHandle(TableHandle):
         ignore_changes: bool = True,
         stream_start: datetime = None,
         max_bytes_per_trigger: int = None,
-        # checkpoint_path: str = None,
     ):
         """ """
         self._name = name
         self._location = location
         self._data_format = data_format
-        # self._checkpoint_path or self._location+"/_checkpoints"
 
         self._partitioning: Optional[List[str]] = None
         self._validate()
@@ -124,11 +122,8 @@ class DeltaHandle(TableHandle):
     def truncate(self) -> None:
         Spark.get().sql(f"TRUNCATE TABLE {self._name};")
 
-        # self.remove_checkpoint()
-
     def drop(self) -> None:
         Spark.get().sql(f"DROP TABLE IF EXISTS {self._name};")
-        # self.remove_checkpoint()
 
     def drop_and_delete(self) -> None:
         self.drop()
@@ -136,7 +131,6 @@ class DeltaHandle(TableHandle):
             init_dbutils().fs.rm(self._location, True)
 
     def create_hive_table(self) -> None:
-        # self.remove_checkpoint()
         sql = f"CREATE TABLE IF NOT EXISTS {self._name} "
         if self._location:
             sql += f" USING DELTA LOCATION '{self._location}'"
@@ -257,12 +251,3 @@ class DeltaHandle(TableHandle):
             df = reader.table(self._table_name)
 
         return df
-
-    def remove_checkpoint(self) -> None:
-        # Consider implementing:
-        #    if not file_exists(self._checkpoint_path):
-        #        init_dbutils().fs.mkdirs(self._checkpoint_path)
-        print(
-            "Remember to drop the checkpoint path, "
-            "if the checkpoint path is NOT <table_name>/_checkpoints."
-        )

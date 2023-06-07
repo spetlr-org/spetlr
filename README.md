@@ -3,14 +3,39 @@ A python ETL libRary (SPETLR) for Databricks powered by Apache SPark.
 
 Visit SPETLR official webpage: [https://spetlr.com/](https://spetlr.com/)
 
-## Important Notes
+
+# Table of Contents
+- [Description](#description)
+- [Important Notes](#important-notes)
+- [Installation](#installation)
+- [Development Notes](#development-notes)
+- [Testing](#testing)
+- [General Project Info](#general-project-info)
+- [Contributing](#contributing)
+- [Build Status](#build-status)
+- [Releases](#releases)
+- [Contact](#contact)
+
+# Description
+
+SPETLR has a lot of great tools for working with ETL in Databricks. But to make it easy for you to consider why you need SPETLR here is a list of the core features:
+
+* ETL framework: A common ETL framework that enables reusable transformations in an object-oriented manner. Standardized structures facilitate cooperation in large teams.
+
+* Integration testing: A framework for creating test databases and tables before deploying to production in order to ensure reliable and stable data platforms. An additional layer of data abstraction allows full integration testing.
+
+* Handlers: Standard connectors with commonly used options reduce boilerplate.
+
+For more information, visit SPETLR official webpage: [https://spetlr.com/](https://spetlr.com/)
+
+# Important Notes
 
 This package can not be run or tested without access to `pyspark`.
 However, installing `pyspark` as part of our installer gave issues when
 other versions of `pyspark` were needed. Hence we took out the dependency
 from our installer.
 
-## Installation
+# Installation
 
 Install SPETLR it from PyPI: 
 [![PyPI version](https://badge.fury.io/py/spetlr.svg)](https://pypi.org/project/spetlr/)
@@ -19,7 +44,7 @@ Install SPETLR it from PyPI:
 pip install spetlr
 ```
 
-## Development Notes
+# Development Notes
 
 To prepare for development, please install these additional requirements:
  - Java 8
@@ -30,16 +55,16 @@ Then install the package locally
     python setup.py develop
 
 
-### Testing
+## Testing
 
-#### Local tests
+### Local tests
 After installing the dev-requirements, execute tests by running:
 
     pytest tests
 
 These tests are located in the `./tests/local` folder and only require a Python interpreter. Pull requests will not be accepted if these tests do not pass. If you add new features, please include corresponding tests.
 
-#### Cluster tests
+### Cluster tests
 Tests in the `./tests/cluster` folder are designed to run on a Databricks cluster. The [Pre-integration Test](https://github.com/spetlr-org/spetlr/blob/main/.github/workflows/pre-integration.yml) utilizes Azure Resource deployment - and can only be runned by the spetlr-org admins. 
 
 To deploy the necessary Azure resources to your own Azure Tenant, run the following command:
@@ -56,7 +81,7 @@ Afterward, execute the following commands:
 ```
 
 
-### General Project Info
+# General Project Info
 [![Github top language](https://img.shields.io/github/languages/top/spetlr-org/spetlr)](https://github.com/spetlr-org/spetlr)
 [![Github stars](https://img.shields.io/github/stars/spetlr-org/spetlr)](https://github.com/spetlr-org/spetlr)
 [![Github forks](https://img.shields.io/github/forks/spetlr-org/spetlr)](https://github.com/spetlr-org/spetlr)
@@ -66,7 +91,7 @@ Afterward, execute the following commands:
 
 
 
-### Contributing
+# Contributing
 
 Feel free to contribute to SPETLR. Any contributions are appreciated - not only new features, but also if you find a way to improve SPETLR. 
 
@@ -79,20 +104,17 @@ If you have a suggestion that can enhance SPETLR, please fork the repository and
 5. Open a Pull Request
 
 
-### Packages
-
-
-### Build Status
+# Build Status
 
 [![Post-Integration](https://github.com/spetlr-org/spetlr/actions/workflows/post-integration.yml/badge.svg)](https://github.com/spetlr-org/spetlr/actions/workflows/post-integration.yml)
 
 
-### Releases
+# Releases
 Releases to PyPI is an Github Action which needs to be manually triggered. 
 
 [![Release](https://github.com/spetlr-org/spetlr/actions/workflows/release.yml/badge.svg)](https://github.com/spetlr-org/spetlr/actions/workflows/release.yml)
 [![PyPI spetlr badge](https://img.shields.io/pypi/v/spetlr)](https://pypi.org/project/spetlr/)
 
-### Contact
+# Contact
 
 For any inquiries, please use the [SPETLR Discord Server](https://discord.gg/p9bzqGybVW).

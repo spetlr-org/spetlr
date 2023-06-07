@@ -7,7 +7,7 @@ def stop_all_streams():
 
     NB: This function will interfere with active streaming
         if tests is parallelized, consider creation a function
-        that only stops streaming set up in this class
+        that only stops streaming set up in the test class
 
     """
     for stream in Spark.get().streams.active:

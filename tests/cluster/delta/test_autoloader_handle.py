@@ -11,7 +11,7 @@ from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 from spetlr.utils.FileExists import file_exists
-from spetlr.utils.stop_all_streams import stop_all_streams
+from spetlr.utils.stop_test_streams import stop_test_streams
 from tests.cluster.values import resourceName
 
 
@@ -53,7 +53,7 @@ class AutoloaderTests(unittest.TestCase):
         # NB: This function will interfere with active streaming
         # if tests is parallelized, consider creation a function
         # that only stops streaming set up in this class
-        stop_all_streams()
+        stop_test_streams()
 
     def test_01_configure(self):
         tc = Configurator()
@@ -86,6 +86,7 @@ class AutoloaderTests(unittest.TestCase):
                 "format": "delta",
                 "schema_location": self.sink_checkpoint_path,
                 "await_termination": True,
+                "query_name": "testquery{ID}",
             },
         )
 

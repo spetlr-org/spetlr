@@ -7,7 +7,7 @@ from spetlr.etl.extractors import StreamExtractor
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.spark import Spark
 from spetlr.sql import SqlHandle
-from spetlr.utils.stop_all_streams import stop_all_streams
+from spetlr.utils.stop_test_streams import stop_test_streams
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
 
@@ -26,10 +26,7 @@ class SqlServerStreamingTests(unittest.TestCase):
         DbHandle.from_tc("MyDb").drop_cascade()
         DeliverySqlServer().drop_table("MSSQL")
 
-        # NB: This function will interfere with active streaming
-        # if tests is parallelized, consider creation a function
-        # that only stops streaming set up in this class
-        stop_all_streams()
+        stop_test_streams()
 
     def test_01_configure(self):
         # Configure delta table
@@ -45,6 +42,7 @@ class SqlServerStreamingTests(unittest.TestCase):
                 "path": "/mnt/spetlr/silver/testdb{ID}/testtbl",
                 "format": "delta",
                 "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl",
+                "query_name": "testquerytbl{ID}",
             },
         )
 
@@ -73,6 +71,7 @@ class SqlServerStreamingTests(unittest.TestCase):
                 "name": "dbo.stream_test{ID}",
                 "checkpoint_path": "/mnt/spetlr/silver/stream_test_sql{ID}"
                 "/_checkpoint_path_",
+                "query_name": "testquerysql{ID}",
             },
         )
 
@@ -105,6 +104,7 @@ class SqlServerStreamingTests(unittest.TestCase):
                 await_termination=True,
                 mode="append",
                 checkpoint_path=Configurator().get("MSSQL", "checkpoint_path"),
+                query_name=Configurator().get("MSSQL", "query_name"),
             )
         )
         o.execute()

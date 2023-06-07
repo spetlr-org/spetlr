@@ -14,7 +14,7 @@ from spetlr.spark import Spark
 from spetlr.utils import DataframeCreator
 
 # from spetlr.utils.FileExists import file_exists
-from spetlr.utils.stop_all_streams import stop_all_streams
+from spetlr.utils.StopAllStreams import stop_all_streams
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 

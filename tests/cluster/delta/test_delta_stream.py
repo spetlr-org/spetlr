@@ -10,7 +10,8 @@ from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.spark import Spark
-from spetlr.utils.stop_all_streams import stop_all_streams
+from spetlr.utils.stop_test_streams import stop_test_streams
+from spetlr.utils.StopAllStreams import stop_all_streams
 
 
 @unittest.skipUnless(
@@ -30,7 +31,7 @@ class DeltaStreamTests(unittest.TestCase):
         # NB: This function will interfere with active streaming
         # if tests is parallelized, consider creation a function
         # that only stops streaming set up in this class
-        stop_all_streams()
+        stop_test_streams()
 
     def test_01_configure(self):
         tc = Configurator()
@@ -45,6 +46,7 @@ class DeltaStreamTests(unittest.TestCase):
                 "path": "/mnt/spetlr/silver/testdb{ID}/testtbl",
                 "format": "delta",
                 "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl",
+                "query_name": "testquerytbl{ID}",
             },
         )
 
@@ -57,6 +59,7 @@ class DeltaStreamTests(unittest.TestCase):
                 "format": "delta",
                 "checkpoint_path": mirror_cp_path,
                 "await_termination": True,
+                "query_name": "testquerytblmirror{ID}",
             },
         )
 
@@ -67,6 +70,7 @@ class DeltaStreamTests(unittest.TestCase):
                 "format": "delta",
                 "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
                 "_checkpoint_path_tbl2",
+                "query_name": "testquerytbl2{ID}",
             },
         )
 
@@ -78,6 +82,7 @@ class DeltaStreamTests(unittest.TestCase):
                 "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
                 "_checkpoint_path_tbl3",
                 "await_termination": True,
+                "query_name": "testquerytbl3{ID}",
             },
         )
 
@@ -89,6 +94,7 @@ class DeltaStreamTests(unittest.TestCase):
                 "format": "delta",
                 "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
                 "_checkpoint_path_tbl4",
+                "query_name": "testquerytbl4{ID}",
             },
         )
 
@@ -100,6 +106,7 @@ class DeltaStreamTests(unittest.TestCase):
                 "format": "delta",
                 "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}"
                 "/_checkpoint_path_tbl5",
+                "query_name": "testquerytbl5{ID}",
             },
         )
 
@@ -154,6 +161,7 @@ class DeltaStreamTests(unittest.TestCase):
                 await_termination=True,
                 mode="append",
                 checkpoint_path=Configurator().get("MyTblMirror", "checkpoint_path"),
+                query_name=Configurator().get("MyTblMirror", "query_name"),
             )
         )
         o.execute()
@@ -180,6 +188,7 @@ class DeltaStreamTests(unittest.TestCase):
                 await_termination=True,
                 mode="append",
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
+                query_name=Configurator().get("MyTbl3", "query_name"),
             ),
         )
         o.execute()
@@ -207,6 +216,7 @@ class DeltaStreamTests(unittest.TestCase):
                 await_termination=True,
                 mode="append",
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
+                query_name=Configurator().get("MyTbl3", "query_name"),
             ),
         )
         o.execute()
@@ -235,6 +245,7 @@ class DeltaStreamTests(unittest.TestCase):
                 mode="append",
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
                 trigger_type="once",
+                query_name=Configurator().get("MyTbl3", "query_name"),
             ),
         )
         o.execute()
@@ -265,6 +276,7 @@ class DeltaStreamTests(unittest.TestCase):
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
                 trigger_type="processingtime",
                 trigger_time_seconds=5,
+                query_name=Configurator().get("MyTbl3", "query_name"),
             ),
         )
         o.execute()

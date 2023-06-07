@@ -8,6 +8,7 @@ from typing import Dict, Set, Union
 import yaml
 from deprecated import deprecated
 
+from spetlr.configurator._cli.ConfiguratorCli import ConfiguratorCli
 from spetlr.configurator.sql import _parse_sql_to_config
 from spetlr.exceptions import NoSuchValueException
 
@@ -32,7 +33,7 @@ class ConfiguratorSingleton(type):
         return ConfiguratorSingleton._instance
 
 
-class Configurator(metaclass=ConfiguratorSingleton):
+class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     _unique_id: str
     _raw_resource_details: TcDetails
     _is_debug: bool
@@ -399,5 +400,3 @@ class Configurator(metaclass=ConfiguratorSingleton):
     def regenerate_unique_id_and_clear_conf(self):
         self._unique_id = uuid.uuid4().hex
         self.clear_all_configurations()
-
-    from ._cli import cli

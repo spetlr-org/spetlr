@@ -68,7 +68,7 @@ class AutoloaderTests(unittest.TestCase):
                 "path": self.avro_source_path,
                 "format": "avro",
                 "partitioning": "ymd",
-                "checkpoint_path": self.avrosource_checkpoint_path,
+                "schema_location": self.avrosource_checkpoint_path,
             },
         )
 
@@ -84,7 +84,7 @@ class AutoloaderTests(unittest.TestCase):
                 "name": "{MyDb}.AvroSink",
                 "path": "{MyDb_path}/AvroSink",
                 "format": "delta",
-                "checkpoint_path": self.sink_checkpoint_path,
+                "schema_location": self.sink_checkpoint_path,
                 "await_termination": True,
             },
         )
@@ -128,7 +128,7 @@ class AutoloaderTests(unittest.TestCase):
                 format="delta",
                 await_termination=True,
                 mode="append",
-                checkpoint_path=tc.get("AvroSink", "checkpoint_path"),
+                checkpoint_path=tc.get("AvroSink", "schema_location"),
             )
         )
         o.execute()

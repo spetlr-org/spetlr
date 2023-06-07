@@ -11,7 +11,7 @@ class AutoloaderHandle(TableHandle):
         self,
         *,
         location: str,
-        checkpoint_path: str,
+        schema_location: str,
         data_format: str,
     ):
         """
@@ -31,10 +31,10 @@ class AutoloaderHandle(TableHandle):
 
         self._location = location
         self._data_format = data_format
-        self._checkpoint_path = checkpoint_path
+
+        self._schema_location = schema_location
 
         self._validate()
-        self._validate_checkpoint()
 
     @classmethod
     def from_tc(cls, id: str) -> "AutoloaderHandle":
@@ -42,7 +42,7 @@ class AutoloaderHandle(TableHandle):
         return cls(
             location=tc.table_property(id, "path", ""),
             data_format=tc.table_property(id, "format", ""),
-            checkpoint_path=tc.table_property(id, "checkpoint_path", ""),
+            schema_location=tc.table_property(id, "schema_location", ""),
         )
 
     def _validate(self):
@@ -50,20 +50,12 @@ class AutoloaderHandle(TableHandle):
         if self._data_format == "delta":
             raise DeltaHandleInvalidFormat("Use DeltaHandle.read_stream() for delta.")
 
-    def _validate_checkpoint(self):
-        if "/_" not in self._checkpoint_path:
-            print(
-                "RECOMMENDATION: You can safely store checkpoints alongside "
-                "other data and metadata for a Delta table using a directory "
-                "structure such as <table_name>/_checkpoints"
-            )
-
     def read_stream(self) -> DataFrame:
         reader = (
             Spark.get()
             .readStream.format("cloudFiles")
             .option("cloudFiles.format", self._data_format)
-            .option("cloudFiles.schemaLocation", self._checkpoint_path)
+            .option("cloudFiles.schemaLocation", self._schema_location)
             .load(self._location)
         )
 

@@ -11,7 +11,6 @@ from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.spark import Spark
 from spetlr.utils.stop_test_streams import stop_test_streams
-from spetlr.utils.StopAllStreams import stop_all_streams
 
 
 @unittest.skipUnless(
@@ -253,7 +252,7 @@ class DeltaStreamTests(unittest.TestCase):
         # wait 20 sec for the stream to start
         time.sleep(20)
 
-        stop_all_streams()
+        stop_test_streams()
 
     def test_09_trigger_processing_time(self):
         self._overwrite_two_rows_to_table("MyTbl")
@@ -284,7 +283,7 @@ class DeltaStreamTests(unittest.TestCase):
         # wait 60 sec for the stream to start
         time.sleep(60)
 
-        stop_all_streams()
+        stop_test_streams()
 
     def test_10_delete(self):
         dh = DeltaHandle.from_tc("MyTbl")

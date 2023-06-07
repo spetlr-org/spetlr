@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from spetlrtools.testing import DataframeTestCase
 
@@ -8,6 +8,7 @@ from spetlr.exceptions import (
     MissingEitherStreamLoaderOrHandle,
     NeedTriggerTimeWhenProcessingType,
     NotAValidStreamTriggerType,
+    StreamLoaderNeedsFormatAndCheckpoint,
     UnknownStreamOutputMode,
 )
 
@@ -73,7 +74,37 @@ class StreamLoaderTests(DataframeTestCase):
                 trigger_type="once",
             ).save(Mock())
 
-    def test_06_discprency_mode_outputmode(self):
+    def test_06_loader_needs_format_and_checkpoint(self):
+        with self.assertRaises(StreamLoaderNeedsFormatAndCheckpoint):
+            StreamLoader(
+                loader=Mock(),
+                options_dict={},
+                await_termination=True,
+                outputmode="unknown",
+                checkpoint_path="testpath",
+                trigger_type="once",
+            ).save(Mock())
+
+        with self.assertRaises(StreamLoaderNeedsFormatAndCheckpoint):
+            StreamLoader(
+                loader=Mock(),
+                options_dict={},
+                await_termination=True,
+                format="something",
+                outputmode="unknown",
+                trigger_type="once",
+            ).save(Mock())
+
+        with self.assertRaises(StreamLoaderNeedsFormatAndCheckpoint):
+            StreamLoader(
+                loader=Mock(),
+                options_dict={},
+                await_termination=True,
+                outputmode="unknown",
+                trigger_type="once",
+            ).save(Mock())
+
+    def test_07_discprency_mode_outputmode(self):
         """
         Here should be a test of mode and outputmode!
 

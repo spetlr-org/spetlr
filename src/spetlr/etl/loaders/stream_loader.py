@@ -4,7 +4,6 @@ from typing import List
 from pyspark.sql import DataFrame
 from pyspark.sql.streaming import DataStreamWriter
 
-from spetlr import Configurator
 from spetlr.etl import Loader
 from spetlr.exceptions import (
     AmbiguousLoaderInput,
@@ -14,10 +13,8 @@ from spetlr.exceptions import (
     StreamLoaderNeedsFormatAndCheckpoint,
     UnknownStreamOutputMode,
 )
-from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 from spetlr.tables import TableHandle
-from spetlr.utils.FileExists import file_exists
 
 
 class StreamLoader(Loader):
@@ -65,7 +62,6 @@ class StreamLoader(Loader):
         self._checkpoint_path = checkpoint_path
         self._await_termination = await_termination
         self._join_cols = upsert_join_cols
-        tc = Configurator()
 
         assert (
             Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4
@@ -82,17 +78,19 @@ class StreamLoader(Loader):
         ):
             raise StreamLoaderNeedsFormatAndCheckpoint()
 
-        # If there is a tablehandle, the values are extracted from the configurator
-        # this could perhaps be made as an from_tc method
-        if self._handle is not None:
-            _handle_id = self._handle.get_table_id()
-            self._format = self._format or tc.table_property(_handle_id, "format", "")
-            self._checkpoint_path = self._checkpoint_path or tc.table_property(
-                _handle_id, "checkpoint_path", ""
-            )
-            self._query_name = self._query_name or tc.table_property(
-                _handle_id, "query_name", ""
-            )
+        # Todo:
+        #   If there is a tablehandle, the values are extracted from the configurator
+        #   this could perhaps be made as an from_tc method
+        #       if self._handle is not None:
+        #        _handle_id = self._handle.get_table_id()
+        #        self._format = self._format or
+        #        tc.table_property(_handle_id, "format", "")
+        #        self._checkpoint_path = self._checkpoint_path or tc.table_property(
+        #            _handle_id, "checkpoint_path", ""
+        #        )
+        #        self._query_name = self._query_name or tc.table_property(
+        #            _handle_id, "query_name", ""
+        #        )
 
         # Set checkpoint path always
         self._options_dict = (
@@ -166,16 +164,3 @@ class StreamLoader(Loader):
                 "other data and metadata for a Delta table using a directory "
                 "structure such as <table_name>/_checkpoints"
             )
-
-    def remove_checkpoint(self):
-        if not file_exists(self._checkpoint_path):
-            init_dbutils().fs.mkdirs(self._checkpoint_path)
-
-    # def remove_checkpoint(self) -> None:
-    #     # Consider implementing:
-    #     #    if not file_exists(self._checkpoint_path):
-    #     #        init_dbutils().fs.mkdirs(self._checkpoint_path)
-    #     print(
-    #         "Remember to drop the checkpoint path, "
-    #         "if the checkpoint path is NOT <table_name>/_checkpoints."
-    #     )

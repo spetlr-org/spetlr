@@ -6,3 +6,8 @@ SqlTestTable2:
 
 SqlTestView:
   name: viewtest1{ID}
+
+
+MismatchSqlTestTable:
+  name: dbo.mismatch{ID}
+  delete_on_delta_schema_mismatch: true

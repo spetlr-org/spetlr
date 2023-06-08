@@ -17,23 +17,22 @@ Since Spetlr primarily is built as batch-processing ETL, structured streaming is
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders.stream_loader import StreamLoader
-from spetlr.tables import TableHandle
-Orchestrator().extract_from(StreamExtractor(handle=myhandle)).load_into(
-    StreamLoader(handle=TableHandle())
-)
+from spetlr.etl.loaders import SimpleLoader
+from spetlr.delta import DeltaHandle
+from spetlr.configurator import Configurator
 
-Orchestrator()
-    .extract_from(StreamExtractor(dh, dataset_key="MyTbl"))
+dh_source = DeltaHandle(...)
+dh_target = DeltaHandle(...)
+
+Orchestrator()\
+    .extract_from(StreamExtractor(dh_source, dataset_key="MyTbl"))\
     .load_into(
     StreamLoader(
-        handle=dh_target,
-        options_dict={},
-        format="delta",
+        loader=SimpleLoader(handle=dh_target, mode="append"),
         await_termination=True,
-        mode="append",
         checkpoint_path=Configurator().get("MyTblMirror", "checkpoint_path"),
         )
-    )
+    )\
     .execute()
 
 ```
@@ -52,26 +51,26 @@ The autoloader is combined with the `StreamLoader()` when used in the Spetlr ETL
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders.stream_loader import StreamLoader
-from spetlr.tables import TableHandle
-from spetlr.autoloader.AutoloaderHandle
+from spetlr.autoloader import AutoloaderHandle
+from spetlr.etl.loaders import SimpleLoader
+from spetlr.delta import DeltaHandle
+from spetlr.configurator import Configurator
 
- o = Orchestrator()
-    .extract_from
-    (
+
+dh_target = DeltaHandle(...)
+
+Orchestrator()\
+    .extract_from(
         StreamExtractor(
             AutoloaderHandle.from_tc("AvroSource"), dataset_key="AvroSource"
         )
-    )
-    .load_into
-    (
+    )\
+    .load_into(
         StreamLoader(
-            handle=dh_sink,
-            options_dict={},
-            format="delta",
+            loader=SimpleLoader(handle=dh_target),
             await_termination=True,
-            mode="append",
-            checkpoint_path=tc.get("AvroSink", "checkpoint_path"),
+            checkpoint_path=Configurator().get("AvroSink", "checkpoint_path"),
         )
-    )
+    )\
     .execute()
 ```

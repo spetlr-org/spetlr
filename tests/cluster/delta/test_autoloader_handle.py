@@ -7,6 +7,7 @@ from spetlr.autoloader import AutoloaderHandle
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
+from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
@@ -124,11 +125,9 @@ class AutoloaderTests(unittest.TestCase):
 
         o.load_into(
             StreamLoader(
-                handle=dh_sink,
+                loader=SimpleLoader(dh_sink, mode="append"),
                 options_dict={},
-                format="delta",
                 await_termination=True,
-                mode="append",
                 checkpoint_path=tc.get("AvroSink", "schema_location"),
             )
         )

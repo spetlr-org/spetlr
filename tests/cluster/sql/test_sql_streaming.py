@@ -4,6 +4,7 @@ from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors import StreamExtractor
+from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.spark import Spark
 from spetlr.sql import SqlHandle
@@ -98,11 +99,8 @@ class SqlServerStreamingTests(unittest.TestCase):
         o.extract_from(StreamExtractor(dh, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                handle=sql_handle,
-                options_dict={},
-                format="delta",
+                loader=SimpleLoader(sql_handle, mode="append"),
                 await_termination=True,
-                mode="append",
                 checkpoint_path=Configurator().get("MSSQL", "checkpoint_path"),
                 query_name=Configurator().get("MSSQL", "query_name"),
             )

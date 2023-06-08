@@ -154,11 +154,8 @@ class DeltaStreamTests(unittest.TestCase):
         o.extract_from(StreamExtractor(dh, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                handle=dh_target,
-                options_dict={},
-                format="delta",
+                loader=SimpleLoader(dh_target, mode="append"),
                 await_termination=True,
-                mode="append",
                 checkpoint_path=Configurator().get("MyTblMirror", "checkpoint_path"),
                 query_name=Configurator().get("MyTblMirror", "query_name"),
             )
@@ -181,11 +178,8 @@ class DeltaStreamTests(unittest.TestCase):
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                handle=dh3,
-                options_dict={},
-                format="delta",
+                loader=SimpleLoader(dh3, mode="append"),
                 await_termination=True,
-                mode="append",
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
                 query_name=Configurator().get("MyTbl3", "query_name"),
             ),
@@ -209,11 +203,9 @@ class DeltaStreamTests(unittest.TestCase):
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                loader=SimpleLoader(dh3),
+                loader=SimpleLoader(dh3, mode="append"),
                 options_dict={},
-                format="delta",
                 await_termination=True,
-                mode="append",
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
                 query_name=Configurator().get("MyTbl3", "query_name"),
             ),
@@ -237,11 +229,8 @@ class DeltaStreamTests(unittest.TestCase):
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                loader=SimpleLoader(dh3),
-                options_dict={},
-                format="delta",
+                loader=SimpleLoader(dh3, mode="append"),
                 await_termination=False,
-                mode="append",
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
                 trigger_type="once",
                 query_name=Configurator().get("MyTbl3", "query_name"),
@@ -267,11 +256,9 @@ class DeltaStreamTests(unittest.TestCase):
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                loader=SimpleLoader(dh3),
+                loader=SimpleLoader(dh3, mode="append"),
                 options_dict={},
-                format="delta",
                 await_termination=False,
-                mode="append",
                 checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
                 trigger_type="processingtime",
                 trigger_time_seconds=5,

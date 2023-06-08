@@ -136,7 +136,6 @@ class UpsertLoaderTestsDeltaStream(DataframeTestCase):
         o.load_into(
             UpsertLoaderStreaming(
                 handle=self.target_dh,
-                format="delta",
                 options_dict={},
                 trigger_type="availablenow",
                 checkpoint_path=Configurator().get(self.target_id, "checkpoint_path"),

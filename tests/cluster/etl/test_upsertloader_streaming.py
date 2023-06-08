@@ -8,13 +8,9 @@ from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders.UpsertLoaderStreaming import UpsertLoaderStreaming
-
-# from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 from spetlr.utils import DataframeCreator
-
-# from spetlr.utils.FileExists import file_exists
-from spetlr.utils.StopAllStreams import stop_all_streams
+from spetlr.utils.stop_test_streams import stop_test_streams
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
@@ -49,6 +45,13 @@ class UpsertLoaderTestsDeltaStream(DataframeTestCase):
         tc.add_resource_path(extras)
         tc.set_debug()
 
+        tc.register(
+            "MyStream",
+            {
+                "query_name": "testquerytbl{ID}",
+            },
+        )
+
         SparkSqlExecutor().execute_sql_file("upsertloader-test")
 
         cls.source_dh = DeltaHandle.from_tc(cls.source_id)
@@ -56,17 +59,11 @@ class UpsertLoaderTestsDeltaStream(DataframeTestCase):
 
         cls.dummy_schema = cls.target_dh.read().schema
 
-        # # make sure target is empty and has a schema
-        # df_empty = DataframeCreator.make_partial(cls.dummy_schema, [], [])
-        # cls.target_dh_dummy.overwrite(df_empty)
-
     @classmethod
     def tearDownClass(cls) -> None:
         DbHandle.from_tc("UpsertLoaderDb").drop_cascade()
 
-        # if file_exists(cls.source_table_checkpoint_path):
-        #    init_dbutils().fs.rm(cls.source_table_checkpoint_path)
-        stop_all_streams()
+        stop_test_streams()
 
     def test_01_can_perform_incremental_on_empty(self):
         """Stream two rows to the empty target table"""
@@ -145,6 +142,7 @@ class UpsertLoaderTestsDeltaStream(DataframeTestCase):
                 checkpoint_path=Configurator().get(self.target_id, "checkpoint_path"),
                 await_termination=True,
                 upsert_join_cols=self.join_cols,
+                query_name=Configurator().get("MyStream", "query_name"),
             )
         )
         o.execute()

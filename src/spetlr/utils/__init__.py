@@ -1,10 +1,12 @@
 from .CleanupTestDatabases import CleanupTestDatabases
 from .DataframeCreator import DataframeCreator
+from .DeleteMismatchedSchemas import DeleteMismatchedSchemas
 from .DropOldestDuplicates import DropOldestDuplicates
 from .GetMergeStatement import GetMergeStatement
 from .MockExtractor import MockExtractor
 from .MockLoader import MockLoader
 from .SelectAndCastColumns import SelectAndCastColumns
+
 
 __all__ = [
     DataframeCreator,
@@ -14,4 +16,5 @@ __all__ = [
     DropOldestDuplicates,
     SelectAndCastColumns,
     CleanupTestDatabases,
+    DeleteMismatchedSchemas,
 ]

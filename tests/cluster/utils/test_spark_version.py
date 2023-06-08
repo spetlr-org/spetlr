@@ -20,11 +20,9 @@ class SparkVersionTests(DataframeTestCase):
     def test_01_streamloader(self):
         with self.assertRaises(AssertionError):
             StreamLoader(
-                handle=Mock(),
+                loader=Mock(),
                 options_dict={},
-                format="delta",
                 await_termination=True,
-                mode="append",
                 checkpoint_path="testpath",
             ).save(Mock())
 

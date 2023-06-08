@@ -7,7 +7,6 @@ from .MockExtractor import MockExtractor
 from .MockLoader import MockLoader
 from .SelectAndCastColumns import SelectAndCastColumns
 
-
 __all__ = [
     DataframeCreator,
     MockLoader,

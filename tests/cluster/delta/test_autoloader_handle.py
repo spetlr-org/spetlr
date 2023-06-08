@@ -51,9 +51,6 @@ class AutoloaderTests(unittest.TestCase):
         if file_exists(cls.avro_source_path):
             init_dbutils().fs.rm(cls.avro_source_path, True)
 
-        # NB: This function will interfere with active streaming
-        # if tests is parallelized, consider creation a function
-        # that only stops streaming set up in this class
         stop_test_streams()
 
     def test_01_configure(self):

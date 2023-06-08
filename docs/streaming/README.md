@@ -7,10 +7,10 @@
 
 
 ## Delta streaming
-Since Spetlr primarily is built as batch-processing ETL, structured streaming is available in the following way:
+Since SPETLR primarily is built as batch-processing ETL, structured streaming is available in the following way:
 
 - The `DeltaHandle` class includes a method `.read_stream()` for reading a stream.
-- However, because streaming behaves differently than batch processing, a stream requires both a read and a write. As a result, the delta-handle is unable to have a write stream method. To make streaming work for the Spetlr ETL framework, the `foreachbatch` stream method is utilized. The class `StreamLoader()` should be used in the ETL as the `load_into()` method. 
+- However, because streaming behaves differently than batch processing, a stream requires both a read and a write. As a result, the DeltaHandle is unable to have a write stream method. To make streaming work for the SPETLR ETL framework, the `foreachbatch` stream method is utilized. The class `StreamLoader()` should be used in the ETL as the `load_into()` method. 
 
 ### Example: Delta streaming
 ```python
@@ -24,15 +24,15 @@ from spetlr.configurator import Configurator
 dh_source = DeltaHandle(...)
 dh_target = DeltaHandle(...)
 
-Orchestrator()\
-    .extract_from(StreamExtractor(dh_source, dataset_key="MyTbl"))\
+Orchestrator()
+    .extract_from(StreamExtractor(dh_source, dataset_key="MyTbl"))
     .load_into(
     StreamLoader(
         loader=SimpleLoader(handle=dh_target, mode="append"),
         await_termination=True,
         checkpoint_path=Configurator().get("MyTblMirror", "checkpoint_path"),
         )
-    )\
+    )
     .execute()
 
 ```
@@ -43,7 +43,7 @@ The databricks autoloader can *"(...) incrementally and efficiently processes ne
 - A handle class called `AutoloaderHandle`.
 - `AutoloaderHandle` has a `.read_stream()` method.
 
-The autoloader is combined with the `StreamLoader()` when used in the Spetlr ETL framework - [see previous section](#delta-streaming).
+The autoloader is combined with the `StreamLoader()` when used in the SPETLR ETL framework - [see previous section](#delta-streaming).
 
 ### Example: Streaming with autoload
 
@@ -59,18 +59,18 @@ from spetlr.configurator import Configurator
 
 dh_target = DeltaHandle(...)
 
-Orchestrator()\
+Orchestrator()
     .extract_from(
         StreamExtractor(
             AutoloaderHandle.from_tc("AvroSource"), dataset_key="AvroSource"
         )
-    )\
+    )
     .load_into(
         StreamLoader(
             loader=SimpleLoader(handle=dh_target),
             await_termination=True,
             checkpoint_path=Configurator().get("AvroSink", "checkpoint_path"),
         )
-    )\
+    )
     .execute()
 ```

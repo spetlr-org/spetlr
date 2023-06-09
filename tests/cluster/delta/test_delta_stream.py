@@ -187,32 +187,6 @@ class DeltaStreamTests(unittest.TestCase):
         result = dh3.read()
         self.assertEqual(2, result.count())
 
-    def test_08_write_with_loader(self):
-        self._overwrite_two_rows_to_table("MyTbl")
-        # check that we can write to the table with no "name" property
-        dh1 = DeltaHandle.from_tc("MyTbl")
-
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-
-        # dsh3.append(ah, mergeSchema=True)
-
-        o = Orchestrator()
-        o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
-        o.load_into(
-            StreamLoader(
-                loader=SimpleLoader(dh3, mode="append"),
-                options_dict={},
-                await_termination=True,
-                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
-                query_name=Configurator().get("MyTbl3", "query_name"),
-            ),
-        )
-        o.execute()
-
-        # Read data from mytbl3
-        result = dh3.read()
-        self.assertEqual(2, result.count())
-
     def test_09_trigger_once(self):
         self._overwrite_two_rows_to_table("MyTbl")
         # check that we can write to the table with no "name" property

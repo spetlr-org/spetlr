@@ -12,6 +12,7 @@ class TestStopTestStreamsOnCluster(DataframeTestCase):
 
     """
 
+    @classmethod
     def tearDownClass(cls) -> None:
         DbHandle.from_tc("MyDb").drop_cascade()
 

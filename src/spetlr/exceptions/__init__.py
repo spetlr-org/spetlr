@@ -76,3 +76,8 @@ class UnknownStreamOutputMode(SpetlrException):
         "Output mode should be one of the following ['complete', 'append', 'update']"
     )
     pass
+
+
+class SparkVersionNotSupportedForSpetlrStreaming(SpetlrException):
+    value = "Only DATABRICKS_RUNTIME_10_4 or above is supported for Spetlr streaming."
+    pass

@@ -1,5 +1,4 @@
 import uuid as _uuid
-import warnings
 
 from pyspark.sql import DataFrame
 from pyspark.sql.streaming import DataStreamWriter
@@ -8,6 +7,7 @@ from spetlr.etl import Loader
 from spetlr.exceptions import (
     NeedTriggerTimeWhenProcessingType,
     NotAValidStreamTriggerType,
+    SparkVersionNotSupportedForSpetlrStreaming,
     UnknownStreamOutputMode,
 )
 from spetlr.spark import Spark
@@ -53,9 +53,8 @@ class StreamLoader(Loader):
         self._await_termination = await_termination
         self._validate_checkpoint()
 
-        assert (
-            Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4
-        ), f"DeltaStreamHandle not available for Spark version {Spark.version()}"
+        if Spark.version() < Spark.DATABRICKS_RUNTIME_10_4:
+            raise SparkVersionNotSupportedForSpetlrStreaming()
 
         # Set checkpoint path always
         self._options_dict = self._options_dict or {}
@@ -111,7 +110,7 @@ class StreamLoader(Loader):
 
     def _validate_checkpoint(self):
         if "/_" not in self._checkpoint_path:
-            warnings.warn(
+            print(
                 "RECOMMENDATION: You can safely store checkpoints alongside "
                 "other data and metadata for a Delta table using a directory "
                 "structure such as <table_name>/_checkpoints"

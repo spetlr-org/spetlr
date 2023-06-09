@@ -4,7 +4,10 @@ from typing import Any, List, Optional, Union
 from pyspark.sql import DataFrame
 
 from spetlr.configurator.configurator import Configurator
-from spetlr.exceptions import SpetlrException
+from spetlr.exceptions import (
+    SparkVersionNotSupportedForSpetlrStreaming,
+    SpetlrException,
+)
 from spetlr.functions import get_unique_tempview_name, init_dbutils
 from spetlr.spark import Spark
 from spetlr.tables.TableHandle import TableHandle
@@ -236,9 +239,8 @@ class DeltaHandle(TableHandle):
         Spark.get().sql(sql_str)
 
     def read_stream(self) -> DataFrame:
-        assert (
-            Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4
-        ), f"Streaming not available for Spark version {Spark.version()}"
+        if Spark.version() < Spark.DATABRICKS_RUNTIME_10_4:
+            raise SparkVersionNotSupportedForSpetlrStreaming()
 
         reader = (
             Spark.get()

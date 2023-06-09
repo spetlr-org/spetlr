@@ -2,6 +2,7 @@ from pyspark.sql import DataFrame
 
 from spetlr.configurator.configurator import Configurator
 from spetlr.delta.delta_handle import DeltaHandleInvalidFormat
+from spetlr.exceptions import SparkVersionNotSupportedForSpetlrStreaming
 from spetlr.spark import Spark
 from spetlr.tables import TableHandle
 
@@ -25,9 +26,8 @@ class AutoloaderHandle(TableHandle):
         data_format: the data format of the files that are read
         """
 
-        assert (
-            Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4
-        ), f"AutoloaderStreamHandle not available for Spark version {Spark.version()}"
+        if Spark.version() < Spark.DATABRICKS_RUNTIME_10_4:
+            raise SparkVersionNotSupportedForSpetlrStreaming()
 
         self._location = location
         self._data_format = data_format

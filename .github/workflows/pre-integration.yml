@@ -92,10 +92,13 @@ jobs:
       - name: Launch integration tests 11.3
         shell: pwsh
         run: |
-          .github/submit/submit_test_job.ps1  `
-            -sparkVersion "11.3.x-scala2.12" `
-            -testJobDetails job113.json `
-            -sparkLibs sparklibs113.json
+          spetlr-test-job submit `
+          --tests tests/ `
+          --task tests/cluster/ `
+          --cluster-file .github/submit/cluster113.json `
+          --requirements-file test_requirements.txt `
+          --sparklibs-file .github/submit/sparklibs113.json `
+          --out-json test113.json
 
       - name: Wait 2 min for things to settle
         shell: pwsh

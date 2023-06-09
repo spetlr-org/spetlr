@@ -12,8 +12,15 @@ if(-Not (Test-Path $odbcSaveLocation)){
 
 dbfs cp --overwrite $odbcSaveLocation dbfs:/databricks/drivers/msodbcsql17_amd64.deb
 
-Set-DatabricksGlobalInitScript `
-  -workspaceUrl $workspaceUrl `
-  -bearerToken $accessToken `
-  -initScriptName "pyodbc-driver" `
-  -initScriptContent (Get-Content "$PSScriptRoot/../drivers/pyodbc-driver.sh" -Raw)
+
+# Use https://github.com/databricks/databricks-sdk-py/blob/main/examples/global_init_scripts/create_global_init_scripts.py
+
+
+# Set-DatabricksGlobalInitScript `
+#   -workspaceUrl $workspaceUrl `
+#   -bearerToken $accessToken `
+#   -initScriptName "pyodbc-driver" `
+#   -initScriptContent (Get-Content "$PSScriptRoot/../drivers/pyodbc-driver.sh" -Raw)
+
+
+python -m pyodbc_global_init.py

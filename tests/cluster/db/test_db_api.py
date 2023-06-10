@@ -10,4 +10,4 @@ class ApiTests(unittest.TestCase):
     def test_02_make_a_call(self):
         db = getDbApi()
 
-        self.assertIn("files", db.dbfs().list("/"))
+        self.assertTrue(db.dbfs.exists("/files/"))

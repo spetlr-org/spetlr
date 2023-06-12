@@ -7,6 +7,7 @@ from typing import Dict, Set, Union
 
 import yaml
 from deprecated import deprecated
+
 from spetlr.configurator._cli.ConfiguratorCli import ConfiguratorCli
 from spetlr.configurator.sql import _parse_sql_to_config
 from spetlr.exceptions import NoSuchValueException

@@ -110,7 +110,7 @@ jobs:
 
       - name: Fetch integration tests 11.3
         shell: pwsh
-        run: .github/submit/fetch_test_job.ps1 -testJobDetails job113.json
+        run: spetlr-test-job fetch --runid-json job113.json
 
       - name: Delete Deployment
         if: always() # this step runs even if the pipeline is manually cancelled

@@ -11,6 +11,7 @@ from deprecated import deprecated
 from spetlr.configurator._cli.ConfiguratorCli import ConfiguratorCli
 from spetlr.configurator.sql import _parse_sql_to_config
 from spetlr.exceptions import NoSuchValueException
+from spetlr.functions import json_hash
 
 # recursive type definition of the details object
 TcDetails = Dict[str, Union[str, "TcDetails"]]
@@ -255,6 +256,23 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     def add_sql_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
         self._raw_resource_details.update(_parse_sql_to_config(resource_path))
 
+    def key_of(self, attribute: str, value: str) -> str:
+        """Obtain the key of the first registered item that has a given attribute
+        set to a given value. Uniqueness of the match is the responsibility of
+        the library user.
+
+        This function is slow as it performs a linear search. It is intended for use in
+        setup code.
+        """
+        for key, object in self._raw_resource_details.items():
+            try:
+                if object[attribute] == value:
+                    return key
+            except (KeyError, TypeError):
+                continue
+        else:
+            raise KeyError(f"No key with attribute {attribute}={repr(value)}")
+
     ############################################
     # all methods below are interface and convenience methods
     ############################################
@@ -303,12 +321,24 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         """
         return len(self._unique_id)
 
-    def register(self, key: str, value: TcValue):
+    def register(self, key: str, value: TcValue) -> str:
         """
-        Register a new item.
+        Register a new item and return its key.
         """
         self._raw_resource_details[key] = value
         self.table_details = dict()
+        return key
+
+    def define(self, **kwargs) -> str:
+        """
+        Register a new item based on its properties only and return its key.
+        The returned key is a hash-like string depending only on the values.
+        """
+        if not kwargs:
+            raise ValueError("No value passed.")
+
+        key = json_hash(kwargs)
+        return self.register(key, kwargs)
 
     def table_property(
         self, table_id: str, property_name: str, default_value: str = None

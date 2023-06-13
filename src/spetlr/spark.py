@@ -71,3 +71,4 @@ class Spark:
         return tuple(int(p) for p in cls.get().version.split("."))
 
     DATABRICKS_RUNTIME_9_1 = (3, 1, 2)
+    DATABRICKS_RUNTIME_11_3 = (3, 3, 0)

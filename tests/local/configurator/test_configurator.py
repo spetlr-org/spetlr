@@ -169,3 +169,69 @@ class TestConfigurator(unittest.TestCase):
                         LOCATION "/mnt/foo/bar/my_db1/details/";"""
             ),
         )
+
+    def test_10_generate_new_UUID_debug(self):
+        """
+        The UUID should be regenerated
+        when applying .regenerate_unique_id_and_clear_conf(),
+        and the Configurator is in debug mode.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.set_debug()
+
+        first_extension = c.get_all_details()["ID"]
+        c.regenerate_unique_id_and_clear_conf()
+        second_extension = c.get_all_details()["ID"]
+
+        self.assertNotEqual(first_extension, second_extension)
+
+    def test_11_generate_new_UUID_prod(self):
+        """
+        The UUID should be regenerated
+        when applying .regenerate_unique_id_and_clear_conf(),
+        and the Configurator is in debug mode.
+
+        But, in production mode, the ID should still be empty string.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.set_prod()
+
+        first_extension = c.get_all_details()["ID"]
+        c.regenerate_unique_id_and_clear_conf()
+        second_extension = c.get_all_details()["ID"]
+
+        self.assertEqual(first_extension, "")
+        self.assertEqual(second_extension, "")
+
+    def test_12_define_nameless(self):
+        """The value of the tableId may not be interesting.
+        When defined in this way, the `tbl` object can be
+        inspected with IntelliSense."""
+
+        c = Configurator()
+        c.clear_all_configurations()
+        c.set_prod()
+
+        tbl = c.define(name="MyDb.MyTable{ID}", path="/mnt/path/to{ID}/data")
+
+        self.assertEqual(c.get(tbl, "name"), "MyDb.MyTable")
+
+    def test_13_test_keyof(self):
+        """Test the ability to extract the key of an object for which only
+        the defined name is known."""
+        c = Configurator()
+        c.clear_all_configurations()
+
+        c.register("MySecretKey", {"name": "MyDb.MyTable{ID}", "path": "/mnt/to/data"})
+
+        key = c.key_of("name", "MyDb.MyTable{ID}")
+
+        self.assertEqual(key, "MySecretKey")
+
+        # key not captured
+        c.define(name="anotherName", path="/somewhere")
+        # recover  key
+        key = c.key_of("name", "anotherName")
+        self.assertEqual(c.get(key, "path"), "/somewhere")

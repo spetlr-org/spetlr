@@ -50,3 +50,13 @@ class NoDbUtils(SpetlrException):
 
 class NoSuchValueException(SpetlrKeyError):
     pass
+
+
+class MissingUpsertJoinColumns(SpetlrKeyError):
+    value = "You must specify upsert_join_cols"
+    pass
+
+
+class OnlyUseInSpetlrDebugMode(SpetlrKeyError):
+    value = "Only call this if the configurator is in debug"
+    pass

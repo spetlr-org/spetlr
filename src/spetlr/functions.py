@@ -1,8 +1,10 @@
 """
 A collection of useful pyspark snippets.
 """
-
+import hashlib
+import json
 import uuid as _uuid
+from typing import Any
 
 from deprecated import deprecated
 from pyspark.sql.functions import udf
@@ -67,3 +69,32 @@ def get_unique_tempview_name() -> str:
     unique_id = _uuid.uuid4().hex
     temp_view_name = f"source_{unique_id}"
     return temp_view_name
+
+
+def json_hash(value: Any):
+    """
+    Generate a hash from the json representation of a simple type.
+
+    This function converts the input to a JSON string,
+    generates a SHA256 hash of that string, and returns the hex digest.
+    Note that the function sorts any dictionary keys before converting
+    to a string to ensure consistent output for the same dictionary
+    regardless of the original key order.
+
+    Args:
+        value: A simple type or dictionary of simple types (e.g. int, str).
+
+    Returns:
+        str: A string representation of the input object.
+
+    Raises:
+        TypeError: If the value cannot be serialized to JSON.
+    """
+    # Convert the dictionary to a JSON string and encode it to bytes
+    input_bytes = json.dumps(value, sort_keys=True).encode("utf-8")
+
+    # Generate a SHA256 hash of the input
+    hash_object = hashlib.sha256(input_bytes)
+
+    # Get the hexadecimal representation of the hash
+    return hash_object.hexdigest()

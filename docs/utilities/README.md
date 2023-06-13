@@ -11,8 +11,7 @@ Utilities in spetlr:
 
 Using the method `spetlr.db_auto.getDbApi()` gives access to a 
 `DatabricksAPI` instance that has been pre-configured for the 
-current databricks instance. See [databricks-api](https://pypi.org/project/databricks-api/)
-for usage documentation.
+current databricks instance. See [databricks-api](https://pypi.org/project/databricks-sdk/) or [Github Databricks SDK](https://github.com/databricks/databricks-sdk-py) for usage documentation.
 
 Under the hood the function uses the job context to get the host and token
 when on the cluster. When using `spetlr` with databricks-connect, the `databricks-cli` is

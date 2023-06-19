@@ -21,6 +21,7 @@ def getDbApi() -> WorkspaceClient:
         dbutils = None
 
     if dbutils:
+        # TODO: remove, as Databricks SDK v0.1.10 has it already
         context = json.loads(
             dbutils.notebook.entry_point.getDbutils().notebook().getContext().toJson()
         )
@@ -43,4 +44,4 @@ def getDbApi() -> WorkspaceClient:
     if not host or not token:
         raise Exception("Unable to auto-configure api client.")
 
-    return WorkspaceClient(host=host, token=token)
+    return WorkspaceClient(host=host, token=token, product='spetlr', product_version='0.0.0')

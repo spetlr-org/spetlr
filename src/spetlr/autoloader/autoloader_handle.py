@@ -17,13 +17,14 @@ class AutoloaderHandle(TableHandle):
     ):
         """
         location: the location of the delta table
-        checkpoint_path: The location of the checkpoints, <table_name>/_checkpoints
-            The Delta Lake VACUUM function removes all files not managed by Delta Lake
-            but skips any directories that begin with _. You can safely store
-            checkpoints alongside other data and metadata for a Delta table
-            using a directory structure such as <table_name>/_checkpoints
-            See: https://docs.databricks.com/structured-streaming/delta-lake.html
-        data_format: the data format of the files that are read
+        schema_location: The location of the cloudfile schema.
+            Databricks documentation uses the expected writeStream checkpoint_path
+            as schema_location, see documentation at
+            https://docs.databricks.com/getting-started/etl-quick-start.html#auto-loader
+
+        data_format: The expected data format extracted by the Autoloader.
+            Examples: JSON, CSV, PARQUET, AVRO, ORC, TEXT, and BINARYFILE.
+            See: https://docs.databricks.com/ingestion/auto-loader/index.html
         """
 
         if Spark.version() < Spark.DATABRICKS_RUNTIME_10_4:
@@ -46,7 +47,10 @@ class AutoloaderHandle(TableHandle):
         )
 
     def _validate(self):
-        """Validates that the name is either db.table or just table."""
+        """
+        Validates the dataformat is not delta,
+        since delta stream should use the DeltaHandle instead.
+        """
         if self._data_format == "delta":
             raise DeltaHandleInvalidFormat("Use DeltaHandle.read_stream() for delta.")
 

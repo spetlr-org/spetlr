@@ -9,8 +9,8 @@ from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders.UpsertLoaderStreaming import UpsertLoaderStreaming
 from spetlr.spark import Spark
+from spetlr.testutils.stop_test_streams import stop_test_streams
 from spetlr.utils import DataframeCreator
-from spetlr.utils.stop_test_streams import stop_test_streams
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 

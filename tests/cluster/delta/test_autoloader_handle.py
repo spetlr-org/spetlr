@@ -4,6 +4,7 @@ from typing import List, Tuple
 
 from spetlr import Configurator
 from spetlr.autoloader import AutoloaderHandle
+from spetlr.dbutils.FileExists import file_exists
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
@@ -11,8 +12,7 @@ from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
-from spetlr.utils.FileExists import file_exists
-from spetlr.utils.stop_test_streams import stop_test_streams
+from spetlr.testutils.stop_test_streams import stop_test_streams
 from tests.cluster.values import resourceName
 
 

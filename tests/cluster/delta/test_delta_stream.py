@@ -10,7 +10,7 @@ from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.spark import Spark
-from spetlr.utils.stop_test_streams import stop_test_streams
+from spetlr.testutils.stop_test_streams import stop_test_streams
 
 
 @unittest.skipUnless(

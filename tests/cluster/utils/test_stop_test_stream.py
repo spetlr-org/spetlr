@@ -3,7 +3,7 @@ from spetlrtools.testing import DataframeTestCase
 from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.spark import Spark
-from spetlr.utils.stop_test_streams import stop_test_streams
+from spetlr.testutils.stop_test_streams import stop_test_streams
 
 
 class TestStopTestStreamsOnCluster(DataframeTestCase):

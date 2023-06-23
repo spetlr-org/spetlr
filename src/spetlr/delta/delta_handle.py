@@ -62,9 +62,12 @@ class DeltaHandle(TableHandle):
         self._options_dict.update({"ignoreChanges": str(ignore_changes)})
 
         if stream_start and stream_start != "":
-            self._options_dict["startingTimestamp"] = stream_start.strftime(
-                "%Y-%m-%dT%H:%M:%S.%fZ"
-            )
+            if isinstance(stream_start, datetime):
+                self._options_dict["startingTimestamp"] = stream_start.strftime(
+                    "%Y-%m-%dT%H:%M:%S.%fZ"
+                )
+            else:
+                self._options_dict["startingTimestamp"] = stream_start
 
         if max_bytes_per_trigger and max_bytes_per_trigger != "":
             self._options_dict["maxBytesPerTrigger"] = str(max_bytes_per_trigger)

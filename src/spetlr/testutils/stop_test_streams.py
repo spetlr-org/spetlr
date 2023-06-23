@@ -1,4 +1,4 @@
-from spetlr import Configurator
+from spetlr.configurator import Configurator
 from spetlr.exceptions import OnlyUseInSpetlrDebugMode
 from spetlr.spark import Spark
 

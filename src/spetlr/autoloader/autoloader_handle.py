@@ -11,12 +11,12 @@ class AutoloaderHandle(TableHandle):
     def __init__(
         self,
         *,
-        location: str,
+        file_location: str,
         schema_location: str,
         data_format: str,
     ):
         """
-        location: the location of the delta table
+        file_location: the path to the file location of the delta table
         schema_location: The location of the cloudfile schema.
             Databricks documentation uses the expected writeStream checkpoint_path
             as schema_location, see documentation at
@@ -30,7 +30,7 @@ class AutoloaderHandle(TableHandle):
         if Spark.version() < Spark.DATABRICKS_RUNTIME_10_4:
             raise SparkVersionNotSupportedForSpetlrStreaming()
 
-        self._location = location
+        self._location = file_location
         self._data_format = data_format
 
         self._schema_location = schema_location

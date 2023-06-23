@@ -4,7 +4,6 @@ from unittest.mock import Mock
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.autoloader import AutoloaderHandle
-from spetlr.delta import DeltaHandle
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.exceptions import SparkVersionNotSupportedForSpetlrStreaming
 from spetlr.spark import Spark
@@ -30,9 +29,5 @@ class SparkVersionTests(DataframeTestCase):
     def test_02_autoloader(self):
         with self.assertRaises(SparkVersionNotSupportedForSpetlrStreaming):
             AutoloaderHandle(
-                location="test", schema_location="test", data_format="test"
+                file_location="test", schema_location="test", data_format="test"
             ).read_stream()
-
-    def test_03_deltahandle_read_stream(self):
-        with self.assertRaises(SparkVersionNotSupportedForSpetlrStreaming):
-            DeltaHandle(name="test").read_stream()

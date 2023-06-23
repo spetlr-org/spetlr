@@ -13,4 +13,5 @@ __all__ = [
     MockExtractor,
     DropOldestDuplicates,
     SelectAndCastColumns,
+    DeleteMismatchedSchemas,
 ]

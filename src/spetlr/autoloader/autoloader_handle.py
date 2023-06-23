@@ -41,7 +41,7 @@ class AutoloaderHandle(TableHandle):
     def from_tc(cls, id: str) -> "AutoloaderHandle":
         tc = Configurator()
         return cls(
-            location=tc.table_property(id, "path", ""),
+            file_location=tc.table_property(id, "path", ""),
             data_format=tc.table_property(id, "format", ""),
             schema_location=tc.table_property(id, "schema_location", ""),
         )

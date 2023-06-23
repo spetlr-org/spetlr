@@ -5,7 +5,7 @@ from spetlr.tables import TableHandle
 
 
 class StreamExtractor(Extractor):
-    """This extractor will extract from any object that has a .read() method."""
+    """This extractor will extract from any object that has a .read_stream() method."""
 
     def __init__(self, handle: TableHandle, dataset_key: str):
         super().__init__(dataset_key=dataset_key)

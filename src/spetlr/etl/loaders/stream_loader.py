@@ -27,17 +27,26 @@ class StreamLoader(Loader):
         await_termination: bool = False,
     ):
         """
+        loader: A SPETLR Loader
         checkpoint_path: The location of the checkpoints, <table_name>/_checkpoints
             The Delta Lake VACUUM function removes all files not managed by Delta Lake
             but skips any directories that begin with _. You can safely store
             checkpoints alongside other data and metadata for a Delta table
             using a directory structure such as <table_name>/_checkpoints
             See: https://docs.databricks.com/structured-streaming/delta-lake.html
-        location: the location of the delta table (Optional)
-        trigger_type: the trigger type of the stream.
+        trigger_type: The trigger type of the stream.
             See: https://docs.databricks.com/structured-streaming/triggers.html
-        trigger_time: if the trigger has is "processingtime",
+        trigger_time: If the trigger has is "processingtime",
             it should have a trigger time associated
+        outputmode: The streaming output mode: append, complete or update
+            See: https://spark.apache.org/docs/3.1.1/api/python/reference/api
+                /pyspark.sql.streaming.DataStreamWriter.outputMode.html
+        query_name: The name of the stream query (defaults to an uuid)
+        await_termination: If true, then waits for the termination of THIS query
+            See: https://spark.apache.org/docs/3.1.1/api/python
+                 /reference/api/pyspark.sql.streaming.StreamingQuery.awaitTermination.html
+
+
         """
 
         super().__init__()

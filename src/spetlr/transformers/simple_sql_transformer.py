@@ -1,6 +1,7 @@
+from datetime import datetime, timezone
+
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
-from datetime import datetime, timezone
 from pyspark.sql.types import TimestampType
 
 from spetlr.etl import Transformer

@@ -37,11 +37,11 @@ class SimpleSqlServerTransformer(Transformer):
         ]
         df = df.select(col_choose)
 
-        # The sql server min date is 1753-01-01. If a timestamp column of the dataframe
-        # has a date value lower than this min date, it will not be possible to load the
-        # data to the sql server. Here, we check all columns of the dataframe that are
-        # the timestamp type, and convert values of those columns to our defined min date,
-        # if values are smaller than this date.
+        # The sql server min date is 1753-01-01. If a timestamp column of the
+        # dataframe has a date value lower than this min date, it will not be
+        # possible to load the data to the sql server. Here, we check all columns
+        # of the dataframe that are the timestamp type, and convert values of
+        # those columns to our defined min date, if values are smaller than this date.
         for column in df.columns:
             if df.schema[column].dataType == TimestampType():
                 df = df.withColumn(

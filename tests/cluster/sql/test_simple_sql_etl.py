@@ -53,19 +53,26 @@ class SimpleSqlServerETLTests(DataframeTestCase):
         df = self.create_data()
 
         # Test that timestamp before has miliseconds also
-        date_test = df.select("testcolumn4").collect()[0][0]
+        date_test_0 = df.select("testcolumn4").collect()[0][0]  # row 1
+        date_test_1 = df.select("testcolumn4").collect()[1][0]  # row 2
         self.assertEqual(
-            dt_utc(2021, 1, 1, 14, 45, 22, 32).replace(tzinfo=None), date_test
+            dt_utc(2021, 1, 1, 14, 45, 22, 32).replace(tzinfo=None), date_test_0
         )
+        self.assertEqual(dt_utc(1, 1, 1, 0, 0, 1, 1).replace(tzinfo=None), date_test_1)
 
         df_out = SimpleSqlServerTransformer(
             table_id=self.table_id, server=self.sql_server
         ).process(df)
 
         # Check that timestamp are truncated down to only seconds
-        # The 32 miliseconds should be gone.
-        date_test = df_out.select("testcolumn4").collect()[0][0]
-        self.assertEqual(dt_utc(2021, 1, 1, 14, 45, 22).replace(tzinfo=None), date_test)
+        # The 32 and 1 miliseconds from row 1 and 2, respectively should be gone.
+        # The 0001-01-01 date in row 2 should be converted to 1900-01-01
+        date_test_0 = df.select("testcolumn4").collect()[0][0]  # row 1
+        date_test_1 = df.select("testcolumn4").collect()[1][0]  # row 2
+        self.assertEqual(
+            dt_utc(2021, 1, 1, 14, 45, 22).replace(tzinfo=None), date_test_0
+        )
+        self.assertEqual(dt_utc(1900, 1, 1, 0, 0, 1).replace(tzinfo=None), date_test_1)
 
         schema_expected = StructType(
             [
@@ -132,10 +139,13 @@ class SimpleSqlServerETLTests(DataframeTestCase):
         )
         cols = ["testcolumn", "testcolumn2", "testcolumn3", "testcolumn4"]
 
-        insert_data = (123, 1001.322, "Hello", dt_utc(2021, 1, 1, 14, 45, 22, 32))
+        insert_data = [
+            (123, 1001.322, "Hello", dt_utc(2021, 1, 1, 14, 45, 22, 32)),  # row 1
+            (456, 2002.123, "Hello_2", dt_utc(1, 1, 1, 0, 0, 1, 1)),  # row 2
+        ]
 
         df_new = DataframeCreator.make_partial(
-            schema=schema, columns=cols, data=[insert_data]
+            schema=schema, columns=cols, data=insert_data
         )
 
         return df_new.orderBy("testcolumn")

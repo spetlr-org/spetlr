@@ -7,7 +7,7 @@ from spetlr.spark import Spark
 from spetlr.tables import TableHandle
 
 
-class AutoloaderHandle(TableHandle):
+class FileHandle(TableHandle):
     def __init__(
         self,
         *,
@@ -40,7 +40,7 @@ class AutoloaderHandle(TableHandle):
         self._validate()
 
     @classmethod
-    def from_tc(cls, id: str) -> "AutoloaderHandle":
+    def from_tc(cls, id: str) -> "FileHandle":
         tc = Configurator()
         return cls(
             file_location=tc.table_property(id, "path", ""),

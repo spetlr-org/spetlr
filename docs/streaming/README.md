@@ -47,8 +47,8 @@ dh_target = DeltaHandle(...)
 
 The databricks autoloader can *"(...) incrementally and efficiently processes new data files as they arrive in cloud storage without any additional setup."* - [link](https://docs.databricks.com/ingestion/auto-loader/index.html). The autoloader is implemented as a handle class as follows:
 
-- A handle class called `AutoloaderHandle`.
-- `AutoloaderHandle` has a `.read_stream()` method.
+- A handle class called `FileHandle`.
+- `FileHandle` has a `.read_stream()` method.
 
 The autoloader is combined with the `StreamLoader()` when used in the SPETLR ETL framework - [see previous section](#delta-streaming).
 
@@ -58,28 +58,27 @@ The autoloader is combined with the `StreamLoader()` when used in the SPETLR ETL
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders.stream_loader import StreamLoader
-from spetlr.autoloader import AutoloaderHandle
+from spetlr.filehandle import FileHandle
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.delta import DeltaHandle
 from spetlr.configurator import Configurator
 
-
 dh_target = DeltaHandle(...)
 
 (
-    Orchestrator()
-        .extract_from(
-            StreamExtractor(
-                AutoloaderHandle.from_tc("AvroSource"), dataset_key="AvroSource"
-            )
-        )
-        .load_into(
-            StreamLoader(
-                loader=SimpleLoader(handle=dh_target),
-                await_termination=True,
-                checkpoint_path=Configurator().get("AvroSink", "checkpoint_path"),
-            )
-        )
-        .execute()
+  Orchestrator()
+    .extract_from(
+    StreamExtractor(
+      FileHandle.from_tc("AvroSource"), dataset_key="AvroSource"
+    )
+  )
+    .load_into(
+    StreamLoader(
+      loader=SimpleLoader(handle=dh_target),
+      await_termination=True,
+      checkpoint_path=Configurator().get("AvroSink", "checkpoint_path"),
+    )
+  )
+    .execute()
 )
 ```

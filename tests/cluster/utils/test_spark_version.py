@@ -3,9 +3,9 @@ from unittest.mock import Mock
 
 from spetlrtools.testing import DataframeTestCase
 
-from spetlr.autoloader import AutoloaderHandle
 from spetlr.etl.loaders.stream_loader import StreamLoader
 from spetlr.exceptions import SparkVersionNotSupportedForSpetlrStreaming
+from spetlr.filehandle import FileHandle
 from spetlr.spark import Spark
 
 
@@ -28,6 +28,6 @@ class SparkVersionTests(DataframeTestCase):
 
     def test_02_autoloader(self):
         with self.assertRaises(SparkVersionNotSupportedForSpetlrStreaming):
-            AutoloaderHandle(
+            FileHandle(
                 file_location="test", schema_location="test", data_format="test"
             ).read_stream()

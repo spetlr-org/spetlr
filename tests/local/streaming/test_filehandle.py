@@ -1,15 +1,15 @@
 from spetlrtools.testing import DataframeTestCase
 
-from spetlr.autoloader import AutoloaderHandle
+from spetlr.filehandle import FileHandle
 
 
-class AutoloaderHandleTests(DataframeTestCase):
+class FileHandleTests(DataframeTestCase):
     def test_01_can_set_options(self):
         """
-        Simple test that options attribute is set in the AutoloaderHandle
+        Simple test that options attribute is set in the FileHandle
         """
 
-        class TestClass(AutoloaderHandle):
+        class TestClass(FileHandle):
             def __init__(
                 self,
                 *,

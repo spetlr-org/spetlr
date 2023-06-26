@@ -3,13 +3,13 @@ import uuid
 from typing import List, Tuple
 
 from spetlr import Configurator
-from spetlr.autoloader import AutoloaderHandle
 from spetlr.dbutils.FileExists import file_exists
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
+from spetlr.filehandle import FileHandle
 from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 from spetlr.testutils.stop_test_streams import stop_test_streams
@@ -90,7 +90,7 @@ class AutoloaderTests(unittest.TestCase):
 
         # test instantiation without error
         DbHandle.from_tc("MyDb")
-        AutoloaderHandle.from_tc("AvroSource")
+        FileHandle.from_tc("AvroSource")
         DeltaHandle.from_tc("AvroSink")
 
     def test_01_read_avro(self):
@@ -115,9 +115,7 @@ class AutoloaderTests(unittest.TestCase):
 
         o = Orchestrator()
         o.extract_from(
-            StreamExtractor(
-                AutoloaderHandle.from_tc("AvroSource"), dataset_key="AvroSource"
-            )
+            StreamExtractor(FileHandle.from_tc("AvroSource"), dataset_key="AvroSource")
         )
 
         o.load_into(

@@ -58,7 +58,7 @@ class SimpleSqlServerETLTests(DataframeTestCase):
         self.assertEqual(
             dt_utc(2021, 1, 1, 14, 45, 22, 32).replace(tzinfo=None), date_test_0
         )
-        self.assertEqual(dt_utc(1, 1, 1, 0, 0, 1, 1).replace(tzinfo=None), date_test_1)
+        self.assertEqual(dt_utc(1, 1, 2, 0, 0, 1, 1).replace(tzinfo=None), date_test_1)
 
         df_out = SimpleSqlServerTransformer(
             table_id=self.table_id, server=self.sql_server
@@ -141,7 +141,7 @@ class SimpleSqlServerETLTests(DataframeTestCase):
 
         insert_data = [
             (123, 1001.322, "Hello", dt_utc(2021, 1, 1, 14, 45, 22, 32)),  # row 1
-            (456, 2002.123, "Hello_2", dt_utc(1, 1, 1, 0, 0, 1, 1)),  # row 2
+            (456, 2002.123, "Hello_2", dt_utc(1, 1, 2, 0, 0, 1, 1)),  # row 2
         ]
 
         df_new = DataframeCreator.make_partial(

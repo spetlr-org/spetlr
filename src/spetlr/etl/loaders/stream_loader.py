@@ -71,8 +71,9 @@ class StreamLoader(Loader):
 
         if "checkpointLocation" in self._options_dict:
             warnings.warn(
-                "There was found a pre-existing checkpointLocation in the options dict."
-                "Overwriting the location with the provided location from checkpoint_path."
+                "There was found a pre-existing checkpointLocation in the"
+                "options dict. Overwrites the location with the \n"
+                "provided location from checkpoint_path..."
             )
 
         self._options_dict["checkpointLocation"] = self._checkpoint_path

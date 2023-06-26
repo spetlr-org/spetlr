@@ -1,4 +1,4 @@
-import uuid as _uuid
+import uuid
 
 from spetlrtools.testing import DataframeTestCase
 
@@ -20,7 +20,7 @@ class TestFileExists(DataframeTestCase):
         """
         # Create uuid folder in tmp
         dbutils = init_dbutils()
-        folder_uuid = _uuid.uuid4().hex
+        folder_uuid = uuid.uuid4().hex
         folder_path = f"tmp/{folder_uuid}"
         dbutils.fs.mkdirs(folder_path)
 
@@ -43,7 +43,7 @@ class TestFileExists(DataframeTestCase):
         """
         # Create folder name
         # without creating the actual folder
-        folder_uuid = _uuid.uuid4().hex
+        folder_uuid = uuid.uuid4().hex
         folder_name = f"tmp/{folder_uuid}"
 
         # Check that file exists (it should not)

@@ -24,16 +24,23 @@ from spetlr.configurator import Configurator
 dh_source = DeltaHandle(...)
 dh_target = DeltaHandle(...)
 
-Orchestrator()
-    .extract_from(StreamExtractor(dh_source, dataset_key="MyTbl"))
-    .load_into(
-    StreamLoader(
-        loader=SimpleLoader(handle=dh_target, mode="append"),
-        await_termination=True,
-        checkpoint_path=Configurator().get("MyTblMirror", "checkpoint_path"),
+(
+    Orchestrator()
+        .extract_from(
+            StreamExtractor(
+                dh_source,
+                dataset_key="MyTbl",
+            )
         )
-    )
-    .execute()
+        .load_into(
+            StreamLoader(
+                loader=SimpleLoader(handle=dh_target, mode="append"),
+                await_termination=True,
+                checkpoint_path=Configurator().get("MyTblMirror", "checkpoint_path"),
+            )
+        )
+        .execute()
+)
 
 ```
 ## Autoloader
@@ -59,18 +66,20 @@ from spetlr.configurator import Configurator
 
 dh_target = DeltaHandle(...)
 
-Orchestrator()
-    .extract_from(
-        StreamExtractor(
-            AutoloaderHandle.from_tc("AvroSource"), dataset_key="AvroSource"
+(
+    Orchestrator()
+        .extract_from(
+            StreamExtractor(
+                AutoloaderHandle.from_tc("AvroSource"), dataset_key="AvroSource"
+            )
         )
-    )
-    .load_into(
-        StreamLoader(
-            loader=SimpleLoader(handle=dh_target),
-            await_termination=True,
-            checkpoint_path=Configurator().get("AvroSink", "checkpoint_path"),
+        .load_into(
+            StreamLoader(
+                loader=SimpleLoader(handle=dh_target),
+                await_termination=True,
+                checkpoint_path=Configurator().get("AvroSink", "checkpoint_path"),
+            )
         )
-    )
-    .execute()
+        .execute()
+)
 ```

@@ -12,7 +12,7 @@ class UpsertLoaderStreaming(Loader):
     def __init__(
         self,
         handle: TableHandle,
-        options_dict: dict,
+        options_dict: dict = None,
         trigger_type: str = None,
         trigger_time_seconds: int = None,
         query_name: str = None,

@@ -1,5 +1,5 @@
 import unittest
-import uuid as _uuid
+import uuid
 from typing import List, Tuple
 
 from spetlr import Configurator
@@ -174,7 +174,7 @@ class AutoloaderTests(unittest.TestCase):
             input_data, "id int, name string, _rescued_data string"
         )
 
-        df.write.format("avro").save(self.avro_source_path + "/" + str(_uuid.uuid4()))
+        df.write.format("avro").save(self.avro_source_path + "/" + str(uuid.uuid4()))
 
     def _add_specific_data_to_source(self):
         df = Spark.get().createDataFrame(

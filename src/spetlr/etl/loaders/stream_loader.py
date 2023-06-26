@@ -1,12 +1,13 @@
-import uuid as _uuid
+import uuid
+import warnings
 
 from pyspark.sql import DataFrame
 from pyspark.sql.streaming import DataStreamWriter
 
 from spetlr.etl import Loader
 from spetlr.exceptions import (
+    InvalidStreamTriggerType,
     NeedTriggerTimeWhenProcessingType,
-    NotAValidStreamTriggerType,
     SparkVersionNotSupportedForSpetlrStreaming,
     UnknownStreamOutputMode,
 )
@@ -56,7 +57,7 @@ class StreamLoader(Loader):
         self._trigger_type = trigger_type
         self._trigger_time_seconds = trigger_time_seconds
         self._query_name = query_name or str(
-            _uuid.uuid4().hex
+            uuid.uuid4().hex
         )  # Consider if this is smart?
         self._checkpoint_path = checkpoint_path
         self._await_termination = await_termination
@@ -68,7 +69,11 @@ class StreamLoader(Loader):
         # Set checkpoint path always
         self._options_dict = self._options_dict or {}
 
-        assert "checkpointLocation" not in self._options_dict
+        if "checkpointLocation" in self._options_dict:
+            warnings.warn(
+                "There was found a pre-existing checkpointLocation in the options dict."
+                "Overwriting the location with the provided location from checkpoint_path."
+            )
 
         self._options_dict["checkpointLocation"] = self._checkpoint_path
 
@@ -76,7 +81,7 @@ class StreamLoader(Loader):
         # https://docs.databricks.com/structured-streaming/foreach.html#apply-additional-dataframe-operations
 
         if self._trigger_type not in {"availablenow", "once", "processingtime"}:
-            raise NotAValidStreamTriggerType()
+            raise InvalidStreamTriggerType()
 
         if (self._trigger_type == "processingtime") and (
             self._trigger_time_seconds is None

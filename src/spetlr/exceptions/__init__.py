@@ -61,7 +61,7 @@ class OnlyUseInSpetlrDebugMode(SpetlrKeyError):
     value = "Only call this if the configurator is in debug"
 
 
-class NotAValidStreamTriggerType(SpetlrException):
+class InvalidStreamTriggerType(SpetlrException):
     value = "Trigger_type should either be {'availablenow', 'once', 'processingtime'}"
     pass
 

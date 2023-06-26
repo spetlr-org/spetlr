@@ -14,6 +14,7 @@ class AutoloaderHandle(TableHandle):
         file_location: str,
         schema_location: str,
         data_format: str,
+        options: dict = None
     ):
         """
         file_location: the path to the file location of the delta table
@@ -34,6 +35,7 @@ class AutoloaderHandle(TableHandle):
         self._data_format = data_format
 
         self._schema_location = schema_location
+        self._options = options
 
         self._validate()
 
@@ -60,7 +62,11 @@ class AutoloaderHandle(TableHandle):
             .readStream.format("cloudFiles")
             .option("cloudFiles.format", self._data_format)
             .option("cloudFiles.schemaLocation", self._schema_location)
-            .load(self._location)
         )
+
+        if self._options is not None:
+            reader = reader.options(**self._options)
+
+        reader = reader.load(self._location)
 
         return reader

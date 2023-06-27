@@ -10,7 +10,7 @@ def file_exists(path: str) -> bool:
         init_dbutils().fs.ls(path)
         return True
     except Exception as e:
-        if "java.io.FileNotFoundException" in str(e.args[0]):
+        if "java.io.FileNotFoundException" in str(e):
             return False
         else:
             raise e

@@ -67,8 +67,8 @@ class SimpleSqlServerETLTests(DataframeTestCase):
         # Check that timestamp are truncated down to only seconds
         # The 32 and 1 miliseconds from row 1 and 2, respectively should be gone.
         # The 0001-01-01 date in row 2 should be converted to 1900-01-01
-        date_test_0 = df.select("testcolumn4").collect()[0][0]  # row 1
-        date_test_1 = df.select("testcolumn4").collect()[1][0]  # row 2
+        date_test_0 = df_out.select("testcolumn4").collect()[0][0]  # row 1
+        date_test_1 = df_out.select("testcolumn4").collect()[1][0]  # row 2
         self.assertEqual(
             dt_utc(2021, 1, 1, 14, 45, 22).replace(tzinfo=None), date_test_0
         )

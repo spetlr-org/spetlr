@@ -15,7 +15,7 @@ class SimpleSqlServerTransformer(Transformer):
         self.server = server
         self.table_id = table_id
         self.ignoreCase = ignoreCase
-        self.min_time = datetime(1900, 1, 1, tzinfo=timezone.utc)
+        self.min_time = datetime(1900, 1, 1, 0, 0, 1, tzinfo=timezone.utc)
 
     def process(self, df: DataFrame) -> DataFrame:
         # This transformation ensures that the selected columns

@@ -7,7 +7,7 @@ from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
-from spetlr.etl.loaders.UpsertLoaderStreaming import UpsertLoaderStreaming
+from spetlr.etl.loaders.upsert_loader_streaming import UpsertLoaderStreaming
 from spetlr.spark import Spark
 from spetlr.testutils.stop_test_streams import stop_test_streams
 from spetlr.utils import DataframeCreator

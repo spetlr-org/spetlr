@@ -26,7 +26,7 @@ class SparkVersionTests(DataframeTestCase):
                 checkpoint_path="/_testpath",
             ).save(Mock())
 
-    def test_02_autoloader(self):
+    def test_02_filehandle(self):
         with self.assertRaises(SparkVersionNotSupportedForSpetlrStreaming):
             FileHandle(
                 file_location="test", schema_location="test", data_format="test"

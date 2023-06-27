@@ -3,7 +3,7 @@ import uuid
 from typing import List, Tuple
 
 from spetlr import Configurator
-from spetlr.dbutils.FileExists import file_exists
+from spetlr.dbutils.file_exists import file_exists
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
@@ -20,7 +20,7 @@ from tests.cluster.values import resourceName
     Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4,
     f"Autoloader not available for Spark version {Spark.version()}",
 )
-class AutoloaderTests(unittest.TestCase):
+class FileHandleTests(unittest.TestCase):
     sink_checkpoint_path: str = None
     avrosource_checkpoint_path = (
         f"/mnt/{resourceName()}/silver/{resourceName()}"

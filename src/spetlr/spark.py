@@ -72,3 +72,4 @@ class Spark:
 
     DATABRICKS_RUNTIME_9_1 = (3, 1, 2)
     DATABRICKS_RUNTIME_11_3 = (3, 3, 0)
+    DATABRICKS_RUNTIME_10_4 = (3, 2, 1)

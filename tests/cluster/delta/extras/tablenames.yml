@@ -39,7 +39,7 @@ UpsertLoaderStreamingTarget:
   name: "{UpsertLoaderDb}.StreamingTarget"
   path: "{UpsertLoaderDb_path}/StreamingTarget"
   format: "delta"
-  checkpoint_path: "{UpsertLoaderDb_path}/_checkpoints"
+  checkpoint_path: "{UpsertLoaderDb_path}/StreamingTarget/_checkpoints"
   await_termination: True
 
 DeleteDataLoaderDb:

@@ -3,8 +3,8 @@ from typing import List
 from pyspark.sql import DataFrame
 
 from spetlr.etl import Loader, dataset_group
-from spetlr.etl.loaders import UpsertLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
+from spetlr.etl.loaders.UpsertLoader import UpsertLoader
 from spetlr.tables import TableHandle
 
 

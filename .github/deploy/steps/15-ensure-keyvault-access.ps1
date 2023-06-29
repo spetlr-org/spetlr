@@ -10,8 +10,8 @@ if($pipelineClientId){
 
   # If this value is not set, you are a human. You probably have never been given access
   # to the keyvault.
-  $me = Get-CurrentUser
-  $output = az keyvault set-policy --name $keyVaultName --secret-permissions get set list --upn "$($me.userPrincipalName)"
+  $myid = az ad signed-in-user show --query id
+  $output = az keyvault set-policy --name $keyVaultName --secret-permissions get set list --object-id "$($myid)"
   Ignore-Errors
 
 }

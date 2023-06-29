@@ -1,5 +1,5 @@
-from . import sqlparse
-from .sqlparse.sql import Statement
+import sqlparse
+from sqlparse.sql import Statement
 
 
 def _meaningful_token_iter(tks: Statement):

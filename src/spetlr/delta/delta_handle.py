@@ -114,44 +114,22 @@ class DeltaHandle(TableHandle):
         self.create_hive_table()
 
     def get_partitioning(self):
-        """The result of DESCRIBE TABLE tablename is like this:
-        +-----------------+---------------+-------+
-        |         col_name|      data_type|comment|
-        +-----------------+---------------+-------+
-        |           mycolA|         string|       |
-        |           myColB|            int|       |
-        |                 |               |       |
-        |   # Partitioning|               |       |
-        |           Part 0|         mycolA|       |
-        +-----------------+---------------+-------+
+        """The result of DESCRIBE DETAIL tablename is like this:
+        +------+--------------------+--------------------+----------------+-------+
+        |format|                  id|                name|partitionColumns|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
+        | delta|c96a1e94-314b-427...|spark_catalog.tes...|    [colB, colA]|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
         but this method return the partitioning in the form ['mycolA'],
         if there is no partitioning, an empty list is returned.
         """
         if self._partitioning is None:
-            # create an iterator object and use it in two steps
-            rows_iter = iter(
-                Spark.get().sql(f"DESCRIBE TABLE {self.get_tablename()}").collect()
+            self._partitioning = (
+                Spark.get()
+                .sql(f"DESCRIBE DETAIL {self.get_tablename()}")
+                .select("partitionColumns")
+                .collect()[0][0]
             )
-
-            # roll over the iterator until you see the title line
-            for row in rows_iter:
-                # discard rows until the important section header
-                if row.col_name.strip() == "# Partitioning":
-                    break
-            # at this point, the iterator has moved past the section heading
-            # leaving only the rows with "Part 1" etc.
-
-            # create a list from the rest of the iterator like [(0,colA), (1,colB)]
-            parts = [
-                (int(row.col_name[5:]), row.data_type)
-                for row in rows_iter
-                if row.col_name.startswith("Part ")
-            ]
-            # sort, just in case the parts were out of order.
-            parts.sort()
-
-            # discard the index and put into an ordered list.
-            self._partitioning = [p[1] for p in parts]
         return self._partitioning
 
     def get_tablename(self) -> str:

@@ -2,6 +2,7 @@ import json
 from functools import lru_cache
 from typing import Dict
 
+from databricks.sdk.service.jobs import Run
 from requests import HTTPError
 
 from spetlr.db_auto import getDbApi
@@ -30,7 +31,7 @@ class JobReflection:
 
     @classmethod
     @lru_cache
-    def get_job_api_details(cls) -> Dict:
+    def get_job_api_details(cls) -> Run:
         run_id = cls.get_current_run_id()
         db_api = getDbApi()
 
@@ -41,11 +42,11 @@ class JobReflection:
 
     @classmethod
     def get_job_results_url(cls) -> str:
-        return cls.get_job_api_details()["run_page_url"]
+        return cls.get_job_api_details().run_page_url
 
     @classmethod
     def get_job_name(cls) -> str:
-        return cls.get_job_api_details()["run_name"]
+        return cls.get_job_api_details().run_name
 
     @classmethod
     @lru_cache

@@ -1,0 +1,8 @@
+SparkTestDbMismatch:
+  name: my_db1{mismatchuuid}_mismatch{ID}
+  path: /tmp/foo/bar/my_db_mismatch{mismatchuuid}{ID}/
+
+MismatchSparkTestTable:
+  name: "{SparkTestDbMismatch}.tbl"
+  path: "{SparkTestDbMismatch_path}/tbl"
+  delete_on_delta_schema_mismatch: true

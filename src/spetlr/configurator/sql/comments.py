@@ -1,10 +1,9 @@
 import re
 from typing import Dict, List
 
+import sqlparse
 import yaml
-
-from . import sqlparse
-from .sqlparse.sql import Statement
+from sqlparse.sql import Statement
 
 _magic_comment_start = "-- spetlr.configurator "
 

@@ -1,5 +1,8 @@
+from datetime import datetime, timezone
+
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
+from pyspark.sql.types import TimestampType
 
 from spetlr.etl import Transformer
 from spetlr.sql.SqlServer import SqlServer
@@ -12,6 +15,7 @@ class SimpleSqlServerTransformer(Transformer):
         self.server = server
         self.table_id = table_id
         self.ignoreCase = ignoreCase
+        self.min_time = datetime(1900, 1, 1, 0, 0, 1, tzinfo=timezone.utc)
 
     def process(self, df: DataFrame) -> DataFrame:
         # This transformation ensures that the selected columns
@@ -32,5 +36,19 @@ class SimpleSqlServerTransformer(Transformer):
             for x in df.dtypes
         ]
         df = df.select(col_choose)
+
+        # The sql server min date is 1753-01-01. If a timestamp column of the
+        # dataframe has a date value lower than this min date, it will not be
+        # possible to load the data to the sql server. Here, we check all columns
+        # of the dataframe that are the timestamp type, and convert values of
+        # those columns to our defined min date, if values are smaller than this date.
+        for column in df.columns:
+            if df.schema[column].dataType == TimestampType():
+                df = df.withColumn(
+                    column,
+                    f.when(
+                        f.col(column) < f.lit(self.min_time), f.lit(self.min_time)
+                    ).otherwise(f.col(column)),
+                )
 
         return df

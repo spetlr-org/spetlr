@@ -5,8 +5,9 @@ from pathlib import Path
 from types import ModuleType
 from typing import Dict, List, Optional, Union
 
+import sqlparse
+
 from spetlr.configurator.configurator import Configurator
-from spetlr.configurator.sql import sqlparse
 from spetlr.configurator.sql.init_sqlparse import parse
 from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
@@ -65,11 +66,19 @@ class SqlExecutor:
         NB: This sql parser can be challenged in parsing sql statements
         which do not use semicolon as a query separator only.
         """
+        for conts in self._get_raw_contents(
+            file_pattern=file_pattern, exclude_pattern=exclude_pattern
+        ):
+            for statement in self.chop_and_substitute(conts, replacements=replacements):
+                yield statement
 
-        # prepare arguments:
-        file_pattern = self._wildcard_string_to_regexp(file_pattern)
-        if exclude_pattern is not None:
-            exclude_pattern = self._wildcard_string_to_regexp(exclude_pattern)
+    def chop_and_substitute(
+        self,
+        raw_sql: str,
+        replacements: Dict[str, str] = None,
+    ):
+        """given the raw contents of a sql file, break it down into statements
+        and execute all substitutions."""
         if replacements is None:
             replacements = {}
 
@@ -83,6 +92,64 @@ class SqlExecutor:
             **schema_replacements,
             **replacements,
         }
+
+        sql_code = raw_sql.format(**replacements)
+
+        if self.statement_spliter is None:
+            code_parts = [sql_code]
+        elif ";" not in self.statement_spliter:
+            code_parts = [sql_code]
+            for sequence in self.statement_spliter:
+                code_parts = itertools.chain.from_iterable(
+                    part.split(sequence) for part in code_parts
+                )
+
+        else:
+            # if ; is included split the file into sql statements
+            # by using parse, we ensure not to split by escaped or commented
+            # occurrences of ;
+
+            for marker in self.statement_spliter:
+                if marker != ";":
+                    sql_code = sql_code.replace(marker, ";")
+
+            code_parts = [
+                "".join(token.value for token in statement)
+                for statement in parse(sql_code)
+            ]
+
+        for full_statement in code_parts:
+            cleaned_statement = (
+                (
+                    "".join(
+                        token.value
+                        for statement in parse(full_statement)
+                        for token in statement
+                        if token.ttype not in sqlparse.tokens.Comment
+                    )
+                )
+                .strip()
+                .strip(";")
+            )
+
+            # skip the statement unless it actually contains code.
+            # spark.sql complains if you only give it comments
+            if cleaned_statement:
+                yield full_statement
+
+    def _get_raw_contents(
+        self,
+        file_pattern: str,
+        exclude_pattern: str = None,
+    ):
+        """Return the raw file contents to be parsed on to replacement parsing,
+        based on the searched module, filepattern and exclude_pattern.
+        Returns a generator of strings."""
+
+        # prepare arguments:
+        file_pattern = self._wildcard_string_to_regexp(file_pattern)
+        if exclude_pattern is not None:
+            exclude_pattern = self._wildcard_string_to_regexp(exclude_pattern)
 
         # loop the module contents and find matching files
         for file_name in ir.contents(self.base_module):
@@ -100,50 +167,7 @@ class SqlExecutor:
 
             with ir.path(self.base_module, file_name) as file_path:
                 with open(file_path) as file:
-                    conts = file.read()
-                    sql_code = conts.format(**replacements)
-
-                    if self.statement_spliter is None:
-                        code_parts = [sql_code]
-                    elif ";" not in self.statement_spliter:
-                        code_parts = [sql_code]
-                        for sequence in self.statement_spliter:
-                            code_parts = itertools.chain.from_iterable(
-                                part.split(sequence) for part in code_parts
-                            )
-
-                    else:
-                        # if ; is included split the file into sql statements
-                        # by using parse, we ensure not to split by escaped or commented
-                        # occurrences of ;
-
-                        for marker in self.statement_spliter:
-                            if marker != ";":
-                                sql_code = sql_code.replace(marker, ";")
-
-                        code_parts = [
-                            "".join(token.value for token in statement)
-                            for statement in parse(sql_code)
-                        ]
-
-                    for full_statement in code_parts:
-                        cleaned_statement = (
-                            (
-                                "".join(
-                                    token.value
-                                    for statement in parse(full_statement)
-                                    for token in statement
-                                    if token.ttype not in sqlparse.tokens.Comment
-                                )
-                            )
-                            .strip()
-                            .strip(";")
-                        )
-
-                        # skip the statement unless it actually contains code.
-                        # spark.sql complains if you only give it comments
-                        if cleaned_statement:
-                            yield full_statement
+                    yield file.read()
 
     def execute_sql_file(self, file_pattern: str, exclude_pattern: str = None):
         """
@@ -152,6 +176,5 @@ class SqlExecutor:
         """
 
         executor = self.server or Spark.get()
-
         for statement in self.get_statements(file_pattern, exclude_pattern):
             executor.sql(statement)

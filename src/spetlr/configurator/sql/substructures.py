@@ -1,10 +1,11 @@
 from typing import Generator, List, Tuple
 
+import sqlparse
+
 from spetlr.exceptions.configurator_exceptions import (
     SpetlrConfiguratorInvalidSqlException,
 )
 
-from . import sqlparse
 from .StatementBlocks import ENUM_DESC, SortingCol
 from .types import _PeekableTokenList
 from .utils import _meaningful_token_iter

@@ -2,9 +2,7 @@ import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.spark import Spark
-from spetlr.transformers.simple_dataframe_filter_transformer import (
-    DataFrameFilterTransformer,
-)
+from spetlr.transformers import DataFrameFilterTransformer
 
 
 class TestDataFrameFilterTransformer(DataframeTestCase):

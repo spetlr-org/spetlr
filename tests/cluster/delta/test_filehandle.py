@@ -3,7 +3,6 @@ import uuid
 from typing import List, Tuple
 
 from spetlr import Configurator
-from spetlr.dbutils.file_exists import file_exists
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
@@ -22,13 +21,15 @@ from tests.cluster.values import resourceName
 )
 class FileHandleTests(unittest.TestCase):
     sink_checkpoint_path: str = None
+    path_unique_id = uuid.uuid4().hex
     avrosource_checkpoint_path = (
         f"/mnt/{resourceName()}/silver/{resourceName()}"
-        f"/avrolocation/_checkpoint_path_avro"
+        f"/avrolocation/{path_unique_id}/_checkpoint_path_avro"
     )
 
     avro_source_path = (
-        f"/mnt/{resourceName()}/silver/{resourceName()}/avrolocation/AvroSource"
+        f"/mnt/{resourceName()}/silver/{resourceName()}/"
+        f"avrolocation/{path_unique_id}/AvroSource"
     )
 
     @classmethod
@@ -36,20 +37,17 @@ class FileHandleTests(unittest.TestCase):
         Configurator().clear_all_configurations()
         Configurator().set_debug()
 
-        if not file_exists(cls.avrosource_checkpoint_path):
-            init_dbutils().fs.mkdirs(cls.avrosource_checkpoint_path)
+        init_dbutils().fs.mkdirs(cls.avrosource_checkpoint_path)
 
-        if not file_exists(cls.avro_source_path):
-            init_dbutils().fs.mkdirs(cls.avro_source_path)
+        init_dbutils().fs.mkdirs(cls.avro_source_path)
 
     @classmethod
     def tearDownClass(cls) -> None:
         DbHandle.from_tc("MyDb").drop_cascade()
-        if file_exists(cls.avrosource_checkpoint_path):
-            init_dbutils().fs.rm(cls.avrosource_checkpoint_path, True)
 
-        if file_exists(cls.avro_source_path):
-            init_dbutils().fs.rm(cls.avro_source_path, True)
+        init_dbutils().fs.rm(cls.avrosource_checkpoint_path, True)
+
+        init_dbutils().fs.rm(cls.avro_source_path, True)
 
         stop_test_streams()
 

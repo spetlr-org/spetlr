@@ -8,7 +8,7 @@ from spetlr.configurator import Configurator
 from spetlr.delta import DeltaHandle
 from spetlr.delta.delta_handle import DeltaHandleInvalidName
 from spetlr.sql import SqlExecutor
-from spetlr.utils import CleanupTestDatabases
+from spetlr.testutils import CleanupTestDatabases
 
 
 def get_table_ids_to_check():

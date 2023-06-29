@@ -59,4 +59,25 @@ class MissingUpsertJoinColumns(SpetlrKeyError):
 
 class OnlyUseInSpetlrDebugMode(SpetlrKeyError):
     value = "Only call this if the configurator is in debug"
+
+
+class InvalidStreamTriggerType(SpetlrException):
+    value = "Trigger_type should either be {'availablenow', 'once', 'processingtime'}"
+    pass
+
+
+class NeedTriggerTimeWhenProcessingType(SpetlrException):
+    value = "Trigger_time_seconds must be specified if trigger_type = 'processingtype'"
+    pass
+
+
+class UnknownStreamOutputMode(SpetlrException):
+    value = (
+        "Output mode should be one of the following ['complete', 'append', 'update']"
+    )
+    pass
+
+
+class SparkVersionNotSupportedForSpetlrStreaming(SpetlrException):
+    value = "Only DATABRICKS_RUNTIME_10_4 or above is supported for Spetlr streaming."
     pass

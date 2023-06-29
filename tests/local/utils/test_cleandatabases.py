@@ -1,7 +1,7 @@
 import unittest
 
 from spetlr.exceptions import OnlyUseInSpetlrDebugMode
-from spetlr.utils import CleanupTestDatabases
+from spetlr.testutils import CleanupTestDatabases
 
 
 class CleanUpDatabasesAndTablesUnitTest(unittest.TestCase):

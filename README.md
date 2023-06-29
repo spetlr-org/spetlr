@@ -82,7 +82,7 @@ To deploy the necessary Azure resources to your own Azure Tenant, run the follow
 ```powershell
 .\.github\deploy\deploy.ps1 -uniqueRunId "yourUniqueId"
 ```
-Be aware that the applied name for *uniqueRunId should only contain lower case and numbers, and its length should not
+Be aware that the applied name for *uniqueRunId* should only contain lower case and numbers, and its length should not
 exceed 12 characters.
 
 Afterward, execute the following commands:

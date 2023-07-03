@@ -5,7 +5,7 @@ from pyspark.sql.utils import AnalysisException
 from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.spark import Spark
-from spetlr.utils.CleanupTestDatabases import CleanupTestDatabases
+from spetlr.testutils.CleanupTestDatabases import CleanupTestDatabases
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 

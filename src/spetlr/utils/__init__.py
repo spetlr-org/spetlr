@@ -1,4 +1,3 @@
-from .CleanupTestDatabases import CleanupTestDatabases
 from .DataframeCreator import DataframeCreator
 from .DeleteMismatchedSchemas import DeleteMismatchedSchemas
 from .DropOldestDuplicates import DropOldestDuplicates
@@ -14,6 +13,5 @@ __all__ = [
     MockExtractor,
     DropOldestDuplicates,
     SelectAndCastColumns,
-    CleanupTestDatabases,
     DeleteMismatchedSchemas,
 ]

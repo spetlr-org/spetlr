@@ -35,3 +35,16 @@ environments:
         spark_python_task:
           python_file: "file://src/spetlr/mount/main.py"
           parameters: [ "file:fuse://tests/cluster/mount/mounts.json"]
+      - name: Setup Gp Cluster
+        new_cluster:
+          <<: *basic-cluster-single
+          custom_tags:
+            JobName: Setup Gp Cluster
+
+        max_retries: 0
+        python_wheel_task:
+          package_name: spetlr
+          entry_point: spetlr_deploy_gp_cluster
+          named_parameters:
+            autotermination_minutes: "5"
+            cluster_name: default

@@ -6,7 +6,7 @@ Push-Location -Path $srcDir
 pip install dbx
 
 dbx configure
-#copy "$srcDir/.github/submit/sparklibs.json" "$srcDir/tests/cluster/mount/"
+
 
 $mountsJson = (,@(
   @{
@@ -19,9 +19,9 @@ $mountsJson = (,@(
   }
 ))
 
-$mountsJson | ConvertTo-Json -Depth 4 | Set-Content "$srcDir/tests/cluster/mount/mounts.json"
+$mountsJson | ConvertTo-Json -Depth 4 | Set-Content "$srcDir/tests/cluster/setup/mounts.json"
 
-dbx deploy --deployment-file  "$srcDir/tests/cluster/mount/setup_job.yml.j2"
+dbx deploy --deployment-file  "$srcDir/tests/cluster/setup/setup_job.yml.j2"
 
 dbx launch --job="Setup Mounts" --trace --kill-on-sigterm
 

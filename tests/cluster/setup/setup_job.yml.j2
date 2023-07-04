@@ -34,7 +34,8 @@ environments:
         max_retries: 0
         spark_python_task:
           python_file: "file://src/spetlr/mount/main.py"
-          parameters: [ "file:fuse://tests/cluster/mount/mounts.json"]
+          parameters: [ "file:fuse://tests/cluster/setup/mounts.json"]
+
       - name: Setup Gp Cluster
         new_cluster:
           <<: *basic-cluster-single
@@ -46,5 +47,5 @@ environments:
           package_name: spetlr
           entry_point: spetlr_deploy_gp_cluster
           named_parameters:
-            autotermination_minutes: "5"
-            cluster_name: default
+            autotermination_minutes: "10"
+            cluster_name: jobdeploy

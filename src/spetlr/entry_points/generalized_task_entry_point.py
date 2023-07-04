@@ -47,10 +47,11 @@ def main():
     # call the callable with custom parameters
     return obj(**kwargs)
 
-def prepare_kwargs_from_argv(argv:List[str]):
+
+def prepare_kwargs_from_argv(argv: List[str]):
     # sys.argv will contain strings like
     # [ "--entry_point=my.module:main", "--myarg=myval" ]
-    kwargs={}
+    kwargs = {}
     for arg in argv:
         # parameters of any other form are ignored
         if not arg.startswith("--"):
@@ -63,7 +64,10 @@ def prepare_kwargs_from_argv(argv:List[str]):
         kwargs[k] = v
     return kwargs
 
-def prepare_keyword_arguments(callable_obj: Callable, kwargs_dict: Dict[str, Any]):
+
+def prepare_keyword_arguments(
+    callable_obj: Callable, kwargs_dict: Dict[str, Any], *, warn=True
+):
     """Reduce the dict down to a set of keys that the callable can actually be called
     with. Any extra keys are dropped with a warning."""
     signature = inspect.signature(callable_obj)
@@ -82,9 +86,10 @@ def prepare_keyword_arguments(callable_obj: Callable, kwargs_dict: Dict[str, Any
         if key in parameters:  # only proceed if the parameter exists on the callable
             valid_kwargs[key] = value
         else:
-            print(
-                f"WARNING: Ignoring job parameter: {key}. "
-                "The entry point cannot receive it."
-            )
+            if warn:
+                print(
+                    f"WARNING: Ignoring job parameter: {key}. "
+                    "The entry point cannot receive it."
+                )
 
     return valid_kwargs

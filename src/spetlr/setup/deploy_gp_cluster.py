@@ -3,8 +3,8 @@ import json
 from dataclasses import fields
 from typing import List
 
-from databricks.sdk.service.compute import ClusterInfo, Library, BaseClusterInfo
 from databricks.sdk import WorkspaceClient
+from databricks.sdk.service.compute import BaseClusterInfo, Library
 
 from spetlr.db_auto import getDbApi
 from spetlr.entry_points.generalized_task_entry_point import prepare_keyword_arguments
@@ -25,7 +25,7 @@ def main():
 
     deploy_gp_cluster(
         cluster_spec=BaseClusterInfo.from_dict(json.loads(args.cluster_json)),
-        libraries=[Library.from_dict(l) for l in json.loads(args.libraries_json)],
+        libraries=[Library.from_dict(lib) for lib in json.loads(args.libraries_json)],
         db=getDbApi(),
     )
 
@@ -56,7 +56,8 @@ def deploy_gp_cluster(
         existing = clusters[0]
         # if it exists we must edit it to ensure consistency
         print(
-            f"Found existing cluster with name {cluster_spec.cluster_name}. Now updating it..."
+            f"Found existing cluster with name {cluster_spec.cluster_name}. "
+            "Now updating it..."
         )
         db.clusters.edit_and_wait(
             cluster_id=existing.cluster_id, **cluster_details_args
@@ -64,7 +65,8 @@ def deploy_gp_cluster(
         # I cannot at the time of this development say for sure which properties
     else:
         print(
-            f"Found no cluster with name {cluster_spec.cluster_name}. Now creating it..."
+            f"Found no cluster with name {cluster_spec.cluster_name}. "
+            "Now creating it..."
         )
         existing = db.clusters.create_and_wait(**cluster_details_args)
 
@@ -76,7 +78,8 @@ def deploy_gp_cluster(
         )
     )
 
-    # We need to turn the library list into a hashable set to simplify taking the differences.
+    # We need to turn the library list
+    # into a hashable set to simplify taking the differences.
     existing_libs_dict = {json.dumps(lib.as_dict()): lib for lib in existing_libs}
     libraries_dict = {json.dumps(lib.as_dict()): lib for lib in libraries}
     libs_key_set = set(libraries_dict.keys())

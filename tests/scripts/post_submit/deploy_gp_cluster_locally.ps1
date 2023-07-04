@@ -44,4 +44,3 @@ $libraries = @"
 
 spetlr_deploy_gp_cluster --cluster_json "$cluster_spec" --libraries_json "$libraries"
 
-dbx launch --job="Setup Gp Cluster" --trace --kill-on-sigterm

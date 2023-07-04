@@ -4,7 +4,7 @@ from dataclasses import fields
 from typing import List
 
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.compute import BaseClusterInfo, Library
+from databricks.sdk.service.compute import BaseClusterInfo, Library, State
 
 from spetlr.db_auto import getDbApi
 from spetlr.entry_points.generalized_task_entry_point import prepare_keyword_arguments
@@ -59,6 +59,15 @@ def deploy_gp_cluster(
             f"Found existing cluster with name {cluster_spec.cluster_name}. "
             "Now updating it..."
         )
+        if existing.state in [
+            State.RUNNING,
+            State.RESTARTING,
+            State.RESIZING,
+            State.PENDING,
+        ]:
+            we_launched_it = False
+        else:
+            we_launched_it = True
         db.clusters.edit_and_wait(
             cluster_id=existing.cluster_id, **cluster_details_args
         )
@@ -69,6 +78,7 @@ def deploy_gp_cluster(
             "Now creating it..."
         )
         existing = db.clusters.create_and_wait(**cluster_details_args)
+        we_launched_it = True
 
     existing_libs = list(
         lib.library
@@ -117,6 +127,18 @@ def deploy_gp_cluster(
             ),
         )
 
-    if any_uninstall:
-        print("We uninstalled some libraries. Restart to ensure correct functioning...")
-        db.clusters.restart(cluster_id=existing.cluster_id)
+    if we_launched_it:
+        print("We are done with this cluster. Terminating to preserve resources.")
+        try:
+            # the api call is called delete but functions as terminate.
+            db.clusters.delete(cluster_id=existing.cluster_id)
+            # actual deletion is called permanent_delete
+        except:  # noqa Non-critical action doesn't matter if it fails
+            print("WARNING: Cluster termination failed.")
+    else:
+        if any_uninstall:
+            print("Restart to ensure library uninstall...")
+            db.clusters.restart(cluster_id=existing.cluster_id)
+        else:
+            print("Cluster is left running.")
+    print("Cluster creation completed.")

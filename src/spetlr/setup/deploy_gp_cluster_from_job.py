@@ -1,7 +1,7 @@
 import sys
 from typing import Dict
 
-from databricks.sdk.service.compute import BaseClusterInfo
+from databricks.sdk.service.compute import ClusterDetails
 
 from spetlr.db_auto import getDbApi
 from spetlr.entry_points.generalized_task_entry_point import (
@@ -34,7 +34,7 @@ def deploy_gp_cluster_from_job(
         db.clusters.create, cluster_details_dict
     )
     cluster_details_dict["cluster_name"] = cluster_name
-    cluster_details = BaseClusterInfo.from_dict(cluster_details_dict)
+    cluster_details = ClusterDetails.from_dict(cluster_details_dict)
     deploy_gp_cluster(db=db, cluster_spec=cluster_details, libraries=libraries)
 
 

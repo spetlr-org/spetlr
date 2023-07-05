@@ -4,7 +4,7 @@ from dataclasses import fields
 from typing import List
 
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.compute import BaseClusterInfo, Library, State
+from databricks.sdk.service.compute import ClusterDetails, Library, State
 
 from spetlr.db_auto import getDbApi
 from spetlr.entry_points.generalized_task_entry_point import prepare_keyword_arguments
@@ -24,7 +24,7 @@ def main():
     args = parser.parse_args()
 
     deploy_gp_cluster(
-        cluster_spec=BaseClusterInfo.from_dict(json.loads(args.cluster_json)),
+        cluster_spec=ClusterDetails.from_dict(json.loads(args.cluster_json)),
         libraries=[Library.from_dict(lib) for lib in json.loads(args.libraries_json)],
         db=getDbApi(),
     )
@@ -32,7 +32,7 @@ def main():
 
 def deploy_gp_cluster(
     *,
-    cluster_spec: BaseClusterInfo,
+    cluster_spec: ClusterDetails,
     libraries: List[Library],
     db: WorkspaceClient = None,
 ):

@@ -1,7 +1,7 @@
 import importlib
 import inspect
 import sys
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List
 
 ENTRY_POINT = "entry_point"
 
@@ -28,27 +28,10 @@ def main():
     All arguments must be of type string.
     """
 
-    kwargs = {}
-    entry_point = None
-    # sys.argv will contain strings like
-    # [ "--entry_point=my.module:main", "--myarg=myval" ]
-    for arg in sys.argv:
-        # parameters of any other form are ignored
-        if not arg.startswith("--"):
-            continue
-        if arg.find("=") < 0:
-            continue
-
-        k, v = arg[2:].split("=", 1)
-
-        if k == ENTRY_POINT:
-            # magic mandatory parameter
-            entry_point = v
-        else:
-            # any other custom parameters
-            kwargs[k] = v
-
-    if entry_point is None:
+    kwargs = prepare_kwargs_from_argv(sys.argv)
+    try:
+        entry_point = kwargs.pop(ENTRY_POINT)
+    except KeyError:
         raise Exception("No entry_point specified.")
 
     # entry_point looks like "my.module:main"
@@ -65,7 +48,26 @@ def main():
     return obj(**kwargs)
 
 
-def prepare_keyword_arguments(callable_obj: Callable, kwargs_dict: Dict[str, Any]):
+def prepare_kwargs_from_argv(argv: List[str]):
+    # sys.argv will contain strings like
+    # [ "--entry_point=my.module:main", "--myarg=myval" ]
+    kwargs = {}
+    for arg in argv:
+        # parameters of any other form are ignored
+        if not arg.startswith("--"):
+            continue
+        if arg.find("=") < 0:
+            continue
+
+        k, v = arg[2:].split("=", 1)
+
+        kwargs[k] = v
+    return kwargs
+
+
+def prepare_keyword_arguments(
+    callable_obj: Callable, kwargs_dict: Dict[str, Any], *, warn=True
+):
     """Reduce the dict down to a set of keys that the callable can actually be called
     with. Any extra keys are dropped with a warning."""
     signature = inspect.signature(callable_obj)
@@ -84,9 +86,10 @@ def prepare_keyword_arguments(callable_obj: Callable, kwargs_dict: Dict[str, Any
         if key in parameters:  # only proceed if the parameter exists on the callable
             valid_kwargs[key] = value
         else:
-            print(
-                f"WARNING: Ignoring job parameter: {key}. "
-                "The entry point cannot receive it."
-            )
+            if warn:
+                print(
+                    f"WARNING: Ignoring job parameter: {key}. "
+                    "The entry point cannot receive it."
+                )
 
     return valid_kwargs

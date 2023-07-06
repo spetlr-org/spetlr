@@ -23,6 +23,8 @@ def main():
 
     args = parser.parse_args()
 
+    print(args.cluster_json)
+    print(args.libraries_json)
     deploy_gp_cluster(
         cluster_spec=ClusterDetails.from_dict(json.loads(args.cluster_json)),
         libraries=[Library.from_dict(lib) for lib in json.loads(args.libraries_json)],

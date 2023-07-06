@@ -12,7 +12,7 @@ from pyspark.sql.types import (
     StructType,
 )
 
-from spetlr.repr.sql_types import repr_sql_types
+from spetlr.sqlrepr.sql_types import repr_sql_types
 
 
 class TestReprSqlTypes(unittest.TestCase):

@@ -10,13 +10,12 @@ from pathlib import Path
 from types import ModuleType
 from typing import Dict, Union
 
+from spetlr.configurator.sql.comments import _extract_comment_attributes
+from spetlr.configurator.sql.create import _walk_create_statement
+from spetlr.configurator.sql.init_sqlparse import parse
 from spetlr.exceptions.configurator_exceptions import (
     SpetlrConfiguratorInvalidSqlCommentsException,
 )
-
-from .comments import _extract_comment_attributes
-from .create import _walk_create_statement
-from .init_sqlparse import parse
 
 
 def parse_sql_code_to_config(sql_code: str) -> Dict:
@@ -47,6 +46,22 @@ def parse_sql_code_to_config(sql_code: str) -> Dict:
         object_details.update(comment_attributes)
         details[table_id] = object_details
     return details
+
+
+def parse_single_sql_statement(sql_code: str) -> dict:
+    """Take a sinle sql statement, such as a create table statement,
+    and break it down into its constituent parts, such as name, location and schema,
+    which are returned as a dictionary.
+    """
+    # This will fail unless there is exactly one statement
+    (statement,) = parse(sql_code)
+
+    comment_attributes = _extract_comment_attributes(statement)
+
+    object_details = _walk_create_statement(statement)
+
+    comment_attributes.update(object_details)
+    return comment_attributes
 
 
 def _parse_sql_to_config(resource_path: Union[str, ModuleType]) -> Dict:

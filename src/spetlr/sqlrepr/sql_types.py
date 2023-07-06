@@ -5,7 +5,6 @@ from pyspark.sql.types import (
     DataType,
     DecimalType,
     MapType,
-    StringType,
     StructField,
     StructType,
 )
@@ -14,10 +13,13 @@ from pyspark.sql.types import (
 def repr_sql_types(obj: Union[StructField, DataType]):
     if isinstance(obj, StructField):
         return (
-            f"{obj.__class__.__name__}(name={repr(obj.name)}, "
-            f"dataType={repr_sql_types(obj.dataType)}, "
-            f"nullable={repr(obj.nullable)}, "
-            f"metadata={repr(obj.metadata)})"
+            (
+                f"{obj.__class__.__name__}(name={repr(obj.name)}, "
+                f"dataType={repr_sql_types(obj.dataType)}"
+            )
+            + (f", nullable={repr(obj.nullable)}" if not obj.nullable else "")
+            + (f", metadata={repr(obj.metadata)}" if obj.metadata else "")
+            + ")"
         )
 
     if isinstance(obj, ArrayType):

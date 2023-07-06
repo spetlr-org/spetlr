@@ -8,8 +8,8 @@ from pyspark.sql.types import StructField
 from spetlr.configurator.configurator import Configurator
 from spetlr.exceptions import SpetlrException
 from spetlr.functions import get_unique_tempview_name, init_dbutils
-from spetlr.repr.sql_types import repr_sql_types
 from spetlr.spark import Spark
+from spetlr.sqlrepr.sql_types import repr_sql_types
 from spetlr.tables.TableHandle import TableHandle
 from spetlr.utils.CheckDfMerge import CheckDfMerge
 from spetlr.utils.GetMergeStatement import GetMergeStatement
@@ -30,12 +30,12 @@ class DeltaHandleInvalidFormat(DeltaHandleException):
 @dataclass
 class DeltaHandle(TableHandle):
     name: str
-    location: str = None
-    data_format: str = None
-    columns: List[StructField] = field(default_factory=list)
-    options: Dict[str, str] = field(default_factory=dict)
-    partitioned_by: List[StructField] = field(default_factory=list)
-    tblproperties: Dict[str, str] = field(default_factory=dict)
+    location: str
+    data_format: str
+    columns: List[StructField]
+    options: Dict[str, str]
+    partitioned_by: List[StructField]
+    tblproperties: Dict[str, str]
 
     def __init__(
         self,

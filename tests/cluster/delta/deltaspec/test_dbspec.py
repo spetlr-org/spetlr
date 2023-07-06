@@ -2,11 +2,11 @@ import unittest
 
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_sql_code_to_config
-from spetlr.delta.table_spec import DbSpec
+from spetlr.deltaspec.DeltaDatabaseSpec import DeltaDatabaseSpec
 from spetlr.spark import Spark
 
 
-class TestTableSpec(unittest.TestCase):
+class TestDbSpec(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         c = Configurator()
@@ -27,9 +27,9 @@ class TestTableSpec(unittest.TestCase):
         k, v = config.popitem()
         self.assertEqual(k, "MyDbAlias")
         c.register(k, v)
-        db_parsed = DbSpec.from_tc(k)
+        db_parsed = DeltaDatabaseSpec.from_tc(k)
         Spark.get().sql(master_sql)
-        db_read = DbSpec.from_spark(db_parsed.name)
+        db_read = DeltaDatabaseSpec.from_spark(db_parsed.name)
 
         self.assertEqual(db_parsed, db_read)
 

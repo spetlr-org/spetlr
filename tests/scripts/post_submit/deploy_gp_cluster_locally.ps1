@@ -43,5 +43,11 @@ $libraries = @'
 ]
 '@
 
+if ($IsLinux)
+{
+    $cluster_spec = $cluster_spec -replace '"', '\"'
+    $libraries = $libraries -replace '"', '\"'
+}
+
 spetlr_deploy_gp_cluster --cluster_json "$cluster_spec" --libraries_json "$libraries"
 

@@ -3,12 +3,12 @@
 import json
 import sys
 
-from databricks_api import DatabricksAPI
+from databricks.sdk import WorkspaceClient
 
 from spetlr.functions import init_dbutils
 
 
-def getDbApi() -> DatabricksAPI:
+def getDbApi() -> WorkspaceClient:
     """
     This method automatically configures a databricks API client.
     In local running, the databricks-cli is used for configuration.
@@ -28,18 +28,19 @@ def getDbApi() -> DatabricksAPI:
         token = context["extraContext"]["api_token"]
     else:
         try:
-            from databricks_cli.configure.provider import ProfileConfigProvider
+            cfg = WorkspaceClient().api_client
+
         except ModuleNotFoundError:
             print(
                 "In local running, databricks-cli needs to be installed.",
                 file=sys.stderr,
             )
             raise
-        cfg = ProfileConfigProvider().get_config()
+
         host = cfg.host
         token = cfg.token
 
     if not host or not token:
         raise Exception("Unable to auto-configure api client.")
 
-    return DatabricksAPI(host=host, token=token)
+    return WorkspaceClient(host=host, token=token)

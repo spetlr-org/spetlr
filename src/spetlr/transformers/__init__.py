@@ -5,6 +5,9 @@ from .drop_oldest_duplicate_transformer import (  # noqa: F401
     DropOldestDuplicatesTransformer,
 )
 from .dropColumnsTransformer_nc import DropColumnsTransformerNC  # noqa: F401
+from .generate_md5_column_transformer_nc import (  # noqa: F401
+    GenerateMd5ColumnTransformerNC,
+)
 from .join_dataframes_transformer import JoinDataframesTransformerNC  # noqa: F401
 from .select_and_cast_columns_transformer_nc import (  # noqa: F401
     SelectAndCastColumnsTransformerNC,

@@ -46,10 +46,27 @@ class DeltaTests(unittest.TestCase):
             },
         )
 
+        tc.register(
+            "MyTbl4",
+            {
+                "name": "TestDb{ID}.TestTbl4",
+            },
+        )
+
+        tc.register(
+            "MyTbl5",
+            {
+                "name": "TestDb{ID}.TestTbl5",
+            },
+        )
+
         # test instantiation without error
         DbHandle.from_tc("MyDb")
         DeltaHandle.from_tc("MyTbl")
         DeltaHandle.from_tc("MyTbl2")
+        DeltaHandle.from_tc("MyTbl3")
+        DeltaHandle.from_tc("MyTbl4")
+        DeltaHandle.from_tc("MyTbl5")
 
     def test_02_DbCreation(self):
         db = DbHandle.from_tc("MyDb")
@@ -97,7 +114,7 @@ class DeltaTests(unittest.TestCase):
         dh.create_hive_table()
 
         # test hive access:
-        df = Spark.get().table(dh._name)
+        df = dh.read()
         self.assertTrue(6, df.count())
 
     def test_05_read(self):
@@ -148,7 +165,7 @@ class DeltaTests(unittest.TestCase):
             dh.read()
 
     def test_11_partitioning(self):
-        dh = DeltaHandle.from_tc("MyTbl")
+        dh = DeltaHandle.from_tc("MyTbl4")
         Spark.get().sql(
             f"""
             CREATE TABLE {dh.get_tablename()}
@@ -163,7 +180,7 @@ class DeltaTests(unittest.TestCase):
 
         self.assertEqual(dh.get_partitioning(), ["colB", "colA"])
 
-        dh2 = DeltaHandle.from_tc("MyTbl2")
+        dh2 = DeltaHandle.from_tc("MyTbl5")
         Spark.get().sql(
             f"""
             CREATE TABLE {dh2.get_tablename()}

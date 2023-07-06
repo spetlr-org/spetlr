@@ -1,5 +1,5 @@
 
-$cluster_spec = @"
+$cluster_spec = @'
 {
   "cluster_name": "localdeploy",
   "spark_version": "11.3.x-scala2.12",
@@ -21,8 +21,9 @@ $cluster_spec = @"
   },
   "num_workers": 2
 }
-"@
-$libraries = @"
+'@
+
+$libraries = @'
 [
   {
     "maven" : {
@@ -40,7 +41,7 @@ $libraries = @"
     }
   }
 ]
-"@
+'@
 
 spetlr_deploy_gp_cluster --cluster_json "$cluster_spec" --libraries_json "$libraries"
 

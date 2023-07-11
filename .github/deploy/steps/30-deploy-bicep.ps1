@@ -34,7 +34,8 @@ $output = az deployment sub create `
       sqlServerAdminUser=$sqlServerAdminUser `
       sqlServerAdminPassword=$sqlServerAdminPassword `
       sqlAdminSpnName=$sqlAdminSpnName `
-      sqlAdminObjectId=$sqlAdminObjectId
+      sqlAdminObjectId=$sqlAdminObjectId `
+      logAnalyticsWsName=$logAnalyticsWsName
 
 
 Throw-WhenError -output $output

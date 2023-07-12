@@ -14,6 +14,7 @@ param sqlServerAdminUser string
 param sqlServerAdminPassword string
 param sqlAdminSpnName string
 param sqlAdminObjectId string
+param logAnalyticsWsName string
 
 //#############################################################################################
 //# Provision Databricks Workspace
@@ -149,7 +150,6 @@ resource sqlserver 'Microsoft.Sql/servers@2022-02-01-preview' = {
   }
 }
 
-
 //#############################################################################################
 //# Provision SQL database
 //#############################################################################################
@@ -170,4 +170,14 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2022-02-01-preview' = {
     zoneRedundant: false
     requestedBackupStorageRedundancy: 'Local'
   }
+}
+
+//#############################################################################################
+//# Provision Log Analytics Workspace
+//#############################################################################################
+
+resource logAnalyticsWs 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name: logAnalyticsWsName
+  location: location
+  tags: resourceTags
 }

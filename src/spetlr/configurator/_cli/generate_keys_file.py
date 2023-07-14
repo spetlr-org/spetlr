@@ -43,23 +43,26 @@ def generate_keys_file(options):
     except ModuleNotFoundError:
         pass
 
-    if not options.output_file:
+    output_file = options.output_file or ""
+    output_file = output_file.replace("\\", "/")
+
+    if not output_file:
         # without output file, output to console
         print(new_conts, end="")
         return
 
     if not options.check:
-        with open(options.output_file, "w") as f:
+        with open(output_file, "w") as f:
             f.write(new_conts)
         return
 
-    if not os.path.exists(options.output_file):
-        raise SpetlrCliCheckFailed(f"Output file {options.output_file} does not exist.")
+    if not os.path.exists(output_file):
+        raise SpetlrCliCheckFailed(f"Output file {output_file} does not exist.")
 
-    old_conts = open(options.output_file).read()
+    old_conts = open(output_file).read()
     if new_conts != old_conts:
         raise SpetlrCliCheckFailed(
-            f"Output file {options.output_file} does not have correct contents."
+            f"Output file {output_file} does not have correct contents."
         )
 
     # all checks passed. Return without error.

@@ -183,8 +183,8 @@ Setting both input and output dataset key(s) ensure that the `Transformers` and 
 ### Example-8
 
 This example illustrates the use of an orchestrator as just another ETL step.
-The principle is called composit orchestration:
+The principle is called composite orchestration:
 
 ```
-{composit_orchestration_example}
+{composite_orchestration_example}
 ```

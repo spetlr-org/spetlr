@@ -38,16 +38,15 @@ from spetlr.etl import Extractor, Transformer, Loader, Orchestrator
 
 ### Principles
 
-All ETL classes, **Orchestrator**, **Extractor**, **Transformer**, **TransformerNC** and **Loader** are ETL objects.
+All ETL classes, **Orchestrator**, **Extractor**, **Transformer** and **Loader** are ETL objects.
 This means that they have a method `etl(self, inputs: dataset_group) -> dataset_group`
 (where `dataset_group = Dict[str, DataFrame]`) that transforms a set of import to a set of 
 outputs. The special properties of each type are
  - **Extractor** always adds its result to the total set
- - **Transformer** consumes all inputs and adds a single result dataframe
- - **TransformerNC** does not consume the input(s) and adds a single result dataframe
+ - **Transformer** handle a given number of inputs and adds a single result dataframe
  - **Loader** acts as a sink, while passing its input on to the next sink
 
-The usecase for the **TransformerNC** comes when there is a need to keep previously extracted (or transformed) dataframes after a transformation step. When working with these classes it is crucial to set dataset input keys and dataset output keys. This ensures that the transformer and/or loader has explicit information on which dataframe(s) to handle.
+The **Transformer** can run in two modes, controlled by the flag consume_inputs that is True by default. When True the transformer conumes its inputs and adds the output to the result dataframe. In usecases when there is a need to keep previously extracted (or transformed) dataframes after a transformation step set consume_inputs to False. When working with non conuming transformers it is crucial to set dataset input keys and dataset output keys. This ensures that the transformer and/or loader has explicit information on which dataframe(s) to handle.
 
 The special case of the  **Orchestrator** is that it takes all its steps and executes them
 in sequence on its inputs. Running in the default `execute()` method, the inputs are empty,
@@ -534,16 +533,17 @@ etl.execute()
 
 ### Example-7
 
-This example illustrates the use of `TransformerNC`.
+This example illustrates the use of `Transformer` in a non conuming context.
 The job here is to join the two extracted dataframes - an employees dataframe and a birthdays dataframe.
-But, before the birthdays can be joined onto the employees, the employees dataframe require a transformation step.
-As the transformation step of employees is handled by an `TransformerNC`, it does not consume the other inputs from the `dataset_group`.
+But, before the birthdays can be join onto the employees, the employees dataframe require a transformation step.
+As the transformation step of employees is handled by an non conuming `Transformer`, it does not consume the other inputs from the `dataset_group`.
 Hence, birthdays is still available from the inputs - even after the transformation of employees.
 Then both frames can be joined and the final dataframe saved via an `Loader`.
-When working with `TransformerNC` it is important to mind that dataset keys are crucial.
+When working with non conuming `Transformer` it is important to mind that dataset keys are crucial.
 Setting both input and output dataset key(s) ensure that the `Transformers` and `Loaders` handle the intended dataframes.
 
 ```python
+from typing import Union
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
@@ -594,12 +594,12 @@ class OfficeBirthdaysExtractor(Extractor):
         )
 
 
-class IntegerTransformerNC(TransformerNC):
+class IntegerTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
         return df.withColumn("id", f.col("id").cast(IntegerType()))
 
 
-class JoinTransformerNC(TransformerNC):
+class JoinTransformer(Transformer):
     def process_many(self, dataset: dataset_group) -> DataFrame:
 
         df_employee = dataset["df_employee_transformed"]
@@ -621,13 +621,14 @@ etl = (
     .extract_from(OfficeEmployeeExtractor(dataset_key="df_employee"))
     .extract_from(OfficeBirthdaysExtractor(dataset_key="df_birthdays"))
     .transform_with(
-        IntegerTransformerNC(
+        IntegerTransformer(
             dataset_input_keys="df_employee",
             dataset_output_key="df_employee_transformed",
+            consume_inputs=False,
         )
     )
     .transform_with(
-        JoinTransformerNC(
+        JoinTransformer(
             dataset_input_keys=["df_employee_transformed", "df_birthdays"],
             dataset_output_key="df_final",
         )

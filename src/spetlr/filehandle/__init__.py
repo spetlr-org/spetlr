@@ -1,1 +1,5 @@
-from .file_handle import FileHandle  # noqa: F401
+from .file_handle import FileHandle
+
+__all__ = [
+    FileHandle,
+]

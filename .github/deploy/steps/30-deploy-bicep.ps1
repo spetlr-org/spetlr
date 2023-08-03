@@ -6,7 +6,6 @@ Write-Host "  Deploying ressources using Bicep..." -ForegroundColor Yellow
 # depends on 00-Config as fast and as reliable as possible.
 $allowUserIp                  = (Invoke-WebRequest -UseBasicParsing "ifconfig.me/ip").Content.Trim()
 $spnobjectid = (Graph-GetSpn -queryDisplayName $cicdSpnName).id
-$devobjectid = az account show --query id
 
 $sqlAdminSpnName=$dbSpn.name
 $sqlAdminObjectId=$dbSpn.objectId
@@ -18,7 +17,6 @@ $output = az deployment sub create `
       permanentResourceGroup=$permanentResourceGroup `
       location=$location `
       keyVaultName=$keyVaultName `
-      devobjectid=$devobjectid `
       spnobjectid=$spnobjectid `
       resourceTags=$resourceTags `
       cosmosName=$cosmosName `

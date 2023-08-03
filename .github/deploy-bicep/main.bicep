@@ -4,7 +4,6 @@ targetScope = 'subscription'
 param permanentResourceGroup string
 param location string
 param keyVaultName string
-param devobjectid string
 param spnobjectid string
 param resourceTags object
 param cosmosName string
@@ -49,7 +48,6 @@ module resources 'resources-permanent.bicep' = {
   params: {
     location: location
     keyVaultName: keyVaultName
-    devobjectid: devobjectid
     spnobjectid: spnobjectid
     tags: resourceTags
     dbname: cosmosName

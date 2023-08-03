@@ -1,6 +1,5 @@
 param location string
 param keyVaultName string
-param devobjectid string
 param spnobjectid string
 param tags object
 param dbname string
@@ -26,17 +25,6 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
     enabledForTemplateDeployment: true
     tenantId: tenant().tenantId
     accessPolicies: [
-      {
-        // Developers
-        objectId: devobjectid
-        permissions: {
-          secrets: [
-            'list'
-            'get'
-            'set'
-          ] }
-        tenantId: tenant().tenantId
-      }
       {
         objectId: spnobjectid
         permissions: {

@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Union
+from typing import List
 
 from deprecated import deprecated
 from pyspark.sql import DataFrame
@@ -23,14 +23,9 @@ class TransformerNC(Transformer):
     def __init__(
         self,
         *,
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
     ):
-        if isinstance(dataset_input_keys, str):
-            dataset_input_keys = [dataset_input_keys]
-        else:
-            dataset_input_keys = dataset_input_keys
-
         super().__init__(
             dataset_input_keys=dataset_input_keys,
             dataset_output_key=dataset_output_key,

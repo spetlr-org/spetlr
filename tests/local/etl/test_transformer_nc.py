@@ -15,7 +15,7 @@ class TransformerNCTests(unittest.TestCase):
         cls.df = create_dataframe()
 
         cls.transformer_output_key = TestTransformer(dataset_output_key="my_output_key")
-        cls.transformer_input_key = TestTransformer(dataset_input_keys="my_input_key")
+        cls.transformer_input_key = TestTransformer(dataset_input_keys=["my_input_key"])
         cls.transformer_input_key_list = TestTransformer(
             dataset_input_keys=["my_input_key_1", "my_input_key_2"]
         )

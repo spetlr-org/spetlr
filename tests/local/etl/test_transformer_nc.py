@@ -1,9 +1,10 @@
 import unittest
+from typing import List, Union
 
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from spetlr.etl import TransformerNC
+from spetlr.etl import Extractor, Orchestrator, TransformerNC
 from spetlr.etl.types import dataset_group
 from spetlr.spark import Spark
 
@@ -82,6 +83,20 @@ class TransformerNCTests(unittest.TestCase):
             # - the provided dataset_input_key_list contains an incorrect key
             self.transformer_input_key_list.etl({"df1": self.df, "df2": self.df})
 
+    def test_inheritance_w_init(self):
+        """
+        This test should ensure, that when passing a single key
+        the .process method should be applied
+        """
+
+        oc = Orchestrator()
+
+        oc.extract_from(TestExtractor(dataset_key="df1"))
+        oc.extract_from(TestExtractor(dataset_key="df2"))
+        oc.transform_with(TestTransformerWInit("df1", "df_output1"))
+        oc.transform_with(TestTransformerWInit("df2", "df_output2"))
+        oc.execute()
+
 
 class TestTransformer(TransformerNC):
     def process(self, df: DataFrame) -> DataFrame:
@@ -104,6 +119,26 @@ def create_dataframe():
     )
 
     return Spark.get().createDataFrame(data=data, schema=schema)
+
+
+class TestExtractor(Extractor):
+    def read(self) -> DataFrame:
+        return create_dataframe()
+
+
+class TestTransformerWInit(TransformerNC):
+    def __init__(
+        self,
+        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_output_key: str = None,
+    ):
+        super().__init__(
+            dataset_input_keys=dataset_input_keys,
+            dataset_output_key=dataset_output_key,
+        )
+
+    def process(self, df: DataFrame) -> DataFrame:
+        return df
 
 
 if __name__ == "__main__":

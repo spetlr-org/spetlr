@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
@@ -38,7 +38,7 @@ class TimeZoneTransformerNC(TransformerNC):
         latitude_col: str,
         longitude_col: str,
         column_output_name: str = "TimeZone",
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
     ):
         super().__init__(

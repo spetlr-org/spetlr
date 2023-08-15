@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
@@ -11,7 +11,7 @@ class DataFrameFilterTransformerNC(TransformerNC):
         self,
         col_name: str,
         col_value: str,
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
     ) -> None:
         """

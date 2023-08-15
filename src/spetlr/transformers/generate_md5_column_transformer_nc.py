@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Union
+from typing import List
 
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
@@ -30,7 +30,7 @@ class GenerateMd5ColumnTransformerNC(TransformerNC):
         *,
         col_name: str,
         col_list: List[str],
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
     ):
         super().__init__(

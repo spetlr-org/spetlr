@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame
@@ -28,7 +28,7 @@ class SelectAndCastColumnsTransformerNC(TransformerNC):
         *,
         schema: T.StructType,
         caseInsensitiveMatching: bool = False,
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
     ):
         super().__init__(

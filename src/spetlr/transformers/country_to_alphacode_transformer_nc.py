@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 import pycountry
 import pyspark.sql.functions as F
@@ -31,7 +31,7 @@ class CountryToAlphaCodeTransformerNC(TransformerNC):
         self,
         col_name: str,
         output_col_name: str = None,
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
     ) -> None:
         """

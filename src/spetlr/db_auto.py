@@ -5,8 +5,8 @@ import sys
 
 from databricks.sdk import WorkspaceClient
 
-import spetlr.version as spetlrversion
 from spetlr import __name__ as spetlrname
+from spetlr import __version__ as spetlrversion
 from spetlr.functions import init_dbutils
 
 

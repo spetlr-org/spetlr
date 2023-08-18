@@ -22,12 +22,9 @@ class DataChangeCaptureTransformer(Transformer):
         self.primary_key = primary_key
         self.df_source = df_source
         self.df_target = df_target
-        if cols_to_exclude is None:
-            self.cols_to_exclude = []
-        elif primary_key in cols_to_exclude:
+        self.cols_to_exclude = cols_to_exclude or []
+        if primary_key in cols_to_exclude:
             raise ValueError(f"The primary key '{primary_key}' should not be excluded.")
-        else:
-            self.cols_to_exclude = cols_to_exclude
 
     def _md5_hash(self, df: DataFrame, colName: str):
         cols = [col for col in df.columns if col not in self.cols_to_exclude]
@@ -52,7 +49,7 @@ class DataChangeCaptureTransformer(Transformer):
             "left_outer",
         )
 
-        # Filter out rows where the MD5 hash values are different
+        # Filter to keep rows where the MD5 hash values are different
         # or the target values are null
         df = df_joined.filter(
             (df_joined.md5_source != df_joined.md5_target)

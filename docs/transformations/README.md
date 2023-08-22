@@ -14,7 +14,7 @@ Transformations in spetlr:
   - [SelectAndCastColumnsTransformer](#selectandcastcolumnstransformer)
   - [ValidFromToTransformer](#validfromtotransformer)
   - [DataFrameFilterTransformer](#dataframefiltertransformer)
-  - [CountryToAlphaCodeTransformerNC](#countrytoalphacodetransformernc)
+  - [CountryToAlphaCodeTransformer](#countrytoalphacodetransformer)
   - [GenerateMd5ColumnTransformer](#generatemd5columntransformer)
 ## Concatenate data frames
 
@@ -432,17 +432,18 @@ transformed_df.display()
 
 ```
 
-## CountryToAlphaCodeTransformerNC
+## CountryToAlphaCodeTransformer
 
 This is a simple transformer for translating country names to their alpha-2 code equivalent.
 
 Usage example
 
 ```python
-from spetlr.transformers import CountryToAlphaCodeTransformerNC
+from spetlr.transformers import CountryToAlphaCodeTransformer
 import pyspark.sql.types as T
 
 from spetlr.spark import Spark
+
 input_schema = T.StructType(
     [
         T.StructField("countryCol", T.StringType(), True),
@@ -456,19 +457,18 @@ input_data = [
 
 input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-transformed_df = CountryToAlphaCodeTransformerNC(
+transformed_df = CountryToAlphaCodeTransformer(
     col_name="countryCol",
     output_col_name="alphaCodeCol
 ).process(df_input)
 
-
 transformed_df.display()
 
 +----------+------------+
-|countryCol|alphaCodeCol|
+| countryCol | alphaCodeCol |
 +----------+------------+
-|   Denmark|          DK|
-|   Germany|          DE|
+| Denmark | DK |
+| Germany | DE |
 +----------+------------+
 
 ```
@@ -480,10 +480,11 @@ This transformer generates a unique column with md5 encoding based on other colu
 Usage example
 
 ```python
-from spetlr.transformers import GenerateMd5ColumnTransformerNC
+from spetlr.transformers import GenerateMd5ColumnTransformer
 import pyspark.sql.types as T
 
 from spetlr.spark import Spark
+
 input_schema = T.StructType(
     [
         T.StructField("id", T.IntegerType(), True),
@@ -498,18 +499,17 @@ input_data = [
 
 input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-transformed_df = GenerateMd5ColumnTransformerNC(
+transformed_df = GenerateMd5ColumnTransformer(
     col_name="md5_col",
     col_list=["id", "text"],
 ).process(input_df)
 
-
 transformed_df.display()
 
 +-----+-------+----------------------------------+
-|   id|   text|                           md5_col|
+| id | text | md5_col |
 +-----+-------+----------------------------------+
-|    1|  text1|  e86667d75db79395e172c5c343ec2df1|
-|    2|   Null|  c81e728d9d4c2f636f067f89cc14862c|
+| 1 | text1 | e86667d75db79395e172c5c343ec2df1 |
+| 2 | Null | c81e728d9d4c2f636f067f89cc14862c |
 +-----+-------+-----------------------------------+
 ```

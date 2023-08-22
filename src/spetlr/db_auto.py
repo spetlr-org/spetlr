@@ -10,8 +10,7 @@ from spetlr.functions import init_dbutils
 
 def getDbApi() -> WorkspaceClient:
     """
-    This method automatically configures a databricks API client.
-    In local running, the databricks-cli is used for configuration.
+    In local running, the databricks-sdk is used for configuration.
     Running on a cluster, the configuration is extracted from the job context.
     """
     try:

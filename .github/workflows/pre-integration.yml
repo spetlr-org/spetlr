@@ -54,7 +54,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine packaging spetlr-tools
+          pip install setuptools wheel twine packaging spetlr-tools==0.1.39
       - name: Build
         shell: pwsh
         run: .github/submit/build.ps1

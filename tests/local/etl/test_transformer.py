@@ -1,9 +1,13 @@
 import unittest
+from typing import List
 
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+from spetlrtools.testing import TestHandle
 
-from spetlr.etl import Transformer
+from spetlr.etl import Orchestrator, Transformer
+from spetlr.etl.extractors import SimpleExtractor
+from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.types import dataset_group
 from spetlr.spark import Spark
 
@@ -86,6 +90,53 @@ class TransformerTests(unittest.TestCase):
         self.assertIs(self.df, result["TestTransformer"])
         self.assertIs(self.df, result["df"])
 
+    def test_non_consume_in_etl_context(self):
+        """
+        In order to test whether the transformer class
+        works in a full ETL flow,
+        this tests a simple setup
+        """
+
+        trans_consuming = TestTransformer2(
+            dataset_input_keys=["df_1"],
+            dataset_output_key="df_trans",
+            consume_inputs=False,
+        )
+        dh_load = TestHandle()
+        oc_test_A = ETLTransformerTester(trans_consuming)
+        oc_test_A.load_into(
+            SimpleLoader(
+                handle=dh_load, mode="overwrite", dataset_input_keys=["df_trans"]
+            )
+        )
+
+        oc_test_A.execute()
+
+    def test_consume_in_etl_context(self):
+        """
+        In order to test whether the transformer class
+        works in a full ETL flow,
+        this tests a simple setup
+        """
+        trans_consuming = TestTransformer2(
+            dataset_input_keys=["df_1"],
+            dataset_output_key="df_trans",
+        )
+
+        oc_test_B = ETLTransformerTester(
+            trans_consuming,
+        )
+        dh_load = TestHandle()
+        oc_test_B.load_into(
+            SimpleLoader(handle=dh_load, mode="overwrite", dataset_input_keys=["df_1"])
+        )
+
+        with self.assertRaises(KeyError) as cm:
+            oc_test_B.execute()
+
+        # Since it is consuming, it should not be able to find df_1
+        self.assertEqual(cm.exception.args[0], "df_1")
+
 
 class TestTransformer(Transformer):
     def process(self, df: DataFrame) -> DataFrame:
@@ -95,6 +146,23 @@ class TestTransformer(Transformer):
         assert len(datasets) == 2
         df1, df2 = list(datasets.values())
         return df1.union(df2)
+
+
+class TestTransformer2(Transformer):
+    def __init__(
+        self,
+        dataset_input_keys: List[str] = None,
+        dataset_output_key: str = None,
+        consume_inputs: bool = True,
+    ):
+        super().__init__(
+            dataset_input_keys=dataset_input_keys,
+            dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
+        )
+
+    def process(self, df: DataFrame) -> DataFrame:
+        return df
 
 
 def create_dataframe():
@@ -108,6 +176,25 @@ def create_dataframe():
     )
 
     return Spark.get().createDataFrame(data=data, schema=schema)
+
+
+def ETLTransformerTester(trans) -> Orchestrator:
+    empty_df = Spark.get().createDataFrame(data=[], schema="col1 string")
+
+    dh_extract_1 = TestHandle(provides=empty_df)
+    dh_extract_2 = TestHandle(provides=empty_df)
+
+    oc = Orchestrator()
+
+    oc.extract_from(SimpleExtractor(handle=dh_extract_1, dataset_key="df_1"))
+
+    oc.extract_from(SimpleExtractor(handle=dh_extract_2, dataset_key="df_2"))
+
+    oc.transform_with(
+        trans,
+    )
+
+    return oc
 
 
 if __name__ == "__main__":

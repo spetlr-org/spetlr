@@ -1,9 +1,10 @@
 import unittest
+from typing import List
 
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from spetlr.etl import TransformerNC
+from spetlr.etl import Transformer
 from spetlr.etl.types import dataset_group
 from spetlr.spark import Spark
 
@@ -15,7 +16,7 @@ class TransformerNCTests(unittest.TestCase):
         cls.df = create_dataframe()
 
         cls.transformer_output_key = TestTransformer(dataset_output_key="my_output_key")
-        cls.transformer_input_key = TestTransformer(dataset_input_keys="my_input_key")
+        cls.transformer_input_key = TestTransformer(dataset_input_keys=["my_input_key"])
         cls.transformer_input_key_list = TestTransformer(
             dataset_input_keys=["my_input_key_1", "my_input_key_2"]
         )
@@ -83,7 +84,18 @@ class TransformerNCTests(unittest.TestCase):
             self.transformer_input_key_list.etl({"df1": self.df, "df2": self.df})
 
 
-class TestTransformer(TransformerNC):
+class TestTransformer(Transformer):
+    def __init__(
+        self,
+        dataset_input_keys: List[str] = None,
+        dataset_output_key: str = None,
+    ):
+        super().__init__(
+            dataset_input_keys=dataset_input_keys,
+            dataset_output_key=dataset_output_key,
+            consume_inputs=False,
+        )
+
     def process(self, df: DataFrame) -> DataFrame:
         return df
 

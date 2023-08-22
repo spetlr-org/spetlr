@@ -8,6 +8,8 @@ Visit SPETLR official webpage: [https://spetlr.com/](https://spetlr.com/)
 
 Support for LTS9.1 is ending. [See the issue for discussions.](https://github.com/spetlr-org/spetlr/issues/61)
 
+TransformerNC class will be removed permanently. [Follow the PR.](https://github.com/spetlr-org/spetlr/pull/82)
+
 # Table of Contents
 
 - [Description](#description)

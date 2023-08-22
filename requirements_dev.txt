@@ -5,7 +5,7 @@ black
 isort
 flake8
 dbx
-spetlr-tools
+spetlr-tools==0.1.39
 timezonefinder==6.0.2
 pycountry
 freezegun

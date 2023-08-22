@@ -2,7 +2,7 @@ import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.spark import Spark
-from spetlr.transformers import UnionTransformerNC
+from spetlr.transformers import UnionTransformer
 
 
 class TestUnionTransformer(DataframeTestCase):
@@ -24,7 +24,9 @@ class TestUnionTransformer(DataframeTestCase):
         input_df_2 = Spark.get().createDataFrame(data=input_data2, schema=input_schema)
         input_datasets = {"DF1": input_df_1, "DF2": input_df_2}
 
-        transformed_df = UnionTransformerNC().process_many(input_datasets)
+        transformed_df = UnionTransformer(consume_inputs=False).process_many(
+            input_datasets
+        )
 
         expected_data = [
             ("Col1Data", 42, 13.37, "Col4Data", "Col5Data"),
@@ -64,7 +66,9 @@ class TestUnionTransformer(DataframeTestCase):
         input_df_3 = Spark.get().createDataFrame(data=input_data3, schema=input_schema)
         input_datasets = {"DF1": input_df_1, "DF2": input_df_2, "DF3": input_df_3}
 
-        transformed_df = UnionTransformerNC().process_many(input_datasets)
+        transformed_df = UnionTransformer(consume_inputs=False).process_many(
+            input_datasets
+        )
 
         expected_data = [
             ("Col1Data", 42, 13.37, "Col4Data", "Col5Data"),
@@ -114,9 +118,9 @@ class TestUnionTransformer(DataframeTestCase):
         input_df_2 = Spark.get().createDataFrame(data=input_data2, schema=input_schema2)
         input_datasets = {"DF1": input_df_1, "DF2": input_df_2}
 
-        transformed_df = UnionTransformerNC(allowMissingColumns=True).process_many(
-            input_datasets
-        )
+        transformed_df = UnionTransformer(
+            allowMissingColumns=True, consume_inputs=False
+        ).process_many(input_datasets)
 
         expected_data = [
             ("Col1Data", 42, 13.37, "Col4Data", "Col5Data"),

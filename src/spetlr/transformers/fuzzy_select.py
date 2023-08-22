@@ -32,8 +32,19 @@ class FuzzySelectTransformer(Transformer):
     the method find_best_mapping and inspect the returned mapping.
     """
 
-    def __init__(self, columns: Iterable[str], match_cutoff=0.6):
-        super().__init__()
+    def __init__(
+        self,
+        columns: Iterable[str],
+        match_cutoff=0.6,
+        dataset_input_keys: List[str] = None,
+        dataset_output_key: str = None,
+        consume_inputs: bool = True,
+    ):
+        super().__init__(
+            dataset_input_keys=dataset_input_keys,
+            dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
+        )
         self.columns = list(columns)
         self.match_cutoff = match_cutoff
 

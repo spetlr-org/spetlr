@@ -2,7 +2,7 @@ import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.spark import Spark
-from spetlr.transformers import SelectColumnsTransformerNC
+from spetlr.transformers import SelectColumnsTransformer
 
 
 class TestSelectColumnsTransformer(DataframeTestCase):
@@ -22,7 +22,7 @@ class TestSelectColumnsTransformer(DataframeTestCase):
 
         expectedData = [(42, 13.37, "Col4Data")]
 
-        transformed_df = SelectColumnsTransformerNC(
+        transformed_df = SelectColumnsTransformer(
             columnList=["Col2", "Col3", "Col4"]
         ).process(input_df)
 

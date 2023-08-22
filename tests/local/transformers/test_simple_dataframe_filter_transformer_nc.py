@@ -2,10 +2,10 @@ import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.spark import Spark
-from spetlr.transformers import DataFrameFilterTransformerNC
+from spetlr.transformers import DataFrameFilterTransformer
 
 
-class TestDataFrameFilterTransformerNC(DataframeTestCase):
+class TestDataFrameFilterTransformer(DataframeTestCase):
     def test_filter_with_column_name_and_value(self):
         """
         This test accepts col_name and col_value in DataFrameFilterTransformer and
@@ -29,7 +29,7 @@ class TestDataFrameFilterTransformerNC(DataframeTestCase):
 
         input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-        transformed_df = DataFrameFilterTransformerNC(
+        transformed_df = DataFrameFilterTransformer(
             col_value="Col1Data", col_name="Col1"
         ).process(input_df)
 

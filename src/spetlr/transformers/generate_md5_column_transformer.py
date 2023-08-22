@@ -1,14 +1,14 @@
 import uuid
-from typing import List, Union
+from typing import List
 
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame
 
-from spetlr.etl import TransformerNC
+from spetlr.etl import Transformer
 
 
-class GenerateMd5ColumnTransformerNC(TransformerNC):
+class GenerateMd5ColumnTransformer(Transformer):
     """
     This transformer generates a unique column with md5 encoding based on other columns.
     The transformer also handles if a value is NULL, by replacing it with empty string.
@@ -30,12 +30,14 @@ class GenerateMd5ColumnTransformerNC(TransformerNC):
         *,
         col_name: str,
         col_list: List[str],
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
+        consume_inputs: bool = True
     ):
         super().__init__(
             dataset_input_keys=dataset_input_keys,
             dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
         )
         self.col_name = col_name
         self.col_list = col_list

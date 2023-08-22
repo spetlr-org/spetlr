@@ -2,10 +2,10 @@ import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.spark import Spark
-from spetlr.transformers import CountryToAlphaCodeTransformerNC
+from spetlr.transformers import CountryToAlphaCodeTransformer
 
 
-class CountryToAlphaCodeTransformer(DataframeTestCase):
+class CountryToAlphaCodeTransformerTest(DataframeTestCase):
     def test_country_to_alpha_code_transformer(self):
         inputSchema = T.StructType(
             [
@@ -22,7 +22,7 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
 
         expectedData = [("DK",), ("DE",)]
 
-        df_transformed = CountryToAlphaCodeTransformerNC(col_name="countryCol").process(
+        df_transformed = CountryToAlphaCodeTransformer(col_name="countryCol").process(
             df_input
         )
 
@@ -53,7 +53,7 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
             ),
         ]
 
-        df_transformed = CountryToAlphaCodeTransformerNC(
+        df_transformed = CountryToAlphaCodeTransformer(
             col_name="countryCol", output_col_name="alphaCodeCol"
         ).process(df_input)
 
@@ -76,7 +76,7 @@ class CountryToAlphaCodeTransformer(DataframeTestCase):
             ("",),
         ]
 
-        df_transformed = CountryToAlphaCodeTransformerNC(col_name="countryCol").process(
+        df_transformed = CountryToAlphaCodeTransformer(col_name="countryCol").process(
             df_input
         )
 

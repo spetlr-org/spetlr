@@ -2,7 +2,7 @@ import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.spark import Spark
-from spetlr.transformers import DropColumnsTransformerNC
+from spetlr.transformers import DropColumnsTransformer
 
 
 class TestDropColumnsTransformer(DataframeTestCase):
@@ -29,7 +29,7 @@ class TestDropColumnsTransformer(DataframeTestCase):
             (1,),
         ]
 
-        df_transformed = DropColumnsTransformerNC(
-            columnList=["text1", "text2"]
-        ).process(df_input)
+        df_transformed = DropColumnsTransformer(columnList=["text1", "text2"]).process(
+            df_input
+        )
         self.assertDataframeMatches(df_transformed, None, expectedData)

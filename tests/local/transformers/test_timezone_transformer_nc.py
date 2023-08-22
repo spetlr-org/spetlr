@@ -2,10 +2,10 @@ from pyspark.sql import types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.spark import Spark
-from spetlr.transformers import TimeZoneTransformerNC
+from spetlr.transformers import TimeZoneTransformer
 
 
-class TimeZoneTransformerNCTest(DataframeTestCase):
+class TimeZoneTransformerTest(DataframeTestCase):
     def test_timezone_transformer(self):
         input_schema = T.StructType(
             [
@@ -18,7 +18,7 @@ class TimeZoneTransformerNCTest(DataframeTestCase):
 
         input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-        transformed_df = TimeZoneTransformerNC(
+        transformed_df = TimeZoneTransformer(
             latitude_col="Latitude",
             longitude_col="Longitude",
         ).process(input_df)
@@ -46,7 +46,7 @@ class TimeZoneTransformerNCTest(DataframeTestCase):
 
         input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-        transformed_df = TimeZoneTransformerNC(
+        transformed_df = TimeZoneTransformer(
             latitude_col="Latitude",
             longitude_col="Longitude",
         ).process(input_df)

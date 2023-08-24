@@ -90,8 +90,10 @@ class SchemaManager(metaclass=Singleton):
             raise FalseSchemaDefinitionException(schema)
 
     def struct_to_sql(self, schema: T.StructType) -> str:
-        """Convert the given schema into sql rows that can form part of a CREATE TABLE statement.
-        Includes support for comments, nullability, and complex data types (e.g. structs, arrays)
+        """Convert the given schema into sql rows
+        that can form part of a CREATE TABLE statement.
+        Includes support for comments, nullability,
+        and complex data types (e.g. structs, arrays)
         """
         return self._schema_to_spark_sql(schema)
 

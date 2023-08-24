@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 from spetlr import Configurator
+from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.deltaspec.exceptions import InvalidSpecificationError
 from spetlr.exceptions import NoSuchValueException
 from spetlr.spark import Spark
@@ -55,8 +56,26 @@ class DeltaDatabaseSpec:
             name=name, location=location, comment=comment, dbproperties=dbproperties
         )
 
+    @classmethod
+    def from_sql(cls, sql: str) -> "DeltaDatabaseSpec":
+        details = parse_single_sql_statement(sql)
+        if details.get("format").lower() != "db":
+            raise InvalidSpecificationError(
+                "The sql code is not a create database statement."
+            )
+
+        init_args = dict(
+            name=details.get("name"),
+            location=details.get("path"),
+            comment=details.get("comment"),
+            dbproperties=details.get("dbproperties", {}),
+        )
+
+        init_args = {k: v for k, v in init_args.items() if v}
+        return DeltaDatabaseSpec(**init_args)
+
     def get_create_sql(self):
-        name_part = f"CREATE SCHEMA {self.name}"
+        name_part = f"CREATE SCHEMA {self.name} IF NOT EXISTS"
         comment_part = f"  COMMENT={json.dumps(self.comment)}" if self.comment else ""
         location_part = (
             f"  LOCATION {json.dumps(self.location)}" if self.location else ""

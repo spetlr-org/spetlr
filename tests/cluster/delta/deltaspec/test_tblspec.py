@@ -1,8 +1,6 @@
 import unittest
 
 from spetlr import Configurator
-from spetlr.configurator.sql.parse_sql import parse_sql_code_to_config
-from spetlr.deltaspec.DeltaDatabaseSpec import DeltaDatabaseSpec
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from spetlr.spark import Spark
 
@@ -10,6 +8,13 @@ from spetlr.spark import Spark
 class TestTableSpec(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        c = Configurator()
+        c.clear_all_configurations()
+        c.set_debug()
+        cls.id = c.get("ID")
+
+        c.register("mydb", dict(name="myDeltaTableSpecTestDb{ID}"))
+
         cls.base = DeltaTableSpec.from_sql(
             """CREATE TABLE myDeltaTableSpecTestDb{ID}.table
                 (
@@ -39,11 +44,6 @@ class TestTableSpec(unittest.TestCase):
         """
         )
 
-        c = Configurator()
-        c.set_debug()
-        cls.id = c.get('ID')
-
-
     def test_01_diff_alter_statements(self):
         forward_diff = self.target.compare_to(self.base)
         self.assertEqual(
@@ -54,8 +54,8 @@ class TestTableSpec(unittest.TestCase):
                 'COMMENT "Only in target")',
                 "ALTER TABLE myDeltaTableSpecTestDb.table ALTER COLUMN a DROP NOT NULL",
                 "ALTER TABLE myDeltaTableSpecTestDb.table ALTER COLUMN d SET NOT NULL",
-                'ALTER TABLE myDeltaTableSpecTestDb.table ALTER COLUMN a COMMENT "gains '
-                'not null"',
+                "ALTER TABLE myDeltaTableSpecTestDb.table ALTER COLUMN a COMMENT"
+                ' "gains not null"',
                 'ALTER TABLE myDeltaTableSpecTestDb.table ALTER COLUMN d COMMENT ""',
                 "ALTER TABLE myDeltaTableSpecTestDb.table ALTER COLUMN a FIRST",
                 "ALTER TABLE myDeltaTableSpecTestDb.table ALTER COLUMN b AFTER a",
@@ -80,4 +80,30 @@ class TestTableSpec(unittest.TestCase):
                 "ALTER TABLE myDeltaTableSpecTestDb.table ALTER COLUMN onlyb AFTER d",
                 "COMMENT ON myDeltaTableSpecTestDb.table is null",
             ],
+        )
+
+    def test_02_execute_alter_statements(self):
+        spark = Spark.get()
+        spark.sql(
+            f"""
+            CREATE DATABASE {Configurator().get('mydb','name')};
+        """
+        )
+
+        self.assertTrue(self.base.compare_to_storage().is_different())
+
+        self.base.make_storage_match()
+
+        self.assertFalse(self.base.compare_to_storage().is_different())
+        self.assertTrue(self.target.compare_to_storage().is_different())
+
+        self.target.make_storage_match()
+
+        self.assertTrue(self.base.compare_to_storage().is_different())
+        self.assertFalse(self.target.compare_to_storage().is_different())
+
+        spark.sql(
+            f"""
+            DROP DATABASE {Configurator().get('mydb','name')} CASCADE;
+        """
         )

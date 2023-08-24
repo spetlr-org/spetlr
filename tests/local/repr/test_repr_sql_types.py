@@ -37,7 +37,9 @@ class TestReprSqlTypes(unittest.TestCase):
     def test_Map(self):
         self.assertEqual(
             repr_sql_types(MapType(keyType=IntegerType(), valueType=StringType())),
-            "MapType(keyType=IntegerType(), valueType=StringType(), valueContainsNull=True)",
+            "MapType(keyType=IntegerType(), "
+            "valueType=StringType(), "
+            "valueContainsNull=True)",
         )
 
     def test_StructField(self):

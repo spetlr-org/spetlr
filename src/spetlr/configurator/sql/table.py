@@ -82,7 +82,7 @@ def _extract_table_blocks(stmt: _PeekableTokenList) -> StatementBlocks:
                 blocks.partitioned_by = [
                     token.value for token in _unpack_list_of_single_variables(stmt)
                 ]
-            except SpetlrConfiguratorInvalidSqlException as e:
+            except SpetlrConfiguratorInvalidSqlException:
                 raise SpetlrConfiguratorInvalidSqlException(
                     "Please add your partition columns to the schema."
                 )

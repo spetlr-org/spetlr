@@ -5,6 +5,8 @@ import sys
 
 from databricks.sdk import WorkspaceClient
 
+from spetlr import __name__ as spetlrname
+from spetlr import __version__ as spetlrversion
 from spetlr.functions import init_dbutils
 
 
@@ -43,4 +45,6 @@ def getDbApi() -> WorkspaceClient:
     if not host or not token:
         raise Exception("Unable to auto-configure api client.")
 
-    return WorkspaceClient(host=host, token=token)
+    return WorkspaceClient(
+        host=host, token=token, product=spetlrname, product_version=spetlrversion
+    )

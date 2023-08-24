@@ -167,13 +167,13 @@ It is important that the first transformer is a `MultiInputTransformer` when hav
 
 ### Example-7
 
-This example illustrates the use of `TransformerNC`.
+This example illustrates the use of `Transformer` in a non consuming context.
 The job here is to join the two extracted dataframes - an employees dataframe and a birthdays dataframe.
-But, before the birthdays can be joined onto the employees, the employees dataframe require a transformation step.
-As the transformation step of employees is handled by an `TransformerNC`, it does not consume the other inputs from the `dataset_group`.
+But, before the birthdays can be joined onto the employees, the employees dataframe requires a transformation step.
+As the transformation step of employees is handled by an non consuming `Transformer`, it does not consume the other inputs from the `dataset_group`.
 Hence, birthdays is still available from the inputs - even after the transformation of employees.
-Then both frames can be joined and the final dataframe saved via an `Loader`.
-When working with `TransformerNC` it is important to mind that dataset keys are crucial.
+Then both dataframes can be joined and the final dataframe saved via an `Loader`.
+When working with non consuming `Transformer` it is important to mind that dataset keys are crucial.
 Setting both input and output dataset key(s) ensure that the `Transformers` and `Loaders` handle the intended dataframes.
 
 ```
@@ -183,8 +183,8 @@ Setting both input and output dataset key(s) ensure that the `Transformers` and 
 ### Example-8
 
 This example illustrates the use of an orchestrator as just another ETL step.
-The principle is called composit orchestration:
+The principle is called composite orchestration:
 
 ```
-{composit_orchestration_example}
+{composite_orchestration_example}
 ```

@@ -71,7 +71,7 @@ class NoopLoader(Loader):
         df.show()
 
 
-print("ETL Orchestrator using composit inner orchestrator")
+print("ETL Orchestrator using composite inner orchestrator")
 etl_inner = (
     Orchestrator().transform_with(CountryOfOriginTransformer()).load_into(NoopLoader())
 )

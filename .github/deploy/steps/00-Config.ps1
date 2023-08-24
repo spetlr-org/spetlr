@@ -83,6 +83,7 @@ $eventHubConfigJson = ($eventHubConfig | ConvertTo-Json -Depth 4 -Compress).Repl
 
 $sqlAdminSpnName = $cicdSpnName
 
+$logAnalyticsWsName = $resourceGroupName
 
 
 
@@ -96,14 +97,15 @@ Write-Host "* Permanent Resource Group        : $permanentResourceGroup" -Foregr
 Write-Host "* Permanent Resource Name         : $permanentResourceName" -ForegroundColor White
 Write-Host "* Resource Group                  : $resourceGroupName" -ForegroundColor White
 Write-Host "* Resource Name                   : $resourceName" -ForegroundColor White
-Write-Host "* location                        : $location" -ForegroundColor White
+Write-Host "* Location                        : $location" -ForegroundColor White
 Write-Host "* Azure Databricks Workspace      : $databricksName" -ForegroundColor White
 Write-Host "* Azure Data Lake                 : $dataLakeName" -ForegroundColor White
-Write-Host "* Azure SQL server                : $databaseServerName" -ForegroundColor White
-Write-Host "* Azure SQL database              : $deliveryDatabase" -ForegroundColor White
+Write-Host "* Azure SQL Server                : $databaseServerName" -ForegroundColor White
+Write-Host "* Azure SQL Database              : $deliveryDatabase" -ForegroundColor White
 Write-Host "* Azure EventHubs Namespace       : $ehNamespace" -ForegroundColor White
-Write-Host "* Azure CosmosDb name             : $cosmosName" -ForegroundColor White
-Write-Host "* Mounting SPN Name               : $mountSpnName" -ForegroundColor White
+Write-Host "* Azure CosmosDb                  : $cosmosName" -ForegroundColor White
+Write-Host "* Azure Log Analytics Workspace   : $logAnalyticsWsName" -ForegroundColor White
+Write-Host "* Mounting SPN                    : $mountSpnName" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
 
 

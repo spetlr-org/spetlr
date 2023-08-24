@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 from pyspark.sql import DataFrame
 
@@ -38,9 +38,15 @@ class JoinDataframesTransformerNC(TransformerNC):
         first_dataframe_join_key: str,
         second_dataframe_join_key: str,
         join_type: str = "inner",
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
     ):
+        if len(dataset_input_keys) > 2:
+            raise MoreThanTwoDataFramesException(
+                """More than two DataFrames are specified in 'dataset_input_keys'.
+                This transformer can only join two DataFrames at a time."""
+            )
+
         super().__init__(
             dataset_input_keys=dataset_input_keys, dataset_output_key=dataset_output_key
         )
@@ -50,17 +56,11 @@ class JoinDataframesTransformerNC(TransformerNC):
 
     def process_many(self, dataset: dataset_group) -> DataFrame:
         """
-        Takes a dictionary of datasets and joins two specified datasets together.
+        Takes a dictionary of datasets and joins two specified dataframes together.
         """
 
-        if len(self.dataset_input_key_list) > 2:
-            raise MoreThanTwoDataFramesException(
-                """More than two DataFrames are specified in 'dataset_input_keys'.
-                This transformer can only join two DataFrames at a time."""
-            )
-
-        first_df = dataset[self.dataset_input_key_list[0]]
-        second_df = dataset[self.dataset_input_key_list[1]]
+        first_df = dataset[self.dataset_input_keys[0]]
+        second_df = dataset[self.dataset_input_keys[1]]
 
         if self.first_dataframe_join_key not in first_df.columns:
             raise ColumnDoesNotExistException(

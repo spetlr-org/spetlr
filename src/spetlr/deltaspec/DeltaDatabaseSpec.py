@@ -75,7 +75,7 @@ class DeltaDatabaseSpec:
         return DeltaDatabaseSpec(**init_args)
 
     def get_create_sql(self):
-        name_part = f"CREATE SCHEMA {self.name} IF NOT EXISTS"
+        name_part = f"CREATE SCHEMA IF NOT EXISTS {self.name}"
         comment_part = f"  COMMENT={json.dumps(self.comment)}" if self.comment else ""
         location_part = (
             f"  LOCATION {json.dumps(self.location)}" if self.location else ""

@@ -39,7 +39,7 @@ class TestTableSpecConversions(unittest.TestCase):
         self.assertEqual(
             db.get_create_sql(),
             (
-                "CREATE DATABASE my_db_name IF NOT EXISTS\n"
+                "CREATE DATABASE IF NOT EXISTS my_db_name\n"
                 '  COMMENT="Really great db"\n'
                 '  LOCATION "/somewhere/over/the/rainbow"'
             ),

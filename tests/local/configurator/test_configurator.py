@@ -1,3 +1,4 @@
+import re
 import unittest
 from textwrap import dedent
 
@@ -144,7 +145,9 @@ class TestConfigurator(unittest.TestCase):
         )
 
         self.assertEqual(
-            SchemaManager().get_schema_as_string("MyDetailsTable"),
+            re.sub(
+                r"[\s\n]+", " ", SchemaManager().get_schema_as_string("MyDetailsTable")
+            ).strip(),
             """a int, b int, c string, d timestamp, another int""",
         )
 

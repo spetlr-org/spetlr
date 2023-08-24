@@ -80,8 +80,8 @@ class TestReprSqlTypes(unittest.TestCase):
             (
                 "StructType(fields=["
                 "StructField(name='myfield', dataType=IntegerType(), "
-                "nullable=False, metadata={}), "
+                "nullable=False), "
                 "StructField(name='b', dataType=StringType(), "
-                "nullable=False, metadata={})])"
+                "nullable=False)])"
             ),
         )

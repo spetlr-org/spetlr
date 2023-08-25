@@ -31,7 +31,7 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
             'set'
           ] }
         tenantId: tenant().tenantId
-      } 
+      }
       {
         objectId: spnobjectid
         permissions: {
@@ -57,10 +57,10 @@ resource csdb 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
   properties: {
     databaseAccountOfferType: 'Standard'
     enableFreeTier: true
-    locations: [{
-      failoverPriority: 0
-      isZoneRedundant: false
-      locationName: location
-    }]
+    locations: [ {
+        failoverPriority: 0
+        isZoneRedundant: false
+        locationName: location
+      } ]
   }
 }

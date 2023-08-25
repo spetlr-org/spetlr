@@ -35,7 +35,7 @@ module rgModule 'rg-permanent.bicep' = {
   }
 }
 
-// Deploying resources in the newly created permanent rg
+// Deploy resources in the newly created permanent rg
 module resources 'resources-permanent.bicep' = {
   name: '${permanentResourceGroup}-resources-deployment'
   scope: resourceGroup(permanentResourceGroup)
@@ -50,7 +50,7 @@ module resources 'resources-permanent.bicep' = {
   }
 }
 
-// Creating integration resource group
+// Create integration resource group
 module rgModule2 'rg-integration.bicep' = {
   scope: subscription()
   name: '${resourceGroupName}-create'
@@ -61,7 +61,7 @@ module rgModule2 'rg-integration.bicep' = {
   }
 }
 
-// Creating integration resources
+// Create integration resources
 module resources2 'resources-integration.bicep' = {
   name: '${resourceGroupName}-resources-deployment'
   scope: resourceGroup(resourceGroupName)

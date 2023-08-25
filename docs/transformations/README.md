@@ -464,11 +464,10 @@ transformed_df = CountryToAlphaCodeTransformer(
 
 transformed_df.display()
 
+|countryCol|alphaCodeCol|
 +----------+------------+
-| countryCol | alphaCodeCol |
-+----------+------------+
-| Denmark | DK |
-| Germany | DE |
+|   Denmark|          DK|
+|   Germany|          DE|
 +----------+------------+
 
 ```
@@ -507,9 +506,9 @@ transformed_df = GenerateMd5ColumnTransformer(
 transformed_df.display()
 
 +-----+-------+----------------------------------+
-| id | text | md5_col |
+|   id|   text|                           md5_col|
 +-----+-------+----------------------------------+
-| 1 | text1 | e86667d75db79395e172c5c343ec2df1 |
-| 2 | Null | c81e728d9d4c2f636f067f89cc14862c |
+|    1|  text1|  e86667d75db79395e172c5c343ec2df1|
+|    2|   Null|  c81e728d9d4c2f636f067f89cc14862c|
 +-----+-------+-----------------------------------+
 ```

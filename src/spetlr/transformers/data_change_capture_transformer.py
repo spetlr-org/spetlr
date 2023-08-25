@@ -17,7 +17,11 @@ class DataChangeCaptureTransformer(Transformer):
     """
 
     def __init__(
-        self, primary_key, df_source, df_target, cols_to_exclude: List[str] = None
+        self,
+        primary_key,
+        df_source="source",
+        df_target="target",
+        cols_to_exclude: List[str] = None,
     ):
         self.primary_key = primary_key
         self.df_source = df_source
@@ -35,8 +39,8 @@ class DataChangeCaptureTransformer(Transformer):
             warnings.warn("Schemas are not identical")
 
     def process_many(self, dataset: dataset_group) -> DataFrame:
-        df_source = self.df_source
-        df_target = self.df_target
+        df_source = dataset[self.df_source]
+        df_target = dataset[self.df_target]
 
         self._warn_if_schema_differs(df_source, df_target)
 

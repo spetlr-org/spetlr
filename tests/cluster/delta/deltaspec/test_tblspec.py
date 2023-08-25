@@ -45,6 +45,7 @@ class TestTableSpec(unittest.TestCase):
         )
 
     def test_01_diff_alter_statements(self):
+        Configurator().set_prod()
         forward_diff = self.target.compare_to(self.base)
         self.assertEqual(
             forward_diff.alter_table_statements(),
@@ -83,6 +84,7 @@ class TestTableSpec(unittest.TestCase):
         )
 
     def test_02_execute_alter_statements(self):
+        Configurator().set_debug()
         spark = Spark.get()
         spark.sql(
             f"""
@@ -91,19 +93,16 @@ class TestTableSpec(unittest.TestCase):
         )
 
         self.assertTrue(self.base.compare_to_storage().is_different())
-
         self.base.make_storage_match()
-
         self.assertFalse(self.base.compare_to_storage().is_different())
+
         self.assertTrue(self.target.compare_to_storage().is_different())
-
         self.target.make_storage_match()
-
         self.assertTrue(self.base.compare_to_storage().is_different())
         self.assertFalse(self.target.compare_to_storage().is_different())
 
         spark.sql(
             f"""
             DROP DATABASE {Configurator().get('mydb','name')} CASCADE;
-        """
+            """
         )

@@ -5,6 +5,7 @@ from typing import Dict, Optional
 
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
+from spetlr.deltaspec.DatabricksLocation import standard_databricks_location
 from spetlr.deltaspec.exceptions import InvalidSpecificationError
 from spetlr.exceptions import NoSuchValueException
 from spetlr.spark import Spark
@@ -16,6 +17,18 @@ class DeltaDatabaseSpec:
     comment: Optional[str] = None
     location: Optional[str] = None
     dbproperties: Dict[str, str] = None
+
+    def __init__(
+        self,
+        name: str,
+        comment: Optional[str] = None,
+        location: Optional[str] = None,
+        dbproperties: Dict[str, str] = None,
+    ):
+        self.name = name
+        self.comment = comment
+        self.location = standard_databricks_location(location)
+        self.dbproperties = dbproperties
 
     def __repr__(self):
         dbproperties_part = ""
@@ -29,7 +42,7 @@ class DeltaDatabaseSpec:
             ", ".join(
                 part
                 for part in [
-                    f"DbSpec(name={repr(self.name)}",
+                    f"DeltaDatabaseSpec(name={repr(self.name)}",
                     (f"comment={repr(self.comment)}" if self.comment else ""),
                     (f"location={repr(self.location)}" if self.location else ""),
                     dbproperties_part,

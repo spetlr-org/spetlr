@@ -10,6 +10,7 @@ from pyspark.sql.utils import AnalysisException
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
+from spetlr.deltaspec.DatabricksLocation import standard_databricks_location
 from spetlr.deltaspec.DeltaTableDifference import DeltaTableDifference
 from spetlr.deltaspec.exceptions import (
     InvalidSpecificationError,
@@ -36,6 +37,29 @@ class DeltaTableSpec:
     location: Optional[str] = None
     comment: str = None
     # TODO: Clustered By
+
+    def __init__(
+        self,
+        name: str,
+        schema: StructType,
+        options: Dict[str, str] = None,
+        partitioned_by: List[str] = None,
+        tblproperties: Dict[str, str] = None,
+        location: Optional[str] = None,
+        comment: str = None,
+    ):
+        self.name = name
+        self.schema = schema
+        self.options = options or dict()
+        self.partitioned_by = partitioned_by or list()
+        for col in self.partitioned_by:
+            if col not in self.schema.names:
+                raise InvalidSpecificationError(
+                    "Supply the partitioning columns in the schema."
+                )
+        self.tblproperties = tblproperties or dict()
+        self.location = standard_databricks_location(location)
+        self.comment = comment
 
     # Non-trivial constructors
     @classmethod

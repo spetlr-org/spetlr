@@ -18,17 +18,8 @@ class DeltaDatabaseSpec:
     location: Optional[str] = None
     dbproperties: Dict[str, str] = None
 
-    def __init__(
-        self,
-        name: str,
-        comment: Optional[str] = None,
-        location: Optional[str] = None,
-        dbproperties: Dict[str, str] = None,
-    ):
-        self.name = name
-        self.comment = comment
-        self.location = standard_databricks_location(location)
-        self.dbproperties = dbproperties
+    def __post_init__(self):
+        self.location = standard_databricks_location(self.location)
 
     def __repr__(self):
         dbproperties_part = ""

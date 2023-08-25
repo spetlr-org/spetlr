@@ -38,32 +38,21 @@ class DeltaTableSpec:
     comment: str = None
     # TODO: Clustered By
 
-    def __init__(
-        self,
-        name: str,
-        schema: StructType,
-        options: Dict[str, str] = None,
-        partitioned_by: List[str] = None,
-        tblproperties: Dict[str, str] = None,
-        location: Optional[str] = None,
-        comment: str = None,
-    ):
+    def __post_init__(self):
         # The rationale here is that a name that contains a '{' will need
         # to be run through the configurator where keys are case-sensitive.
         # once a name is free of these, it may be used in comparisons to data
         # where it needs to be lower case
-        self.name = name.lower() if name and "{" not in name else name
-        self.schema = schema
-        self.options = options or dict()
-        self.partitioned_by = partitioned_by or list()
+        if self.name and "{" not in self.name:
+            self.name = self.name.lower()
+
         for col in self.partitioned_by:
             if col not in self.schema.names:
                 raise InvalidSpecificationError(
                     "Supply the partitioning columns in the schema."
                 )
-        self.tblproperties = tblproperties or dict()
-        self.location = standard_databricks_location(location)
-        self.comment = comment
+
+        self.location = standard_databricks_location(self.location)
 
     # Non-trivial constructors
     @classmethod
@@ -129,20 +118,14 @@ class DeltaTableSpec:
             raise NoTableAtTarget(str(e))
         if details["format"] != "delta":
             raise InvalidSpecificationError("The table is not of delta format.")
-        name = details["name"]
-        location = details["location"]
-        partitioned_by = details["partitionColumns"]
-        comment = details["description"]
-        tblproperties = details["properties"]
 
-        schema = spark.table(in_name).schema
         return DeltaTableSpec(
-            name=name,
-            schema=schema,
-            partitioned_by=partitioned_by,
-            tblproperties=tblproperties,
-            location=location,
-            comment=comment,
+            name=details["name"],
+            schema=spark.table(in_name).schema,
+            partitioned_by=details["partitionColumns"],
+            tblproperties=details["properties"],
+            location=details["location"],
+            comment=details["description"],
         )
 
     # String representations

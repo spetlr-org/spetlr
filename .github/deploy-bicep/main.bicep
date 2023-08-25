@@ -24,7 +24,13 @@ param sqlAdminSpnName string
 param sqlAdminObjectId string
 param logAnalyticsWsName string
 
-// Creating permanent resource group
+// Metastore resources
+param metastoreDatabricksName string
+param metastoreStorageAccountName string
+param metastoreContainerName string
+param metastoreAccessConnectorName string
+
+// Create permanent resource group
 module rgModule 'rg-permanent.bicep' = {
   scope: subscription()
   name: '${permanentResourceGroup}-create'
@@ -47,6 +53,11 @@ module resources 'resources-permanent.bicep' = {
     spnobjectid: spnobjectid
     tags: resourceTags
     dbname: cosmosName
+    permanentResourceGroup: permanentResourceGroup
+    metastoreDatabricksName: metastoreDatabricksName
+    metastoreStorageAccountName: metastoreStorageAccountName
+    metastoreContainerName: metastoreContainerName
+    metastoreAccessConnectorName: metastoreAccessConnectorName
   }
 }
 

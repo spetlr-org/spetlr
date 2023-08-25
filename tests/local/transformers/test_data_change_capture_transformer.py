@@ -47,6 +47,11 @@ class CaptureHistoryTransformerTest(DataframeTestCase):
         self.target4 = [row_1_2, row_2_2, row_3_1]
         self.expected4 = []
 
+        # Test data for test_05
+        self.source5 = [row_1_1]
+        self.target5 = [row_1_2]
+        self.expected4 = []
+
     def test_01_capture_new_rows(self):
         """Target is empty, return all records from source"""
 
@@ -101,4 +106,20 @@ class CaptureHistoryTransformerTest(DataframeTestCase):
 
         self.assertDataframeMatches(
             df=result_df, columns=self.columns, expected_data=self.expected4
+        )
+
+    def test_05_exclude_colc(self):
+        """Ignore age-column, and therefore no data expected"""
+
+        df_source = Spark.get().createDataFrame(data=self.source5, schema=self.schema)
+        df_target = Spark.get().createDataFrame(data=self.target5, schema=self.schema)
+
+        dataset_group = {"source": df_source, "target": df_target}
+
+        result_df = DataChangeCaptureTransformer(
+            primary_key="id", cols_to_exclude=["age"]
+        ).process_many(dataset_group)
+
+        self.assertDataframeMatches(
+            df=result_df, columns=self.columns, expected_data=self.expected2
         )

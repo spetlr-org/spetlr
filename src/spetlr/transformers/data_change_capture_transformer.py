@@ -36,7 +36,7 @@ class DataChangeCaptureTransformer(Transformer):
 
     def process_many(self, dataset: dataset_group) -> DataFrame:
         df_source = self.df_source
-        df_target = self.df_source
+        df_target = self.df_target
 
         self._warn_if_schema_differs(df_source, df_target)
 

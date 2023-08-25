@@ -48,7 +48,11 @@ class DeltaTableSpec:
         location: Optional[str] = None,
         comment: str = None,
     ):
-        self.name = name
+        # The rationale here is that a name that contains a '{' will need
+        # to be run through the configurator where keys are case-sensitive.
+        # once a name is free of these, it may be used in comparisons to data
+        # where it needs to be lower case
+        self.name = name.lower() if name and "{" not in name else name
         self.schema = schema
         self.options = options or dict()
         self.partitioned_by = partitioned_by or list()

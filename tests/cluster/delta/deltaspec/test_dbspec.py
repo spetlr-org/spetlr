@@ -28,9 +28,9 @@ class TestDbSpec(unittest.TestCase):
         self.assertEqual(k, "MyDbAlias")
         c.register(k, v)
         db_parsed = DeltaDatabaseSpec.from_tc(k)
-        Spark.get().sql(master_sql)
-        db_read = DeltaDatabaseSpec.from_spark(db_parsed.name)
+        Spark.get().sql(master_sql.format(**c.get_all_details()))
+        db_read = DeltaDatabaseSpec.from_spark(db_parsed.fully_substituted().name)
 
-        self.assertEqual(db_parsed, db_read)
+        self.assertEqual(db_parsed.fully_substituted(), db_read)
 
-        Spark.get().sql(f"DROP DATABASE {db_parsed.name} CASCADE")
+        Spark.get().sql(f"DROP DATABASE {db_parsed.fully_substituted().name} CASCADE")

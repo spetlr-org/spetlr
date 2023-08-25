@@ -1,3 +1,4 @@
+import copy
 import json
 from dataclasses import dataclass
 from typing import Dict, Optional
@@ -105,3 +106,15 @@ class DeltaDatabaseSpec:
         # TODO: parsing of dbproperties currently not supported
 
         return cls(name=name, location=location, comment=comment)
+
+    def fully_substituted(self) -> "DeltaDatabaseSpec":
+        """Return a new DeltaDatabaseSpec
+        where name and location have been completed via the Configurator."""
+        result = copy.copy(self)
+
+        c = Configurator()
+        details = c.get_all_details()
+        result.name = self.name.format(**details)
+        result.location = self.location.format(**details)
+
+        return result

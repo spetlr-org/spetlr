@@ -92,15 +92,33 @@ class TestTableSpec(unittest.TestCase):
         """
         )
 
-        self.assertTrue(self.base.compare_to_storage().is_different())
+        # at first the table does not exist
+        diff = self.base.compare_to_storage()
+        self.assertTrue(diff.is_different(), diff)
+
+        # then we make it exist
         self.base.make_storage_match()
-        self.assertFalse(self.base.compare_to_storage().is_different())
 
-        self.assertTrue(self.target.compare_to_storage().is_different())
+        # not it exists and matches
+        diff = self.base.compare_to_storage()
+        self.assertFalse(diff.is_different(), repr(diff))
+
+        # but it does not match the target
+        diff = self.target.compare_to_storage()
+        self.assertTrue(diff.is_different(), repr(diff))
+
+        # so make the target exist
         self.target.make_storage_match()
-        self.assertTrue(self.base.compare_to_storage().is_different())
-        self.assertFalse(self.target.compare_to_storage().is_different())
 
+        # now the base no longer matches
+        diff = self.base.compare_to_storage()
+        self.assertTrue(diff.is_different(), diff)
+
+        # but the target matches.
+        diff = self.target.compare_to_storage()
+        self.assertFalse(diff.is_different(), repr(diff))
+
+        # clean up after test.
         spark.sql(
             f"""
             DROP DATABASE {Configurator().get('mydb','name')} CASCADE;

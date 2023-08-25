@@ -17,18 +17,20 @@ def setup_parser(parser: argparse.ArgumentParser):
     parser.set_defaults(check=False)
 
 
-def generate_keys_file(self, options):
+def generate_keys_file(options):
     """Generate a keys file from configured keys.
     The arguments are as follows:
-        - self refers to the configurator object
         - options is a SimpleNamespace, expected to contain these attributes
             - output_file - str - the name of the output file, if none given,
               the generate file contents are printed to the console
             - check True/False, don't generate the file, verify an existing one.
     """
+    from spetlr import Configurator  # prevent circular import
+
+    c = Configurator()
     new_conts = "\n".join(
         ["# AUTO GENERATED FILE", "# contains all spetlr.Configurator keys", ""]
-        + [f"{key} = {repr(key)}" for key in sorted(self.all_keys())]
+        + [f"{key} = {repr(key)}" for key in sorted(c.all_keys())]
     )
 
     # if black is installed, use it to format the contents
@@ -41,23 +43,26 @@ def generate_keys_file(self, options):
     except ModuleNotFoundError:
         pass
 
-    if not options.output_file:
+    output_file = options.output_file or ""
+    output_file = output_file.replace("\\", "/")
+
+    if not output_file:
         # without output file, output to console
         print(new_conts, end="")
         return
 
     if not options.check:
-        with open(options.output_file, "w") as f:
+        with open(output_file, "w") as f:
             f.write(new_conts)
         return
 
-    if not os.path.exists(options.output_file):
-        raise SpetlrCliCheckFailed(f"Output file {options.output_file} does not exist.")
+    if not os.path.exists(output_file):
+        raise SpetlrCliCheckFailed(f"Output file {output_file} does not exist.")
 
-    old_conts = open(options.output_file).read()
+    old_conts = open(output_file).read()
     if new_conts != old_conts:
         raise SpetlrCliCheckFailed(
-            f"Output file {options.output_file} does not have correct contents."
+            f"Output file {output_file} does not have correct contents."
         )
 
     # all checks passed. Return without error.

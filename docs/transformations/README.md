@@ -13,7 +13,9 @@ Transformations in spetlr:
   - [TimeZoneTransformer](#timezonetransformer)
   - [SelectAndCastColumnsTransformer](#selectandcastcolumnstransformer)
   - [ValidFromToTransformer](#validfromtotransformer)
-
+  - [DataFrameFilterTransformer](#dataframefiltertransformer)
+  - [CountryToAlphaCodeTransformerNC](#countrytoalphacodetransformernc)
+  - [GenerateMd5ColumnTransformer](#generatemd5columntransformer)
 ## Concatenate data frames
 
 *UPDATE: Pyspark has an equivalent implementation  `.unionByName(df, allowMissingColumns=False)`, see the [documentation](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrame.unionByName.html) for more information.*
@@ -384,49 +386,130 @@ df.filter("iscurrent=1").show()
 +---+------+----------+------+-------------------+-------------------+---------+
 ```
 
-## DataChangeCaptureTransformer
 
-This class archives data changes from a source table, using a primary key column.
-    It identifies and captures new or modified records.
-    For accurate comparison of all columns, ensure both schemas are identical.
+## DataFrameFilterTransformer
+
+This is a simple transformer for filtering a single column with a single value.
+
+Usage example
+
+```python
+from spetlr.transformers import DataFrameFilterTransformer
+import pyspark.sql.types as T
+
+from spetlr.spark import Spark
+input_schema = T.StructType(
+            [
+                T.StructField("Col1", T.StringType(), True),
+                T.StructField("Col2", T.IntegerType(), True),
+                T.StructField("Col3", T.DoubleType(), True),
+                T.StructField("Col4", T.StringType(), True),
+                T.StructField("Col5", T.StringType(), True),
+            ]
+        )
+
+input_data1 = ("Col1Data", 42, 13.37, "Col4Data", "Col5Data")
+input_data2 = ("Col1Data_2nd", 43, 23.37, "Col4Data_2nd", "Col5Data_2nd")
+input_data3 = ("Col1Data", 45, 20.15, "Col4Data_3rd", "Col5Data_3rd")
+
+input_data = [input_data1, input_data2, input_data3]
+
+input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
+
+transformed_df = DataFrameFilterTransformer(
+            col_value="Col1Data", col_name="Col1"
+        ).process(input_df)
 
 
-Usage example:
+transformed_df.display()
+
++--------+----+-----+------------+------------+
+|    Col1|Col2| Col3|        Col4|        Col5|
++--------+----+-----+------------+------------+
+|Col1Data|  42|13.37|    Col4Data|    Col5Data|
+|Col1Data|  45|20.15|Col4Data_3rd|Col5Data_3rd|
++--------+----+-----+------------+------------+
+
+```
+
+## CountryToAlphaCodeTransformerNC
+
+This is a simple transformer for translating country names to their alpha-2 code equivalent.
+
+Usage example
+
+```python
+from spetlr.transformers import CountryToAlphaCodeTransformerNC
+import pyspark.sql.types as T
+
+from spetlr.spark import Spark
+input_schema = T.StructType(
+    [
+        T.StructField("countryCol", T.StringType(), True),
+    ]
+)
+
+input_data = [
+    ("Denmark",),
+    ("Germany",)
+]
+
+input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
+
+transformed_df = CountryToAlphaCodeTransformerNC(
+    col_name="countryCol",
+    output_col_name="alphaCodeCol
+).process(df_input)
 
 
-``` python 
-from spetlr.transformers.data_change_capture_transformer import DataChangeCaptureTransformer
+transformed_df.display()
 
-df_target =
++----------+------------+
+|countryCol|alphaCodeCol|
++----------+------------+
+|   Denmark|          DK|
+|   Germany|          DE|
++----------+------------+
 
-| id| model|     brand| salesprice|
-+---+------+----------+-----------+
-|  1|Fender|Telecaster|         50|
-|  2|Gibson|  Les Paul|        100|
-|  3|Ibanez|        RG|        175|
-+---+------+----------+-----------+
+```
+
+## GenerateMd5ColumnTransformer
+
+This transformer generates a unique column with md5 encoding based on other columns. The transformer also handles if a value is NULL, by replacing it with empty string.
+
+Usage example
+
+```python
+from spetlr.transformers import GenerateMd5ColumnTransformerNC
+import pyspark.sql.types as T
+
+from spetlr.spark import Spark
+input_schema = T.StructType(
+    [
+        T.StructField("id", T.IntegerType(), True),
+        T.StructField("text", T.StringType(), True),
+    ]
+)
+
+input_data = [
+    (1, "text1"),
+    (2, None),
+]
+
+input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
+
+transformed_df = GenerateMd5ColumnTransformerNC(
+    col_name="md5_col",
+    col_list=["id", "text"],
+).process(input_df)
 
 
-df_source =
+transformed_df.display()
 
-| id| model|     brand| salesprice|
-+---+------+----------+-----------+
-|  1| Fender|Telecaster|         50|
-|  2| Gibson|  Les Paul|        200|
-|  3| Ibanez|        RG|        175|
-|  4| Falcon|   Gretsch|        250|
-+---+------+----------+-----------+
-
-dataset_group = {"source": df_source, "target": df_target
-
-df = DataChangeCaptureTransform(primary_key="id").process_many(dataset_group)
-
-df.show()
-
-# only returns new and modfied rows
-
-| id| model|     brand| salesprice|
-+---+------+----------+-----------+
-|  2| Gibson|  Les Paul|        200|
-|  4| Falcon|   Gretsch|        250|
-+---+------+----------+-----------+
++-----+-------+----------------------------------+
+|   id|   text|                           md5_col|
++-----+-------+----------------------------------+
+|    1|  text1|  e86667d75db79395e172c5c343ec2df1|
+|    2|   Null|  c81e728d9d4c2f636f067f89cc14862c|
++-----+-------+-----------------------------------+
+```

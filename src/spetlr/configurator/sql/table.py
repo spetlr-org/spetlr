@@ -1,11 +1,12 @@
 import re
 from typing import Dict
 
+import sqlparse
+
 from spetlr.exceptions.configurator_exceptions import (
     SpetlrConfiguratorInvalidSqlException,
 )
 
-from . import sqlparse
 from .exceptions import _UnpackAttemptFailed
 from .StatementBlocks import ClusteredBy, StatementBlocks
 from .substructures import (

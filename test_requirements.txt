@@ -1,1 +1,3 @@
 spetlr-tools
+pycountry
+freezegun

@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pyspark.sql import DataFrame
 
@@ -25,14 +25,52 @@ class DeltaHandleInvalidFormat(DeltaHandleException):
 
 
 class DeltaHandle(TableHandle):
-    def __init__(self, name: str, location: str = None, data_format: str = "delta"):
+    def __init__(
+        self,
+        name: str,
+        location: str = None,
+        data_format: str = "delta",
+        options_dict: Dict[str, str] = None,
+        ignore_changes: bool = True,
+        stream_start: Union[datetime, str] = None,
+        max_bytes_per_trigger: int = None,
+    ):
+        """
+        name: The name of the Delta table.
+        location (optional): The file-system path to the Delta table files.
+        data_format (optional): Always delta-format. Todo: Remove in future PR.
+        options_dict (optional): All other string options for pyspark.
+        ignore_changes (optional): ignore transactions that delete data
+                                    at partition boundaries.
+        stream_start (optional):  If string format, it accepts anything that
+                                  the `dateparser` library can parse.
+        max_bytes_per_trigger (optional): How much data gets
+                                processed in each micro-batch.
+        """
         self._name = name
         self._location = location
         self._data_format = data_format
 
         self._partitioning: Optional[List[str]] = None
-
         self._validate()
+
+        if options_dict is None or options_dict == "":
+            self.set_options_dict({})
+        else:
+            self.set_options_dict(options_dict)
+
+        self._options_dict.update({"ignoreChanges": str(ignore_changes)})
+
+        if stream_start and stream_start != "":
+            if isinstance(stream_start, datetime):
+                self._options_dict["startingTimestamp"] = stream_start.strftime(
+                    "%Y-%m-%dT%H:%M:%S.%fZ"
+                )
+            else:
+                self._options_dict["startingTimestamp"] = stream_start
+
+        if max_bytes_per_trigger and max_bytes_per_trigger != "":
+            self._options_dict["maxBytesPerTrigger"] = str(max_bytes_per_trigger)
 
     @classmethod
     def from_tc(cls, id: str) -> "DeltaHandle":
@@ -41,6 +79,9 @@ class DeltaHandle(TableHandle):
             name=tc.table_property(id, "name", ""),
             location=tc.table_property(id, "path", ""),
             data_format=tc.table_property(id, "format", "delta"),
+            ignore_changes=tc.table_property(id, "ignore_changes", "True"),
+            stream_start=tc.table_property(id, "stream_start", ""),
+            max_bytes_per_trigger=tc.table_property(id, "max_bytes_per_trigger", ""),
         )
 
     def _validate(self):
@@ -114,44 +155,22 @@ class DeltaHandle(TableHandle):
         self.create_hive_table()
 
     def get_partitioning(self):
-        """The result of DESCRIBE TABLE tablename is like this:
-        +-----------------+---------------+-------+
-        |         col_name|      data_type|comment|
-        +-----------------+---------------+-------+
-        |           mycolA|         string|       |
-        |           myColB|            int|       |
-        |                 |               |       |
-        |   # Partitioning|               |       |
-        |           Part 0|         mycolA|       |
-        +-----------------+---------------+-------+
+        """The result of DESCRIBE DETAIL tablename is like this:
+        +------+--------------------+--------------------+----------------+-------+
+        |format|                  id|                name|partitionColumns|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
+        | delta|c96a1e94-314b-427...|spark_catalog.tes...|    [colB, colA]|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
         but this method return the partitioning in the form ['mycolA'],
         if there is no partitioning, an empty list is returned.
         """
         if self._partitioning is None:
-            # create an iterator object and use it in two steps
-            rows_iter = iter(
-                Spark.get().sql(f"DESCRIBE TABLE {self.get_tablename()}").collect()
+            self._partitioning = (
+                Spark.get()
+                .sql(f"DESCRIBE DETAIL {self.get_tablename()}")
+                .select("partitionColumns")
+                .collect()[0][0]
             )
-
-            # roll over the iterator until you see the title line
-            for row in rows_iter:
-                # discard rows until the important section header
-                if row.col_name.strip() == "# Partitioning":
-                    break
-            # at this point, the iterator has moved past the section heading
-            # leaving only the rows with "Part 1" etc.
-
-            # create a list from the rest of the iterator like [(0,colA), (1,colB)]
-            parts = [
-                (int(row.col_name[5:]), row.data_type)
-                for row in rows_iter
-                if row.col_name.startswith("Part ")
-            ]
-            # sort, just in case the parts were out of order.
-            parts.sort()
-
-            # discard the index and put into an ordered list.
-            self._partitioning = [p[1] for p in parts]
         return self._partitioning
 
     def get_tablename(self) -> str:
@@ -194,7 +213,7 @@ class DeltaHandle(TableHandle):
             return self.write_or_append(df, mode="append")
 
         temp_view_name = get_unique_tempview_name()
-        df.createOrReplaceTempView(temp_view_name)
+        df.createOrReplaceGlobalTempView(temp_view_name)
 
         target_table_name = self.get_tablename()
         non_join_cols = [col for col in df.columns if col not in join_cols]
@@ -202,7 +221,7 @@ class DeltaHandle(TableHandle):
         merge_sql_statement = GetMergeStatement(
             merge_statement_type="delta",
             target_table_name=target_table_name,
-            source_table_name=temp_view_name,
+            source_table_name="global_temp." + temp_view_name,
             join_cols=join_cols,
             insert_cols=df.columns,
             update_cols=non_join_cols,
@@ -229,3 +248,19 @@ class DeltaHandle(TableHandle):
             f" WHERE {comparison_col} {comparison_operator} {limit};"
         )
         Spark.get().sql(sql_str)
+
+    def read_stream(self) -> DataFrame:
+        reader = (
+            Spark.get()
+            .readStream.format(self._data_format)
+            .options(**self._options_dict)
+        )
+        if self._location:
+            df = reader.load(self._location)
+        else:
+            df = reader.table(self._table_name)
+
+        return df
+
+    def set_options_dict(self, options: Dict[str, str]):
+        self._options_dict = options

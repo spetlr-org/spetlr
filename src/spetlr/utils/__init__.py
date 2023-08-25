@@ -1,4 +1,5 @@
 from .DataframeCreator import DataframeCreator
+from .DeleteMismatchedSchemas import DeleteMismatchedSchemas
 from .DropOldestDuplicates import DropOldestDuplicates
 from .GetMergeStatement import GetMergeStatement
 from .MockExtractor import MockExtractor
@@ -12,4 +13,5 @@ __all__ = [
     MockExtractor,
     DropOldestDuplicates,
     SelectAndCastColumns,
+    DeleteMismatchedSchemas,
 ]

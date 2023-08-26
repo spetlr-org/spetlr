@@ -1,6 +1,5 @@
-import copy
 import json
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
 from pyspark.sql import DataFrame
@@ -194,17 +193,18 @@ class DeltaTableSpec:
     def fully_substituted(self, name=_DEFAULT) -> "DeltaTableSpec":
         """Return a new DeltaTableSpec
         where name and location have been completed via the Configurator."""
-        result = copy.copy(self)
+        parts = asdict(self)
 
         c = Configurator()
         details = c.get_all_details()
-        result.name = self.name.format(**details)
-        result.location = self.location.format(**details)
+        parts["name"] = self.name.format(**details)
+        parts["location"] = self.location.format(**details)
 
+        # someties we want to override the name of the fully substituted object
         if name is not _DEFAULT:
-            result.name = name
+            parts["name"] = name
 
-        return result
+        return DeltaTableSpec(**parts)
 
     def compare_to(self, other: "DeltaTableSpec") -> DeltaTableDifference:
         """Returns a DeltaTableSpecDifference

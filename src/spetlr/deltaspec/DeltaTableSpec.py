@@ -282,6 +282,7 @@ class DeltaTableSpec:
         if diff:
             spark = Spark.get()
             for statement in diff.alter_table_statements():
+                print(f"Executing SQL: {statement}")
                 spark.sql(statement)
 
     def overwrite(self, df: DataFrame, mergeSchema: bool = None) -> None:

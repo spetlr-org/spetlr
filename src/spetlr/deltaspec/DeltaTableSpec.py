@@ -1,3 +1,4 @@
+import copy
 import json
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Union
@@ -23,6 +24,10 @@ from spetlr.sqlrepr.sql_types import repr_sql_types
 
 _DEFAULT = object()
 
+_DEFAULT_minReaderVersion = 2
+_DEFAULT_minWriterVersion = 5
+_DEFAULT_blankedPropertyKeys = ["delta.columnMapping.maxColumnId"]
+
 
 @dataclass
 class DeltaTableSpec:
@@ -35,6 +40,8 @@ class DeltaTableSpec:
     tblproperties: Dict[str, str] = field(default_factory=dict)
     location: Optional[str] = None
     comment: str = None
+    # blanked properties will never be retained in the constructor
+    blankedPropertyKeys: List[str] = field(default_factory=list)
     # TODO: Clustered By
 
     def __post_init__(self):
@@ -52,6 +59,40 @@ class DeltaTableSpec:
                 )
 
         self.location = standard_databricks_location(self.location)
+
+        # This is a necessary condition for table alterations.
+        # 'delta.columnMapping.mode' = 'name'
+        if "delta.columnMapping.mode" in self.tblproperties:
+            if self.tblproperties["delta.columnMapping.mode"] != "name":
+                print(
+                    f"WARNING: The table {self.name} is specified "
+                    "with a property delta.columnMapping.mode != 'name'. "
+                    "Expect table alteration commands to fail."
+                )
+        else:
+            self.tblproperties["delta.columnMapping.mode"] = "name"
+
+        # the cinctionality enabled by 'delta.columnMapping.mode' = 'name',
+        # is needed for column manipulation and seems to go along with another
+        # property "delta.columnMapping.maxColumnId": "5" which increases when
+        # a column is added. it counts all the columns that were ever present
+        # we should probably ignore that column in alter statements and comparisons.
+        if not self.blankedPropertyKeys:
+            self.blankedPropertyKeys = copy.copy(_DEFAULT_blankedPropertyKeys)
+        for key in self.blankedPropertyKeys:
+            if key in self.tblproperties:
+                del self.tblproperties[key]
+
+        # these two keys are special. They are set as table properties, but are
+        # not read or handled as table properties.
+        if "delta.minReaderVersion" not in self.tblproperties:
+            self.tblproperties["delta.minReaderVersion"] = str(
+                _DEFAULT_minReaderVersion
+            )
+        if "delta.minWriterVersion" not in self.tblproperties:
+            self.tblproperties["delta.minWriterVersion"] = str(
+                _DEFAULT_minWriterVersion
+            )
 
     # Non-trivial constructors
     @classmethod
@@ -118,11 +159,15 @@ class DeltaTableSpec:
         if details["format"] != "delta":
             raise InvalidSpecificationError("The table is not of delta format.")
 
+        tblproperties = details["properties"]
+        tblproperties["delta.minReaderVersion"] = details["minReaderVersion"]
+        tblproperties["delta.minWriterVersion"] = details["minWriterVersion"]
+
         return DeltaTableSpec(
             name=details["name"],
             schema=spark.table(in_name).schema,
             partitioned_by=details["partitionColumns"],
-            tblproperties=details["properties"],
+            tblproperties=tblproperties,
             location=details["location"],
             comment=details["description"],
         )
@@ -145,6 +190,11 @@ class DeltaTableSpec:
             (f"tblproperties={repr(self.tblproperties)}" if self.tblproperties else ""),
             (f"comment={repr(self.comment)}" if self.comment else ""),
             (f"location={repr(self.location)}" if self.location else ""),
+            (
+                f"blankedPropertyKeys={repr(self.blankedPropertyKeys)}"
+                if self.blankedPropertyKeys != _DEFAULT_blankedPropertyKeys
+                else ""
+            ),
         ]
 
         return "DeltaTableSpec(" + (", ".join(p for p in parts if p)) + ")"
@@ -157,13 +207,14 @@ class DeltaTableSpec:
         sql = (
             "CREATE TABLE "
             + (self.name or f"delta.`{self.location}`")
-            + f"\n({SchemaManager().struct_to_sql(self.schema)})\n"
+            + f"\n(\n{SchemaManager().struct_to_sql(self.schema)}\n)\n"
             + "USING DELTA\n"
         )
 
         if self.options:
             sub_parts = [
-                json.dumps(k) + " = " + json.dumps(v) for k, v in self.options.items()
+                json.dumps(k) + " = " + json.dumps(v)
+                for k, v in sorted(self.options.items())
             ]
             sql += f"OPTIONS ({', '.join(sub_parts)})\n"
 
@@ -178,10 +229,10 @@ class DeltaTableSpec:
 
         if self.tblproperties:
             sub_parts = [
-                json.dumps(k) + " = " + json.dumps(v)
-                for k, v in self.tblproperties.items()
+                f"  {json.dumps(k)} = {json.dumps(v)}"
+                for k, v in sorted(self.tblproperties.items())
             ]
-            sql += f"TBLPROPERTIES ({', '.join(sub_parts)})\n"
+            sql += "TBLPROPERTIES (\n" + ",\n".join(sub_parts) + "\n)\n"
 
         return sql
 

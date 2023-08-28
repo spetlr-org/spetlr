@@ -1,4 +1,5 @@
 import unittest
+from textwrap import dedent
 
 from pyspark.sql import types as t
 
@@ -20,24 +21,48 @@ class TestDeltaTableSpec(unittest.TestCase):
         cls.base = tables.base
         cls.target = tables.target
 
+    def test_01_create_statements(self):
+        self.assertEqual(
+            self.base.get_sql_create(),
+            dedent(
+                """\
+                CREATE TABLE myDeltaTableSpecTestDb{ID}.tbl
+                (
+                  c double,
+                  d string NOT NULL COMMENT "Whatsupp",
+                  onlyb int,
+                  a int,
+                  b string
+                )
+                USING DELTA
+                LOCATION "dbfs:/tmp/somewhere/over/the/rainbow"
+                TBLPROPERTIES (
+                  "delta.columnMapping.mode" = "name",
+                  "delta.minReaderVersion" = "2",
+                  "delta.minWriterVersion" = "5"
+                )
+                """
+            ),
+        )
+
     def test_01_diff_alter_statements(self):
         Configurator().set_prod()
         forward_diff = self.target.compare_to(self.base)
         self.assertEqual(
             forward_diff.alter_table_statements(),
             [
-                "ALTER TABLE mydeltatablespectestdb.table DROP COLUMN (onlyb)",
-                "ALTER TABLE mydeltatablespectestdb.table ADD COLUMN (onlyt string "
+                "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMN (onlyb)",
+                "ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMN (onlyt string "
                 'COMMENT "Only in target")',
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN a DROP NOT NULL",
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN d SET NOT NULL",
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN a COMMENT"
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a DROP NOT NULL",
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d SET NOT NULL",
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT"
                 ' "gains not null"',
-                'ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN d COMMENT ""',
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN a FIRST",
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN b AFTER a",
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN onlyt AFTER d",
-                'COMMENT ON mydeltatablespectestdb.table is "Contains useful data"',
+                'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT ""',
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a FIRST",
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN b AFTER a",
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyt AFTER d",
+                'COMMENT ON TABLE mydeltatablespectestdb.tbl is "Contains useful data"',
             ],
         )
 
@@ -45,23 +70,23 @@ class TestDeltaTableSpec(unittest.TestCase):
         self.assertEqual(
             reverse_diff.alter_table_statements(),
             [
-                "ALTER TABLE mydeltatablespectestdb.table DROP COLUMN (onlyt)",
-                "ALTER TABLE mydeltatablespectestdb.table ADD COLUMN (onlyb int)",
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN d DROP NOT NULL",
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN a SET NOT NULL",
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN d COMMENT "
+                "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMN (onlyt)",
+                "ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMN (onlyb int)",
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d DROP NOT NULL",
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a SET NOT NULL",
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT "
                 '"Whatsupp"',
-                'ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN a COMMENT ""',
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN c FIRST",
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN d AFTER c",
-                "ALTER TABLE mydeltatablespectestdb.table ALTER COLUMN onlyb AFTER d",
-                "COMMENT ON mydeltatablespectestdb.table is null",
+                'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT ""',
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN c FIRST",
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d AFTER c",
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyb AFTER d",
+                "COMMENT ON TABLE mydeltatablespectestdb.tbl is null",
             ],
         )
 
     def test_01_check_init_protections(self):
         tbl1 = DeltaTableSpec(
-            name="myDeltaTableSpecTestDb{ID}.table",
+            name="myDeltaTableSpecTestDb{ID}.tbl",
             schema=t.StructType(
                 fields=[
                     t.StructField(name="c", dataType=t.DoubleType()),
@@ -79,7 +104,7 @@ class TestDeltaTableSpec(unittest.TestCase):
             location="/somewhere/over/the{ID}/rainbow",
         )
         tbl2 = DeltaTableSpec(
-            name="mydeltatablespectestdb.table",
+            name="mydeltatablespectestdb.tbl",
             schema=t.StructType(
                 fields=[
                     t.StructField(name="c", dataType=t.DoubleType()),

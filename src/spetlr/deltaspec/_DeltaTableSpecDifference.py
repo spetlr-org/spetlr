@@ -297,7 +297,7 @@ class DeltaTableSpecDifference(DeltaTableDifference):
 
         if base.comment != target.comment:
             statements.append(
-                f"""COMMENT ON {base.name} is {json.dumps(target.comment)}"""
+                f"""COMMENT ON TABLE {base.name} is {json.dumps(target.comment)}"""
             )
 
         statements += full_diff._tblproperties_alter_statements()

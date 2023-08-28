@@ -1,4 +1,5 @@
 from functools import reduce
+from typing import List
 
 from pyspark.sql import DataFrame
 
@@ -26,8 +27,18 @@ class UnionTransformer(Transformer):
         returns the union of all input DataFrames
     """
 
-    def __init__(self, allowMissingColumns: bool = False):
-        super().__init__()
+    def __init__(
+        self,
+        allowMissingColumns: bool = False,
+        dataset_input_keys: List[str] = None,
+        dataset_output_key: str = None,
+        consume_inputs: bool = True,
+    ):
+        super().__init__(
+            dataset_input_keys=dataset_input_keys,
+            dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
+        )
         self.allowMissingColumns = allowMissingColumns
 
     def process(self, df: DataFrame) -> DataFrame:

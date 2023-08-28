@@ -6,10 +6,10 @@ from spetlr.exceptions import (
     MoreThanTwoDataFramesException,
 )
 from spetlr.spark import Spark
-from spetlr.transformers import JoinDataframesTransformerNC
+from spetlr.transformers import JoinDataframesTransformer
 
 
-class TestJoinDataframesTransformerNC(DataframeTestCase):
+class TestJoinDataframesTransformer(DataframeTestCase):
     def test_data_join_inner(self):
         dataset = {}
 
@@ -46,7 +46,7 @@ class TestJoinDataframesTransformerNC(DataframeTestCase):
             schema=input2_schema, data=input2_data
         )
 
-        df_transformed = JoinDataframesTransformerNC(
+        df_transformed = JoinDataframesTransformer(
             first_dataframe_join_key="Id",
             second_dataframe_join_key="_Id",
             join_type="inner",
@@ -109,7 +109,7 @@ class TestJoinDataframesTransformerNC(DataframeTestCase):
             schema=input2_schema, data=input2_data
         )
 
-        df_transformed = JoinDataframesTransformerNC(
+        df_transformed = JoinDataframesTransformer(
             first_dataframe_join_key="Id",
             second_dataframe_join_key="_Id",
             join_type="outer",
@@ -176,7 +176,7 @@ class TestJoinDataframesTransformerNC(DataframeTestCase):
             schema=input2_schema, data=input2_data
         )
 
-        df_transformed = JoinDataframesTransformerNC(
+        df_transformed = JoinDataframesTransformer(
             first_dataframe_join_key="Id",
             second_dataframe_join_key="_Id",
             join_type="left_outer",
@@ -240,7 +240,7 @@ class TestJoinDataframesTransformerNC(DataframeTestCase):
             schema=input2_schema, data=input2_data
         )
 
-        df_transformed = JoinDataframesTransformerNC(
+        df_transformed = JoinDataframesTransformer(
             first_dataframe_join_key="Id",
             second_dataframe_join_key="_Id",
             join_type="right_outer",
@@ -306,7 +306,7 @@ class TestJoinDataframesTransformerNC(DataframeTestCase):
             schema=input2_schema, data=input2_data
         )
 
-        df_transformed = JoinDataframesTransformerNC(
+        df_transformed = JoinDataframesTransformer(
             first_dataframe_join_key="Id",
             second_dataframe_join_key="_Id",
             join_type="semi",
@@ -366,7 +366,7 @@ class TestJoinDataframesTransformerNC(DataframeTestCase):
             schema=input2_schema, data=input2_data
         )
 
-        df_transformed = JoinDataframesTransformerNC(
+        df_transformed = JoinDataframesTransformer(
             first_dataframe_join_key="Id",
             second_dataframe_join_key="_Id",
             join_type="anti",
@@ -435,7 +435,7 @@ class TestJoinDataframesTransformerNC(DataframeTestCase):
         )
 
         with self.assertRaises(MoreThanTwoDataFramesException):
-            JoinDataframesTransformerNC(
+            JoinDataframesTransformer(
                 first_dataframe_join_key="Id",
                 second_dataframe_join_key="_Id",
                 join_type="anti",
@@ -480,7 +480,7 @@ class TestJoinDataframesTransformerNC(DataframeTestCase):
         )
 
         with self.assertRaises(ColumnDoesNotExistException):
-            JoinDataframesTransformerNC(
+            JoinDataframesTransformer(
                 first_dataframe_join_key="Id_col",
                 second_dataframe_join_key="_Id",
                 join_type="anti",
@@ -488,7 +488,7 @@ class TestJoinDataframesTransformerNC(DataframeTestCase):
             ).process_many(dataset)
 
         with self.assertRaises(ColumnDoesNotExistException):
-            JoinDataframesTransformerNC(
+            JoinDataframesTransformer(
                 first_dataframe_join_key="Id",
                 second_dataframe_join_key="_Id_col",
                 join_type="anti",

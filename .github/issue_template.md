@@ -1,7 +1,7 @@
 ## This issue is a ...
 
-- [ ] bug report
-- [ ] feature request
+- Bug report
+- Feature request
 
 ## Initial description
 *Please provide a description of the issue.*

@@ -35,7 +35,7 @@ class TestDeltaTableSpec(unittest.TestCase):
                   b string
                 )
                 USING DELTA
-                LOCATION "dbfs:/tmp/somewhere/over/the/rainbow"
+                LOCATION "dbfs:/tmp/somewhere{ID}/over/the/rainbow"
                 TBLPROPERTIES (
                   "delta.columnMapping.mode" = "name",
                   "delta.minReaderVersion" = "2",

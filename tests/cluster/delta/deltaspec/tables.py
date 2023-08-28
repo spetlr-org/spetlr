@@ -13,7 +13,7 @@ base = DeltaTableSpec.from_sql(
         b string
     )
     USING DELTA
-    LOCATION "/tmp/somewhere/over/the/rainbow"
+    LOCATION "/tmp/somewhere{ID}/over/the/rainbow"
     TBLPROPERTIES
     (
       "delta.columnMapping.maxColumnId" = "6"
@@ -33,6 +33,6 @@ target = DeltaTableSpec.from_sql(
     )
     USING DELTA
     COMMENT "Contains useful data"
-    LOCATION "/tmp/somewhere/over/the/rainbow"
+    LOCATION "/tmp/somewhere{ID}/over/the/rainbow"
     """
 )

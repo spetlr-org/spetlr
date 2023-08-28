@@ -1,15 +1,15 @@
-from typing import List, Union
+from typing import List
 
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 from timezonefinder import TimezoneFinder
 
-from spetlr.etl import TransformerNC
+from spetlr.etl import Transformer
 from spetlr.etl.types import dataset_group
 from spetlr.exceptions import ColumnDoesNotExistException
 
 
-class TimeZoneTransformerNC(TransformerNC):
+class TimeZoneTransformer(Transformer):
     """
     This transformer extracts a timezone using longitude and latitude.
 
@@ -38,12 +38,14 @@ class TimeZoneTransformerNC(TransformerNC):
         latitude_col: str,
         longitude_col: str,
         column_output_name: str = "TimeZone",
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
+        consume_inputs: bool = True
     ):
         super().__init__(
             dataset_input_keys=dataset_input_keys,
             dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
         )
         self.latitude_col = latitude_col
         self.longitude_col = longitude_col

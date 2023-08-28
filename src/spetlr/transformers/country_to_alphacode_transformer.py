@@ -1,11 +1,11 @@
-from typing import List, Union
+from typing import List
 
 import pycountry
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame
 
-from spetlr.etl import TransformerNC
+from spetlr.etl import Transformer
 
 
 def translate_country_to_alpha2(country_name: str) -> str:
@@ -26,13 +26,14 @@ def translate_country_to_alpha2(country_name: str) -> str:
 translateUDF = F.udf(lambda z: translate_country_to_alpha2(z), T.StringType())
 
 
-class CountryToAlphaCodeTransformerNC(TransformerNC):
+class CountryToAlphaCodeTransformer(Transformer):
     def __init__(
         self,
         col_name: str,
         output_col_name: str = None,
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
+        consume_inputs: bool = True,
     ) -> None:
         """
         A simple transformer to translate country names to alpha-2 codes
@@ -45,6 +46,7 @@ class CountryToAlphaCodeTransformerNC(TransformerNC):
         super().__init__(
             dataset_input_keys=dataset_input_keys,
             dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
         )
         self.col_name = col_name
         self.output_col_name = output_col_name or self.col_name

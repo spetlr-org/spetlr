@@ -17,8 +17,19 @@ class ValidFromToTransformer(Transformer):
     NB: Be aware, if incremental extraction is used, the logic does not work
     """
 
-    def __init__(self, time_col: str, wnd_cols: List[str]):
-        super().__init__()
+    def __init__(
+        self,
+        time_col: str,
+        wnd_cols: List[str],
+        dataset_input_keys: List[str] = None,
+        dataset_output_key: str = None,
+        consume_inputs: bool = True,
+    ):
+        super().__init__(
+            dataset_input_keys=dataset_input_keys,
+            dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
+        )
         self._time_col = time_col
         self._wnd_cols = wnd_cols
 

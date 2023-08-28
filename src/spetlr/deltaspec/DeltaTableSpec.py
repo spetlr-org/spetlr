@@ -160,8 +160,8 @@ class DeltaTableSpec:
             raise InvalidSpecificationError("The table is not of delta format.")
 
         tblproperties = details["properties"]
-        tblproperties["delta.minReaderVersion"] = details["minReaderVersion"]
-        tblproperties["delta.minWriterVersion"] = details["minWriterVersion"]
+        tblproperties["delta.minReaderVersion"] = str(details["minReaderVersion"])
+        tblproperties["delta.minWriterVersion"] = str(details["minWriterVersion"])
 
         return DeltaTableSpec(
             name=details["name"],

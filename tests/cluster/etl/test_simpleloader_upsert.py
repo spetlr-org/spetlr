@@ -10,7 +10,7 @@ from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
-class UpsertLoaderTests(DataframeTestCase):
+class SimpleLoaderUpsertTests(DataframeTestCase):
     target_id = "UpsertLoaderDummy"
 
     join_cols = ["col1", "col2"]

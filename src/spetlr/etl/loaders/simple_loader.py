@@ -1,23 +1,9 @@
-from typing import List, Protocol, Union
+from typing import List, Union
 
 from pyspark.sql import DataFrame
 
 from spetlr.etl import Loader
-
-
-class Overwritable(Protocol):
-    def overwrite(self, df: DataFrame) -> None:
-        pass
-
-
-class Appendable(Protocol):
-    def append(self, df: DataFrame) -> None:
-        pass
-
-
-class Upsertable(Protocol):
-    def upsert(self, df: DataFrame, join_cols: List[str]) -> Union[DataFrame, None]:
-        pass
+from spetlr.etl.loaders import Appendable, Overwritable, Upsertable
 
 
 class SimpleLoader(Loader):
@@ -27,10 +13,10 @@ class SimpleLoader(Loader):
         *,
         mode: str = "overwrite",
         join_cols: List[str] = None,
-        dataset_input_keys: Union[str, List[str]] = None,
+        dataset_input_keys: List[str] = None,
     ):
         super().__init__(dataset_input_keys=dataset_input_keys)
-        self.mode = mode
+        self.mode = mode.lower()
         self.handle = handle
         self.join_cols = join_cols
 

@@ -104,6 +104,9 @@ function Get-SpnWithSecret {
         --vault-name=$keyVaultName
     Ignore-Errors -output $output
     # the keyvault may not exist
+
+    Write-Host "    Sleeping for 90 seconds to allow for Azure AD to settle"
+    Start-Sleep -Seconds 90
   }
 
   return @{

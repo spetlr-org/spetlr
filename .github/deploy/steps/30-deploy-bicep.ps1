@@ -35,7 +35,11 @@ $output = az deployment sub create `
       sqlServerAdminPassword=$sqlServerAdminPassword `
       sqlAdminSpnName=$sqlAdminSpnName `
       sqlAdminObjectId=$sqlAdminObjectId `
-      logAnalyticsWsName=$logAnalyticsWsName
+      logAnalyticsWsName=$logAnalyticsWsName `
+      metastoreStorageAccountName=$metastoreStorageAccountName `
+      metastoreContainerName=$metastoreContainerName `
+      metastoreAccessConnectorName=$metastoreAccessConnectorName `
+      metastoreDatabricksName=$metastoreDatabricksName
 
 
 Throw-WhenError -output $output

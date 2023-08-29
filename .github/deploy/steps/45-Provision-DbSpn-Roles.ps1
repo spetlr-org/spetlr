@@ -4,6 +4,7 @@ $output = az role assignment create `
   --role "Contributor" `
   --assignee-principal-type ServicePrincipal `
   --assignee-object-id $dbSpn.objectId `
-  --resource-group $resourceGroupName
+  --resource-group $resourceGroupName `
+  --scope "/subscriptions/$($account.id)/resourceGroups/$resourceGroupName"
 
 Throw-WhenError -output $output

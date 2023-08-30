@@ -17,6 +17,10 @@ class TestTableSpec(unittest.TestCase):
         cls.base = tables.base
         cls.target = tables.target
 
+    @unittest.skipUnless(
+        Spark.version() >= Spark.DATABRICKS_RUNTIME_11_3,
+        "Drop column only supported from DBR 11.0",
+    )
     def test_02_execute_alter_statements(self):
         Configurator().set_debug()
         spark = Spark.get()

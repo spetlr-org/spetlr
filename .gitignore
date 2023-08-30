@@ -137,3 +137,7 @@ dmypy.json
 # driver file - this file is automatically downloaded
 .github/deploy/drivers/msodbcsql17_17.7.2.1-1_amd64.deb
 .DS_Store
+
+# environment dependent files
+.dbx/project.json
+tests/cluster/mount/mounts.json

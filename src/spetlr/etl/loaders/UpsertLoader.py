@@ -1,11 +1,15 @@
 from typing import List, Union
 
+from deprecated import deprecated
 from pyspark.sql import DataFrame
 
 from spetlr.etl import Loader, dataset_group
 from spetlr.tables import TableHandle
 
 
+@deprecated(
+    reason="use SimpleLoader(mode=upsert) instead",
+)
 class UpsertLoader(Loader):
     def __init__(
         self,

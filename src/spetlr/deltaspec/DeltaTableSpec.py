@@ -11,7 +11,7 @@ from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
 from spetlr.deltaspec.DatabricksLocation import standard_databricks_location
-from spetlr.deltaspec.DeltaTableDifference import DeltaTableDifference
+from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
 from spetlr.deltaspec.exceptions import (
     InvalidSpecificationError,
     NoTableAtTarget,
@@ -257,19 +257,19 @@ class DeltaTableSpec:
 
         return DeltaTableSpec(**parts)
 
-    def compare_to(self, other: "DeltaTableSpec") -> DeltaTableDifference:
+    def compare_to(self, other: "DeltaTableSpec") -> DeltaDifferenceBase:
         """Returns a DeltaTableSpecDifference
         of what this difference this object has with respect to the other."""
-        from spetlr.deltaspec._DeltaTableSpecDifference import DeltaTableSpecDifference
+        from spetlr.deltaspec.DeltaTableSpecDifference import DeltaTableSpecDifference
 
         return DeltaTableSpecDifference(base=other, target=self)
 
     def compare_to_location(self):
         """Returns a DeltaTableSpecDifference of self with respect to the disk."""
         unnamed = self.fully_substituted(name=None)
-        return unnamed.compare_to_storage()
+        return unnamed.compare_to_name()
 
-    def compare_to_storage(self):
+    def compare_to_name(self):
         """Returns a DeltaTableSpecDifference of self
         with respect to the catalog table of the same name."""
         full = self.fully_substituted()
@@ -286,7 +286,7 @@ class DeltaTableSpec:
         """Is the match to the specified location similar
         enough to allow reading as is?"""
 
-        return self.compare_to_storage().is_readable()
+        return self.compare_to_name().is_readable()
 
     # If we can read, then we can also append.
     is_appendable = is_readable
@@ -298,29 +298,27 @@ class DeltaTableSpec:
 
     def read(self) -> DataFrame:
         """Read table by path if location is given, otherwise from name."""
-        diff = self.compare_to_storage()
-        if not diff.is_readable():
-            raise TableSpecNotReadable("Table not readable")
-        if diff.schema_match():
-            return self.get_deltahandle().read()
-        else:
-            return self.get_deltahandle().read().select(*self.schema.names)
+        diff = self.compare_to_name()
+
+        if diff.is_readable():
+            if diff.schema_match():
+                return self.get_deltahandle().read()
+            else:
+                return self.get_deltahandle().read().select(*self.schema.names)
+        raise TableSpecNotReadable("Table not readable")
 
     def write_or_append(
         self, df: DataFrame, mode: str, mergeSchema: bool = None
     ) -> None:
         assert mode in {"append", "overwrite"}
-        diff = self.compare_to_storage()
+        diff = self.compare_to_name()
 
         if mode == "append" and not diff.is_readable():
             raise TableSpecNotReadable(
                 "Cannot append to a table of incompatible schema"
             )
 
-        if diff:
-            spark = Spark.get()
-            for statement in diff.alter_table_statements():
-                spark.sql(statement)
+        self.make_storage_match()
 
         return self.get_deltahandle().write_or_append(
             df=df, mode=mode, mergeSchema=mergeSchema
@@ -329,10 +327,11 @@ class DeltaTableSpec:
     def make_storage_match(self) -> None:
         """If storage is not exactly like the specification,
         change the storage to make it match."""
-        diff = self.compare_to_storage()
-        if diff:
+        diff = self.compare_to_name()
+        if diff.is_different():
             spark = Spark.get()
-            for statement in diff.alter_table_statements():
+            print(f"Now altering table {diff.target.name} to match specification:")
+            for statement in diff.alter_statements():
                 print(f"Executing SQL: {statement}")
                 spark.sql(statement)
 

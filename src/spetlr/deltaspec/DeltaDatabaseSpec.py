@@ -99,6 +99,7 @@ class DeltaDatabaseSpec:
     @classmethod
     def from_spark(cls, name: str):
         rows = Spark.get().sql(f"DESCRIBE SCHEMA {name}").collect()
+        # TODO: return NONE if none exists
         comment = location = None
         for row in rows:
             if str(row[0]).lower() == "comment":
@@ -121,3 +122,14 @@ class DeltaDatabaseSpec:
         parts["location"] = self.location.format(**details)
 
         return DeltaDatabaseSpec(**parts)
+
+    def matches_to_name(self):
+        full = self.fully_substituted()
+        onstorage = self.from_spark(full.name)
+        # TODO: check equality
+
+    def create(self):
+        TODO
+
+    def drop_cascade(self):
+        TODO

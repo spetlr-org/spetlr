@@ -49,7 +49,7 @@ class TestDeltaTableSpec(unittest.TestCase):
         Configurator().set_prod()
         forward_diff = self.target.compare_to(self.base)
         self.assertEqual(
-            forward_diff.alter_table_statements(),
+            forward_diff.alter_statements(),
             [
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMN (onlyb)",
                 "ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMN (onlyt string "
@@ -68,7 +68,7 @@ class TestDeltaTableSpec(unittest.TestCase):
 
         reverse_diff = self.base.compare_to(self.target)
         self.assertEqual(
-            reverse_diff.alter_table_statements(),
+            reverse_diff.alter_statements(),
             [
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMN (onlyt)",
                 "ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMN (onlyb int)",

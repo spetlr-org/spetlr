@@ -5,21 +5,24 @@ from typing import Dict, List, Optional
 
 from pyspark.sql.types import StructField, StructType
 
-from spetlr.deltaspec.DeltaTableDifference import DeltaTableDifference
+from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from spetlr.schema_manager import SchemaManager
 
 
 @dataclasses.dataclass
-class DeltaTableSpecDifference(DeltaTableDifference):
+class DeltaTableSpecDifference(DeltaDifferenceBase):
     base: Optional[DeltaTableSpec]
     target: DeltaTableSpec
 
-    def __bool__(self):
-        """A complete match = no difference = false difference object"""
+    def complete_match(self) -> bool:
+        """A complete match = no difference"""
         if self.base is None:
-            return True
-        return self.base != self.target
+            return False
+        return self.base == self.target
+
+    def is_different(self) -> bool:
+        return not self.complete_match()
 
     def name_match(self):
         if self.base is None:
@@ -278,7 +281,7 @@ class DeltaTableSpecDifference(DeltaTableDifference):
         statements += self.target.compare_to(new_base).alter_table_statements()
         return statements
 
-    def alter_table_statements(self) -> List[str]:
+    def alter_statements(self) -> List[str]:
         """A list to alter statements that will ensure
         that what used to be the base table, becomes the target table"""
         if self.base is None:

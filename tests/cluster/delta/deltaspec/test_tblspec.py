@@ -31,29 +31,29 @@ class TestTableSpec(unittest.TestCase):
         )
 
         # at first the table does not exist
-        diff = self.base.compare_to_storage()
+        diff = self.base.compare_to_name()
         self.assertTrue(diff.is_different(), diff)
 
         # then we make it exist
         self.base.make_storage_match()
 
         # not it exists and matches
-        diff = self.base.compare_to_storage()
+        diff = self.base.compare_to_name()
         self.assertFalse(diff.is_different(), repr(diff))
 
         # but it does not match the target
-        diff = self.target.compare_to_storage()
+        diff = self.target.compare_to_name()
         self.assertTrue(diff.is_different(), repr(diff))
 
         # so make the target exist
         self.target.make_storage_match()
 
         # now the base no longer matches
-        diff = self.base.compare_to_storage()
+        diff = self.base.compare_to_name()
         self.assertTrue(diff.is_different(), diff)
 
         # but the target matches.
-        diff = self.target.compare_to_storage()
+        diff = self.target.compare_to_name()
         self.assertFalse(diff.is_different(), repr(diff))
 
         # clean up after test.

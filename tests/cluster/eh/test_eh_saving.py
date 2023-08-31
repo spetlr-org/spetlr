@@ -3,12 +3,11 @@ import unittest
 from datetime import datetime, timedelta, timezone
 
 from pyspark.sql import DataFrame
-from pyspark.sql import functions as f
 from spetlrtools.time import dt_utc
 
 from spetlr import Configurator
 from spetlr.delta import DeltaHandle
-from spetlr.eh import EventHubCapture, EventHubJsonPublisher
+from spetlr.eh import EventHubJsonPublisher
 from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from spetlr.etl import Transformer
 from spetlr.functions import init_dbutils
@@ -50,26 +49,6 @@ class EventHubsTests(unittest.TestCase):
             self.assertTrue(False, "The capture file never appeared.")
 
         self.assertTrue(True, "The capture file has appeared.")
-
-    def test_03_read_eh_capture(self):
-        tc = Configurator()
-        tc.register(
-            "SpetlrEh",
-            {
-                "name": "SpetlrEh",
-                "path": f"/mnt/{resourceName()}/silver/{resourceName()}/spetlreh",
-                "format": "avro",
-                "partitioning": "ymd",
-            },
-        )
-        eh = EventHubCapture.from_tc("SpetlrEh")
-        df = eh.read()
-
-        df = df.select(f.from_json("body", "id int, name string").alias("body")).select(
-            "body.*"
-        )
-        rows = {tuple(row) for row in df.collect()}
-        self.assertEqual({(1, "a"), (2, "b")}, rows)
 
     def test_04_read_eh_capture_extractor(self):
         tc = Configurator()

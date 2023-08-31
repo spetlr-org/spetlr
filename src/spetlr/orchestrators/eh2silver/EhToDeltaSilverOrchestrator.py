@@ -4,7 +4,6 @@ from spetlr.delta import DeltaHandle
 from spetlr.etl import EtlBase, Orchestrator
 from spetlr.etl.extractors import IncrementalExtractor, SimpleExtractor
 from spetlr.etl.loaders import SimpleLoader
-from spetlr.etl.loaders.UpsertLoader import UpsertLoader
 from spetlr.exceptions import MissingUpsertJoinColumns
 from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
     EhJsonToDeltaTransformer,
@@ -65,12 +64,9 @@ class EhToDeltaSilverOrchestrator(Orchestrator):
 
         # the method filter_with can be used to insert any number of transformers here
 
-        # final step,
-        # by default upsert the rows to the silver delta table.
-        if mode == "upsert":
-            self._loader = UpsertLoader(dh_target, self.upsert_join_cols)
-        else:
-            self._loader = SimpleLoader(dh_target, mode=self.mode)
+        self._loader = SimpleLoader(
+            dh_target, join_cols=self.upsert_join_cols, mode=self.mode
+        )
 
         self.load_into(self._loader)
 

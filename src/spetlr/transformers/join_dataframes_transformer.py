@@ -2,7 +2,7 @@ from typing import List
 
 from pyspark.sql import DataFrame
 
-from spetlr.etl import TransformerNC
+from spetlr.etl import Transformer
 from spetlr.etl.types import dataset_group
 from spetlr.exceptions import (
     ColumnDoesNotExistException,
@@ -10,7 +10,7 @@ from spetlr.exceptions import (
 )
 
 
-class JoinDataframesTransformerNC(TransformerNC):
+class JoinDataframesTransformer(Transformer):
     """
     This transformer joins two DataFrames together.
 
@@ -40,6 +40,7 @@ class JoinDataframesTransformerNC(TransformerNC):
         join_type: str = "inner",
         dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
+        consume_inputs: bool = True,
     ):
         if len(dataset_input_keys) > 2:
             raise MoreThanTwoDataFramesException(
@@ -48,7 +49,9 @@ class JoinDataframesTransformerNC(TransformerNC):
             )
 
         super().__init__(
-            dataset_input_keys=dataset_input_keys, dataset_output_key=dataset_output_key
+            dataset_input_keys=dataset_input_keys,
+            dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
         )
         self.first_dataframe_join_key = first_dataframe_join_key
         self.second_dataframe_join_key = second_dataframe_join_key

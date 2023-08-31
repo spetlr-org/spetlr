@@ -3,8 +3,8 @@ from typing import List
 from pyspark.sql import DataFrame
 
 from spetlr.etl import Loader, dataset_group
+from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
-from spetlr.etl.loaders.UpsertLoader import UpsertLoader
 from spetlr.tables import TableHandle
 
 
@@ -23,7 +23,9 @@ class UpsertLoaderStreaming(Loader):
         super().__init__()
 
         self._loader = StreamLoader(
-            loader=UpsertLoader(handle=handle, join_cols=upsert_join_cols),
+            loader=SimpleLoader(
+                handle=handle, join_cols=upsert_join_cols, mode="upsert"
+            ),
             options_dict=options_dict,
             trigger_type=trigger_type,
             trigger_time_seconds=trigger_time_seconds,

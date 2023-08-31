@@ -4,10 +4,10 @@ import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.spark import Spark
-from spetlr.transformers import GenerateMd5ColumnTransformerNC
+from spetlr.transformers import GenerateMd5ColumnTransformer
 
 
-class TestGenerateMd5ColumnTransformerNC(DataframeTestCase):
+class TestGenerateMd5ColumnTransformer(DataframeTestCase):
     def test_generate_md5_column(self):
         input_schema = T.StructType(
             [
@@ -23,7 +23,7 @@ class TestGenerateMd5ColumnTransformerNC(DataframeTestCase):
 
         df_input = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-        df_transformed = GenerateMd5ColumnTransformerNC(
+        df_transformed = GenerateMd5ColumnTransformer(
             col_name="md5_col",
             col_list=["id", "text"],
         ).process(df_input)
@@ -53,7 +53,7 @@ class TestGenerateMd5ColumnTransformerNC(DataframeTestCase):
 
         df_input = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-        df_transformed = GenerateMd5ColumnTransformerNC(
+        df_transformed = GenerateMd5ColumnTransformer(
             col_name="md5_col",
             col_list=["id", "text"],
         ).process(df_input)

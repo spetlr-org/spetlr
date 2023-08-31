@@ -1,20 +1,16 @@
-import unittest
 from typing import List
 
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
-from spetlr.etl.loaders.UpsertLoader import UpsertLoader
+from spetlr.etl.loaders import SimpleLoader
 from spetlr.utils import DataframeCreator
 from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
-@unittest.skip(
-    "UpsertLoader is deprecated - skipping tests...",
-)
-class UpsertLoaderTests(DataframeTestCase):
+class SimpleLoaderUpsertTests(DataframeTestCase):
     target_id = "UpsertLoaderDummy"
 
     join_cols = ["col1", "col2"]
@@ -55,7 +51,9 @@ class UpsertLoaderTests(DataframeTestCase):
         DbHandle.from_tc("UpsertLoaderDb").drop_cascade()
 
     def test_01_can_perform_incremental_on_empty(self):
-        loader = UpsertLoader(handle=self.target_dh_dummy, join_cols=self.join_cols)
+        loader = SimpleLoader(
+            handle=self.target_dh_dummy, mode="upsert", join_cols=self.join_cols
+        )
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data1
@@ -69,7 +67,9 @@ class UpsertLoaderTests(DataframeTestCase):
         existing_rows = self.target_dh_dummy.read().collect()
         self.assertEqual(2, len(existing_rows))
 
-        loader = UpsertLoader(handle=self.target_dh_dummy, join_cols=self.join_cols)
+        loader = SimpleLoader(
+            handle=self.target_dh_dummy, mode="upsert", join_cols=self.join_cols
+        )
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data2
@@ -86,7 +86,9 @@ class UpsertLoaderTests(DataframeTestCase):
         existing_rows = self.target_dh_dummy.read().collect()
         self.assertEqual(3, len(existing_rows))
 
-        loader = UpsertLoader(handle=self.target_dh_dummy, join_cols=self.join_cols)
+        loader = SimpleLoader(
+            handle=self.target_dh_dummy, mode="upsert", join_cols=self.join_cols
+        )
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, self.data3

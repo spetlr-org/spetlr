@@ -10,12 +10,15 @@ from pyspark.sql.utils import AnalysisException
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
-from spetlr.deltaspec.DatabricksLocation import standard_databricks_location
+from spetlr.deltaspec.DatabricksLocation import TableName, standard_databricks_location
+from spetlr.deltaspec.DeltaDatabaseSpec import DeltaDatabaseSpec
 from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
 from spetlr.deltaspec.exceptions import (
     InvalidSpecificationError,
     NoTableAtTarget,
     TableSpecNotReadable,
+    TableSpecSchemaMismatch,
+    TableSpectNotEnforcable,
 )
 from spetlr.schema_manager import SchemaManager
 from spetlr.schema_manager.spark_schema import get_schema
@@ -72,7 +75,7 @@ class DeltaTableSpec:
         else:
             self.tblproperties["delta.columnMapping.mode"] = "name"
 
-        # the cinctionality enabled by 'delta.columnMapping.mode' = 'name',
+        # the functionality enabled by 'delta.columnMapping.mode' = 'name',
         # is needed for column manipulation and seems to go along with another
         # property "delta.columnMapping.maxColumnId": "5" which increases when
         # a column is added. it counts all the columns that were ever present
@@ -93,6 +96,29 @@ class DeltaTableSpec:
             self.tblproperties["delta.minWriterVersion"] = str(
                 _DEFAULT_minWriterVersion
             )
+
+    def get_db(self):
+        """The best-effort the get a db specification that this table needs."""
+        schema_name = TableName.from_str(self.fully_substituted().name).full_schema()
+        if not schema_name:
+            return None
+
+        db = DeltaDatabaseSpec.from_spark(schema_name)
+
+        return db or DeltaDatabaseSpec(name=schema_name)
+
+    def db_exists(self):
+        name = TableName.from_str(self.fully_substituted().name)
+        schema = name.full_schema()
+        if not schema:
+            # if no db is given, the default db is used and that always exists
+            return True
+
+        db = DeltaDatabaseSpec.from_spark(schema)
+        if not db:
+            return False
+
+        return True
 
     # Non-trivial constructors
     @classmethod
@@ -283,7 +309,7 @@ class DeltaTableSpec:
         return full.compare_to(onstorage)
 
     def is_readable(self):
-        """Is the match to the specified location similar
+        """Is the match to the specified name similar
         enough to allow reading as is?"""
 
         return self.compare_to_name().is_readable()
@@ -293,41 +319,42 @@ class DeltaTableSpec:
 
     # Methods for compatibility with delta handles (non-streaming)
 
-    def get_deltahandle(self) -> DeltaHandle:
-        return DeltaHandle(name=self.name, location=self.location)
-
     def read(self) -> DataFrame:
         """Read table by path if location is given, otherwise from name."""
         diff = self.compare_to_name()
 
         if diff.is_readable():
             if diff.schema_match():
-                return self.get_deltahandle().read()
+                return self._read()
             else:
-                return self.get_deltahandle().read().select(*self.schema.names)
+                return self._read().select(*self.schema.names)
         raise TableSpecNotReadable("Table not readable")
+
+    def _read(self) -> DataFrame:
+        """Read table by path if location is given, otherwise from name."""
+        if self.location:
+            return Spark.get().read.format("delta").load(self.location)
+        return Spark.get().table(self.name)
 
     def write_or_append(
         self, df: DataFrame, mode: str, mergeSchema: bool = None
     ) -> None:
         assert mode in {"append", "overwrite"}
-        diff = self.compare_to_name()
-
-        if mode == "append" and not diff.is_readable():
-            raise TableSpecNotReadable(
-                "Cannot append to a table of incompatible schema"
-            )
-
-        self.make_storage_match()
-
-        return self.get_deltahandle().write_or_append(
-            df=df, mode=mode, mergeSchema=mergeSchema
-        )
+        if mode == "append":
+            return self.append(df=df, mergeSchema=mergeSchema)
+        elif mode == "overwrite":
+            return self.overwrite(df=df, mergeSchema=mergeSchema)
+        else:
+            raise AssertionError('mode not in {"append", "overwrite"}')
 
     def make_storage_match(self) -> None:
         """If storage is not exactly like the specification,
         change the storage to make it match."""
         diff = self.compare_to_name()
+        if diff.nullbase():
+            if not self.db_exists():
+                raise TableSpectNotEnforcable("The database does not exist.")
+
         if diff.is_different():
             spark = Spark.get()
             print(f"Now altering table {diff.target.name} to match specification:")
@@ -335,27 +362,76 @@ class DeltaTableSpec:
                 print(f"Executing SQL: {statement}")
                 spark.sql(statement)
 
-    def overwrite(self, df: DataFrame, mergeSchema: bool = None) -> None:
+    def _overwrite(self, df: DataFrame):
         self.make_storage_match()
-        return self.get_deltahandle().overwrite(df=df, mergeSchema=mergeSchema)
+        return (
+            df.write.format("delta")
+            .mode("overwrite")
+            .saveAsTable(self.name or f"delta.`{self.location}`")
+        )
 
-    def append(self, df: DataFrame, mergeSchema: bool = None) -> None:
+    def overwrite(self, df: DataFrame, mergeSchema: bool = True) -> None:
+        diff = self.compare_to_name()
+
+        if diff.nullbase():
+            return self._overwrite(df)
+
+        if not diff.is_readable() and not mergeSchema:
+            raise TableSpecNotReadable(
+                "If you want to write to an incompatible table, enable merge schema"
+            )
+
+        if not mergeSchema:
+            if df.schema != self.schema:
+                raise TableSpecSchemaMismatch()
+
+        return self._overwrite(df=df)
+
+    def append(self, df: DataFrame) -> None:
+        diff = self.compare_to_name()
+
+        if diff.nullbase():
+            return self._overwrite(df)
+
+        if not diff.is_readable():
+            raise TableSpecNotReadable(
+                "If you want to write to an incompatible table, enable merge schema"
+            )
+
         self.make_storage_match()
-        return self.get_deltahandle().append(df=df, mergeSchema=mergeSchema)
+
+        return (
+            df.write.format("delta")
+            .mode("append")
+            .saveAsTable(self.name or f"delta.`{self.location}`")
+        )
 
     def upsert(
         self,
         df: DataFrame,
         join_cols: List[str],
     ) -> Union[DataFrame, None]:
+        diff = self.compare_to_name()
+        if diff.nullbase():
+            return self._overwrite(df)
+
+        if not diff.is_readable():
+            raise TableSpecNotReadable(
+                "You are trying to upsert to an incompatible table"
+            )
+
         self.make_storage_match()
-        return self.get_deltahandle().upsert(df=df, join_cols=join_cols)
+        full = self.fully_substituted()
+        dh = DeltaHandle(name=full.name, location=full.location)
+        return dh.upsert(df=df, join_cols=join_cols)
 
     def delete_data(
         self, comparison_col: str, comparison_limit: Any, comparison_operator: str
     ) -> None:
         self.make_storage_match()
-        return self.get_deltahandle().delete_data(
+        full = self.fully_substituted()
+        dh = DeltaHandle(name=full.name, location=full.location)
+        return dh.delete_data(
             comparison_col=comparison_col,
             comparison_limit=comparison_limit,
             comparison_operator=comparison_operator,

@@ -14,7 +14,19 @@ class NoTableAtTarget(InvalidSpecificationError):
     pass
 
 
+class TableSpectNotEnforcable(SpetlrException):
+    """For some reason it was not possible to make the storage match the spec."""
+
+    pass
+
+
 class TableSpecNotReadable(SpetlrException):
     """A read was attempted, but the table is not readable as specified."""
+
+    pass
+
+
+class TableSpecSchemaMismatch(SpetlrException):
+    """A write was attempted, but the dataframe is not as specified."""
 
     pass

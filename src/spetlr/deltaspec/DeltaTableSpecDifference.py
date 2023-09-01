@@ -15,6 +15,10 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
     base: Optional[DeltaTableSpec]
     target: DeltaTableSpec
 
+    def nullbase(self) -> bool:
+        """is the comparison to a null base. Meaing there is no table."""
+        return self.base is None
+
     def complete_match(self) -> bool:
         """A complete match = no difference"""
         if self.base is None:

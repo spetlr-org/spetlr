@@ -2,6 +2,8 @@ import json
 from dataclasses import asdict, dataclass
 from typing import Dict, Optional
 
+from pyspark.sql.utils import AnalysisException
+
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.deltaspec.DatabricksLocation import standard_databricks_location
@@ -97,9 +99,12 @@ class DeltaDatabaseSpec:
         )
 
     @classmethod
-    def from_spark(cls, name: str):
-        rows = Spark.get().sql(f"DESCRIBE SCHEMA {name}").collect()
-        # TODO: return NONE if none exists
+    def from_spark(cls, name: str) -> "DeltaDatabaseSpec":
+        try:
+            rows = Spark.get().sql(f"DESCRIBE SCHEMA {name}").collect()
+        except AnalysisException:
+            return None  # No such schema
+
         comment = location = None
         for row in rows:
             if str(row[0]).lower() == "comment":
@@ -126,10 +131,10 @@ class DeltaDatabaseSpec:
     def matches_to_name(self):
         full = self.fully_substituted()
         onstorage = self.from_spark(full.name)
-        # TODO: check equality
+        return full == onstorage
 
     def create(self):
-        TODO
+        Spark.get().sql(self.get_create_sql())
 
     def drop_cascade(self):
-        TODO
+        Spark.get().sql(f"DROP DATABASE {self.name} CASCADE")

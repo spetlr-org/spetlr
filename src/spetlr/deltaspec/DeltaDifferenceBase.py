@@ -2,6 +2,10 @@ from typing import List
 
 
 class DeltaDifferenceBase:
+    def nullbase(self) -> bool:
+        """is the comparison to a null base. Meaing there is no table."""
+        pass
+
     def is_different(self) -> bool:
         raise NotImplementedError()
 

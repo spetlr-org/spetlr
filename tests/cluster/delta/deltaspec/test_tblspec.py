@@ -11,7 +11,6 @@ class TestTableSpec(unittest.TestCase):
         c = Configurator()
         c.clear_all_configurations()
         c.set_debug()
-        cls.id = c.get("ID")
 
         c.register("mydb", dict(name="myDeltaTableSpecTestDb{ID}"))
         cls.base = tables.base
@@ -21,32 +20,35 @@ class TestTableSpec(unittest.TestCase):
         Spark.version() >= Spark.DATABRICKS_RUNTIME_11_3,
         "Drop column only supported from DBR 11.0",
     )
-    def test_02_execute_alter_statements(self):
+    def test_tblspec(self):
         Configurator().set_debug()
-        spark = Spark.get()
-        spark.sql(
-            f"""
-            CREATE DATABASE {Configurator().get('mydb','name')};
-        """
-        )
+
+        self.assertFalse(self.base.db_exists())
+        self.base.get_db().create()
+        self.assertTrue(self.base.db_exists())
 
         # at first the table does not exist
         diff = self.base.compare_to_name()
         self.assertTrue(diff.is_different(), diff)
+        self.assertTrue(diff.nullbase(), diff)
 
         # then we make it exist
         self.base.make_storage_match()
 
-        # not it exists and matches
+        # now it exists and matches
         diff = self.base.compare_to_name()
         self.assertFalse(diff.is_different(), repr(diff))
 
         # but it does not match the target
         diff = self.target.compare_to_name()
+        # the names are the same
+        self.assertTrue(diff.name_match(), repr(diff))
+        # the rest of the table is not the same
         self.assertTrue(diff.is_different(), repr(diff))
 
-        # so make the target exist
-        self.target.make_storage_match()
+        # overwite to the target schema
+        df = Spark.get().createDataFrame([(1, "a", 3.14, "b", "c")], self.target.schma)
+        self.target.overwrite(df)
 
         # now the base no longer matches
         diff = self.base.compare_to_name()
@@ -57,8 +59,4 @@ class TestTableSpec(unittest.TestCase):
         self.assertFalse(diff.is_different(), repr(diff))
 
         # clean up after test.
-        spark.sql(
-            f"""
-            DROP DATABASE {Configurator().get('mydb','name')} CASCADE;
-            """
-        )
+        self.target.get_db().drop_cascade()

@@ -76,16 +76,6 @@ jobs:
         shell: pwsh
         run: Start-Sleep -s 30
 
-
-      - name: Launch integration tests 9.1
-        shell: pwsh
-        run: |
-          .github/submit/submit_test_job.ps1  `
-            -sparkVersion "9.1.x-scala2.12" `
-            -testJobDetails job91.json `
-            -sparkLibs sparklibs91.json
-
-
       - name: Launch integration tests 10.4
         shell: pwsh
         run: |
@@ -105,7 +95,6 @@ jobs:
       - name: Wait 2 min for things to settle
         shell: pwsh
         run: Start-Sleep -s 120
-
 
       - name: Fetch integration tests 10.4
         shell: pwsh

@@ -141,3 +141,4 @@ dmypy.json
 # environment dependent files
 .dbx/project.json
 tests/cluster/mount/mounts.json
+.DS_Store

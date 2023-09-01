@@ -4,7 +4,9 @@ from pyspark.sql import DataFrame
 from pyspark.sql.functions import concat_ws, md5
 
 
-def Md5HashColumn(df: DataFrame, colName: str, cols_to_exclude: List[str] = None) -> DataFrame:
+def Md5HashColumn(
+    df: DataFrame, colName: str, cols_to_exclude: List[str] = None
+) -> DataFrame:
     """
     Generate column with md5 encoding, based on a list of column.
 

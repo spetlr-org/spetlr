@@ -102,7 +102,7 @@ resource eventhubs 'Microsoft.EventHub/namespaces@2021-11-01' = {
             storageAccountResourceId: staccount.id
           }
         }
-        skipEmptyArchives: true
+        skipEmptyArchives: false
         encoding: 'Avro'
       }
     }

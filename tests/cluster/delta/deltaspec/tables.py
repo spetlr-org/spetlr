@@ -34,7 +34,7 @@ target = DeltaTableSpec.from_sql(
     USING DELTA
     COMMENT "Contains useful data"
     LOCATION "/tmp/somewhere{ID}/over/the/rainbow"
-    TBLPEROPERTIES (
+    TBLPROPERTIES (
       "my.cool.peoperty" = "bacon"
     )
     """

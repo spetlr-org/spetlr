@@ -4,7 +4,7 @@ import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.spark import Spark
-from spetlr.transformers import SelectAndCastColumnsTransformerNC
+from spetlr.transformers import SelectAndCastColumnsTransformer
 
 
 class TestSelectAndCastColumnsTransformerNC(DataframeTestCase):
@@ -32,7 +32,7 @@ class TestSelectAndCastColumnsTransformerNC(DataframeTestCase):
             ]
         )
 
-        transformed_df = SelectAndCastColumnsTransformerNC(
+        transformed_df = SelectAndCastColumnsTransformer(
             schema=transformer_schema
         ).process(input_df)
 
@@ -70,7 +70,7 @@ class TestSelectAndCastColumnsTransformerNC(DataframeTestCase):
             ]
         )
 
-        transformed_df = SelectAndCastColumnsTransformerNC(
+        transformed_df = SelectAndCastColumnsTransformer(
             schema=transformer_schema
         ).process(input_df)
 

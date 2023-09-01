@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import List
 
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
@@ -10,8 +11,21 @@ from spetlr.utils import SelectAndCastColumns
 
 
 class SimpleSqlServerTransformer(Transformer):
-    def __init__(self, *, table_id: str, server: SqlServer, ignoreCase=False):
-        super().__init__()
+    def __init__(
+        self,
+        *,
+        table_id: str,
+        server: SqlServer,
+        ignoreCase=False,
+        dataset_input_keys: List[str] = None,
+        dataset_output_key: str = None,
+        consume_inputs: bool = True,
+    ):
+        super().__init__(
+            dataset_input_keys=dataset_input_keys,
+            dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
+        )
         self.server = server
         self.table_id = table_id
         self.ignoreCase = ignoreCase

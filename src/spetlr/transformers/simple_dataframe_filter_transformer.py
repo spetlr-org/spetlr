@@ -1,3 +1,5 @@
+from typing import List
+
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 
@@ -5,7 +7,14 @@ from spetlr.etl import Transformer
 
 
 class DataFrameFilterTransformer(Transformer):
-    def __init__(self, col_value: str, col_name: str = "messageType") -> None:
+    def __init__(
+        self,
+        col_value: str,
+        col_name: str = "messageType",
+        dataset_input_keys: List[str] = None,
+        dataset_output_key: str = None,
+        consume_inputs: bool = True,
+    ) -> None:
         """
         A simple helper class to filter a dataframe based on the passed col_name
         if its value equals to the specified col_value.
@@ -16,7 +25,11 @@ class DataFrameFilterTransformer(Transformer):
                 is 'messageType' as this class is mostly used to filter dataframes
                 with this column name.
         """
-        super().__init__()
+        super().__init__(
+            dataset_input_keys=dataset_input_keys,
+            dataset_output_key=dataset_output_key,
+            consume_inputs=consume_inputs,
+        )
         self.col_value = col_value
         self.col_name = col_name
 

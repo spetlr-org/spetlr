@@ -85,7 +85,12 @@ $sqlAdminSpnName = $cicdSpnName
 
 $logAnalyticsWsName = $resourceGroupName
 
-
+$metastoreStorageAccountName    = "githubspetlrmetastore"
+$metastoreContainerName         = "metastore"
+$metastoreAccessConnectorName   = "ac-metastore"
+$metastoreDatabricksName        = "dbws-metastore"
+$metastoreName                  = "spetlr-metastore"
+$metastoreCatalogName           = "spetlr_catalog"
 
 
 
@@ -106,6 +111,12 @@ Write-Host "* Azure EventHubs Namespace       : $ehNamespace" -ForegroundColor W
 Write-Host "* Azure CosmosDb                  : $cosmosName" -ForegroundColor White
 Write-Host "* Azure Log Analytics Workspace   : $logAnalyticsWsName" -ForegroundColor White
 Write-Host "* Mounting SPN                    : $mountSpnName" -ForegroundColor White
+Write-Host "* Storage Account (metastore)     : $metastoreStorageAccountName" -ForegroundColor White
+Write-Host "* Container (metastore)           : $metastoreContainerName" -ForegroundColor White
+Write-Host "* Access Connector (metastore)    : $metastoreAccessConnectorName" -ForegroundColor White
+Write-Host "* Databricks Workspace (metastore): $metastoreDatabricksName" -ForegroundColor White
+Write-Host "* Databricks Metastore Name       : $metastoreName" -ForegroundColor White
+Write-Host "* Metastore Catalog Name          : $metastoreCatalogName" -ForegroundColor White
 Write-Host "**********************************************************************" -ForegroundColor White
 
 

@@ -7,7 +7,6 @@ from spetlrtools.testing import DataframeTestCase
 from spetlr.etl import Transformer
 from spetlr.etl.extractors import IncrementalExtractor, SimpleExtractor
 from spetlr.etl.loaders import SimpleLoader
-from spetlr.etl.loaders.UpsertLoader import UpsertLoader
 from spetlr.exceptions import MissingUpsertJoinColumns
 from spetlr.orchestrators import EhToDeltaSilverOrchestrator
 from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
@@ -30,7 +29,7 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
             with patch.object(
                 EhJsonToDeltaTransformer, "process", return_value=test_df
             ) as p1:
-                with patch.object(UpsertLoader, "save", return_value=test_df) as p2:
+                with patch.object(SimpleLoader, "save", return_value=test_df) as p2:
                     orchestrator = EhToDeltaSilverOrchestrator(
                         dh_source=dh_source_mock,
                         dh_target=dh_target_mock,
@@ -55,7 +54,7 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
             with patch.object(
                 EhJsonToDeltaTransformer, "process", return_value=test_df
             ) as p1:
-                with patch.object(UpsertLoader, "save", return_value=test_df) as p2:
+                with patch.object(SimpleLoader, "save", return_value=test_df) as p2:
                     orchestrator = EhToDeltaSilverOrchestrator(
                         dh_source=dh_source_mock,
                         dh_target=dh_target_mock,
@@ -81,7 +80,7 @@ class EhToDeltaSilverOrchestratorTests(DataframeTestCase):
             with patch.object(
                 EhJsonToDeltaTransformer, "process", return_value=test_df
             ) as p1:
-                with patch.object(UpsertLoader, "save", return_value=test_df) as p2:
+                with patch.object(SimpleLoader, "save", return_value=test_df) as p2:
                     with self.assertRaises(MissingUpsertJoinColumns) as cm:
                         orchestrator = EhToDeltaSilverOrchestrator(
                             dh_source=dh_source_mock,

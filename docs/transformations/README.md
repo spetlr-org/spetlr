@@ -14,9 +14,8 @@ Transformations in spetlr:
   - [SelectAndCastColumnsTransformer](#selectandcastcolumnstransformer)
   - [ValidFromToTransformer](#validfromtotransformer)
   - [DataFrameFilterTransformer](#dataframefiltertransformer)
-  - [CountryToAlphaCodeTransformerNC](#countrytoalphacodetransformernc)
+  - [CountryToAlphaCodeTransformer](#countrytoalphacodetransformer)
   - [GenerateMd5ColumnTransformer](#generatemd5columntransformer)
-  - [DataChangeCaptureTransformer](#datachangecapturetransformer)
 ## Concatenate data frames
 
 *UPDATE: Pyspark has an equivalent implementation  `.unionByName(df, allowMissingColumns=False)`, see the [documentation](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrame.unionByName.html) for more information.*
@@ -433,17 +432,18 @@ transformed_df.display()
 
 ```
 
-## CountryToAlphaCodeTransformerNC
+## CountryToAlphaCodeTransformer
 
 This is a simple transformer for translating country names to their alpha-2 code equivalent.
 
 Usage example
 
 ```python
-from spetlr.transformers import CountryToAlphaCodeTransformerNC
+from spetlr.transformers import CountryToAlphaCodeTransformer
 import pyspark.sql.types as T
 
 from spetlr.spark import Spark
+
 input_schema = T.StructType(
     [
         T.StructField("countryCol", T.StringType(), True),
@@ -457,15 +457,13 @@ input_data = [
 
 input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-transformed_df = CountryToAlphaCodeTransformerNC(
+transformed_df = CountryToAlphaCodeTransformer(
     col_name="countryCol",
     output_col_name="alphaCodeCol
 ).process(df_input)
 
-
 transformed_df.display()
 
-+----------+------------+
 |countryCol|alphaCodeCol|
 +----------+------------+
 |   Denmark|          DK|
@@ -481,10 +479,11 @@ This transformer generates a unique column with md5 encoding based on other colu
 Usage example
 
 ```python
-from spetlr.transformers import GenerateMd5ColumnTransformerNC
+from spetlr.transformers import GenerateMd5ColumnTransformer
 import pyspark.sql.types as T
 
 from spetlr.spark import Spark
+
 input_schema = T.StructType(
     [
         T.StructField("id", T.IntegerType(), True),
@@ -499,11 +498,10 @@ input_data = [
 
 input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 
-transformed_df = GenerateMd5ColumnTransformerNC(
+transformed_df = GenerateMd5ColumnTransformer(
     col_name="md5_col",
     col_list=["id", "text"],
 ).process(input_df)
-
 
 transformed_df.display()
 
@@ -514,49 +512,3 @@ transformed_df.display()
 |    2|   Null|  c81e728d9d4c2f636f067f89cc14862c|
 +-----+-------+-----------------------------------+
 ```
-## DataChangeCaptureTransformer
-
-This class archives data changes from a source table, using a primary key column.
-    It identifies and captures new or modified records.
-    For accurate comparison of all columns, ensure both schemas are identical.
-
-
-Usage example:
-
-
-``` python 
-from spetlr.transformers.data_change_capture_transformer import DataChangeCaptureTransformer
-
-df_target =
-
-| id| model|     brand| salesprice|
-+---+------+----------+-----------+
-|  1|Fender|Telecaster|         50|
-|  2|Gibson|  Les Paul|        100|
-|  3|Ibanez|        RG|        175|
-+---+------+----------+-----------+
-
-
-df_source =
-
-| id| model|     brand| salesprice|
-+---+------+----------+-----------+
-|  1| Fender|Telecaster|         50|
-|  2| Gibson|  Les Paul|        200|
-|  3| Ibanez|        RG|        175|
-|  4| Falcon|   Gretsch|        250|
-+---+------+----------+-----------+
-
-dataset_group = {"source": df_source, "target": df_target
-
-df = DataChangeCaptureTransform(primary_key="id").process_many(dataset_group)
-
-df.show()
-
-# only returns new and modfied rows
-
-| id| model|     brand| salesprice|
-+---+------+----------+-----------+
-|  2| Gibson|  Les Paul|        200|
-|  4| Falcon|   Gretsch|        250|
-+---+------+----------+-----------+

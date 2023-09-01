@@ -1,3 +1,4 @@
+import unittest
 from typing import List
 
 from spetlrtools.testing import DataframeTestCase
@@ -10,6 +11,9 @@ from tests.cluster.delta import extras
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
+@unittest.skip(
+    "UpsertLoader is deprecated - skipping tests...",
+)
 class UpsertLoaderTests(DataframeTestCase):
     target_id = "UpsertLoaderDummy"
 

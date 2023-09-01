@@ -10,7 +10,8 @@ from spetlr.delta import DeltaHandle
 from spetlr.eh import EventHubJsonPublisher
 from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from spetlr.etl import Transformer
-from spetlr.functions import init_dbutils
+
+# from spetlr.functions import init_dbutils
 from spetlr.orchestrators import EhJsonToDeltaOrchestrator
 from spetlr.spark import Spark
 from tests.cluster.values import resourceName
@@ -23,34 +24,15 @@ class EventHubsTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         Configurator().clear_all_configurations()
 
-    def test_01_publish(self):
+    def test_01_publish_and_read(self):
         eh = SpetlrEh()
 
         df = Spark.get().createDataFrame([(1, "a"), (2, "b")], "id int, name string")
         publisher = EventHubJsonPublisher(eh)
         publisher.save(df)
 
-    def test_02_wait_for_capture_files(self):
-        # wait until capture file appears
-        dbutils = init_dbutils()
+        time.sleep(100)  # just wait the EH captures once a minute anyway.
 
-        limit = datetime.now() + timedelta(minutes=10)
-
-        while datetime.now() < limit:
-            conts = {
-                item.name for item in dbutils.fs.ls(f"/mnt/{resourceName()}/silver")
-            }
-            if f"{resourceName()}/" in conts:
-                break
-            else:
-                time.sleep(10)
-                continue
-        else:
-            self.assertTrue(False, "The capture file never appeared.")
-
-        self.assertTrue(True, "The capture file has appeared.")
-
-    def test_04_read_eh_capture_extractor(self):
         tc = Configurator()
         tc.register(
             "SpetlrEh",
@@ -82,7 +64,7 @@ class EventHubsTests(unittest.TestCase):
             abs((row_written.astimezone(timezone.utc) - dt_utc()).total_seconds()), 1000
         )
 
-    def test_05_eh_json_orchestrator(self):
+        # def test_05_eh_json_orchestrator(self):
         # the orchestrator has a complex functionality that can only be fully tested
         # on a substantial holding of capture files. That is not possible here, but
         # such tests were carried out during development.

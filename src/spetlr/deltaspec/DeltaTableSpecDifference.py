@@ -130,7 +130,7 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
                 if key not in self.target.tblproperties:
                     removed_properties.append(key)
             if removed_properties:
-                parts = [json.dumps(k) for k in updated_properties.keys()]
+                parts = [json.dumps(k) for k in removed_properties]
                 statements.append(
                     f"""ALTER TABLE {self.base.name} """
                     f"""UNSET TBLPROPERTIES ({", ".join(parts)})"""

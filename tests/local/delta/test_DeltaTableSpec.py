@@ -63,6 +63,8 @@ class TestDeltaTableSpec(unittest.TestCase):
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN b AFTER a",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyt AFTER d",
                 'COMMENT ON TABLE mydeltatablespectestdb.tbl is "Contains useful data"',
+                "ALTER TABLE mydeltatablespectestdb.tbl "
+                'SET TBLPROPERTIES ("my.cool.peoperty" = "bacon")',
             ],
         )
 
@@ -81,6 +83,8 @@ class TestDeltaTableSpec(unittest.TestCase):
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d AFTER c",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyb AFTER d",
                 "COMMENT ON TABLE mydeltatablespectestdb.tbl is null",
+                "ALTER TABLE mydeltatablespectestdb.tbl "
+                'UNSET TBLPROPERTIES ("my.cool.peoperty")',
             ],
         )
 

@@ -2,11 +2,11 @@ import unittest
 
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_sql_code_to_config
-from spetlr.delta import DbHandle
+from spetlr.deltaspec.DeltaDatabaseSpec import DeltaDatabaseSpec
 
 
 class TestTableSpecConversions(unittest.TestCase):
-    def test_DbHandle_from_sql(self):
+    def test_DeltaDatabaseSpec_from_sql(self):
         config = parse_sql_code_to_config(
             """
             -- SPETLR.CONFIGURATOR key: MyDbAlias
@@ -20,18 +20,18 @@ class TestTableSpecConversions(unittest.TestCase):
         self.assertEqual(k, "MyDbAlias")
         c = Configurator()
         c.register(k, v)
-        db = DbHandle.from_tc(k)
+        db = DeltaDatabaseSpec.from_tc(k)
         self.assertEqual(
             db,
-            DbHandle(
+            DeltaDatabaseSpec(
                 name="my_db_name",
                 location="/somewhere/over/the/rainbow",
                 comment="Really great db",
             ),
         )
 
-    def test_DbHandle_to_sql(self):
-        db = DbHandle(
+    def test_DeltaDatabaseSpec_to_sql(self):
+        db = DeltaDatabaseSpec(
             name="my_db_name",
             location="/somewhere/over/the/rainbow",
             comment="Really great db",
@@ -39,14 +39,14 @@ class TestTableSpecConversions(unittest.TestCase):
         self.assertEqual(
             db.get_create_sql(),
             (
-                "CREATE DATABASE IF NOT EXISTS my_db_name\n"
-                '  COMMENT="Really great db"\n'
-                '  LOCATION "/somewhere/over/the/rainbow"'
+                "CREATE SCHEMA IF NOT EXISTS my_db_name\n"
+                '  COMMENT "Really great db"\n'
+                '  LOCATION "dbfs:/somewhere/over/the/rainbow"'
             ),
         )
 
-    def test_DbHandle_repr(self):
-        db = DbHandle(
+    def test_DeltaDatabaseSpec_repr(self):
+        db = DeltaDatabaseSpec(
             name="my_db_name",
             location="/somewhere/over/the/rainbow",
             comment="Really great db",

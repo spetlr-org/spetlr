@@ -50,7 +50,7 @@ class CaptureHistoryTransformerTest(DataframeTestCase):
         # Test data for test_05
         self.source5 = [row_1_1]
         self.target5 = [row_1_2]
-        self.expected4 = []
+        self.expected5 = []
 
     def test_01_capture_new_rows(self):
         """Target is empty, return all records from source"""
@@ -121,5 +121,5 @@ class CaptureHistoryTransformerTest(DataframeTestCase):
         ).process_many(dataset_group)
 
         self.assertDataframeMatches(
-            df=result_df, columns=self.columns, expected_data=self.expected2
+            df=result_df, columns=self.columns, expected_data=self.expected5
         )

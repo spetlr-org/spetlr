@@ -16,6 +16,7 @@ Transformations in spetlr:
   - [DataFrameFilterTransformer](#dataframefiltertransformer)
   - [CountryToAlphaCodeTransformerNC](#countrytoalphacodetransformernc)
   - [GenerateMd5ColumnTransformer](#generatemd5columntransformer)
+  - [DataChangeCaptureTransformer](#datachangecapturetransformer)
 ## Concatenate data frames
 
 *UPDATE: Pyspark has an equivalent implementation  `.unionByName(df, allowMissingColumns=False)`, see the [documentation](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrame.unionByName.html) for more information.*

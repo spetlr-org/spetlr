@@ -230,10 +230,11 @@ class DeltaTableSpec:
          that creates the table described by the current DeltaTableSpec instance.
         This method is guaranteed to be the inverse of the `.from_sql(sql)` constructor.
         """
+        schema_str = SchemaManager().struct_to_sql(self.schema, formatted=True)
         sql = (
             "CREATE TABLE "
             + (self.name or f"delta.`{self.location}`")
-            + f"\n(\n{SchemaManager().struct_to_sql(self.schema)}\n)\n"
+            + f"\n(\n  {schema_str}\n)\n"
             + "USING DELTA\n"
         )
 

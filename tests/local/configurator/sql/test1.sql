@@ -9,7 +9,7 @@ WITH DBPROPERTIES ("property_name"="property_value")
 -- spetlr.Configurator key: MyDetailsTable
 CREATE TABLE IF NOT EXISTS my_db1{ID}.details
 (
-{MyAlias_schema},
+  {MyAlias_schema},
   another int
   -- comment with ;
 )

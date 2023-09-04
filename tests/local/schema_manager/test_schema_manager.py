@@ -20,7 +20,7 @@ class TestSchemaManager(unittest.TestCase):
         SchemaManager().clear_all_configurations()
         cls.sc = initSchemaManager()
 
-    def test_register_schema(self):
+    def test_01_register_schema(self):
         schema = T.StructType(
             [
                 T.StructField("Column1", T.IntegerType(), True),
@@ -35,7 +35,7 @@ class TestSchemaManager(unittest.TestCase):
 
         self.assertIn("register_test", self.sc._registered_schemas)
 
-    def test_get_registered_schema(self):
+    def test_02_get_registered_schema(self):
         schema = T.StructType(
             [
                 T.StructField("Column1", T.IntegerType(), True),
@@ -53,9 +53,25 @@ class TestSchemaManager(unittest.TestCase):
             self.sc.get_schema(schema_identifier="register_test2"),
         )
 
-    def test_get_python_ref_schema(self):
+    def test_03_get_python_ref_schema(self):
         schema = SchemaManager().get_schema(schema_identifier="SchemaTestTable1")
 
         expected_schema = extras.python_test_schema
 
         self.assertEqual(expected_schema, schema)
+
+    def test_04_get_sql_schema(self):
+        schema = T.StructType(
+            [
+                T.StructField("Column1", T.IntegerType(), True),
+                T.StructField("Column2", T.StringType(), True),
+                T.StructField("Column3", T.FloatType(), True),
+            ]
+        )
+        self.assertEqual(
+            "Column1 int, Column2 string, Column3 float", self.sc.struct_to_sql(schema)
+        )
+        self.assertEqual(
+            "Column1 int,\n  Column2 string,\n  Column3 float",
+            self.sc.struct_to_sql(schema, formatted=True),
+        )

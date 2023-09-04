@@ -10,12 +10,7 @@ from pyspark.sql.utils import AnalysisException
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
-from spetlr.deltaspec.DatabricksLocation import (
-    TableName,
-    ensureStr,
-    standard_databricks_location,
-)
-from spetlr.deltaspec.DeltaDatabaseSpec import DeltaDatabaseSpec
+from spetlr.deltaspec.DatabricksLocation import ensureStr, standard_databricks_location
 from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
 from spetlr.deltaspec.exceptions import (
     InvalidSpecificationError,
@@ -49,6 +44,7 @@ class DeltaTableSpec:
     comment: str = None
     # blanked properties will never be retained in the constructor
     blankedPropertyKeys: List[str] = field(default_factory=list)
+
     # TODO: Clustered By
 
     def __post_init__(self):
@@ -105,29 +101,6 @@ class DeltaTableSpec:
             self.tblproperties["delta.minWriterVersion"] = str(
                 _DEFAULT_minWriterVersion
             )
-
-    def get_db(self):
-        """The best-effort the get a db specification that this table needs."""
-        schema_name = TableName.from_str(self.fully_substituted().name).full_schema()
-        if not schema_name:
-            return None
-
-        db = DeltaDatabaseSpec.from_spark(schema_name)
-
-        return db or DeltaDatabaseSpec(name=schema_name)
-
-    def db_exists(self):
-        name = TableName.from_str(self.fully_substituted().name)
-        schema = name.full_schema()
-        if not schema:
-            # if no db is given, the default db is used and that always exists
-            return True
-
-        db = DeltaDatabaseSpec.from_spark(schema)
-        if not db:
-            return False
-
-        return True
 
     # Non-trivial constructors
     @classmethod

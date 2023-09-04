@@ -6,7 +6,7 @@ from pyspark.sql.utils import AnalysisException
 
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
-from spetlr.deltaspec.DatabricksLocation import standard_databricks_location
+from spetlr.deltaspec.DatabricksLocation import ensureStr, standard_databricks_location
 from spetlr.deltaspec.exceptions import InvalidSpecificationError
 from spetlr.exceptions import NoSuchValueException
 from spetlr.spark import Spark
@@ -20,6 +20,7 @@ class DeltaDatabaseSpec:
     dbproperties: Dict[str, str] = None
 
     def __post_init__(self):
+        self.name = ensureStr(self.name)
         self.location = standard_databricks_location(self.location)
 
     def __repr__(self):

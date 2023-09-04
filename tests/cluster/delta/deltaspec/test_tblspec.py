@@ -21,11 +21,12 @@ class TestTableSpec(unittest.TestCase):
         "Drop column only supported from DBR 11.0",
     )
     def test_tblspec(self):
-        Configurator().set_debug()
+        c = Configurator()
+        c.set_debug()
 
-        self.assertFalse(self.base.db_exists())
-        self.base.get_db().create()
-        self.assertTrue(self.base.db_exists())
+        spark = Spark.get()
+        db = c.get("mydb", "name")
+        spark.sql(f"CREATE DATABASE {db};")
 
         # at first the table does not exist
         diff = self.base.compare_to_name()
@@ -59,4 +60,4 @@ class TestTableSpec(unittest.TestCase):
         self.assertFalse(diff.is_different(), repr(diff))
 
         # clean up after test.
-        self.target.get_db().drop_cascade()
+        spark.sql(f"DROP DATABASE {db} CASCADE")

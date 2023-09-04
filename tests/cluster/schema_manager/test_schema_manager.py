@@ -63,7 +63,7 @@ class TestSchemaManager(DataframeTestCase):
         test_schema1_str = dedent(
             """\
             a int,
-              b int  COMMENT "really? is that it?",
+              b int COMMENT "really? is that it?",
               c string,
               cplx struct<someId:string,details:struct<id:string>,blabla:array<int>>,
               d timestamp,

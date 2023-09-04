@@ -24,8 +24,17 @@ class TableName:
 
 
 def standard_databricks_location(val: str) -> str:
-    p = urlparse(val)
+    """In databricks, if no schema is given, then the scheme dbfs is used."""
+    p = urlparse(ensureStr(val))
     if not p.scheme:
         p = p._replace(scheme="dbfs")
 
     return p.geturl()
+
+
+def ensureStr(input) -> str:
+    """Takes string or bytes and always returns a string."""
+    try:
+        return input.decode()
+    except (UnicodeDecodeError, AttributeError):
+        return input

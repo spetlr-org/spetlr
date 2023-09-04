@@ -10,7 +10,11 @@ from pyspark.sql.utils import AnalysisException
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
-from spetlr.deltaspec.DatabricksLocation import TableName, standard_databricks_location
+from spetlr.deltaspec.DatabricksLocation import (
+    TableName,
+    ensureStr,
+    standard_databricks_location,
+)
 from spetlr.deltaspec.DeltaDatabaseSpec import DeltaDatabaseSpec
 from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
 from spetlr.deltaspec.exceptions import (
@@ -52,6 +56,11 @@ class DeltaTableSpec:
         # to be run through the configurator where keys are case-sensitive.
         # once a name is free of these, it may be used in comparisons to data
         # where it needs to be lower case
+
+        self.name = ensureStr(self.name)
+        self.location = ensureStr(self.location)
+        self.comment = ensureStr(self.comment)
+
         if self.name and "{" not in self.name:
             self.name = self.name.lower()
 

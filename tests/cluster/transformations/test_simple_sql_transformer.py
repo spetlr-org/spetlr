@@ -24,13 +24,10 @@ class SimpleSqlTransformerTest(DataframeTestCase):
         tbl3 = c.get("tbl3")
 
         spark = Spark.get()
-        spark.sql(
-            f"""
-        CREATE TABLE {tbl1} (a int, b int) USING DELTA;
-        CREATE TABLE {tbl2} (a int, c int) USING DELTA;
-        CREATE TABLE {tbl3} (a int, b int, c int) USING DELTA;
-        """
-        )
+        spark.sql(f"""CREATE TABLE {tbl1} (a int, b int) USING DELTA;""")
+        spark.sql(f"""CREATE TABLE {tbl2} (a int, c int) USING DELTA;""")
+        spark.sql(f"""CREATE TABLE {tbl3} (a int, b int, c int) USING DELTA;""")
+
         spark.createDataFrame([(1, 2)], "a int, b int").write.saveAsTable(tbl1)
         spark.createDataFrame([(1, 3)], "a int, c int").write.saveAsTable(tbl2)
 
@@ -44,7 +41,8 @@ class SimpleSqlTransformerTest(DataframeTestCase):
         )
         o.transform_with(
             SimpleSqlTransformer(
-                sql_from=sql,
+                sql_modue=sql,
+                sql_file_pattern="transform",
                 dataset_input_keys=["FirstTable", "SecondTable"],
                 dataset_output_key="SimpleSqlTransformerTestResult",
             )

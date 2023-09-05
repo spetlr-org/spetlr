@@ -19,7 +19,8 @@ class SimpleSqlTransformer(Transformer):
     def __init__(
         self,
         *,
-        sql_from: Union[str, ModuleType],
+        sql_modue: Union[str, ModuleType],
+        sql_file_pattern: str = "*",
         dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
         consume_inputs: bool = True
@@ -29,7 +30,8 @@ class SimpleSqlTransformer(Transformer):
             dataset_output_key=dataset_output_key,
             consume_inputs=consume_inputs,
         )
-        self.executor = SqlExecutor(base_module=sql_from)
+        self.executor = SqlExecutor(base_module=sql_modue)
+        self.sql_file_pattern = sql_file_pattern
 
     def etl(self, inputs: dataset_group) -> dataset_group:
         # If dataset_input_keys is None, it will be set to all keys in inputs
@@ -38,7 +40,7 @@ class SimpleSqlTransformer(Transformer):
         for key in dataset_input_keys:
             inputs[key].createOrReplaceTempView(key)
 
-        self.executor.execute_sql_file("*")
+        self.executor.execute_sql_file(self.sql_file_pattern)
 
         if self.consume_inputs:
             for key in dataset_input_keys:

@@ -13,10 +13,7 @@ class TestDeltaTableSpec(unittest.TestCase):
     def setUpClass(cls) -> None:
         c = Configurator()
         c.clear_all_configurations()
-        c.set_debug()
-        cls.id = c.get("ID")
-
-        c.register("mydb", dict(name="myDeltaTableSpecTestDb{ID}"))
+        c.set_prod()
 
         cls.base = tables.base
         cls.target = tables.target
@@ -108,7 +105,7 @@ class TestDeltaTableSpec(unittest.TestCase):
             location="/somewhere/over/the{ID}/rainbow",
         )
         tbl2 = DeltaTableSpec(
-            name="mydeltatablespectestdb.tbl",
+            name="spark_catalog.mydeltatablespectestdb.tbl",
             schema=t.StructType(
                 fields=[
                     t.StructField(name="c", dataType=t.DoubleType()),
@@ -126,4 +123,5 @@ class TestDeltaTableSpec(unittest.TestCase):
             location="dbfs:/somewhere/over/the/rainbow",
         )
         Configurator().set_prod()
-        self.assertEqual(tbl1.fully_substituted(), tbl2)
+        d = tbl2.compare_to(tbl1.fully_substituted())
+        self.assertFalse(d.is_different(), d)

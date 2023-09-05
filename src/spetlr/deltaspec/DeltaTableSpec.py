@@ -3,6 +3,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
+import pyspark.sql.types
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType
 from pyspark.sql.utils import AnalysisException
@@ -41,6 +42,7 @@ class DeltaTableSpec:
     tblproperties: Dict[str, str] = field(default_factory=dict)
     location: Optional[str] = None
     comment: str = None
+
     # blanked properties will never be retained in the constructor
     blankedPropertyKeys: List[str] = field(default_factory=list)
 
@@ -247,7 +249,11 @@ class DeltaTableSpec:
     # identity manipulation
     def copy(self) -> "DeltaTableSpec":
         """Return an independent object that compares equal to this one."""
-        return eval(repr(self))
+        globals = {
+            k: v for k, v in vars(pyspark.sql.types).items() if not k.startswith("_")
+        }
+        globals.update(dict(DeltaTableSpec=DeltaTableSpec))
+        return eval(repr(self), globals)
 
     def fully_substituted(self, name=_DEFAULT) -> "DeltaTableSpec":
         """Return a new DeltaTableSpec

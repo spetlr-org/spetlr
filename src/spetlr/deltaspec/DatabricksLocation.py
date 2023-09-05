@@ -5,16 +5,22 @@ from urllib.parse import urlparse
 
 @dataclass
 class TableName:
-    table: str
+    table: str = None
     schema: str = None
     catalog: str = None
 
     @classmethod
-    def from_str(cls, name: str) -> "TableName":
+    def from_str(cls, name: str = None) -> "TableName":
+        if not name:
+            return cls()
         parts = name.split(".")
         table = parts.pop()
-        schema = parts.pop() if parts else None
-        catalog = parts.pop() if parts else None
+        if not parts:
+            return cls(table=table)
+        schema = parts.pop()
+        if not parts:
+            return cls(table=table, schema=schema)
+        catalog = parts.pop()
         return cls(table=table, schema=schema, catalog=catalog)
 
     def full_schema(self) -> str:
@@ -22,6 +28,19 @@ class TableName:
             return f"{self.catalog}.{self.schema}"
         else:
             return self.schema
+
+    def __str__(self):
+        return ".".join(p for p in [self.catalog, self.schema, self.table] if p)
+
+    def to_level(self, n_parts: int = 3) -> "TableName":
+        if n_parts == 0:
+            return TableName()
+        if n_parts == 1:
+            return TableName(table=self.table)
+        if n_parts == 2:
+            return TableName(table=self.table, schema=self.schema)
+
+        return TableName(table=self.table, schema=self.schema, catalog=self.catalog)
 
 
 def standard_databricks_location(val: Union[str, bytes]) -> str:

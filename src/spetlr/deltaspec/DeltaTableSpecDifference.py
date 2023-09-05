@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 
 from pyspark.sql.types import StructField, StructType
 
+from spetlr.deltaspec.DatabricksLocation import TableName
 from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from spetlr.schema_manager import SchemaManager
@@ -14,6 +15,33 @@ from spetlr.schema_manager import SchemaManager
 class DeltaTableSpecDifference(DeltaDifferenceBase):
     base: Optional[DeltaTableSpec]
     target: DeltaTableSpec
+
+    def __post_init__(self):
+        # decouple from the initializing objects
+        self.base = self.base.copy()
+        self.target = self.target.copy()
+
+        # Only compare table names up to the highest level
+        # that both DeltaTableSpec have information about.
+        # so a nameless table can still compare equal to
+        # another table. Also, unless both tables specify
+        # the catalog, the catalog is ignored.
+
+        if self.base:
+            b_name = TableName.from_str(self.base.name)
+            t_name = TableName.from_str(self.target.name)
+            name_parts = 0
+            if b_name.table and t_name.table:
+                name_parts += 1
+            if b_name.schema and t_name.schema:
+                name_parts += 1
+            if b_name.catalog and t_name.catalog:
+                name_parts += 1
+            self.base.name = str(b_name.to_level(name_parts))
+            self.target.name = str(t_name.to_level(name_parts))
+        else:
+            self.base.name = None
+            self.target.name = None
 
     def nullbase(self) -> bool:
         """is the comparison to a null base. Meaing there is no table."""

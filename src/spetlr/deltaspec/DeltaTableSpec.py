@@ -17,7 +17,6 @@ from spetlr.deltaspec.exceptions import (
     NoTableAtTarget,
     TableSpecNotReadable,
     TableSpecSchemaMismatch,
-    TableSpectNotEnforcable,
 )
 from spetlr.schema_manager import SchemaManager
 from spetlr.schema_manager.spark_schema import get_schema
@@ -324,7 +323,7 @@ class DeltaTableSpec:
     ) -> None:
         assert mode in {"append", "overwrite"}
         if mode == "append":
-            return self.append(df=df, mergeSchema=mergeSchema)
+            return self.append(df=df)
         elif mode == "overwrite":
             return self.overwrite(df=df, mergeSchema=mergeSchema)
         else:
@@ -334,9 +333,6 @@ class DeltaTableSpec:
         """If storage is not exactly like the specification,
         change the storage to make it match."""
         diff = self.compare_to_name()
-        if diff.nullbase():
-            if not self.db_exists():
-                raise TableSpectNotEnforcable("The database does not exist.")
 
         if diff.is_different():
             spark = Spark.get()

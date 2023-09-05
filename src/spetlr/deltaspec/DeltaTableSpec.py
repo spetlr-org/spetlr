@@ -35,7 +35,7 @@ _DEFAULT_blankedPropertyKeys = ["delta.columnMapping.maxColumnId"]
 class DeltaTableSpec:
     """This class represents a full specification for a delta table."""
 
-    name: str
+    name: Union[str, None]
     schema: StructType
     options: Dict[str, str] = field(default_factory=dict)
     partitioned_by: List[str] = field(default_factory=list)
@@ -356,6 +356,8 @@ class DeltaTableSpec:
         )
 
     def overwrite(self, df: DataFrame, mergeSchema: bool = True) -> None:
+        df = self.ensure_df_schema(df)
+
         diff = self.compare_to_name()
 
         if diff.nullbase():
@@ -372,7 +374,18 @@ class DeltaTableSpec:
 
         return self._overwrite(df=df)
 
+    def ensure_df_schema(self, df: DataFrame):
+        # check if the df can be selected down into the schema of this table
+        if not self.compare_to(
+            DeltaTableSpec(schema=df.schema, name=None)
+        ).is_readable():
+            raise TableSpecNotReadable(
+                "The data frame has an incompatible schema mismatch to this table."
+            )
+        return df.select(*self.schema.names)
+
     def append(self, df: DataFrame) -> None:
+        df = self.ensure_df_schema(df)
         diff = self.compare_to_name()
 
         if diff.nullbase():
@@ -398,7 +411,9 @@ class DeltaTableSpec:
     ) -> Union[DataFrame, None]:
         diff = self.compare_to_name()
         if diff.nullbase():
-            return self._overwrite(df)
+            return self.overwrite(df)
+
+        df = self.ensure_df_schema(df)
 
         if not diff.is_readable():
             raise TableSpecNotReadable(

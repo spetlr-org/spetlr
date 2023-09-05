@@ -18,7 +18,7 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
 
     def __post_init__(self):
         # decouple from the initializing objects
-        self.base = self.base.copy()
+        self.base = self.base.copy() if self.base else None
         self.target = self.target.copy()
 
         # Only compare table names up to the highest level

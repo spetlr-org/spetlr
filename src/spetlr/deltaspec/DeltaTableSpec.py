@@ -335,7 +335,7 @@ class DeltaTableSpec:
         else:
             raise AssertionError('mode not in {"append", "overwrite"}')
 
-    def make_storage_match(self) -> None:
+    def make_storage_match(self, allow_new_columns=False) -> None:
         """If storage is not exactly like the specification,
         change the storage to make it match."""
         diff = self.compare_to_name()
@@ -343,12 +343,12 @@ class DeltaTableSpec:
         if diff.is_different():
             spark = Spark.get()
             print(f"Now altering table {diff.target.name} to match specification:")
-            for statement in diff.alter_statements():
+            for statement in diff.alter_statements(allow_new_columns=allow_new_columns):
                 print(f"Executing SQL: {statement}")
                 spark.sql(statement)
 
     def _overwrite(self, df: DataFrame):
-        self.make_storage_match()
+        self.make_storage_match(allow_new_columns=True)
         return (
             df.write.format("delta")
             .mode("overwrite")

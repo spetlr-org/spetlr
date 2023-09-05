@@ -8,6 +8,7 @@ from pyspark.sql.types import StructField, StructType
 from spetlr.deltaspec.DatabricksLocation import TableName
 from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
+from spetlr.deltaspec.exceptions import TableSpectNotEnforcable
 from spetlr.schema_manager import SchemaManager
 
 
@@ -40,7 +41,6 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
             self.base.name = str(b_name.to_level(name_parts))
             self.target.name = str(t_name.to_level(name_parts))
         else:
-            self.base.name = None
             self.target.name = None
 
     def nullbase(self) -> bool:
@@ -166,129 +166,134 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
 
         return statements
 
-    def _schema_alter_statements(self) -> List[str]:
+    def _schema_alter_statements(self, allow_new_columns=False) -> List[str]:
+        if self.base.schema == self.target.schema:
+            return []
         statements = []
-        if self.base.schema != self.target.schema:
-            base_fields: Dict[str, StructField] = {
-                field.name: field for field in self.base.schema.fields
-            }
-            base_order = [field.name for field in self.base.schema.fields]
-            target_fields: Dict[str, StructField] = {
-                field.name: field for field in self.target.schema.fields
-            }
-            target_order = [field.name for field in self.target.schema.fields]
+        base_fields: Dict[str, StructField] = {
+            field.name: field for field in self.base.schema.fields
+        }
+        base_order = [field.name for field in self.base.schema.fields]
+        target_fields: Dict[str, StructField] = {
+            field.name: field for field in self.target.schema.fields
+        }
+        target_order = [field.name for field in self.target.schema.fields]
 
-            fields_to_add = []
-            alter_comment = []  # (name,newValue)
-            alter_nullability = []  # (name,newValue)
-            fields_to_remove = []
-            for key, targetField in target_fields.items():
-                if key not in base_fields:
-                    fields_to_add.append(targetField)
-                    # adding the filed will fix the other field properties also
-                    continue
+        fields_to_add = []
+        alter_comment = []  # (name,newValue)
+        alter_nullability = []  # (name,newValue)
+        fields_to_remove = []
+        for key, targetField in target_fields.items():
+            if key not in base_fields:
+                fields_to_add.append(targetField)
+                # adding the filed will fix the other field properties also
+                continue
 
-                # key is also in base
-                base_field = base_fields[key]
-                if base_field.dataType != targetField.dataType:
-                    fields_to_remove.append(key)
-                    fields_to_add.append(targetField)
-                    # adding the filed will fix the other field properties also
-                    continue
+            # key is also in base
+            base_field = base_fields[key]
+            if base_field.dataType != targetField.dataType:
+                fields_to_remove.append(key)
+                fields_to_add.append(targetField)
+                # adding the filed will fix the other field properties also
+                continue
 
-                # key is also in base and dataType matches
-                base_comment = base_field.metadata.get("comment", "")
-                target_comment = targetField.metadata.get("comment", "")
-                if base_comment != target_comment:
-                    alter_comment.append((key, target_comment))
+            # key is also in base and dataType matches
+            base_comment = base_field.metadata.get("comment", "")
+            target_comment = targetField.metadata.get("comment", "")
+            if base_comment != target_comment:
+                alter_comment.append((key, target_comment))
 
-                if base_field.nullable != targetField.nullable:
-                    alter_nullability.append((key, targetField.nullable))
+            if base_field.nullable != targetField.nullable:
+                alter_nullability.append((key, targetField.nullable))
 
-            for key in base_fields.keys():
-                if key not in target_fields:
-                    fields_to_remove.append(key)
+        for key in base_fields.keys():
+            if key not in target_fields:
+                fields_to_remove.append(key)
 
-            # Now convert the accumulated changes to ALTER statements.
-            if fields_to_remove:
-                statement = f"ALTER TABLE {self.base.name} DROP COLUMN"
-                if len(fields_to_remove) > 1:
-                    statement += "S"
-                statement += " (" + ", ".join(fields_to_remove) + ")"
+        # Now convert the accumulated changes to ALTER statements.
+        if fields_to_remove:
+            statement = f"ALTER TABLE {self.base.name} DROP COLUMN"
+            if len(fields_to_remove) > 1:
+                statement += "S"
+            statement += " (" + ", ".join(fields_to_remove) + ")"
 
-                statements.append(statement)
+            statements.append(statement)
 
-            if fields_to_add:
-                statement = f"ALTER TABLE {self.base.name} ADD COLUMN"
-                if len(fields_to_add) == 1:
-                    statement += (
-                        " ("
-                        + SchemaManager()
-                        .struct_to_sql(StructType(fields_to_add))
-                        .strip()
-                        + ")"
-                    )
-                else:
-                    statement += "S"
-                    statement += (
-                        " (/n"
-                        + SchemaManager().struct_to_sql(StructType(fields_to_add))
-                        + "\n)"
-                    )
-
-                statements.append(statement)
-
-            for key, newValue in alter_nullability:
-                statements.append(
-                    f"ALTER TABLE {self.base.name} ALTER COLUMN {key} "
-                    + ("SET" if newValue else "DROP")
-                    + " NOT NULL"
+        if fields_to_add:
+            if not allow_new_columns:
+                raise TableSpectNotEnforcable(
+                    "Cannot make the storage match without allowing new columns"
                 )
 
-            for key, newComment in alter_comment:
-                statements.append(
-                    f"ALTER TABLE {self.base.name} ALTER COLUMN "
-                    f"{key} COMMENT {json.dumps(newComment)}"
+        if fields_to_add:
+            statement = f"ALTER TABLE {self.base.name} ADD COLUMN"
+            if len(fields_to_add) == 1:
+                statement += (
+                    " ("
+                    + SchemaManager().struct_to_sql(StructType(fields_to_add)).strip()
+                    + ")"
+                )
+            else:
+                statement += "S"
+                statement += (
+                    " (/n"
+                    + SchemaManager().struct_to_sql(StructType(fields_to_add))
+                    + "\n)"
                 )
 
-            # Finally address the possible change of order.
+            statements.append(statement)
 
-            intermediate_target_order = copy.copy(base_order)
-            for field in fields_to_add:
-                intermediate_target_order.append(field.name)
+        for key, newValue in alter_nullability:
+            statements.append(
+                f"ALTER TABLE {self.base.name} ALTER COLUMN {key} "
+                + ("SET" if newValue else "DROP")
+                + " NOT NULL"
+            )
 
-            # now the intermediate_target_order always contains
-            # the same fields in the same order as the table for now.
-            first = target_order[0]
-            if intermediate_target_order[0] != first:
-                intermediate_target_order.pop(intermediate_target_order.index(first))
-                intermediate_target_order.insert(0, first)
+        for key, newComment in alter_comment:
+            statements.append(
+                f"ALTER TABLE {self.base.name} ALTER COLUMN "
+                f"{key} COMMENT {json.dumps(newComment)}"
+            )
+
+        # Finally address the possible change of order.
+
+        intermediate_target_order = copy.copy(base_order)
+        for field in fields_to_add:
+            intermediate_target_order.append(field.name)
+
+        # now the intermediate_target_order always contains
+        # the same fields in the same order as the table for now.
+        first = target_order[0]
+        if intermediate_target_order[0] != first:
+            intermediate_target_order.pop(intermediate_target_order.index(first))
+            intermediate_target_order.insert(0, first)
+            statements.append(
+                f"ALTER TABLE {self.base.name} ALTER COLUMN {first} FIRST"
+            )
+
+        for i, key in enumerate(target_order[1:], 1):
+            if intermediate_target_order[i] != key:
+                intermediate_target_order.pop(intermediate_target_order.index(key))
+                intermediate_target_order.insert(i, key)
                 statements.append(
-                    f"ALTER TABLE {self.base.name} ALTER COLUMN {first} FIRST"
+                    f"ALTER TABLE {self.base.name} ALTER COLUMN {key} AFTER "
+                    + target_order[i - 1]
                 )
 
-            for i, key in enumerate(target_order[1:], 1):
-                if intermediate_target_order[i] != key:
-                    intermediate_target_order.pop(intermediate_target_order.index(key))
-                    intermediate_target_order.insert(i, key)
-                    statements.append(
-                        f"ALTER TABLE {self.base.name} ALTER COLUMN {key} AFTER "
-                        + target_order[i - 1]
-                    )
+        # possible differences:
+        # - different capitalization -- Not handled. Treated as new column
+        # - different nullability -- Done
+        # - different struct members (new, dropped)
+        #           -- Not handled. Treated as new column
+        # - different comment
+        # - different order
 
-            # possible differences:
-            # - different capitalization -- Not handled. Treated as new column
-            # - different nullability -- Done
-            # - different struct members (new, dropped)
-            #           -- Not handled. Treated as new column
-            # - different comment
-            # - different order
-
-            # Todo: FIX THEM ALL
+        # Todo: FIX THEM ALL
 
         return statements
 
-    def _alter_statements_for_new_location(self) -> List[str]:
+    def _alter_statements_for_new_location(self, allow_new_columns=False) -> List[str]:
         """In case we need to change location,
         the alter statements will consist of creating the new target.
         and then pointing the current table at it. The target will be empty."""
@@ -310,25 +315,34 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
         # all that remains is to perhaps rename it
         new_base = nameless_target.fully_substituted(name=self.base.name)
 
-        statements += self.target.compare_to(new_base).alter_table_statements()
+        statements += self.target.compare_to(new_base).alter_table_statements(
+            allow_new_columns=allow_new_columns
+        )
         return statements
 
-    def alter_statements(self) -> List[str]:
+    def alter_statements(self, allow_new_columns=False) -> List[str]:
         """A list to alter statements that will ensure
         that what used to be the base table, becomes the target table"""
         if self.base is None:
             return [self.target.get_sql_create()]
 
-        base = self.base.fully_substituted()
-        target = self.target.fully_substituted()
-        full_diff = target.compare_to(base)
+        full_diff: DeltaTableSpecDifference = (
+            self.target.fully_substituted().compare_to(self.base.fully_substituted())
+        )
+
+        base = full_diff.base
+        target = full_diff.target
 
         if base.location != target.location:
-            return full_diff._alter_statements_for_new_location()
+            return full_diff._alter_statements_for_new_location(
+                allow_new_columns=allow_new_columns
+            )
 
         statements = []
 
-        statements += full_diff._schema_alter_statements()
+        statements += full_diff._schema_alter_statements(
+            allow_new_columns=allow_new_columns
+        )
 
         if base.comment != target.comment:
             statements.append(

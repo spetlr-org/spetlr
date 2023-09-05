@@ -14,8 +14,8 @@ class SimpleSqlTransformerTest(DataframeTestCase):
     @classmethod
     def setUpClass(cls):
         c = Configurator()
-        c.set_debug()
         c.clear_all_configurations()
+        c.set_debug()
         c.register("tbl1", "SimpleSqlTransformerTest_tbl1{ID}")
         c.register("tbl2", "SimpleSqlTransformerTest_tbl2{ID}")
         c.register("tbl3", "SimpleSqlTransformerTest_tbl3{ID}")

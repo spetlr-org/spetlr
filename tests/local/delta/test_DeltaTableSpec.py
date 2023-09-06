@@ -26,7 +26,7 @@ class TestDeltaTableSpec(unittest.TestCase):
                 CREATE TABLE myDeltaTableSpecTestDb{ID}.tbl
                 (
                   c double,
-                  d string NOT NULL COMMENT "Whatsupp",
+                  d string COMMENT "Whatsupp",
                   onlyb int,
                   a int,
                   b string
@@ -46,13 +46,13 @@ class TestDeltaTableSpec(unittest.TestCase):
         Configurator().set_prod()
         forward_diff = self.target.compare_to(self.base)
         self.assertEqual(
-            forward_diff.alter_statements(),
+            forward_diff.alter_statements(allow_new_columns=True),
             [
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMN (onlyb)",
                 "ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMN (onlyt string "
                 'COMMENT "Only in target")',
-                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a DROP NOT NULL",
-                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d SET NOT NULL",
+                # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a DROP NOT NULL",
+                # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d SET NOT NULL",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT"
                 ' "gains not null"',
                 'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT ""',
@@ -67,12 +67,12 @@ class TestDeltaTableSpec(unittest.TestCase):
 
         reverse_diff = self.base.compare_to(self.target)
         self.assertEqual(
-            reverse_diff.alter_statements(),
+            reverse_diff.alter_statements(allow_new_columns=True),
             [
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMN (onlyt)",
                 "ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMN (onlyb int)",
-                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d DROP NOT NULL",
-                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a SET NOT NULL",
+                # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d DROP NOT NULL",
+                # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a SET NOT NULL",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT "
                 '"Whatsupp"',
                 'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT ""',

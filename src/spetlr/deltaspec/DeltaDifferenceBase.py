@@ -31,7 +31,7 @@ class DeltaDifferenceBase:
     def schema_is_selectable(self) -> bool:
         raise NotImplementedError()
 
-    def alter_statements(self) -> List[str]:
+    def alter_statements(self, allow_new_columns=False) -> List[str]:
         """A list to alter statements that will
         ensure that what used to be the base, becomes the target"""
         raise NotImplementedError()

@@ -40,8 +40,6 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
                 name_parts += 1
             self.base.name = str(b_name.to_level(name_parts))
             self.target.name = str(t_name.to_level(name_parts))
-        else:
-            self.target.name = None
 
     def nullbase(self) -> bool:
         """is the comparison to a null base. Meaing there is no table."""

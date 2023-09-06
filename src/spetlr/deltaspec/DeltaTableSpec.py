@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import pyspark.sql.types
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType
+from pyspark.sql.types import StructField, StructType
 from pyspark.sql.utils import AnalysisException
 
 from spetlr import Configurator
@@ -69,6 +69,14 @@ class DeltaTableSpec:
 
         self.location = standard_databricks_location(self.location)
 
+        # Experiments have shown that the statement
+        # ALTER TABLE she_test.tbl ALTER COLUMN a DROP NOT NULL
+        # does not actually take effect on a table.
+        # So we cannot work with not-nullable columns
+        # in the future, if we want to generate these types
+        # of alter statement, simply remove the following line.
+        self.schema = self.remove_nullability(self.schema)
+
         # This is a necessary condition for table alterations.
         # 'delta.columnMapping.mode' = 'name'
         if "delta.columnMapping.mode" in self.tblproperties:
@@ -102,6 +110,21 @@ class DeltaTableSpec:
             self.tblproperties["delta.minWriterVersion"] = str(
                 _DEFAULT_minWriterVersion
             )
+
+    @classmethod
+    def remove_nullability(self, schema: StructType) -> StructType:
+        """Return a schema where the nullability of all fields is reset to default"""
+        fields = []
+        for f in schema.fields:
+            fields.append(
+                StructField(
+                    name=f.name,
+                    dataType=f.dataType,
+                    nullable=True,
+                    metadata={k: v for k, v in f.metadata.items() if v},
+                )
+            )
+        return StructType(fields)
 
     # Non-trivial constructors
     @classmethod
@@ -188,7 +211,7 @@ class DeltaTableSpec:
          that can be evaluated as python code to return a DeltaTableSpec instance
         that will compare equal to the current instance."""
         parts = [
-            (f"name={repr(self.name)}" if self.name else ""),
+            (f"name={repr(self.name)}"),
             f"schema={repr_sql_types(self.schema)}",
             (f"options={repr(self.options)}" if self.options else ""),
             (
@@ -377,7 +400,7 @@ class DeltaTableSpec:
     def ensure_df_schema(self, df: DataFrame):
         # check if the df can be selected down into the schema of this table
         if not self.compare_to(
-            DeltaTableSpec(schema=df.schema, name=None)
+            DeltaTableSpec(schema=df.schema, name=None, location=self.location)
         ).is_readable():
             raise TableSpecNotReadable(
                 "The data frame has an incompatible schema mismatch to this table."

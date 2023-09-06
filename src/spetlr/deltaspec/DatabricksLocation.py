@@ -43,8 +43,10 @@ class TableName:
         return TableName(table=self.table, schema=self.schema, catalog=self.catalog)
 
 
-def standard_databricks_location(val: Union[str, bytes]) -> str:
+def standard_databricks_location(val: Union[str, bytes, None]) -> Union[str, None]:
     """In databricks, if no schema is given, then the scheme dbfs is used."""
+    if val is None:
+        return None
     val = ensureStr(val)
     p = urlparse(val)
     if not p.scheme:

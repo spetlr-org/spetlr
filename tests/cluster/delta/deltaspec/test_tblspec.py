@@ -48,7 +48,7 @@ class TestTableSpec(unittest.TestCase):
         self.assertTrue(diff.is_different(), repr(diff))
 
         # overwite to the target schema
-        df = Spark.get().createDataFrame([(1, "a", 3.14, "b", "c")], self.target.schma)
+        df = Spark.get().createDataFrame([(1, "a", 3.14, "b", "c")], self.target.schema)
         self.target.overwrite(df)
 
         # now the base no longer matches

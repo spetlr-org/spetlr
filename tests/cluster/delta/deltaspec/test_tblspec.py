@@ -1,11 +1,13 @@
 import unittest
 
+from spetlrtools.testing import DataframeTestCase
+
 from spetlr import Configurator
 from spetlr.spark import Spark
 from tests.cluster.delta.deltaspec import tables
 
 
-class TestTableSpec(unittest.TestCase):
+class TestTableSpec(DataframeTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         c = Configurator()
@@ -58,6 +60,8 @@ class TestTableSpec(unittest.TestCase):
         # but the target matches.
         diff = self.target.compare_to_name()
         self.assertFalse(diff.is_different(), repr(diff))
+
+        self.target.read()
 
         # clean up after test.
         spark.sql(f"DROP DATABASE {db} CASCADE")

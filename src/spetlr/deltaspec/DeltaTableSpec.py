@@ -46,8 +46,6 @@ class DeltaTableSpec:
     # blanked properties will never be retained in the constructor
     blankedPropertyKeys: List[str] = field(default_factory=list)
 
-    # TODO: Clustered By
-
     def __post_init__(self):
         # The rationale here is that a name that contains a '{' will need
         # to be run through the configurator where keys are case-sensitive.
@@ -343,9 +341,10 @@ class DeltaTableSpec:
 
     def _read(self) -> DataFrame:
         """Read table by path if location is given, otherwise from name."""
-        if self.location:
-            return Spark.get().read.format("delta").load(self.location)
-        return Spark.get().table(self.name)
+        full = self.fully_substituted()
+        if full.location:
+            return Spark.get().read.format("delta").load(full.location)
+        return Spark.get().table(full.name)
 
     def write_or_append(
         self, df: DataFrame, mode: str, mergeSchema: bool = None
@@ -372,10 +371,11 @@ class DeltaTableSpec:
 
     def _overwrite(self, df: DataFrame):
         self.make_storage_match(allow_new_columns=True)
+        full = self.fully_substituted()
         return (
             df.write.format("delta")
             .mode("overwrite")
-            .saveAsTable(self.name or f"delta.`{self.location}`")
+            .saveAsTable(full.name or f"delta.`{full.location}`")
         )
 
     def overwrite(self, df: DataFrame, mergeSchema: bool = True) -> None:
@@ -420,11 +420,11 @@ class DeltaTableSpec:
             )
 
         self.make_storage_match()
-
+        full = self.fully_substituted()
         return (
             df.write.format("delta")
             .mode("append")
-            .saveAsTable(self.name or f"delta.`{self.location}`")
+            .saveAsTable(full.name or f"delta.`{full.location}`")
         )
 
     def upsert(

@@ -47,6 +47,8 @@ class DeltaTableSpec:
     blankedPropertyKeys: List[str] = field(default_factory=list)
 
     def __post_init__(self):
+        """This method will be called automatically after instantiation and should
+        not normally be called directly."""
         # The rationale here is that a name that contains a '{' will need
         # to be run through the configurator where keys are case-sensitive.
         # once a name is free of these, it may be used in comparisons to data

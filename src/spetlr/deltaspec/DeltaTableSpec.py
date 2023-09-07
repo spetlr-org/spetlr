@@ -11,14 +11,13 @@ from pyspark.sql.utils import AnalysisException
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
-from spetlr.deltaspec.DatabricksLocation import ensureStr, standard_databricks_location
 from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
 from spetlr.deltaspec.exceptions import (
     InvalidSpecificationError,
     NoTableAtTarget,
     TableSpecNotReadable,
-    TableSpecSchemaMismatch,
 )
+from spetlr.deltaspec.helpers import ensureStr, standard_databricks_location
 from spetlr.schema_manager import SchemaManager
 from spetlr.schema_manager.spark_schema import get_schema
 from spetlr.spark import Spark
@@ -285,7 +284,7 @@ class DeltaTableSpec:
 
         c = Configurator()
         details = c.get_all_details()
-        parts["name"] = self.name.format(**details)
+        parts["name"] = self.name.format(**details) if self.name else None
         parts["location"] = self.location.format(**details)
 
         # someties we want to override the name of the fully substituted object
@@ -392,10 +391,6 @@ class DeltaTableSpec:
             raise TableSpecNotReadable(
                 "If you want to write to an incompatible table, enable merge schema"
             )
-
-        if not mergeSchema:
-            if df.schema != self.schema:
-                raise TableSpecSchemaMismatch()
 
         return self._overwrite(df=df)
 

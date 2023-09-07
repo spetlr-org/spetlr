@@ -3,10 +3,15 @@ import unittest
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr import Configurator
+from spetlr.deltaspec import TableSpecNotReadable
 from spetlr.spark import Spark
 from tests.cluster.delta.deltaspec import tables
 
 
+@unittest.skipUnless(
+    Spark.version() >= Spark.DATABRICKS_RUNTIME_11_3,
+    "Drop column only supported from DBR 11.0",
+)
 class TestTableSpec(DataframeTestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -18,18 +23,17 @@ class TestTableSpec(DataframeTestCase):
         cls.base = tables.base
         cls.target = tables.target
 
-    @unittest.skipUnless(
-        Spark.version() >= Spark.DATABRICKS_RUNTIME_11_3,
-        "Drop column only supported from DBR 11.0",
-    )
-    def test_tblspec(self):
-        c = Configurator()
-        c.set_debug()
-
-        spark = Spark.get()
         db = c.get("mydb", "name")
-        spark.sql(f"CREATE DATABASE {db};")
+        Spark.get().sql(f"CREATE DATABASE {db};")
 
+    @classmethod
+    def tearDownClass(cls) -> None:
+        c = Configurator()
+        db = c.get("mydb", "name")
+        # clean up after test.
+        Spark.get().sql(f"DROP DATABASE {db} CASCADE")
+
+    def test_tblspec(self):
         # at first the table does not exist
         diff = self.base.compare_to_name()
         self.assertTrue(diff.is_different(), diff)
@@ -49,8 +53,18 @@ class TestTableSpec(DataframeTestCase):
         # the rest of the table is not the same
         self.assertTrue(diff.is_different(), repr(diff))
 
-        # overwite to the target schema
+        # the table is not readable because of schema mismatch
+        self.assertFalse(self.target.is_readable())
+
         df = Spark.get().createDataFrame([(1, "a", 3.14, "b", "c")], self.target.schema)
+        # lack of readbility also means you cannot read
+        with self.assertRaises(TableSpecNotReadable):
+            self.target.read()
+        # ... and you cannot append
+        with self.assertRaises(TableSpecNotReadable):
+            self.target.append(df)
+
+        # overwriting is possible and updates to the target schema
         self.target.overwrite(df)
 
         # now the base no longer matches
@@ -61,7 +75,39 @@ class TestTableSpec(DataframeTestCase):
         diff = self.target.compare_to_name()
         self.assertFalse(diff.is_different(), repr(diff))
 
-        self.target.read()
+        # now appending is possible.
+        self.target.append(df)
 
-        # clean up after test.
-        spark.sql(f"DROP DATABASE {db} CASCADE")
+        self.assertTrue(self.target.read().count(), 2)
+
+    def test_name_change(self):
+        spark = Spark.get()
+        df = spark.createDataFrame([("eggs", 3.5, "spam")], tables.oldname.schema)
+        tables.oldname.overwrite(df)
+
+        for stmt in tables.newname.compare_to(tables.oldname).alter_statements():
+            spark.sql(stmt)
+
+        diff = tables.newname.compare_to_name()
+        self.assertTrue(diff.complete_match(), diff)
+        self.assertEqual(tables.newname.read().count(), 1)
+
+    def test_location_change(self):
+        spark = Spark.get()
+        df = spark.createDataFrame([("eggs", 3.5, "spam")], tables.oldlocation.schema)
+        # we write the data to the old location
+        tables.oldlocation.overwrite(df)
+
+        # location mismatch makes the tables not readable
+        self.assertFalse(tables.newlocation.is_readable())
+
+        # appending to the new table would fail, since it is not readable.
+        with self.assertRaises(TableSpecNotReadable):
+            tables.newlocation.append(df)
+
+        # overwriting will update the table location.
+        tables.newlocation.overwrite(df)
+
+        diff = tables.newlocation.compare_to_name()
+        self.assertTrue(diff.complete_match(), diff)
+        self.assertEqual(tables.newlocation.read().count(), 1)

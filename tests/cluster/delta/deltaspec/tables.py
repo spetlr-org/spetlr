@@ -39,3 +39,59 @@ target = DeltaTableSpec.from_sql(
     )
     """
 )
+
+oldname = DeltaTableSpec.from_sql(
+    """
+    CREATE TABLE myDeltaTableSpecTestDb{ID}.namechange_old
+    (
+        b string,
+        c double,
+        d string
+    )
+    USING DELTA
+    COMMENT "Contains useful data"
+    LOCATION "/tmp/somewhere{ID}/namechange"
+    """
+)
+
+newname = DeltaTableSpec.from_sql(
+    """
+    CREATE TABLE myDeltaTableSpecTestDb{ID}.namechange_new
+    (
+        b string,
+        c double,
+        d string
+    )
+    USING DELTA
+    COMMENT "Contains useful data"
+    LOCATION "/tmp/somewhere{ID}/namechange"
+    """
+)
+
+oldlocation = DeltaTableSpec.from_sql(
+    """
+    CREATE TABLE myDeltaTableSpecTestDb{ID}.locchange
+    (
+        b string,
+        c double,
+        d string
+    )
+    USING DELTA
+    COMMENT "Contains useful data"
+    LOCATION "/tmp/somewhere{ID}/locchange/old"
+    """
+)
+
+newlocation = DeltaTableSpec.from_sql(
+    """
+    CREATE TABLE myDeltaTableSpecTestDb{ID}.locchange
+    (
+        b string,
+        c double,
+        d string
+    )
+    USING DELTA
+    COMMENT "Contains useful data"
+    LOCATION "/tmp/somewhere{ID}/locchange/new"
+    """
+)

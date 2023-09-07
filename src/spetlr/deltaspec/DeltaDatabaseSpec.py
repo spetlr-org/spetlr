@@ -6,10 +6,12 @@ from pyspark.sql.utils import AnalysisException
 
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
-from spetlr.deltaspec.DatabricksLocation import ensureStr, standard_databricks_location
 from spetlr.deltaspec.exceptions import InvalidSpecificationError
+from spetlr.deltaspec.helpers import ensureStr, standard_databricks_location
 from spetlr.exceptions import NoSuchValueException
 from spetlr.spark import Spark
+
+# TODO: for writing remove checks on comment equality
 
 
 @dataclass
@@ -24,6 +26,13 @@ class DeltaDatabaseSpec:
         self.location = standard_databricks_location(self.location)
 
     def __repr__(self):
+        """returns python code that can construct the present object such as
+        DeltaDatabaseSpec(
+            name="mydb_name",
+            comment="cool data",
+            location="dbfs:/my/path"
+        )
+        """
         dbproperties_part = ""
         if self.dbproperties:
             description = ", ".join(
@@ -47,7 +56,7 @@ class DeltaDatabaseSpec:
 
     @classmethod
     def from_tc(cls, id: str):
-        """Build a DbSpec instance from what is in the Configurator.
+        """Build a DeltaDatabaseSpec instance from what is in the Configurator.
         This may have previously been parsed from sql."""
         c = Configurator()
         try:
@@ -65,6 +74,8 @@ class DeltaDatabaseSpec:
 
     @classmethod
     def from_sql(cls, sql: str) -> "DeltaDatabaseSpec":
+        """Parse a sigle CREATE DATABASE statement
+        to initialize a DeltaDatabaseSpec object."""
         details = parse_single_sql_statement(sql)
         if details.get("format").lower() != "db":
             raise InvalidSpecificationError(

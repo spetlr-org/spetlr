@@ -125,3 +125,39 @@ class TestDeltaTableSpec(unittest.TestCase):
         Configurator().set_prod()
         d = tbl2.compare_to(tbl1.fully_substituted())
         self.assertFalse(d.is_different(), d)
+
+    def test_02_namechagne(self):
+        statements = tables.newname.compare_to(tables.oldname).alter_statements()
+        self.assertEqual(
+            statements,
+            [
+                "ALTER TABLE mydeltatablespectestdb.namechange_old RENAME TO "
+                "mydeltatablespectestdb.namechange_new"
+            ],
+        )
+
+    def test_03_location_change(self):
+        statements = tables.newlocation.compare_to(
+            tables.oldlocation
+        ).alter_statements()
+        self.assertEqual(
+            statements,
+            [
+                "CREATE TABLE delta.`dbfs:/tmp/somewhere/locchange/new`\n"
+                "(\n"
+                "  b string,\n"
+                "  c double,\n"
+                "  d string\n"
+                ")\n"
+                "USING DELTA\n"
+                'LOCATION "dbfs:/tmp/somewhere/locchange/new"\n'
+                'COMMENT "Contains useful data"\n'
+                "TBLPROPERTIES (\n"
+                '  "delta.columnMapping.mode" = "name",\n'
+                '  "delta.minReaderVersion" = "2",\n'
+                '  "delta.minWriterVersion" = "5"\n'
+                ")\n",
+                "ALTER TABLE mydeltatablespectestdb.locchange SET LOCATION "
+                '"mydeltatablespectestdb.locchange"',
+            ],
+        )

@@ -5,10 +5,10 @@ from typing import Dict, List, Optional
 
 from pyspark.sql.types import StructField, StructType
 
-from spetlr.deltaspec.DatabricksLocation import TableName
 from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from spetlr.deltaspec.exceptions import TableSpectNotEnforcable
+from spetlr.deltaspec.helpers import TableName
 from spetlr.schema_manager import SchemaManager
 
 
@@ -126,7 +126,7 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
 
     def _tblproperties_alter_statements(self) -> List[str]:
         """return that ALTER TABLE statements that will
-        transform the tblproperties of the base tabel into the target"""
+        transform the tblproperties of the base table into the target"""
         statements = []
 
         # treat tblproperties
@@ -167,6 +167,7 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
     def _schema_alter_statements(self, allow_new_columns=False) -> List[str]:
         if self.base.schema == self.target.schema:
             return []
+
         statements = []
         base_fields: Dict[str, StructField] = {
             field.name: field for field in self.base.schema.fields
@@ -234,8 +235,10 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
             else:
                 statement += "S"
                 statement += (
-                    " (/n"
-                    + SchemaManager().struct_to_sql(StructType(fields_to_add))
+                    " (/n  "
+                    + SchemaManager().struct_to_sql(
+                        StructType(fields_to_add), formatted=True
+                    )
                     + "\n)"
                 )
 
@@ -279,16 +282,6 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
                     + target_order[i - 1]
                 )
 
-        # possible differences:
-        # - different capitalization -- Not handled. Treated as new column
-        # - different nullability -- Done
-        # - different struct members (new, dropped)
-        #           -- Not handled. Treated as new column
-        # - different comment
-        # - different order
-
-        # Todo: FIX THEM ALL
-
         return statements
 
     def _alter_statements_for_new_location(self, allow_new_columns=False) -> List[str]:
@@ -313,7 +306,7 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
         # all that remains is to perhaps rename it
         new_base = nameless_target.fully_substituted(name=self.base.name)
 
-        statements += self.target.compare_to(new_base).alter_table_statements(
+        statements += self.target.compare_to(new_base).alter_statements(
             allow_new_columns=allow_new_columns
         )
         return statements

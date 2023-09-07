@@ -77,7 +77,7 @@ class ExampleETLTest(DataframeTestCase):
 
         params = BusinessETLParameters()
 
-        params.source_dh =  TestHandle(
+        params.source_dh = TestHandle(
                     provides=DataframeCreator.make_partial(
                         test_schema, 
                         test_columns,
@@ -85,7 +85,7 @@ class ExampleETLTest(DataframeTestCase):
                     )
                 )
 
-        params.target_dh =  TestHandle(
+        params.target_dh = TestHandle(
                     provides=DataframeCreator.make_partial(
                         expected_schema, 
                         expected_columns,
@@ -93,7 +93,7 @@ class ExampleETLTest(DataframeTestCase):
                     )
                 )
 
-        orchestrator= BusinessETLOrchestrator(params)
+        orchestrator = BusinessETLOrchestrator(params)
 
         orchestrator.execute()
 

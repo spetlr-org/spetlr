@@ -60,38 +60,44 @@ Here is an example of testing an orchestrator, but ingesting test data. This can
 ```python
 from spetlrtools.testing.TestHandle import TestHandle
 from spetlr.utils import DataframeCreator
+from spetlrtools.testing import DataframeTestCase
+from pyspark.sql.types import StructType
 
-test_schema =  ...
-test_columns = ...
-test_data = ...
 
-expected_schema =  ...
-expected_columns = ...
-expected_data = ...
+class ExampleETLTest(DataframeTestCase):
+    def test_etl(self):
 
-params = BusinessETLParameters()
+        test_schema =  StructType([...])
+        test_columns = [...]
+        test_data = [...]
 
-params.source_dh =  TestHandle(
-            provides=DataframeCreator.make_partial(
-                test_schema , 
-                test_columns,
-                 test_data 
-            )
-        )
+        expected_schema =  StructType([...])
+        expected_columns = [...]
+        expected_data = [...]
 
-params.target_dh =  TestHandle(
-            provides=DataframeCreator.make_partial(
-                expected_schema , 
-                expected_columns,
-                [] 
-            )
-        )
+        params = BusinessETLParameters()
 
-orchestrator= BusinessETLOrchestrator(params)
+        params.source_dh =  TestHandle(
+                    provides=DataframeCreator.make_partial(
+                        test_schema, 
+                        test_columns,
+                        test_data 
+                    )
+                )
 
-orchestrator.execute()
+        params.target_dh =  TestHandle(
+                    provides=DataframeCreator.make_partial(
+                        expected_schema, 
+                        expected_columns,
+                        expected_data 
+                    )
+                )
 
-self.assertDataframeMatches(params.target.overwritten, None, expected_data )
+        orchestrator= BusinessETLOrchestrator(params)
+
+        orchestrator.execute()
+
+        self.assertDataframeMatches(params.target.overwritten, None, expected_data)
 ```
 
 ## Cluster test
@@ -134,6 +140,7 @@ class ExampleTest(unittest.TestCase):
 
     def test_01_setup(self):
         SparkSqlExecutor().execute_sql_file("path-to-sql-file")
+        
     def test_02_simple_integration_test(self):
         # Using SPETLR handlers in the ETL
         # Ensures that the ETL uses the

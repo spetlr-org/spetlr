@@ -158,6 +158,6 @@ class TestDeltaTableSpec(unittest.TestCase):
                 '  "delta.minWriterVersion" = "5"\n'
                 ")\n",
                 "ALTER TABLE mydeltatablespectestdb.locchange SET LOCATION "
-                '"mydeltatablespectestdb.locchange"',
+                '"dbfs:/tmp/somewhere/locchange/new"',
             ],
         )

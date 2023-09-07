@@ -300,7 +300,8 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
         nameless_target = self.target.fully_substituted(name=None)
         statements = [nameless_target.get_sql_create()]
         statements.append(
-            f"ALTER TABLE {self.base.name} SET LOCATION {json.dumps(self.target.name)}"
+            f"ALTER TABLE {self.base.name} "
+            f"SET LOCATION {json.dumps(self.target.location)}"
         )
         # now to old base name points at the new location.
         # all that remains is to perhaps rename it

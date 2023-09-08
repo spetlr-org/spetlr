@@ -54,3 +54,20 @@ class TestTableSpecConversions(unittest.TestCase):
         as_text = repr(db)
 
         self.assertEqual(db, eval(as_text))
+
+    def test_no_location(self):
+        self.assertEqual(
+            DeltaDatabaseSpec.from_sql(
+                """
+            CREATE DATABASE spark_catalog.mydb
+            COMMENT "nice data"
+        """
+            ),
+            DeltaDatabaseSpec(name="spark_catalog.mydb", comment="nice data"),
+        )
+
+    def test_only_name(self):
+        self.assertEqual(
+            DeltaDatabaseSpec.from_sql("CREATE DATABASE mydb"),
+            DeltaDatabaseSpec(name="mydb"),
+        )

@@ -14,6 +14,14 @@ from spetlr.schema_manager import SchemaManager
 
 @dataclasses.dataclass
 class DeltaTableSpecDifference(DeltaDifferenceBase):
+    """This class contains two DeltaTableSpec, base and target.
+    The class can make statements about the degree of agreement
+    and can generate the ALTER TABLE statements that are
+    needed to transform the base into the target.
+    As a dataclass, the repr string for this class is able to
+    restore the class object.
+    """
+
     base: Optional[DeltaTableSpec]
     target: DeltaTableSpec
 
@@ -79,8 +87,11 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
             and (self.base.tblproperties == self.target.tblproperties)
         )
 
-    def is_readable(self):
-        if not self:
+    def is_readable(self) -> bool:
+        """Returns true if the .read() and .append() methods can be executed
+        on the target without throwing exceptions, under the assumption that
+        the base represents to true state of data on disk."""
+        if self.complete_match():
             return True
 
         if not self.location_match():
@@ -128,39 +139,39 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
         """return that ALTER TABLE statements that will
         transform the tblproperties of the base table into the target"""
         statements = []
+        if self.base.tblproperties == self.target.tblproperties:
+            return statements
 
-        # treat tblproperties
-        if self.base.tblproperties != self.target.tblproperties:
-            updated_properties = {}
-            for key, target_value in self.target.tblproperties.items():
-                if key in self.base.tblproperties:
-                    if target_value == self.base.tblproperties[key]:
-                        continue  # property is good
-                    else:
-                        updated_properties[key] = target_value
-                else:  # key not in base properties
+        updated_properties = {}
+        for key, target_value in self.target.tblproperties.items():
+            if key in self.base.tblproperties:
+                if target_value == self.base.tblproperties[key]:
+                    continue  # property is good
+                else:
                     updated_properties[key] = target_value
+            else:  # key not in base properties
+                updated_properties[key] = target_value
 
-            if updated_properties:
-                parts = [
-                    f"{json.dumps(k)} = {json.dumps(v)}"
-                    for k, v in updated_properties.items()
-                ]
-                statements.append(
-                    f"ALTER TABLE {self.base.name} "
-                    f"""SET TBLPROPERTIES ({", ".join(parts)})"""
-                )
+        if updated_properties:
+            parts = [
+                f"{json.dumps(k)} = {json.dumps(v)}"
+                for k, v in updated_properties.items()
+            ]
+            statements.append(
+                f"ALTER TABLE {self.base.name} "
+                f"""SET TBLPROPERTIES ({", ".join(parts)})"""
+            )
 
-            removed_properties = []
-            for key in self.base.tblproperties.keys():
-                if key not in self.target.tblproperties:
-                    removed_properties.append(key)
-            if removed_properties:
-                parts = [json.dumps(k) for k in removed_properties]
-                statements.append(
-                    f"""ALTER TABLE {self.base.name} """
-                    f"""UNSET TBLPROPERTIES ({", ".join(parts)})"""
-                )
+        removed_properties = []
+        for key in self.base.tblproperties.keys():
+            if key not in self.target.tblproperties:
+                removed_properties.append(key)
+        if removed_properties:
+            parts = [json.dumps(k) for k in removed_properties]
+            statements.append(
+                f"""ALTER TABLE {self.base.name} """
+                f"""UNSET TBLPROPERTIES ({", ".join(parts)})"""
+            )
 
         return statements
 

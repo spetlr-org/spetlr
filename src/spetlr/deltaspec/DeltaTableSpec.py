@@ -155,22 +155,22 @@ class DeltaTableSpec:
     def from_path(cls, location: str) -> "DeltaTableSpec":
         """Return the DeltaTableSpec instance,
         that describes the table found at the given storage location.
-        The name will be None since that is not stored in the data.
-        Currently, this does not support options or clustered_by"""
+        The name will be None since that is not stored in the data."""
         return cls.from_name(f"delta.`{location}`")
 
     @classmethod
-    def from_tc(cls, id: str):
+    def from_tc(cls, id: str) -> "DeltaTableSpec":
         c = Configurator()
+        # schema is required
         schema = get_schema(c.get(id, "schema")["sql"])
         init_args = dict(
-            name=c.get(id, "name"),
-            location=c.get(id, "path"),
-            comment=c.get(id, "comment"),
+            name=c.get(id, "name", default=None),
+            location=c.get(id, "path", default=None),
+            comment=c.get(id, "comment", default=None),
             schema=schema,
-            options=c.get(id, "options", {}),
-            partitioned_by=c.get(id, "partitioned_by", []),
-            tblproperties=c.get(id, "tblproperties", {}),
+            options=c.get(id, "options", default={}),
+            partitioned_by=c.get(id, "partitioned_by", default=[]),
+            tblproperties=c.get(id, "tblproperties", default={}),
         )
 
         init_args = {k: v for k, v in init_args.items() if v}
@@ -180,8 +180,7 @@ class DeltaTableSpec:
     @classmethod
     def from_name(cls, in_name: str) -> "DeltaTableSpec":
         """Return the DeltaTableSpec instance,
-        that describes the table of the given name.
-        Currently, this does not support options or clustered_by"""
+        that describes the table of the given name."""
         spark = Spark.get()
         try:
             details = spark.sql(f"DESCRIBE DETAIL {in_name}").collect()[0].asDict()
@@ -287,7 +286,7 @@ class DeltaTableSpec:
         parts["name"] = self.name.format(**details) if self.name else None
         parts["location"] = self.location.format(**details)
 
-        # someties we want to override the name of the fully substituted object
+        # sometimes we want to override the name of the fully substituted object
         if name is not _DEFAULT:
             parts["name"] = name
 
@@ -387,12 +386,13 @@ class DeltaTableSpec:
         if diff.nullbase():
             return self._overwrite(df)
 
-        if not diff.is_readable() and not mergeSchema:
+        if diff.is_readable() or mergeSchema:
+            # either the table is compatible or we are asked to make it compatible
+            return self._overwrite(df=df)
+        else:
             raise TableSpecNotReadable(
                 "If you want to write to an incompatible table, enable merge schema"
             )
-
-        return self._overwrite(df=df)
 
     def ensure_df_schema(self, df: DataFrame):
         # check if the df can be selected down into the schema of this table

@@ -46,3 +46,17 @@ For a detailed reference, please see the docstrings of each method on the class.
 
 
 
+## Unsupported Parts and Workarounds
+
+- `CREATE TABLE ... AS select` is not supported. The select statement is only 
+  executed at the first creation of the table and thus it does not make sense to 
+  include it in a specification. Recommended workaround: Execute the `AS SELECT` 
+  clause interactively and then use the `DeltaTableSpec` to lift the `CREATE TABLE` 
+  statement from the table on disk.
+- `PARTITIONED BY (a int)` adding columns to the schema in the partitioned-by 
+  statement is allowed in databricks, but not supported by this class. Please simply 
+  add the columns to the schema and refer to them by name only in the `PARTITION BY` 
+  clause.
+- `CLUSTERED BY`. `SORTED BY` and `OPTIONS` are not supported by this class. There 
+  is no workaround. Add an issue in github and describe your usecase if you need it.
+- `ZORDER BY` is planned as one of the first features after release of this class.

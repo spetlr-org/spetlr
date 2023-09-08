@@ -55,7 +55,7 @@ class DeltaDatabaseSpec:
         )
 
     @classmethod
-    def from_tc(cls, id: str):
+    def from_tc(cls, id: str) -> "DeltaDatabaseSpec":
         """Build a DeltaDatabaseSpec instance from what is in the Configurator.
         This may have previously been parsed from sql."""
         c = Configurator()
@@ -77,9 +77,11 @@ class DeltaDatabaseSpec:
         """Parse a sigle CREATE DATABASE statement
         to initialize a DeltaDatabaseSpec object."""
         details = parse_single_sql_statement(sql)
-        if details.get("format").lower() != "db":
+        format = details.get("format").lower()
+        if format != "db":
             raise InvalidSpecificationError(
                 "The sql code is not a create database statement."
+                f"Instead, the provided format was {format}"
             )
 
         init_args = dict(
@@ -90,9 +92,11 @@ class DeltaDatabaseSpec:
         )
 
         init_args = {k: v for k, v in init_args.items() if v}
-        return DeltaDatabaseSpec(**init_args)
+        return cls(**init_args)
 
-    def get_create_sql(self):
+    def get_create_sql(self) -> str:
+        """Return the SQL code that will create the database that this
+        class describes"""
         name_part = f"CREATE SCHEMA IF NOT EXISTS {self.name}"
         comment_part = f"  COMMENT {json.dumps(self.comment)}" if self.comment else ""
         location_part = (
@@ -140,7 +144,10 @@ class DeltaDatabaseSpec:
 
         return DeltaDatabaseSpec(**parts)
 
-    def matches_to_name(self):
+    def matches_to_spark(self) -> bool:
+        """Check if the specification of this Database agrees
+        with the specification of the database of the same name
+        in the spark catalog."""
         full = self.fully_substituted()
         onstorage = self.from_spark(full.name)
         return full == onstorage

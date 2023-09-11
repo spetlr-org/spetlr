@@ -32,7 +32,7 @@ class TestTableSpec(DataframeTestCase):
         # clean up after test.
         Spark.get().sql(f"DROP DATABASE {db} CASCADE")
 
-    def test_tblspec(self):
+    def test_01_tblspec(self):
         # at first the table does not exist
         diff = self.base.compare_to_name()
         self.assertTrue(diff.is_different(), diff)
@@ -69,19 +69,7 @@ class TestTableSpec(DataframeTestCase):
         diff = self.target.compare_to_name()
         self.assertFalse(diff.is_different(), repr(diff))
 
-    def test_name_change(self):
-        spark = Spark.get()
-        df = spark.createDataFrame([("eggs", 3.5, "spam")], tables.oldname.schema)
-        tables.oldname.get_dh().overwrite(df)
-
-        for stmt in tables.newname.compare_to(tables.oldname).alter_statements():
-            spark.sql(stmt)
-
-        diff = tables.newname.compare_to_name()
-        self.assertTrue(diff.complete_match(), diff)
-        self.assertEqual(tables.newname.read().count(), 1)
-
-    def test_location_change(self):
+    def test_02_location_change(self):
         tables.oldlocation.make_storage_match(allow_table_create=True)
 
         # location mismatch makes the tables not readable
@@ -93,3 +81,19 @@ class TestTableSpec(DataframeTestCase):
         diff = tables.newlocation.compare_to_name()
         self.assertTrue(diff.complete_match(), diff)
         self.assertTrue(tables.newlocation.is_readable(), diff)
+
+    def test_03_name_change(self):
+        tables.oldname.make_storage_match(allow_table_create=True)
+
+        spark = Spark.get()
+        df = spark.createDataFrame([("eggs", 3.5, "spam")], tables.oldname.schema)
+        tables.oldname.get_dh().overwrite(df)
+
+        for stmt in tables.newname.compare_to(tables.oldname).alter_statements(
+            allow_name_change=True
+        ):
+            spark.sql(stmt)
+
+        diff = tables.newname.compare_to_name()
+        self.assertTrue(diff.complete_match(), diff)
+        self.assertEqual(tables.newname.get_dh().read().count(), 1)

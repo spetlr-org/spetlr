@@ -5,15 +5,14 @@ from typing import Dict, List, Optional
 
 from pyspark.sql.types import StructField, StructType
 
-from spetlr.deltaspec.DeltaDifferenceBase import DeltaDifferenceBase
-from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
+from spetlr.deltaspec.DeltaTableSpecBase import DeltaTableSpecBase
 from spetlr.deltaspec.exceptions import TableSpectNotEnforcable
 from spetlr.deltaspec.helpers import TableName
 from spetlr.schema_manager import SchemaManager
 
 
 @dataclasses.dataclass
-class DeltaTableSpecDifference(DeltaDifferenceBase):
+class DeltaTableSpecDifference:
     """This class contains two DeltaTableSpec, base and target.
     The class can make statements about the degree of agreement
     and can generate the ALTER TABLE statements that are
@@ -22,8 +21,8 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
     restore the class object.
     """
 
-    base: Optional[DeltaTableSpec]
-    target: DeltaTableSpec
+    base: Optional[DeltaTableSpecBase]
+    target: DeltaTableSpecBase
 
     def __post_init__(self):
         # decouple from the initializing objects

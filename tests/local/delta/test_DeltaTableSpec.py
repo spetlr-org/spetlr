@@ -43,7 +43,7 @@ class TestDeltaTableSpec(unittest.TestCase):
             ),
         )
 
-    def test_alter_statements_raise(self):
+    def test_02_alter_statements_raise(self):
         Configurator().set_prod()
         forward_diff = self.target.compare_to(self.base)
         with self.assertRaises(TableSpectNotEnforcable):
@@ -72,7 +72,7 @@ class TestDeltaTableSpec(unittest.TestCase):
         print("No raise when they are all warnings")
         forward_diff.alter_statements(errors_as_warnings=True)
 
-    def test_01_diff_alter_statements(self):
+    def test_03_diff_alter_statements(self):
         Configurator().set_prod()
         forward_diff = self.target.compare_to(self.base)
 
@@ -139,7 +139,7 @@ class TestDeltaTableSpec(unittest.TestCase):
             ],
         )
 
-    def test_01_check_init_protections(self):
+    def test_04_check_init_protections(self):
         tbl1 = DeltaTableSpec(
             name="myDeltaTableSpecTestDb{ID}.tbl",
             schema=t.StructType(
@@ -180,7 +180,7 @@ class TestDeltaTableSpec(unittest.TestCase):
         d = tbl2.compare_to(tbl1.fully_substituted())
         self.assertFalse(d.is_different(), d)
 
-    def test_02_namechagne(self):
+    def test_05_namechagne(self):
         statements = tables.newname.compare_to(tables.oldname).alter_statements(
             allow_columns_add=True,
             allow_columns_type_change=True,
@@ -197,7 +197,7 @@ class TestDeltaTableSpec(unittest.TestCase):
             ],
         )
 
-    def test_03_location_change(self):
+    def test_06_location_change(self):
         statements = tables.newlocation.compare_to(tables.oldlocation).alter_statements(
             allow_columns_add=True,
             allow_columns_type_change=True,

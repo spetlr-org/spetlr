@@ -1,6 +1,6 @@
 import copy
-import dataclasses
 import json
+from dataclasses import asdict, dataclass
 from typing import Dict, List, Optional
 
 from pyspark.sql.types import StructField, StructType
@@ -11,7 +11,7 @@ from spetlr.deltaspec.helpers import TableName
 from spetlr.schema_manager import SchemaManager
 
 
-@dataclasses.dataclass
+@dataclass
 class DeltaTableSpecDifference:
     """This class contains two DeltaTableSpec, base and target.
     The class can make statements about the degree of agreement
@@ -26,8 +26,10 @@ class DeltaTableSpecDifference:
 
     def __post_init__(self):
         # decouple from the initializing objects
-        self.base = self.base.copy() if self.base else None
-        self.target = self.target.copy()
+        self.base = (
+            DeltaTableSpecBase(**asdict(self.base.copy())) if self.base else None
+        )
+        self.target = DeltaTableSpecBase(**asdict(self.target.copy()))
 
         # Only compare table names up to the highest level
         # that both DeltaTableSpec have information about.
@@ -357,9 +359,9 @@ class DeltaTableSpecDifference:
         # all that remains is to perhaps rename it
         new_base = nameless_target.fully_substituted(name=self.base.name)
 
-        statements += self.target.compare_to(new_base).alter_statements(
-            allow_columns_add=allow_columns_add
-        )
+        statements += DeltaTableSpecDifference(
+            target=self.target, base=new_base
+        ).alter_statements(allow_columns_add=allow_columns_add)
         return statements
 
     def alter_statements(
@@ -388,8 +390,8 @@ class DeltaTableSpecDifference:
             else:
                 return [target.get_sql_create()]
 
-        full_diff: DeltaTableSpecDifference = target.compare_to(
-            self.base.fully_substituted()
+        full_diff = DeltaTableSpecDifference(
+            target=target, base=self.base.fully_substituted()
         )
 
         base = full_diff.base

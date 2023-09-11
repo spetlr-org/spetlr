@@ -1,4 +1,5 @@
 import copy
+import json
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional, Union
 
@@ -7,6 +8,7 @@ from pyspark.sql.types import StructField, StructType
 from spetlr import Configurator
 from spetlr.deltaspec.exceptions import InvalidSpecificationError
 from spetlr.deltaspec.helpers import ensureStr, standard_databricks_location
+from spetlr.schema_manager import SchemaManager
 
 _DEFAULT = object()
 
@@ -130,3 +132,41 @@ class DeltaTableSpecBase:
             parts["name"] = name
 
         return DeltaTableSpecBase(**parts)
+
+    def get_sql_create(self) -> str:
+        """Returns a sql statement,
+         that creates the table described by the current DeltaTableSpec instance.
+        This method is guaranteed to be the inverse of the `.from_sql(sql)` constructor.
+        """
+        schema_str = SchemaManager().struct_to_sql(self.schema, formatted=True)
+        sql = (
+            "CREATE TABLE "
+            + (self.name or f"delta.`{self.location}`")
+            + f"\n(\n  {schema_str}\n)\n"
+            + "USING DELTA\n"
+        )
+
+        if self.options:
+            sub_parts = [
+                json.dumps(k) + " = " + json.dumps(v)
+                for k, v in sorted(self.options.items())
+            ]
+            sql += f"OPTIONS ({', '.join(sub_parts)})\n"
+
+        if self.partitioned_by:
+            sql += f"PARTITIONED BY ({', '.join(self.partitioned_by)})\n"
+
+        if self.location:
+            sql += f"LOCATION {json.dumps(self.location)}\n"
+
+        if self.comment:
+            sql += f"COMMENT {json.dumps(self.comment)}\n"
+
+        if self.tblproperties:
+            sub_parts = [
+                f"  {json.dumps(k)} = {json.dumps(v)}"
+                for k, v in sorted(self.tblproperties.items())
+            ]
+            sql += "TBLPROPERTIES (\n" + ",\n".join(sub_parts) + "\n)\n"
+
+        return sql

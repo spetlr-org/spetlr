@@ -1,5 +1,3 @@
-import json
-
 import pyspark.sql.types
 from pyspark.sql import DataFrame
 from pyspark.sql.utils import AnalysisException
@@ -7,17 +5,16 @@ from pyspark.sql.utils import AnalysisException
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
-from spetlr.deltaspec import DeltaTableSpecDifference
 from spetlr.deltaspec.DeltaTableSpecBase import (
     DeltaTableSpecBase,
     _DEFAULT_blankedPropertyKeys,
 )
+from spetlr.deltaspec.DeltaTableSpecDifference import DeltaTableSpecDifference
 from spetlr.deltaspec.exceptions import (
     InvalidSpecificationError,
     NoTableAtTarget,
     TableSpecNotReadable,
 )
-from spetlr.schema_manager import SchemaManager
 from spetlr.schema_manager.spark_schema import get_schema
 from spetlr.spark import Spark
 from spetlr.sqlrepr.sql_types import repr_sql_types
@@ -50,7 +47,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
 
         init_args = {k: v for k, v in init_args.items() if v}
 
-        return DeltaTableSpec(**init_args)
+        return cls(**init_args)
 
     @classmethod
     def from_path(cls, location: str) -> "DeltaTableSpec":
@@ -76,7 +73,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
 
         init_args = {k: v for k, v in init_args.items() if v}
 
-        return DeltaTableSpec(**init_args)
+        return cls(**init_args)
 
     @classmethod
     def from_name(cls, in_name: str) -> "DeltaTableSpec":
@@ -94,7 +91,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
         tblproperties["delta.minReaderVersion"] = str(details["minReaderVersion"])
         tblproperties["delta.minWriterVersion"] = str(details["minWriterVersion"])
 
-        return DeltaTableSpec(
+        return cls(
             name=details["name"],
             schema=spark.table(in_name).schema,
             partitioned_by=details["partitionColumns"],
@@ -129,44 +126,6 @@ class DeltaTableSpec(DeltaTableSpecBase):
         ]
 
         return "DeltaTableSpec(" + (", ".join(p for p in parts if p)) + ")"
-
-    def get_sql_create(self) -> str:
-        """Returns a sql statement,
-         that creates the table described by the current DeltaTableSpec instance.
-        This method is guaranteed to be the inverse of the `.from_sql(sql)` constructor.
-        """
-        schema_str = SchemaManager().struct_to_sql(self.schema, formatted=True)
-        sql = (
-            "CREATE TABLE "
-            + (self.name or f"delta.`{self.location}`")
-            + f"\n(\n  {schema_str}\n)\n"
-            + "USING DELTA\n"
-        )
-
-        if self.options:
-            sub_parts = [
-                json.dumps(k) + " = " + json.dumps(v)
-                for k, v in sorted(self.options.items())
-            ]
-            sql += f"OPTIONS ({', '.join(sub_parts)})\n"
-
-        if self.partitioned_by:
-            sql += f"PARTITIONED BY ({', '.join(self.partitioned_by)})\n"
-
-        if self.location:
-            sql += f"LOCATION {json.dumps(self.location)}\n"
-
-        if self.comment:
-            sql += f"COMMENT {json.dumps(self.comment)}\n"
-
-        if self.tblproperties:
-            sub_parts = [
-                f"  {json.dumps(k)} = {json.dumps(v)}"
-                for k, v in sorted(self.tblproperties.items())
-            ]
-            sql += "TBLPROPERTIES (\n" + ",\n".join(sub_parts) + "\n)\n"
-
-        return sql
 
     # identity manipulation
     def copy(self) -> "DeltaTableSpec":

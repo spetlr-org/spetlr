@@ -4,6 +4,7 @@ from textwrap import dedent
 from pyspark.sql import types as t
 
 from spetlr import Configurator
+from spetlr.deltaspec import TableSpectNotEnforcable
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from tests.cluster.delta.deltaspec import tables
 
@@ -29,7 +30,7 @@ class TestDeltaTableSpec(unittest.TestCase):
                   d string COMMENT "Whatsupp",
                   onlyb int,
                   a int,
-                  b string
+                  b int
                 )
                 USING DELTA
                 LOCATION "dbfs:/tmp/somewhere{ID}/over/the/rainbow"
@@ -42,15 +43,55 @@ class TestDeltaTableSpec(unittest.TestCase):
             ),
         )
 
+    def test_alter_statements_raise(self):
+        Configurator().set_prod()
+        forward_diff = self.target.compare_to(self.base)
+        with self.assertRaises(TableSpectNotEnforcable):
+            forward_diff.alter_statements(
+                allow_columns_add=False,
+                allow_columns_type_change=True,
+                allow_columns_drop=True,
+                allow_columns_reorder=True,
+            )
+
+        with self.assertRaises(TableSpectNotEnforcable):
+            forward_diff.alter_statements(
+                allow_columns_add=True,
+                allow_columns_type_change=False,
+                allow_columns_drop=True,
+                allow_columns_reorder=True,
+            )
+
+        with self.assertRaises(TableSpectNotEnforcable):
+            forward_diff.alter_statements(
+                allow_columns_add=True,
+                allow_columns_type_change=True,
+                allow_columns_drop=True,
+                allow_columns_reorder=False,
+            )
+        print("No raise when they are all warnings")
+        forward_diff.alter_statements(errors_as_warnings=True)
+
     def test_01_diff_alter_statements(self):
         Configurator().set_prod()
         forward_diff = self.target.compare_to(self.base)
+
         self.assertEqual(
-            forward_diff.alter_statements(allow_new_columns=True),
+            forward_diff.alter_statements(
+                allow_columns_add=True,
+                allow_columns_type_change=True,
+                allow_columns_drop=True,
+                allow_columns_reorder=True,
+            ),
             [
-                "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMN (onlyb)",
-                "ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMN (onlyt string "
-                'COMMENT "Only in target")',
+                "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMNS (b, onlyb)",
+                dedent(
+                    """\
+                ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMNS (
+                  b string,
+                  onlyt string COMMENT "Only in target"
+                )"""
+                ),
                 # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a DROP NOT NULL",
                 # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d SET NOT NULL",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT"
@@ -67,10 +108,23 @@ class TestDeltaTableSpec(unittest.TestCase):
 
         reverse_diff = self.base.compare_to(self.target)
         self.assertEqual(
-            reverse_diff.alter_statements(allow_new_columns=True),
+            reverse_diff.alter_statements(
+                allow_columns_add=True,
+                allow_columns_type_change=True,
+                allow_columns_drop=True,
+                allow_columns_reorder=True,
+                allow_name_change=True,
+                allow_location_change=True,
+            ),
             [
-                "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMN (onlyt)",
-                "ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMN (onlyb int)",
+                "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMNS (b, onlyt)",
+                dedent(
+                    """\
+                ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMNS (
+                  onlyb int,
+                  b int
+                )"""
+                ),
                 # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d DROP NOT NULL",
                 # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a SET NOT NULL",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT "
@@ -127,7 +181,14 @@ class TestDeltaTableSpec(unittest.TestCase):
         self.assertFalse(d.is_different(), d)
 
     def test_02_namechagne(self):
-        statements = tables.newname.compare_to(tables.oldname).alter_statements()
+        statements = tables.newname.compare_to(tables.oldname).alter_statements(
+            allow_columns_add=True,
+            allow_columns_type_change=True,
+            allow_columns_drop=True,
+            allow_columns_reorder=True,
+            allow_name_change=True,
+            allow_location_change=True,
+        )
         self.assertEqual(
             statements,
             [
@@ -137,9 +198,14 @@ class TestDeltaTableSpec(unittest.TestCase):
         )
 
     def test_03_location_change(self):
-        statements = tables.newlocation.compare_to(
-            tables.oldlocation
-        ).alter_statements()
+        statements = tables.newlocation.compare_to(tables.oldlocation).alter_statements(
+            allow_columns_add=True,
+            allow_columns_type_change=True,
+            allow_columns_drop=True,
+            allow_columns_reorder=True,
+            allow_name_change=True,
+            allow_location_change=True,
+        )
         self.assertEqual(
             statements,
             [

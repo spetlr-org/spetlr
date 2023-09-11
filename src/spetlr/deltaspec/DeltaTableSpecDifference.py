@@ -39,15 +39,9 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
         if self.base:
             b_name = TableName.from_str(self.base.name)
             t_name = TableName.from_str(self.target.name)
-            name_parts = 0
-            if b_name.table and t_name.table:
-                name_parts += 1
-            if b_name.schema and t_name.schema:
-                name_parts += 1
-            if b_name.catalog and t_name.catalog:
-                name_parts += 1
-            self.base.name = str(b_name.to_level(name_parts))
-            self.target.name = str(t_name.to_level(name_parts))
+            level = min(t_name.level(), b_name.level())
+            self.base.name = str(b_name.to_level(level))
+            self.target.name = str(t_name.to_level(level))
 
     def nullbase(self) -> bool:
         """is the comparison to a null base. Meaing there is no table."""
@@ -175,7 +169,14 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
 
         return statements
 
-    def _schema_alter_statements(self, allow_new_columns=False) -> List[str]:
+    def _schema_alter_statements(
+        self,
+        allow_columns_add=False,
+        allow_columns_drop=False,
+        allow_columns_type_change=False,
+        errors_as_warnings=False,
+        allow_columns_reorder=False,
+    ) -> List[str]:
         if self.base.schema == self.target.schema:
             return []
 
@@ -193,8 +194,18 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
         alter_comment = []  # (name,newValue)
         alter_nullability = []  # (name,newValue)
         fields_to_remove = []
+
         for key, targetField in target_fields.items():
             if key not in base_fields:
+                if not allow_columns_add:
+                    if errors_as_warnings:
+                        print(f"WARNING: Would add column {key}. Continuing.")
+                        continue
+                    else:
+                        raise TableSpectNotEnforcable(
+                            f"use allow_columns_add to add {key}"
+                        )
+
                 fields_to_add.append(targetField)
                 # adding the filed will fix the other field properties also
                 continue
@@ -202,6 +213,19 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
             # key is also in base
             base_field = base_fields[key]
             if base_field.dataType != targetField.dataType:
+                if not allow_columns_type_change:
+                    if errors_as_warnings:
+                        print(
+                            f"WARNING: Would change column {key}"
+                            f" from {base_field.dataType}"
+                            f" to {targetField.dataType}. Continuing."
+                        )
+                        continue
+                    else:
+                        raise TableSpectNotEnforcable(
+                            f"set allow_columns_type_change to change {key}"
+                        )
+
                 fields_to_remove.append(key)
                 fields_to_add.append(targetField)
                 # adding the filed will fix the other field properties also
@@ -218,6 +242,14 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
 
         for key in base_fields.keys():
             if key not in target_fields:
+                if not allow_columns_drop:
+                    if errors_as_warnings:
+                        print(f"WARNING: Would drop column {key}. Continuing.")
+                        continue
+                    else:
+                        raise TableSpectNotEnforcable(
+                            f"use allow_columns_drop to drop {key}"
+                        )
                 fields_to_remove.append(key)
 
         # Now convert the accumulated changes to ALTER statements.
@@ -230,12 +262,6 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
             statements.append(statement)
 
         if fields_to_add:
-            if not allow_new_columns:
-                raise TableSpectNotEnforcable(
-                    "Cannot make the storage match without allowing new columns"
-                )
-
-        if fields_to_add:
             statement = f"ALTER TABLE {self.base.name} ADD COLUMN"
             if len(fields_to_add) == 1:
                 statement += (
@@ -246,7 +272,7 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
             else:
                 statement += "S"
                 statement += (
-                    " (/n  "
+                    " (\n  "
                     + SchemaManager().struct_to_sql(
                         StructType(fields_to_add), formatted=True
                     )
@@ -269,33 +295,47 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
             )
 
         # Finally address the possible change of order.
-
-        intermediate_target_order = copy.copy(base_order)
+        base_order_so_far = copy.copy(base_order)
         for field in fields_to_add:
-            intermediate_target_order.append(field.name)
+            base_order_so_far.append(field.name)
 
-        # now the intermediate_target_order always contains
-        # the same fields in the same order as the table for now.
-        first = target_order[0]
-        if intermediate_target_order[0] != first:
-            intermediate_target_order.pop(intermediate_target_order.index(first))
-            intermediate_target_order.insert(0, first)
-            statements.append(
-                f"ALTER TABLE {self.base.name} ALTER COLUMN {first} FIRST"
+        # We may not have added and dropped all necessary columns, so we need to act
+        # on the subset of columns that exist in both.
+        desired_order = [col for col in target_order if col in base_order_so_far]
+        base_order_so_far = [col for col in base_order_so_far if col in desired_order]
+
+        # using set operations would not have preserved the order.
+        alter_order_statements = []
+
+        if base_order_so_far[0] != desired_order[0]:
+            # need to update the first column
+            base_order_so_far.pop(base_order_so_far.index(desired_order[0]))
+            base_order_so_far.insert(0, desired_order[0])
+            alter_order_statements.append(
+                f"ALTER TABLE {self.base.name} ALTER COLUMN {desired_order[0]} FIRST"
             )
 
-        for i, key in enumerate(target_order[1:], 1):
-            if intermediate_target_order[i] != key:
-                intermediate_target_order.pop(intermediate_target_order.index(key))
-                intermediate_target_order.insert(i, key)
-                statements.append(
+        for i, key in enumerate(desired_order[1:], 1):
+            if base_order_so_far[i] != key:
+                base_order_so_far.pop(base_order_so_far.index(key))
+                base_order_so_far.insert(i, key)
+                alter_order_statements.append(
                     f"ALTER TABLE {self.base.name} ALTER COLUMN {key} AFTER "
-                    + target_order[i - 1]
+                    + desired_order[i - 1]
                 )
+
+        if alter_order_statements:
+            if not allow_columns_reorder:
+                if errors_as_warnings:
+                    print("WARNING: Would reorder columns. Continuing.")
+                else:
+                    raise TableSpectNotEnforcable("use allow_columns_reorder if needed")
+            else:
+                statements += alter_order_statements
 
         return statements
 
-    def _alter_statements_for_new_location(self, allow_new_columns=False) -> List[str]:
+    def _alter_statements_for_new_location(self, allow_columns_add=False) -> List[str]:
         """In case we need to change location,
         the alter statements will consist of creating the new target.
         and then pointing the current table at it. The target will be empty."""
@@ -319,32 +359,63 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
         new_base = nameless_target.fully_substituted(name=self.base.name)
 
         statements += self.target.compare_to(new_base).alter_statements(
-            allow_new_columns=allow_new_columns
+            allow_columns_add=allow_columns_add
         )
         return statements
 
-    def alter_statements(self, allow_new_columns=False) -> List[str]:
+    def alter_statements(
+        self,
+        allow_columns_add=False,
+        allow_columns_drop=False,
+        allow_columns_type_change=False,
+        allow_columns_reorder=False,
+        allow_name_change=False,
+        allow_location_change=False,
+        allow_table_create=True,
+        errors_as_warnings=False,
+    ) -> List[str]:
         """A list to alter statements that will ensure
         that what used to be the base table, becomes the target table"""
+        target = self.target.fully_substituted()
         if self.base is None:
-            return [self.target.get_sql_create()]
+            if not (allow_table_create):
+                if errors_as_warnings:
+                    print(f"WARINING: Would create the table {target.name}")
+                    return []
+                else:
+                    raise TableSpectNotEnforcable(
+                        "use allow_table_create for creation " f"of {target.name}"
+                    )
+            else:
+                return [target.get_sql_create()]
 
-        full_diff: DeltaTableSpecDifference = (
-            self.target.fully_substituted().compare_to(self.base.fully_substituted())
+        full_diff: DeltaTableSpecDifference = target.compare_to(
+            self.base.fully_substituted()
         )
 
         base = full_diff.base
         target = full_diff.target
 
         if base.location != target.location:
-            return full_diff._alter_statements_for_new_location(
-                allow_new_columns=allow_new_columns
-            )
+            if allow_location_change:
+                return full_diff._alter_statements_for_new_location(
+                    allow_columns_add=allow_columns_add
+                )
+            else:
+                if errors_as_warnings:
+                    print(f"WARNING: Would change location of {base.name}. Continuing.")
+                else:
+                    raise TableSpectNotEnforcable(
+                        "use allow_location_change if needed."
+                    )
 
         statements = []
-
         statements += full_diff._schema_alter_statements(
-            allow_new_columns=allow_new_columns
+            allow_columns_add=allow_columns_add,
+            allow_columns_drop=allow_columns_drop,
+            allow_columns_type_change=allow_columns_type_change,
+            allow_columns_reorder=allow_columns_reorder,
+            errors_as_warnings=errors_as_warnings,
         )
 
         if base.comment != target.comment:
@@ -356,6 +427,16 @@ class DeltaTableSpecDifference(DeltaDifferenceBase):
 
         # Change the name last so that we can still refer to the base name above this
         if base.name != target.name:
-            statements.append(f"""ALTER TABLE {base.name} RENAME TO {target.name}""")
+            if allow_name_change:
+                statements.append(
+                    f"""ALTER TABLE {base.name} RENAME TO {target.name}"""
+                )
+            else:
+                if errors_as_warnings:
+                    print(
+                        f"WARNING: Would change name from {base.name} to {target.name}"
+                    )
+                else:
+                    raise TableSpectNotEnforcable("set allow_name_change if needed.")
 
         return statements

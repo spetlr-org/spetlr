@@ -56,16 +56,11 @@ class TestTableSpec(DataframeTestCase):
         # the table is not readable because of schema mismatch
         self.assertFalse(self.target.is_readable())
 
-        df = Spark.get().createDataFrame([(1, "a", 3.14, "b", "c")], self.target.schema)
-        # lack of readbility also means you cannot read
-        with self.assertRaises(TableSpecNotReadable):
-            self.target.read()
-        # ... and you cannot append
-        with self.assertRaises(TableSpecNotReadable):
-            self.target.append(df)
-
         # overwriting is possible and updates to the target schema
-        self.target.overwrite(df)
+        df = Spark.get().createDataFrame([(1, "a", 3.14, "b", "c")], self.target.schema)
+        self.target.make_storage_match(errors_as_warnings=True)
+
+        self.target.get_dh().overwrite(df, overwriteSchema=True)
 
         # now the base no longer matches
         diff = self.base.compare_to_name()
@@ -75,15 +70,10 @@ class TestTableSpec(DataframeTestCase):
         diff = self.target.compare_to_name()
         self.assertFalse(diff.is_different(), repr(diff))
 
-        # now appending is possible.
-        self.target.append(df)
-
-        self.assertTrue(self.target.read().count(), 2)
-
     def test_name_change(self):
         spark = Spark.get()
         df = spark.createDataFrame([("eggs", 3.5, "spam")], tables.oldname.schema)
-        tables.oldname.overwrite(df)
+        tables.oldname.get_dh().overwrite(df)
 
         for stmt in tables.newname.compare_to(tables.oldname).alter_statements():
             spark.sql(stmt)
@@ -96,7 +86,7 @@ class TestTableSpec(DataframeTestCase):
         spark = Spark.get()
         df = spark.createDataFrame([("eggs", 3.5, "spam")], tables.oldlocation.schema)
         # we write the data to the old location
-        tables.oldlocation.overwrite(df)
+        tables.oldlocation.get_dh().overwrite(df)
 
         # location mismatch makes the tables not readable
         self.assertFalse(tables.newlocation.is_readable())

@@ -10,7 +10,7 @@ base = DeltaTableSpec.from_sql(
         d string NOT NULL COMMENT "Whatsupp",
         onlyb int,
         a int,
-        b string
+        b int
     )
     USING DELTA
     LOCATION "/tmp/somewhere{ID}/over/the/rainbow"

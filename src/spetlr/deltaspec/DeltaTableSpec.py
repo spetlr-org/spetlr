@@ -1,7 +1,7 @@
 import copy
 import json
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import pyspark.sql.types
 from pyspark.sql import DataFrame
@@ -292,6 +292,10 @@ class DeltaTableSpec:
 
         return DeltaTableSpec(**parts)
 
+    def get_dh(self) -> DeltaHandle:
+        full = self.fully_substituted()
+        return DeltaHandle(name=full.name, location=full.location, data_format="delta")
+
     def compare_to(self, other: "DeltaTableSpec") -> DeltaDifferenceBase:
         """Returns a DeltaTableSpecDifference
         of what this difference this object has with respect to the other."""
@@ -317,47 +321,17 @@ class DeltaTableSpec:
             onstorage = None
         return full.compare_to(onstorage)
 
-    def is_readable(self):
-        """Is the match to the specified name similar
-        enough to allow reading as is?"""
-
-        return self.compare_to_name().is_readable()
-
-    # If we can read, then we can also append.
-    is_appendable = is_readable
-
-    # Methods for compatibility with delta handles (non-streaming)
-
-    def read(self) -> DataFrame:
-        """Read table by path if location is given, otherwise from name."""
-        diff = self.compare_to_name()
-
-        if diff.is_readable():
-            if diff.schema_match():
-                return self._read()
-            else:
-                return self._read().select(*self.schema.names)
-        raise TableSpecNotReadable("Table not readable")
-
-    def _read(self) -> DataFrame:
-        """Read table by path if location is given, otherwise from name."""
-        full = self.fully_substituted()
-        if full.location:
-            return Spark.get().read.format("delta").load(full.location)
-        return Spark.get().table(full.name)
-
-    def write_or_append(
-        self, df: DataFrame, mode: str, mergeSchema: bool = None
+    def make_storage_match(
+        self,
+        allow_columns_add=False,
+        allow_columns_drop=False,
+        allow_columns_type_change=False,
+        allow_columns_reorder=False,
+        allow_name_change=False,
+        allow_location_change=False,
+        allow_table_create=True,
+        errors_as_warnings=False,
     ) -> None:
-        assert mode in {"append", "overwrite"}
-        if mode == "append":
-            return self.append(df=df)
-        elif mode == "overwrite":
-            return self.overwrite(df=df, mergeSchema=mergeSchema)
-        else:
-            raise AssertionError('mode not in {"append", "overwrite"}')
-
-    def make_storage_match(self, allow_new_columns=False) -> None:
         """If storage is not exactly like the specification,
         change the storage to make it match."""
         diff = self.compare_to_name()
@@ -365,34 +339,18 @@ class DeltaTableSpec:
         if diff.is_different():
             spark = Spark.get()
             print(f"Now altering table {diff.target.name} to match specification:")
-            for statement in diff.alter_statements(allow_new_columns=allow_new_columns):
+            for statement in diff.alter_statements(
+                allow_columns_add=allow_columns_add,
+                allow_columns_drop=allow_columns_drop,
+                allow_columns_type_change=allow_columns_type_change,
+                allow_columns_reorder=allow_columns_reorder,
+                allow_name_change=allow_name_change,
+                allow_location_change=allow_location_change,
+                allow_table_create=allow_table_create,
+                errors_as_warnings=errors_as_warnings,
+            ):
                 print(f"Executing SQL: {statement}")
                 spark.sql(statement)
-
-    def _overwrite(self, df: DataFrame):
-        self.make_storage_match(allow_new_columns=True)
-        full = self.fully_substituted()
-        return (
-            df.write.format("delta")
-            .mode("overwrite")
-            .saveAsTable(full.name or f"delta.`{full.location}`")
-        )
-
-    def overwrite(self, df: DataFrame, mergeSchema: bool = True) -> None:
-        df = self.ensure_df_schema(df)
-
-        diff = self.compare_to_name()
-
-        if diff.nullbase():
-            return self._overwrite(df)
-
-        if diff.is_readable() or mergeSchema:
-            # either the table is compatible or we are asked to make it compatible
-            return self._overwrite(df=df)
-        else:
-            raise TableSpecNotReadable(
-                "If you want to write to an incompatible table, enable merge schema"
-            )
 
     def ensure_df_schema(self, df: DataFrame):
         # check if the df can be selected down into the schema of this table
@@ -403,56 +361,3 @@ class DeltaTableSpec:
                 "The data frame has an incompatible schema mismatch to this table."
             )
         return df.select(*self.schema.names)
-
-    def append(self, df: DataFrame) -> None:
-        df = self.ensure_df_schema(df)
-        diff = self.compare_to_name()
-
-        if diff.nullbase():
-            return self._overwrite(df)
-
-        if not diff.is_readable():
-            raise TableSpecNotReadable(
-                "If you want to write to an incompatible table, enable merge schema"
-            )
-
-        self.make_storage_match()
-        full = self.fully_substituted()
-        return (
-            df.write.format("delta")
-            .mode("append")
-            .saveAsTable(full.name or f"delta.`{full.location}`")
-        )
-
-    def upsert(
-        self,
-        df: DataFrame,
-        join_cols: List[str],
-    ) -> Union[DataFrame, None]:
-        diff = self.compare_to_name()
-        if diff.nullbase():
-            return self.overwrite(df)
-
-        df = self.ensure_df_schema(df)
-
-        if not diff.is_readable():
-            raise TableSpecNotReadable(
-                "You are trying to upsert to an incompatible table"
-            )
-
-        self.make_storage_match()
-        full = self.fully_substituted()
-        dh = DeltaHandle(name=full.name, location=full.location)
-        return dh.upsert(df=df, join_cols=join_cols)
-
-    def delete_data(
-        self, comparison_col: str, comparison_limit: Any, comparison_operator: str
-    ) -> None:
-        self.make_storage_match()
-        full = self.fully_substituted()
-        dh = DeltaHandle(name=full.name, location=full.location)
-        return dh.delete_data(
-            comparison_col=comparison_col,
-            comparison_limit=comparison_limit,
-            comparison_operator=comparison_operator,
-        )

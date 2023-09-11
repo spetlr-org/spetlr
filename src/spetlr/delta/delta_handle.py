@@ -114,7 +114,11 @@ class DeltaHandle(TableHandle):
         return Spark.get().table(self._name)
 
     def write_or_append(
-        self, df: DataFrame, mode: str, mergeSchema: bool = None
+        self,
+        df: DataFrame,
+        mode: str,
+        mergeSchema: bool = None,
+        overwriteSchema: bool = None,
     ) -> None:
         assert mode in {"append", "overwrite"}
 
@@ -122,13 +126,22 @@ class DeltaHandle(TableHandle):
         if mergeSchema is not None:
             writer = writer.option("mergeSchema", "true" if mergeSchema else "false")
 
+        if overwriteSchema is not None:
+            writer = writer.option(
+                "overwriteSchema", "true" if overwriteSchema else "false"
+            )
+
         if self._location:
             return writer.save(self._location)
 
         return writer.saveAsTable(self._name)
 
-    def overwrite(self, df: DataFrame, mergeSchema: bool = None) -> None:
-        return self.write_or_append(df, "overwrite", mergeSchema=mergeSchema)
+    def overwrite(
+        self, df: DataFrame, mergeSchema: bool = None, overwriteSchema: bool = None
+    ) -> None:
+        return self.write_or_append(
+            df, "overwrite", mergeSchema=mergeSchema, overwriteSchema=overwriteSchema
+        )
 
     def append(self, df: DataFrame, mergeSchema: bool = None) -> None:
         return self.write_or_append(df, "append", mergeSchema=mergeSchema)

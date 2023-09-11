@@ -115,7 +115,7 @@ class DeltaTableSpecBase:
     # identity manipulation
     def copy(self) -> "DeltaTableSpecBase":
         """Return an independent object that compares equal to this one."""
-        return DeltaTableSpecBase(**asdict(self))
+        return copy.deepcopy(self)
 
     def fully_substituted(self, name=_DEFAULT) -> "DeltaTableSpecBase":
         """Return a new DeltaTableSpec

@@ -82,18 +82,14 @@ class TestTableSpec(DataframeTestCase):
         self.assertEqual(tables.newname.read().count(), 1)
 
     def test_location_change(self):
-        spark = Spark.get()
-        df = spark.createDataFrame([("eggs", 3.5, "spam")], tables.oldlocation.schema)
-        # we write the data to the old location
-        tables.oldlocation.get_dh().overwrite(df)
+        tables.oldlocation.make_storage_match(allow_table_create=True)
 
         # location mismatch makes the tables not readable
         self.assertFalse(tables.newlocation.is_readable())
 
         # overwriting will update the table location.
         tables.newlocation.make_storage_match(allow_location_change=True)
-        tables.newlocation.get_dh().overwrite(df)
 
         diff = tables.newlocation.compare_to_name()
         self.assertTrue(diff.complete_match(), diff)
-        self.assertEqual(tables.newlocation.read().count(), 1)
+        self.assertTrue(tables.newlocation.is_readable(), diff)

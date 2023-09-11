@@ -3,7 +3,7 @@ import uuid
 from pathlib import Path
 from string import Formatter
 from types import ModuleType
-from typing import Dict, Set, Union
+from typing import Any, Dict, Set, Union
 
 import yaml
 from deprecated import deprecated
@@ -35,6 +35,7 @@ class ConfiguratorSingleton(type):
 
 
 class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
+    _DEFAULT = object()
     _unique_id: str
     _raw_resource_details: TcDetails
     _is_debug: bool
@@ -381,8 +382,18 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         """
         return self.get(table_id, "path")
 
-    def get(self, table_id: str, property: str = "") -> str:
-        return self._get_item_property(table_id, property)
+    def get(self, table_id: str, property: str = "", default: Any = _DEFAULT):
+        """return the property of the table_id.
+        To get raw strings, specify no property.
+        If default is set, it is returned instead of raising in case of missing keys.
+        Return value will be whatever was registered under the given property."""
+        try:
+            return self._get_item_property(table_id, property)
+        except NoSuchValueException:
+            if default is self._DEFAULT:
+                raise
+            else:
+                return default
 
     def get_all_details(self):
         """

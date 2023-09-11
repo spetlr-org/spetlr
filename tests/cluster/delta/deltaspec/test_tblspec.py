@@ -3,7 +3,6 @@ import unittest
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr import Configurator
-from spetlr.deltaspec import TableSpecNotReadable
 from spetlr.spark import Spark
 from tests.cluster.delta.deltaspec import tables
 
@@ -91,12 +90,9 @@ class TestTableSpec(DataframeTestCase):
         # location mismatch makes the tables not readable
         self.assertFalse(tables.newlocation.is_readable())
 
-        # appending to the new table would fail, since it is not readable.
-        with self.assertRaises(TableSpecNotReadable):
-            tables.newlocation.append(df)
-
         # overwriting will update the table location.
-        tables.newlocation.overwrite(df)
+        tables.newlocation.make_storage_match(allow_location_change=True)
+        tables.newlocation.get_dh().overwrite(df)
 
         diff = tables.newlocation.compare_to_name()
         self.assertTrue(diff.complete_match(), diff)

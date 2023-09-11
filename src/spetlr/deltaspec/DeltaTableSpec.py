@@ -147,8 +147,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
 
     def compare_to_location(self):
         """Returns a DeltaTableSpecDifference of self with respect to the disk."""
-        unnamed = self.fully_substituted(name=None)
-        return unnamed.compare_to_name()
+        return DeltaTableSpec.compare_to_name(self.fully_substituted(name=None))
 
     def compare_to_name(self):
         """Returns a DeltaTableSpecDifference of self
@@ -161,7 +160,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
                 onstorage = DeltaTableSpec.from_path(full.location)
         except NoTableAtTarget:
             onstorage = None
-        return full.compare_to(onstorage)
+        return DeltaTableSpecDifference(base=onstorage, target=full)
 
     def make_storage_match(
         self,
@@ -203,3 +202,11 @@ class DeltaTableSpec(DeltaTableSpecBase):
                 "The data frame has an incompatible schema mismatch to this table."
             )
         return df.select(*self.schema.names)
+
+    def is_readable(self) -> bool:
+        """Check if this delta table is readable when compared
+        to the table of the same name currently in spark.
+        Readability means that all columns in the schema of
+        this specification also exist in table in spark.
+        """
+        return self.compare_to_name().is_readable()

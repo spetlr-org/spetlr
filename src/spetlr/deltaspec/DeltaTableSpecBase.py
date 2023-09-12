@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 from pyspark.sql.types import StructField, StructType
 
 from spetlr import Configurator
-from spetlr.deltaspec.exceptions import InvalidSpecificationError
+from spetlr.deltaspec.exceptions import InvalidSpecificationError, TableSpecNotReadable
 from spetlr.deltaspec.helpers import ensureStr, standard_databricks_location
 from spetlr.schema_manager import SchemaManager
 
@@ -97,6 +97,18 @@ class DeltaTableSpecBase:
                 _DEFAULT_minWriterVersion
             )
 
+    def data_name(self) -> str:
+        """Get a name that can be used in spark to access the underlying data."""
+        c = Configurator()
+        details = c.get_all_details()
+        name = self.name.format(**details) if self.name else None
+        location = self.location.format(**details) if self.location else None
+
+        data_name = name or f"delta.`{location}`"
+        if not data_name:
+            raise TableSpecNotReadable("Name or location required to access data.")
+        return data_name
+
     @classmethod
     def remove_nullability(self, schema: StructType) -> StructType:
         """Return a schema where the nullability of all fields is reset to default"""
@@ -125,7 +137,7 @@ class DeltaTableSpecBase:
         c = Configurator()
         details = c.get_all_details()
         parts["name"] = self.name.format(**details) if self.name else None
-        parts["location"] = self.location.format(**details)
+        parts["location"] = self.location.format(**details) if self.location else None
 
         # sometimes we want to override the name of the fully substituted object
         if name is not _DEFAULT:
@@ -139,6 +151,8 @@ class DeltaTableSpecBase:
         This method is guaranteed to be the inverse of the `.from_sql(sql)` constructor.
         """
         schema_str = SchemaManager().struct_to_sql(self.schema, formatted=True)
+        self.data_name()  # raise if we cannot point to data
+
         sql = (
             "CREATE TABLE "
             + (self.name or f"delta.`{self.location}`")

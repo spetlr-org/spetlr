@@ -7,6 +7,7 @@ from spetlr import Configurator
 from spetlr.deltaspec import TableSpectNotEnforcable
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from tests.cluster.delta.deltaspec import tables
+from tests.local.delta import sql
 
 
 class TestDeltaTableSpec(unittest.TestCase):
@@ -227,3 +228,33 @@ class TestDeltaTableSpec(unittest.TestCase):
                 '"dbfs:/tmp/somewhere/locchange/new"',
             ],
         )
+
+    def test_07_from_tc(self):
+        c = Configurator()
+        c.clear_all_configurations()
+        c.add_sql_resource_path(sql)
+
+        ds = DeltaTableSpec.from_tc("Table1")
+        self.assertEqual(
+            ds.get_sql_create(),
+            (
+                "CREATE TABLE sometable\n"
+                "(\n"
+                "  a int\n"
+                ")\n"
+                "USING DELTA\n"
+                "TBLPROPERTIES (\n"
+                '  "delta.columnMapping.mode" = "name",\n'
+                '  "delta.minReaderVersion" = "2",\n'
+                '  "delta.minWriterVersion" = "5"\n'
+                ")\n"
+            ),
+        )
+
+        # The deltaspec needs to be resolved explicitly
+        ds = DeltaTableSpec.from_tc("Table2")
+        c.set_prod()
+        self.assertEqual(ds.fully_substituted().location, "dbfs:/mnt/foo/bar")
+        # This allows it to be globally initialized before the prod/debug is set
+        c.set_debug()
+        self.assertEqual(ds.fully_substituted().location, "dbfs:/tmp/foo/bar")

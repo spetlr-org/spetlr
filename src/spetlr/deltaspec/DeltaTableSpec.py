@@ -60,15 +60,16 @@ class DeltaTableSpec(DeltaTableSpecBase):
     def from_tc(cls, id: str) -> "DeltaTableSpec":
         c = Configurator()
         # schema is required
-        schema = get_schema(c.get(id, "schema")["sql"])
+        item = c._get_item(id)
+        schema = get_schema(item["schema"]["sql"])
         init_args = dict(
-            name=c.get(id, "name", default=None),
-            location=c.get(id, "path", default=None),
-            comment=c.get(id, "comment", default=None),
+            name=item.get("name", None),
+            location=item.get("path", None),
+            comment=item.get("comment", None),
             schema=schema,
-            options=c.get(id, "options", default={}),
-            partitioned_by=c.get(id, "partitioned_by", default=[]),
-            tblproperties=c.get(id, "tblproperties", default={}),
+            options=item.get("options", {}),
+            partitioned_by=item.get("partitioned_by", []),
+            tblproperties=item.get("tblproperties", {}),
         )
 
         init_args = {k: v for k, v in init_args.items() if v}

@@ -16,15 +16,15 @@ class SimpleSqlTransformerTest(DataframeTestCase):
         c = Configurator()
         c.clear_all_configurations()
         c.set_debug()
-        c.register("db", "SimpleSqlTransformerTestDb{ID}")
-        c.register("tbl1", "{db}.tbl1")
-        c.register("tbl2", "{db}.tbl2")
-        c.register("tbl3", "{db}.tbl3")
+        c.register("db", {"name": "SimpleSqlTransformerTestDb{ID}"})
+        c.register("tbl1", {"name": "{db}.tbl1"})
+        c.register("tbl2", {"name": "{db}.tbl2"})
+        c.register("tbl3", {"name": "{db}.tbl3"})
 
-        db = c.get("db")
-        tbl1 = c.get("tbl1")
-        tbl2 = c.get("tbl2")
-        tbl3 = c.get("tbl3")
+        db = c.get("db", "name")
+        tbl1 = c.get("tbl1", "name")
+        tbl2 = c.get("tbl2", "name")
+        tbl3 = c.get("tbl3", "name")
 
         spark = Spark.get()
         spark.sql(f"CREATE DATABASE {db};")
@@ -32,12 +32,16 @@ class SimpleSqlTransformerTest(DataframeTestCase):
         spark.sql(f"""CREATE TABLE {tbl2} (a int, c int) USING DELTA;""")
         spark.sql(f"""CREATE TABLE {tbl3} (a int, b int, c int) USING DELTA;""")
 
-        spark.createDataFrame([(1, 2)], "a int, b int").write.saveAsTable(tbl1)
-        spark.createDataFrame([(1, 3)], "a int, c int").write.saveAsTable(tbl2)
+        spark.createDataFrame([(1, 2)], "a int, b int").write.mode(
+            "overwrite"
+        ).saveAsTable(tbl1)
+        spark.createDataFrame([(1, 3)], "a int, c int").write.mode(
+            "overwrite"
+        ).saveAsTable(tbl2)
 
     @classmethod
     def tearDownClass(cls) -> None:
-        Spark.get().sql(f"""DROP DATABASE {Configurator().get('db')} CASCADE""")
+        Spark.get().sql(f"""DROP DATABASE {Configurator().get('db','name')} CASCADE""")
 
     def test_all(self):
         o = Orchestrator()

@@ -22,7 +22,19 @@ class SlackNotifier:
     def add_webhook_url(self, url: str):
         self.webhookurls.append(url)
 
-    def notify_info(self, message: str = None, _stack_skip=1):
+    def notify(self, message: str):
+        """Send a notification to a webhook with the following example contents:
+        "
+        *A message was sent from your job <YOUR JOB NAME HERE>*
+
+        Sent at 2022-11-20 01:03:17
+
+        <YOUR MESSAGE HERE>
+        "
+        """
+        self.notify_info(message=message, _hide_caller_info=True)
+
+    def notify_info(self, message: str = None, _stack_skip: int = 1, *, _hide_caller_info: bool = False):
         """Send a notification to a webhook with the following example contents:
         "
         *A message was sent from your job <YOUR JOB NAME HERE>*
@@ -56,7 +68,8 @@ class SlackNotifier:
         if message:
             text += f"\n{message}\n"
 
-        text += f"\nCaller info:\n```\n{called_from}\n```\n"
+        if not _hide_caller_info:
+            text += f"\nCaller info:\n```\n{called_from}\n```\n"
 
         self._add_link_and_publish(text)
 
@@ -84,6 +97,7 @@ class SlackNotifier:
                 message="SlackNotifier.notify_exc()"
                 " was called with no active exception.",
                 _stack_skip=2,
+                _hide_caller_info=False,
             )
 
         try:

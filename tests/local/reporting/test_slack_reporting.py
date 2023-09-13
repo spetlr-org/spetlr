@@ -68,7 +68,9 @@ class SlackNotifierTests(unittest.TestCase):
         self.assertRegex(
             self.HTTPHandler.called_data["text"], "message was sent from databricks"
         )
-        self.assertRegex(self.HTTPHandler.called_data["text"], "test_02_notify_info_webhook")
+        self.assertRegex(
+            self.HTTPHandler.called_data["text"], "test_02_notify_info_webhook"
+        )
         self.assertRegex(self.HTTPHandler.called_data["text"], "my nice info message")
         print(self.HTTPHandler.called_data["text"])
 
@@ -87,5 +89,7 @@ class SlackNotifierTests(unittest.TestCase):
             self.HTTPHandler.called_data["text"],
             "An exception has occurred in databricks",
         )
-        self.assertRegex(self.HTTPHandler.called_data["text"], "test_03_notify_exc_webhook")
+        self.assertRegex(
+            self.HTTPHandler.called_data["text"], "test_03_notify_exc_webhook"
+        )
         print(self.HTTPHandler.called_data["text"])

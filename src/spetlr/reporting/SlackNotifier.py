@@ -34,7 +34,13 @@ class SlackNotifier:
         """
         self.notify_info(message=message, _hide_caller_info=True)
 
-    def notify_info(self, message: str = None, _stack_skip: int = 1, *, _hide_caller_info: bool = False):
+    def notify_info(
+        self,
+        message: str = None,
+        _stack_skip: int = 1,
+        *,
+        _hide_caller_info: bool = False,
+    ):
         """Send a notification to a webhook with the following example contents:
         "
         *A message was sent from your job <YOUR JOB NAME HERE>*

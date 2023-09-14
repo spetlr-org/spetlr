@@ -97,3 +97,9 @@ class TestTableSpec(DataframeTestCase):
         diff = tables.newname.compare_to_name()
         self.assertTrue(diff.complete_match(), diff)
         self.assertEqual(tables.newname.get_dh().read().count(), 1)
+
+    def test_04_can_control_managed_table(self):
+        tables.managed.make_storage_match(allow_table_create=True)
+
+        diff = tables.managed.compare_to_name()
+        self.assertTrue(diff.complete_match(), diff)

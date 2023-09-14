@@ -3,6 +3,7 @@ import unittest
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr import Configurator
+from spetlr.deltaspec import DeltaTableSpec
 from spetlr.spark import Spark
 from tests.cluster.delta.deltaspec import tables
 
@@ -102,4 +103,16 @@ class TestTableSpec(DataframeTestCase):
         tables.managed.make_storage_match(allow_table_create=True)
 
         diff = tables.managed.compare_to_name()
+        self.assertTrue(diff.complete_match(), diff)
+
+    def test_05_modify_to_allow_drop(self):
+        # a table has been created without the DeltaTableSpec:
+        spark = Spark.get()
+        spark.sql(tables.simple_create_sql.format(**Configurator().get_all_details()))
+
+        # now a modified version is to be applied that drops columns:
+        ds = DeltaTableSpec.from_sql(tables.simple_modified_sql)
+        ds.make_storage_match(allow_columns_drop=True)
+
+        diff = ds.compare_to_name()
         self.assertTrue(diff.complete_match(), diff)

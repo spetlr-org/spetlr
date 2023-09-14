@@ -411,6 +411,11 @@ class DeltaTableSpecDifference:
                     )
 
         statements = []
+
+        # some table properties are needed to be able to drop columns.
+        # therefore we need to set those first.
+        statements += full_diff._tblproperties_alter_statements()
+
         statements += full_diff._schema_alter_statements(
             allow_columns_add=allow_columns_add,
             allow_columns_drop=allow_columns_drop,
@@ -423,8 +428,6 @@ class DeltaTableSpecDifference:
             statements.append(
                 f"""COMMENT ON TABLE {base.name} is {json.dumps(target.comment)}"""
             )
-
-        statements += full_diff._tblproperties_alter_statements()
 
         # Change the name last so that we can still refer to the base name above this
         if base.name != target.name:

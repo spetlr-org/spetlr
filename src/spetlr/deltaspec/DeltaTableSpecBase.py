@@ -73,18 +73,6 @@ class DeltaTableSpecBase:
         # of alter statement, simply remove the following line.
         self.schema = self.remove_nullability(self.schema)
 
-        # This is a necessary condition for table alterations.
-        # 'delta.columnMapping.mode' = 'name'
-        if "delta.columnMapping.mode" in self.tblproperties:
-            if self.tblproperties["delta.columnMapping.mode"] != "name":
-                print(
-                    f"WARNING: The table {self.name} is specified "
-                    "with a property delta.columnMapping.mode != 'name'. "
-                    "Expect table alteration commands to fail."
-                )
-        else:
-            self.tblproperties["delta.columnMapping.mode"] = "name"
-
         # the functionality enabled by 'delta.columnMapping.mode' = 'name',
         # is needed for column manipulation and seems to go along with another
         # property "delta.columnMapping.maxColumnId": "5" which increases when
@@ -96,6 +84,21 @@ class DeltaTableSpecBase:
             if key in self.tblproperties:
                 del self.tblproperties[key]
 
+    def set_good_defaults(self):
+        """
+        These default values should be set on all tables
+        that want to be able to drop and reorder columns.
+        This function adds the following table properties unless they are already
+        set to other values:
+        - delta.minReaderVersion = "2"
+        - delta.minWriterVersion = "5"
+        - delta.columnMapping.mode = "name"
+        """
+        # We cannot set these as defaults in the init function because
+        # when we let spark describe a table that does not have them we should not
+        # just assume that they are set, or we would never apply them to a table
+        # that really does not have them.
+
         # these two keys are special. They are set as table properties, but are
         # not read or handled as table properties.
         if "delta.minReaderVersion" not in self.tblproperties:
@@ -106,6 +109,18 @@ class DeltaTableSpecBase:
             self.tblproperties["delta.minWriterVersion"] = str(
                 _DEFAULT_minWriterVersion
             )
+
+        # This is a necessary condition for table alterations.
+        # 'delta.columnMapping.mode' = 'name'
+        if "delta.columnMapping.mode" in self.tblproperties:
+            if self.tblproperties["delta.columnMapping.mode"] != "name":
+                print(
+                    f"WARNING: The table {self.name} is specified "
+                    "with a property delta.columnMapping.mode != 'name'. "
+                    "Expect table alteration commands to fail."
+                )
+        else:
+            self.tblproperties["delta.columnMapping.mode"] = "name"
 
     def data_name(self) -> str:
         """Get a name that can be used in spark to access the underlying data."""

@@ -42,6 +42,16 @@ class DeltaTableSpecBase:
 
         self.name = ensureStr(self.name)
         self.location = ensureStr(self.location)
+
+        if (
+            (self.name and not self.name.startswith("delta.`"))  # a real name
+            and self.location
+            and self.location.startswith("dbfs:/user/hive/")
+        ):
+            # managed table locations start with this string.
+            # we should treat this like an unspecified location
+            self.location = None
+
         self.comment = ensureStr(self.comment)
 
         if self.name and "{" not in self.name:

@@ -95,3 +95,16 @@ newlocation = DeltaTableSpec.from_sql(
     LOCATION "/tmp/somewhere{ID}/locchange/new"
     """
 )
+
+managed = DeltaTableSpec.from_sql(
+    """
+    CREATE TABLE myDeltaTableSpecTestDb{ID}.manged
+    (
+        b string,
+        c double,
+        d string
+    )
+    USING DELTA
+    COMMENT "Contains useful data"
+    """
+)

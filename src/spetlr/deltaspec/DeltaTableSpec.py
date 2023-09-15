@@ -47,7 +47,13 @@ class DeltaTableSpec(DeltaTableSpecBase):
 
         init_args = {k: v for k, v in init_args.items() if v}
 
-        return cls(**init_args)
+        o = cls(**init_args)
+
+        # objects initialized from parsed SQL should have these set
+        # so that we define capable tables.
+        o.set_good_defaults()
+
+        return o
 
     @classmethod
     def from_path(cls, location: str) -> "DeltaTableSpec":
@@ -74,7 +80,13 @@ class DeltaTableSpec(DeltaTableSpecBase):
 
         init_args = {k: v for k, v in init_args.items() if v}
 
-        return cls(**init_args)
+        o = cls(**init_args)
+
+        # objects initialized from parsed SQL should have these set
+        # so that we define capable tables.
+        o.set_good_defaults()
+
+        return o
 
     @classmethod
     def from_name(cls, in_name: str) -> "DeltaTableSpec":

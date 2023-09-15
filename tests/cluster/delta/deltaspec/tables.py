@@ -108,3 +108,23 @@ managed = DeltaTableSpec.from_sql(
     COMMENT "Contains useful data"
     """
 )
+
+simple_create_sql = """
+    CREATE TABLE myDeltaTableSpecTestDb{ID}.direct
+    (
+        b string,
+        c double,
+        d string
+    )
+    USING DELTA
+"""
+
+
+simple_modified_sql = """
+    CREATE TABLE myDeltaTableSpecTestDb{ID}.direct
+    (
+        b string,
+        c double
+    )
+    USING DELTA
+"""

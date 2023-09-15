@@ -85,6 +85,8 @@ class TestDeltaTableSpec(unittest.TestCase):
                 allow_columns_reorder=True,
             ),
             [
+                "ALTER TABLE mydeltatablespectestdb.tbl "
+                'SET TBLPROPERTIES ("my.cool.peoperty" = "bacon")',
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMNS (b, onlyb)",
                 dedent(
                     """\
@@ -102,8 +104,6 @@ class TestDeltaTableSpec(unittest.TestCase):
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN b AFTER a",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyt AFTER d",
                 'COMMENT ON TABLE mydeltatablespectestdb.tbl is "Contains useful data"',
-                "ALTER TABLE mydeltatablespectestdb.tbl "
-                'SET TBLPROPERTIES ("my.cool.peoperty" = "bacon")',
             ],
         )
 
@@ -118,6 +118,8 @@ class TestDeltaTableSpec(unittest.TestCase):
                 allow_location_change=True,
             ),
             [
+                "ALTER TABLE mydeltatablespectestdb.tbl "
+                'UNSET TBLPROPERTIES ("my.cool.peoperty")',
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMNS (b, onlyt)",
                 dedent(
                     """\
@@ -135,8 +137,6 @@ class TestDeltaTableSpec(unittest.TestCase):
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d AFTER c",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyb AFTER d",
                 "COMMENT ON TABLE mydeltatablespectestdb.tbl is null",
-                "ALTER TABLE mydeltatablespectestdb.tbl "
-                'UNSET TBLPROPERTIES ("my.cool.peoperty")',
             ],
         )
 
@@ -258,3 +258,33 @@ class TestDeltaTableSpec(unittest.TestCase):
         # This allows it to be globally initialized before the prod/debug is set
         c.set_debug()
         self.assertEqual(ds.fully_substituted().location, "dbfs:/tmp/foo/bar")
+
+    def test_08_modify_to_allow_drop(self):
+        Configurator().set_prod()
+        # a table has been created without the DeltaTableSpec:
+        base = DeltaTableSpec(
+            name="myDeltaTableSpecTestDb{ID}.direct",
+            schema=t.StructType(
+                fields=[
+                    t.StructField(name="b", dataType=t.StringType()),
+                    t.StructField(name="c", dataType=t.DoubleType()),
+                    t.StructField(name="d", dataType=t.StringType()),
+                ]
+            ),
+            tblproperties={
+                "delta.minReaderVersion": "2",
+                "delta.minWriterVersion": "3",
+            },
+        )
+
+        # now a modified version is to be applied that drops columns:
+        ds = DeltaTableSpec.from_sql(tables.simple_modified_sql)
+        diff = ds.compare_to(base)
+        self.assertEqual(
+            diff.alter_statements(allow_columns_drop=True),
+            [
+                "ALTER TABLE mydeltatablespectestdb.direct SET TBLPROPERTIES "
+                '("delta.minWriterVersion" = "5", "delta.columnMapping.mode" = "name")',
+                "ALTER TABLE mydeltatablespectestdb.direct DROP COLUMN (d)",
+            ],
+        )

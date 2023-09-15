@@ -1,7 +1,7 @@
 CREATE OR REPLACE TEMPORARY VIEW SimpleSqlTransformerTestResult AS
 SELECT
-    a,
-    b,
+    FirstTable.a,
+    FirstTable.b,
     SecondTable.c
 FROM FirstTable
 LEFT JOIN SecondTable

@@ -25,11 +25,11 @@ class TestMd5HashColumn(unittest.TestCase):
         hashed_df = Md5HashColumn(df, "hashed_column")
 
         # Check if hashed column is created
-        assert "hashed_column" in hashed_df.columns
+        self.assertIn("hashed_column", hashed_df.columns)
 
         # Check if the value is not null
         for row in hashed_df.collect():
-            assert row["hashed_column"] is not None
+            self.assertIsNotNone(row["hashed_column"])
 
     def test_md5_hash_column_with_exclusion(self):
         data = [
@@ -42,7 +42,7 @@ class TestMd5HashColumn(unittest.TestCase):
         hashed_df = Md5HashColumn(df, "hashed_column", cols_to_exclude=["age"])
 
         # Check if hashed column is created
-        assert "hashed_column" in hashed_df.columns
+        self.assertIn("hashed_column", hashed_df.columns)
 
         # The hash should change if we exclude the age, so let's verify
         without_exclusion = Md5HashColumn(df, "hashed_without_exclusion")
@@ -53,4 +53,4 @@ class TestMd5HashColumn(unittest.TestCase):
             "hashed_without_exclusion"
         ]
 
-        assert hashed_value != without_exclusion_value
+        self.assertNotEqual(hashed_value, without_exclusion_value)

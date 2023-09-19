@@ -33,7 +33,8 @@ class DataChangeCaptureTransformer(Transformer):
     def _warn_if_schema_differs(self, df1: DataFrame, df2: DataFrame):
         if df1.schema != df2.schema:
             warnings.warn(
-                "Schemas are not identical, making the MD5 hash comparison potentially unreliable"
+                "Schemas are not identical, "
+                "making the MD5 hash comparison potentially unreliable"
             )
 
     def process_many(self, dataset: dataset_group) -> DataFrame:

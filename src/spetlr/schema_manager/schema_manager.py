@@ -89,24 +89,37 @@ class SchemaManager(metaclass=Singleton):
         else:
             raise FalseSchemaDefinitionException(schema)
 
-    def _schema_to_spark_sql(self, schema: T.StructType) -> str:
+    def struct_to_sql(self, schema: T.StructType, formatted=False) -> str:
+        """Convert the given schema into sql rows
+        that can form part of a CREATE TABLE statement.
+        Includes support for comments, nullability,
+        and complex data types (e.g. structs, arrays),
+
+        if formatted is True, the sql will contain newlines
+        and be indented for use in a long SQL schema.
+        """
+        return self._schema_to_spark_sql(schema, formatted=formatted)
+
+    def _schema_to_spark_sql(self, schema: T.StructType, formatted=False) -> str:
         # TODO: Create a more capable method of translating StructTypes to
         # spark sql strings
         # Lacking:
         # - generated-always-as
-        # - comments
-        # - nested datatypes
 
         rows = []
         for field in schema.fields:
             row = f"{field.name} {field.dataType.simpleString()}"
+            if not field.nullable:
+                row += " NOT NULL"
             if "comment" in field.metadata:
                 # I could have used a repr() here,
                 # but then I could get single quoted string. This ensured double quotes
-                row += f'  COMMENT {json.dumps(field.metadata["comment"])}'
+                row += f' COMMENT {json.dumps(field.metadata["comment"])}'
             rows.append(row)
 
-        str_schema = ", ".join(rows)
+        separator = ",\n  " if formatted else ", "
+
+        str_schema = separator.join(rows)
 
         return str_schema
 
@@ -132,7 +145,7 @@ class SchemaManager(metaclass=Singleton):
         str_schemas = {}
 
         for name, schema in schemas_dict.items():
-            str_schema = self._schema_to_spark_sql(schema)
+            str_schema = self._schema_to_spark_sql(schema, formatted=True)
             str_schemas[name] = str_schema
 
         return str_schemas

@@ -176,5 +176,14 @@ class SqlExecutor:
         """
 
         executor = self.server or Spark.get()
+
+        statement = None
+
         for statement in self.get_statements(file_pattern, exclude_pattern):
             executor.sql(statement)
+
+        if statement is None:
+            print(
+                f"WARNING: The sql file pattern {file_pattern} "
+                "resulted in zero statements being executed"
+            )

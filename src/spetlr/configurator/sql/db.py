@@ -50,7 +50,10 @@ def _extract_db_blocks(stmt: _PeekableTokenList) -> StatementBlocks:
     blocks = StatementBlocks()
     try:
         while True:
-            val = stmt.peek().value.upper()
+            try:
+                val = stmt.peek().value.upper()
+            except StopIteration:
+                break
 
             if val == "LOCATION":
                 next(stmt)

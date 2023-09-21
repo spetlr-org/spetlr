@@ -46,7 +46,7 @@ class TestConfigurator(unittest.TestCase):
         with self.assertRaises(KeyError):
             tc.add_resource_path(tables2)
 
-        tc.set_extra(ENV="dev")
+        tc.register("ENV", "dev")
         tc.add_resource_path(tables2)
         tc.reset(debug=True)
         self.assertRegex(tc.table_name("MyThird"), "first__.*")
@@ -160,7 +160,10 @@ class TestConfigurator(unittest.TestCase):
                         -- spetlr.Configurator key: MyDetailsTable
                         CREATE TABLE IF NOT EXISTS my_db1.details
                         (
-                          a int, b int, c string, d timestamp,
+                          a int,
+                          b int,
+                          c string,
+                          d timestamp,
                           another int
                           -- comment with ;
                         )

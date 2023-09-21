@@ -38,6 +38,7 @@ class StatementBlocks:
             "partitioned_by": self.partitioned_by,
             "comment": self.comment,
             "tblproperties": self.tblproperties,
+            "dbproperties": self.dbproperties,
         }
 
         if self.schema:

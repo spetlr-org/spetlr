@@ -45,21 +45,36 @@ class SlackNotifierTests(unittest.TestCase):
         self.HTTPHandler.called = False
         self.HTTPHandler.called_data = {}
 
-    def test_01_info_webhook(self):
+    def test_01_notify_webhook(self):
         slack = SlackNotifier(self.hook_url)
 
-        slack.notify_info("my nice message")
+        slack.notify("my nice message")
 
         self.assertTrue(self.HTTPHandler.called)
         self.assertIn("text", self.HTTPHandler.called_data)
         self.assertRegex(
             self.HTTPHandler.called_data["text"], "message was sent from databricks"
         )
-        self.assertRegex(self.HTTPHandler.called_data["text"], "test_01_info_webhook")
         self.assertRegex(self.HTTPHandler.called_data["text"], "my nice message")
         print(self.HTTPHandler.called_data["text"])
 
-    def test_02_exc_webhook(self):
+    def test_02_notify_info_webhook(self):
+        slack = SlackNotifier(self.hook_url)
+
+        slack.notify_info("my nice info message")
+
+        self.assertTrue(self.HTTPHandler.called)
+        self.assertIn("text", self.HTTPHandler.called_data)
+        self.assertRegex(
+            self.HTTPHandler.called_data["text"], "message was sent from databricks"
+        )
+        self.assertRegex(
+            self.HTTPHandler.called_data["text"], "test_02_notify_info_webhook"
+        )
+        self.assertRegex(self.HTTPHandler.called_data["text"], "my nice info message")
+        print(self.HTTPHandler.called_data["text"])
+
+    def test_03_notify_exc_webhook(self):
         slack = SlackNotifier(self.hook_url)
 
         try:
@@ -74,5 +89,7 @@ class SlackNotifierTests(unittest.TestCase):
             self.HTTPHandler.called_data["text"],
             "An exception has occurred in databricks",
         )
-        self.assertRegex(self.HTTPHandler.called_data["text"], "test_02_exc_webhook")
+        self.assertRegex(
+            self.HTTPHandler.called_data["text"], "test_03_notify_exc_webhook"
+        )
         print(self.HTTPHandler.called_data["text"])

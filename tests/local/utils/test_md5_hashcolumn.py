@@ -17,7 +17,11 @@ class TestMd5HashColumn(unittest.TestCase):
     )
 
     def test_md5_hash_column_with_null(self):
-        data = [("John", "Johnson", 30, None), ("Diana", "Doe", 25, "F")]
+        data = [
+            ("John", "Johnson", 30, None),
+            ("Diana", "Doe", 25, "F"),
+            (None, None, None, None),
+        ]
 
         df = Spark.get().createDataFrame(data=data, schema=self.schema)
 

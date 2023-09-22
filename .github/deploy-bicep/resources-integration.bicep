@@ -15,6 +15,7 @@ param sqlServerAdminPassword string
 param sqlAdminSpnName string
 param sqlAdminObjectId string
 param logAnalyticsWsName string
+param databricksAccessConnectorName string
 
 //#############################################################################################
 //# Provision Databricks Workspace
@@ -27,6 +28,20 @@ resource rsdatabricks 'Microsoft.Databricks/workspaces@2022-04-01-preview' = {
     managedResourceGroupId: subscriptionResourceId('Microsoft.Resources/resourceGroups', '${resourceGroupName}Cluster')
   }
   tags: resourceTags
+}
+
+
+//#############################################################################################
+//# Provision Databricks Access Connector
+//#############################################################################################
+
+resource databricksAccessConnector 'Microsoft.Databricks/accessConnectors@2023-05-01' = {
+  name: databricksAccessConnectorName
+  location: location
+  tags: resourceTags
+  identity: {
+    type: 'SystemAssigned'
+  }
 }
 
 //#############################################################################################

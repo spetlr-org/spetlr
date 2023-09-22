@@ -25,6 +25,7 @@ $databricksName               = $resourceName
 $dataLakeName                 = $resourceName
 $databaseServerName           = $resourceName + "test"
 $deliveryDatabase             = "Delivery"
+$databricksCatalogName           = $resourceName
 
 
 $sqlServerAdminUser           = "DataPlatformAdmin"

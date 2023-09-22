@@ -30,5 +30,11 @@ Write-Host "  Now Destroying Parent Resource Group!" -ForegroundColor Red
 
 az group delete --name $resourceGroupName --yes --no-wait
 
+
 Write-Host "  Parent Resource Group Deleted" -ForegroundColor Green
 
+Write-Host "  Now Destroying Databricks Catalog: $databricksCatalogName !" -ForegroundColor Red
+
+databricks unity-catalog catalogs delete --name $databricksCatalogName -purge
+
+Write-Host "  Catalog deleted" -ForegroundColor Green

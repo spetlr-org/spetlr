@@ -23,6 +23,7 @@ param sqlServerAdminPassword string
 param sqlAdminSpnName string
 param sqlAdminObjectId string
 param logAnalyticsWsName string
+param databricksAccessConnectorName string
 
 // Metastore resources
 param metastoreDatabricksName string
@@ -94,5 +95,6 @@ module resources2 'resources-integration.bicep' = {
     sqlAdminSpnName: sqlAdminSpnName
     sqlAdminObjectId: sqlAdminObjectId
     logAnalyticsWsName: logAnalyticsWsName
+    databricksAccessConnectorName: databricksAccessConnectorName
   }
 }

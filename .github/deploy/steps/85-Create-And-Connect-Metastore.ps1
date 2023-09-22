@@ -9,7 +9,7 @@
 # 7. Add storage credential to metastore
 # 8. Create catalog
 ###############################################################################################
-Write-Host "Creating and connecting metastore '$metastoreName' for Databricks workspace '$databricksName'" -ForegroundColor Green
+Write-Host "Creating and connecting metastore '$metastoreName' for Databricks workspace '$metastoreDatabricksName'" -ForegroundColor Green
 
 Write-Host "Get resource information: Metastore Storage Account, Access Connector, Metastore Databricks Workspace" -ForegroundColor DarkYellow
 $metastoreStorageAccount = az storage account show `

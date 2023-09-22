@@ -16,6 +16,7 @@ Transformations in spetlr:
   - [DataFrameFilterTransformer](#dataframefiltertransformer)
   - [CountryToAlphaCodeTransformer](#countrytoalphacodetransformer)
   - [GenerateMd5ColumnTransformer](#generatemd5columntransformer)
+  - [DataChangeCaptureTransformer](#datachangecapturetransformer)
 ## Concatenate data frames
 
 *UPDATE: Pyspark has an equivalent implementation  `.unionByName(df, allowMissingColumns=False)`, see the [documentation](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrame.unionByName.html) for more information.*
@@ -511,4 +512,51 @@ transformed_df.display()
 |    1|  text1|  e86667d75db79395e172c5c343ec2df1|
 |    2|   Null|  c81e728d9d4c2f636f067f89cc14862c|
 +-----+-------+-----------------------------------+
+```
+## DataChangeCaptureTransformer
+
+This class archives data changes from a source table, using a primary key column.
+    It identifies and captures new or modified records.
+    For accurate comparison of all columns, ensure both schemas are identical.
+
+
+Usage example:
+
+
+``` python 
+from spetlr.transformers.data_change_capture_transformer import DataChangeCaptureTransformer
+
+df_target =
+
+| id| model|     brand| salesprice|
++---+------+----------+-----------+
+|  1|Fender|Telecaster|         50|
+|  2|Gibson|  Les Paul|        100|
+|  3|Ibanez|        RG|        175|
++---+------+----------+-----------+
+
+
+df_source =
+
+| id| model|     brand| salesprice|
++---+------+----------+-----------+
+|  1| Fender|Telecaster|         50|
+|  2| Gibson|  Les Paul|        200|
+|  3| Ibanez|        RG|        175|
+|  4| Falcon|   Gretsch|        250|
++---+------+----------+-----------+
+
+dataset_group = {"source": df_source, "target": df_target
+
+df = DataChangeCaptureTransform(primary_key="id").process_many(dataset_group)
+
+df.show()
+
+# only returns new and modfied rows
+
+| id| model|     brand| salesprice|
++---+------+----------+-----------+
+|  2| Gibson|  Les Paul|        200|
+|  4| Falcon|   Gretsch|        250|
++---+------+----------+-----------+
 ```

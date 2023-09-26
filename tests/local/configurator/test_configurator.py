@@ -7,7 +7,15 @@ from spetlr import Configurator
 from spetlr.schema_manager import SchemaManager
 from spetlr.schema_manager.spark_schema import get_schema
 from spetlr.sql import SqlExecutor
-from tests.local.configurator import sql, tables1, tables2, tables3, tables4, tables5
+from tests.local.configurator import (
+    sql,
+    tables1,
+    tables2,
+    tables3,
+    tables4,
+    tables5,
+    views,
+)
 
 
 class TestConfigurator(unittest.TestCase):
@@ -238,3 +246,9 @@ class TestConfigurator(unittest.TestCase):
         # recover  key
         key = c.key_of("name", "anotherName")
         self.assertEqual(c.get(key, "path"), "/somewhere")
+
+    def test_14_views(self):
+        c = Configurator()
+        c.add_sql_resource_path(views)
+
+        self.assertEqual(c.get("MyViewId", "name"), "SomeViewName")

@@ -1,6 +1,5 @@
 import pyspark.sql.types
 from pyspark.sql import DataFrame
-from pyspark.sql.utils import AnalysisException
 
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
@@ -95,7 +94,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
         spark = Spark.get()
         try:
             details = spark.sql(f"DESCRIBE DETAIL {in_name}").collect()[0].asDict()
-        except AnalysisException as e:
+        except Exception as e:
             raise NoTableAtTarget(str(e))
         if details["format"] != "delta":
             raise InvalidSpecificationError("The table is not of delta format.")
@@ -164,24 +163,25 @@ class DeltaTableSpec(DeltaTableSpecBase):
 
     def compare_to_name(self):
         """Returns a DeltaTableSpecDifference of self
-        with respect to the catalog table of the same name."""
+        with respect to the catalog table of the same name,
+        or with respect to the external location if given."""
         full = self.fully_substituted()
-        while True:
-            if full.name:
-                try:
-                    onstorage = DeltaTableSpec.from_name(full.name)
-                    break
-                except NoTableAtTarget:
-                    pass
-            if full.location:
-                try:
-                    onstorage = DeltaTableSpec.from_path(full.location)
-                    break
-                except NoTableAtTarget:
-                    pass
-            onstorage = None
-            break
-        return DeltaTableSpecDifference(base=onstorage, target=full)
+        if full.name:
+            try:
+                onstorage = DeltaTableSpec.from_name(full.name)
+                return DeltaTableSpecDifference(base=onstorage, target=full)
+            except NoTableAtTarget:
+                pass
+
+        elif full.location:
+            try:
+                onstorage = DeltaTableSpec.from_path(full.location)
+                return DeltaTableSpecDifference(base=onstorage, target=full)
+            except NoTableAtTarget:
+                pass
+
+        else:
+            return DeltaTableSpecDifference(base=None, target=full)
 
     def make_storage_match(
         self,

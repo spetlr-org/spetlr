@@ -100,6 +100,10 @@ class DeltaHandle(TableHandle):
             elif len(name_parts) == 2:
                 self._db = name_parts[0]
                 self._table_name = name_parts[1]
+            elif len(name_parts) == 3:
+                self._catalog = name_parts[0]
+                self._db = name_parts[1]
+                self._table_name = name_parts[2]
             else:
                 raise DeltaHandleInvalidName(f"Could not parse name {self._name}")
 

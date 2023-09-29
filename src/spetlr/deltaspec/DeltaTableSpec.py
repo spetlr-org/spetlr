@@ -166,13 +166,21 @@ class DeltaTableSpec(DeltaTableSpecBase):
         """Returns a DeltaTableSpecDifference of self
         with respect to the catalog table of the same name."""
         full = self.fully_substituted()
-        try:
+        while True:
             if full.name:
-                onstorage = DeltaTableSpec.from_name(full.name)
-            else:
-                onstorage = DeltaTableSpec.from_path(full.location)
-        except NoTableAtTarget:
+                try:
+                    onstorage = DeltaTableSpec.from_name(full.name)
+                    break
+                except NoTableAtTarget:
+                    pass
+            if full.location:
+                try:
+                    onstorage = DeltaTableSpec.from_path(full.location)
+                    break
+                except NoTableAtTarget:
+                    pass
             onstorage = None
+            break
         return DeltaTableSpecDifference(base=onstorage, target=full)
 
     def make_storage_match(

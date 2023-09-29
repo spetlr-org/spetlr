@@ -4,6 +4,7 @@ from spetlrtools.testing import DataframeTestCase
 
 from spetlr import Configurator
 from spetlr.deltaspec import DeltaTableSpec
+from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 from tests.cluster.delta.deltaspec import tables
 
@@ -115,4 +116,26 @@ class TestTableSpec(DataframeTestCase):
         ds.make_storage_match(allow_columns_drop=True)
 
         diff = ds.compare_to_name()
+        self.assertTrue(diff.complete_match(), diff)
+
+    def test_06_make_match_on_incompatible_data(self):
+        # clean away old data if any
+        init_dbutils().fs.rm(self.base.location, True)
+        # create table
+        self.base.make_storage_match()
+
+        # drop the table. Now it does not exist by name
+        Spark.get().sql(f"DROP TABLE {self.base.name}")
+        # also the delta table on disk is incompatible.
+        # a normal create statement for target would fail
+
+        self.target.make_storage_match(
+            allow_columns_add=True,
+            allow_columns_drop=True,
+            allow_columns_type_change=True,
+            allow_columns_reorder=True,
+            allow_table_create=True,
+        )
+
+        diff = self.target.compare_to_name()
         self.assertTrue(diff.complete_match(), diff)

@@ -1,4 +1,5 @@
 import copy
+import dataclasses
 import json
 from dataclasses import asdict, dataclass
 from typing import Dict, List, Optional
@@ -396,6 +397,32 @@ class DeltaTableSpecDifference:
 
         base = full_diff.base
         target = full_diff.target
+
+        if not base.name and target.name:
+            # we want to create the name for the base.
+            # then we can move on with the diff.
+            newname = dataclasses.replace(base, name=target.name)
+            if allow_table_create:
+                return [newname.get_sql_create()] + DeltaTableSpecDifference(
+                    base=newname, target=target
+                ).alter_statements(
+                    allow_columns_add=allow_columns_add,
+                    allow_columns_drop=allow_columns_drop,
+                    allow_columns_type_change=allow_columns_type_change,
+                    allow_columns_reorder=allow_columns_reorder,
+                    allow_name_change=allow_name_change,
+                    allow_location_change=allow_location_change,
+                    allow_table_create=allow_table_create,
+                    errors_as_warnings=errors_as_warnings,
+                )
+            else:
+                print(
+                    f"ERROR: Would create new table named {newname.name} "
+                    f"for data at {newname.location}"
+                )
+                raise TableSpectNotEnforcable(
+                    "Cannot continue without allow_table_create"
+                )
 
         if base.location != target.location:
             if allow_location_change:

@@ -166,6 +166,8 @@ class DeltaTableSpec(DeltaTableSpecBase):
         with respect to the catalog table of the same name,
         or with respect to the external location if given."""
         full = self.fully_substituted()
+
+        # look for object of this name
         if full.name:
             try:
                 onstorage = DeltaTableSpec.from_name(full.name)
@@ -173,15 +175,16 @@ class DeltaTableSpec(DeltaTableSpecBase):
             except NoTableAtTarget:
                 pass
 
-        elif full.location:
+        # still here? Try by location
+        if full.location:
             try:
                 onstorage = DeltaTableSpec.from_path(full.location)
                 return DeltaTableSpecDifference(base=onstorage, target=full)
             except NoTableAtTarget:
                 pass
 
-        else:
-            return DeltaTableSpecDifference(base=None, target=full)
+        # also nothing? There is no base.
+        return DeltaTableSpecDifference(base=None, target=full)
 
     def make_storage_match(
         self,

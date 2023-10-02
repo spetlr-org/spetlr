@@ -195,9 +195,6 @@ class DeltaTableSpecBase:
         if self.partitioned_by:
             sql += f"PARTITIONED BY ({', '.join(self.partitioned_by)})\n"
 
-        if self.location:
-            sql += f"LOCATION {json.dumps(self.location)}\n"
-
         if self.comment:
             sql += f"COMMENT {json.dumps(self.comment)}\n"
 
@@ -207,5 +204,8 @@ class DeltaTableSpecBase:
                 for k, v in sorted(self.tblproperties.items())
             ]
             sql += "TBLPROPERTIES (\n" + ",\n".join(sub_parts) + "\n)\n"
+
+        if self.location:
+            sql += f"LOCATION {json.dumps(self.location)}\n"
 
         return sql

@@ -32,18 +32,14 @@ class DeltaTableSpecDifference:
         )
         self.target = DeltaTableSpecBase(**asdict(self.target.copy()))
 
-        # Only compare table names up to the highest level
-        # that both DeltaTableSpec have information about.
-        # so a nameless table can still compare equal to
-        # another table. Also, unless both tables specify
-        # the catalog, the catalog is ignored.
+        # if both tables are named,
+        # only compare table names up to the  level
+        # that the target uses.
 
-        if self.base:
+        if self.base and self.base.name and self.target.name:
             b_name = TableName.from_str(self.base.name)
             t_name = TableName.from_str(self.target.name)
-            level = min(t_name.level(), b_name.level())
-            self.base.name = str(b_name.to_level(level))
-            self.target.name = str(t_name.to_level(level))
+            self.base.name = str(b_name.to_level(t_name.level()))
 
     def nullbase(self) -> bool:
         """is the comparison to a null base. Meaing there is no table."""

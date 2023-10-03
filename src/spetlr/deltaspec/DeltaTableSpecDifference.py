@@ -1,4 +1,5 @@
 import copy
+import dataclasses
 import json
 from dataclasses import asdict, dataclass
 from typing import Dict, List, Optional
@@ -31,18 +32,14 @@ class DeltaTableSpecDifference:
         )
         self.target = DeltaTableSpecBase(**asdict(self.target.copy()))
 
-        # Only compare table names up to the highest level
-        # that both DeltaTableSpec have information about.
-        # so a nameless table can still compare equal to
-        # another table. Also, unless both tables specify
-        # the catalog, the catalog is ignored.
+        # if both tables are named,
+        # only compare table names up to the  level
+        # that the target uses.
 
-        if self.base:
+        if self.base and self.base.name and self.target.name:
             b_name = TableName.from_str(self.base.name)
             t_name = TableName.from_str(self.target.name)
-            level = min(t_name.level(), b_name.level())
-            self.base.name = str(b_name.to_level(level))
-            self.target.name = str(t_name.to_level(level))
+            self.base.name = str(b_name.to_level(t_name.level()))
 
     def nullbase(self) -> bool:
         """is the comparison to a null base. Meaing there is no table."""
@@ -177,9 +174,17 @@ class DeltaTableSpecDifference:
         allow_columns_type_change=False,
         errors_as_warnings=False,
         allow_columns_reorder=False,
+        schema_change_as_truncate=False,
     ) -> List[str]:
         if self.base.schema == self.target.schema:
             return []
+
+        allow_columns_add = allow_columns_add or schema_change_as_truncate
+        allow_columns_drop = allow_columns_drop or schema_change_as_truncate
+        allow_columns_type_change = (
+            allow_columns_type_change or schema_change_as_truncate
+        )
+        allow_columns_reorder = allow_columns_reorder or schema_change_as_truncate
 
         statements = []
         base_fields: Dict[str, StructField] = {
@@ -254,7 +259,7 @@ class DeltaTableSpecDifference:
                 fields_to_remove.append(key)
 
         # Now convert the accumulated changes to ALTER statements.
-        if fields_to_remove:
+        if fields_to_remove and not schema_change_as_truncate:
             statement = f"ALTER TABLE {self.base.name} DROP COLUMN"
             if len(fields_to_remove) > 1:
                 statement += "S"
@@ -262,7 +267,7 @@ class DeltaTableSpecDifference:
 
             statements.append(statement)
 
-        if fields_to_add:
+        if fields_to_add and not schema_change_as_truncate:
             statement = f"ALTER TABLE {self.base.name} ADD COLUMN"
             if len(fields_to_add) == 1:
                 statement += (
@@ -294,6 +299,13 @@ class DeltaTableSpecDifference:
                 f"ALTER TABLE {self.base.name} ALTER COLUMN "
                 f"{key} COMMENT {json.dumps(newComment)}"
             )
+
+        if schema_change_as_truncate and (fields_to_add or fields_to_remove):
+            statements.append(f"TRUNCATE TABLE {self.base.name}")
+            # If the truncate option is chosen, we don't need to reorder.
+            # That will be taken care of by the overwriteSchema operation
+            # That we expect will follow.
+            return statements
 
         # Finally address the possible change of order.
         base_order_so_far = copy.copy(base_order)
@@ -336,7 +348,18 @@ class DeltaTableSpecDifference:
 
         return statements
 
-    def _alter_statements_for_new_location(self, allow_columns_add=False) -> List[str]:
+    def _alter_statements_for_new_location(
+        self,
+        allow_columns_add=False,
+        allow_columns_drop=False,
+        allow_columns_type_change=False,
+        allow_columns_reorder=False,
+        allow_name_change=False,
+        allow_location_change=False,
+        allow_table_create=True,
+        errors_as_warnings=False,
+        schema_change_as_truncate=False,
+    ) -> List[str]:
         """In case we need to change location,
         the alter statements will consist of creating the new target.
         and then pointing the current table at it. The target will be empty."""
@@ -361,11 +384,22 @@ class DeltaTableSpecDifference:
 
         statements += DeltaTableSpecDifference(
             target=self.target, base=new_base
-        ).alter_statements(allow_columns_add=allow_columns_add)
+        ).alter_statements(
+            allow_columns_add=allow_columns_add,
+            allow_columns_drop=allow_columns_drop,
+            allow_columns_type_change=allow_columns_type_change,
+            allow_columns_reorder=allow_columns_reorder,
+            allow_name_change=allow_name_change,
+            allow_location_change=allow_location_change,
+            allow_table_create=allow_table_create,
+            errors_as_warnings=errors_as_warnings,
+            schema_change_as_truncate=schema_change_as_truncate,
+        )
         return statements
 
     def alter_statements(
         self,
+        *,
         allow_columns_add=False,
         allow_columns_drop=False,
         allow_columns_type_change=False,
@@ -374,6 +408,7 @@ class DeltaTableSpecDifference:
         allow_location_change=False,
         allow_table_create=True,
         errors_as_warnings=False,
+        schema_change_as_truncate=False,
     ) -> List[str]:
         """A list to alter statements that will ensure
         that what used to be the base table, becomes the target table"""
@@ -397,10 +432,45 @@ class DeltaTableSpecDifference:
         base = full_diff.base
         target = full_diff.target
 
+        if not base.name and target.name:
+            # we want to create the name for the base.
+            # then we can move on with the diff.
+            newname = dataclasses.replace(base, name=target.name)
+            if allow_table_create:
+                return [newname.get_sql_create()] + DeltaTableSpecDifference(
+                    base=newname, target=target
+                ).alter_statements(
+                    allow_columns_add=allow_columns_add,
+                    allow_columns_drop=allow_columns_drop,
+                    allow_columns_type_change=allow_columns_type_change,
+                    allow_columns_reorder=allow_columns_reorder,
+                    allow_name_change=allow_name_change,
+                    allow_location_change=allow_location_change,
+                    allow_table_create=allow_table_create,
+                    errors_as_warnings=errors_as_warnings,
+                    schema_change_as_truncate=schema_change_as_truncate,
+                )
+            else:
+                print(
+                    f"ERROR: Would create new table named {newname.name} "
+                    f"for data at {newname.location}"
+                )
+                raise TableSpectNotEnforcable(
+                    "Cannot continue without allow_table_create"
+                )
+
         if base.location != target.location:
             if allow_location_change:
                 return full_diff._alter_statements_for_new_location(
-                    allow_columns_add=allow_columns_add
+                    allow_columns_add=allow_columns_add,
+                    allow_columns_drop=allow_columns_drop,
+                    allow_columns_type_change=allow_columns_type_change,
+                    allow_columns_reorder=allow_columns_reorder,
+                    allow_name_change=allow_name_change,
+                    allow_location_change=allow_location_change,
+                    allow_table_create=allow_table_create,
+                    errors_as_warnings=errors_as_warnings,
+                    schema_change_as_truncate=schema_change_as_truncate,
                 )
             else:
                 if errors_as_warnings:
@@ -422,6 +492,7 @@ class DeltaTableSpecDifference:
             allow_columns_type_change=allow_columns_type_change,
             allow_columns_reorder=allow_columns_reorder,
             errors_as_warnings=errors_as_warnings,
+            schema_change_as_truncate=schema_change_as_truncate,
         )
 
         if base.comment != target.comment:

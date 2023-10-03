@@ -1,6 +1,5 @@
 import pyspark.sql.types
 from pyspark.sql import DataFrame
-from pyspark.sql.utils import AnalysisException
 
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
@@ -95,7 +94,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
         spark = Spark.get()
         try:
             details = spark.sql(f"DESCRIBE DETAIL {in_name}").collect()[0].asDict()
-        except AnalysisException as e:
+        except Exception as e:
             raise NoTableAtTarget(str(e))
         if details["format"] != "delta":
             raise InvalidSpecificationError("The table is not of delta format.")
@@ -164,16 +163,28 @@ class DeltaTableSpec(DeltaTableSpecBase):
 
     def compare_to_name(self):
         """Returns a DeltaTableSpecDifference of self
-        with respect to the catalog table of the same name."""
+        with respect to the catalog table of the same name,
+        or with respect to the external location if given."""
         full = self.fully_substituted()
-        try:
-            if full.name:
+
+        # look for object of this name
+        if full.name:
+            try:
                 onstorage = DeltaTableSpec.from_name(full.name)
-            else:
+                return DeltaTableSpecDifference(base=onstorage, target=full)
+            except NoTableAtTarget:
+                pass
+
+        # still here? Try by location
+        if full.location:
+            try:
                 onstorage = DeltaTableSpec.from_path(full.location)
-        except NoTableAtTarget:
-            onstorage = None
-        return DeltaTableSpecDifference(base=onstorage, target=full)
+                return DeltaTableSpecDifference(base=onstorage, target=full)
+            except NoTableAtTarget:
+                pass
+
+        # also nothing? There is no base.
+        return DeltaTableSpecDifference(base=None, target=full)
 
     def make_storage_match(
         self,
@@ -185,6 +196,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
         allow_location_change=False,
         allow_table_create=True,
         errors_as_warnings=False,
+        schema_change_as_truncate=False,
     ) -> None:
         """If storage is not exactly like the specification,
         change the storage to make it match."""
@@ -202,6 +214,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
                 allow_location_change=allow_location_change,
                 allow_table_create=allow_table_create,
                 errors_as_warnings=errors_as_warnings,
+                schema_change_as_truncate=schema_change_as_truncate,
             ):
                 print(f"Executing SQL: {statement}")
                 spark.sql(statement)

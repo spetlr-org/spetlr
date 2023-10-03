@@ -4,7 +4,7 @@ from textwrap import dedent
 from pyspark.sql import types as t
 
 from spetlr import Configurator
-from spetlr.deltaspec import TableSpectNotEnforcable
+from spetlr.deltaspec import DeltaTableSpecDifference, TableSpectNotEnforcable
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from tests.cluster.delta.deltaspec import tables
 from tests.local.delta import sql
@@ -34,12 +34,12 @@ class TestDeltaTableSpec(unittest.TestCase):
                   b int
                 )
                 USING DELTA
-                LOCATION "dbfs:/tmp/somewhere{ID}/over/the/rainbow"
                 TBLPROPERTIES (
                   "delta.columnMapping.mode" = "name",
                   "delta.minReaderVersion" = "2",
                   "delta.minWriterVersion" = "5"
                 )
+                LOCATION "dbfs:/tmp/somewhere{ID}/over/the/rainbow"
                 """
             ),
         )
@@ -178,7 +178,7 @@ class TestDeltaTableSpec(unittest.TestCase):
             location="dbfs:/somewhere/over/the/rainbow",
         )
         Configurator().set_prod()
-        d = tbl2.compare_to(tbl1.fully_substituted())
+        d = DeltaTableSpecDifference(base=tbl2, target=tbl1.fully_substituted())
         self.assertFalse(d.is_different(), d)
 
     def test_05_namechagne(self):
@@ -217,13 +217,13 @@ class TestDeltaTableSpec(unittest.TestCase):
                 "  d string\n"
                 ")\n"
                 "USING DELTA\n"
-                'LOCATION "dbfs:/tmp/somewhere/locchange/new"\n'
                 'COMMENT "Contains useful data"\n'
                 "TBLPROPERTIES (\n"
                 '  "delta.columnMapping.mode" = "name",\n'
                 '  "delta.minReaderVersion" = "2",\n'
                 '  "delta.minWriterVersion" = "5"\n'
-                ")\n",
+                ")\n"
+                'LOCATION "dbfs:/tmp/somewhere/locchange/new"\n',
                 "ALTER TABLE mydeltatablespectestdb.locchange SET LOCATION "
                 '"dbfs:/tmp/somewhere/locchange/new"',
             ],
@@ -286,5 +286,40 @@ class TestDeltaTableSpec(unittest.TestCase):
                 "ALTER TABLE mydeltatablespectestdb.direct SET TBLPROPERTIES "
                 '("delta.minWriterVersion" = "5", "delta.columnMapping.mode" = "name")',
                 "ALTER TABLE mydeltatablespectestdb.direct DROP COLUMN (d)",
+            ],
+        )
+
+    def test_09_build_on_incompatible_path(self):
+        Configurator().set_prod()
+
+        # raw_base refers to the data that was once at the location that
+        # target now refers to. It is not of the right schema as target
+        diff = self.target.compare_to(tables.raw_base)
+
+        self.maxDiff = None
+        self.assertEqual(
+            diff.alter_statements(schema_change_as_truncate=True),
+            [
+                # first create a name for the old data.
+                "CREATE TABLE mydeltatablespectestdb.tbl\n"
+                "(\n"
+                "  c double,\n"
+                '  d string COMMENT "Whatsupp",\n'
+                "  onlyb int,\n"
+                "  a int,\n"
+                "  b int\n"
+                ")\n"
+                "USING DELTA\n"
+                'LOCATION "dbfs:/tmp/somewhere/over/the/rainbow"\n',
+                "ALTER TABLE mydeltatablespectestdb.tbl SET TBLPROPERTIES ("
+                '"my.cool.peoperty" = "bacon", '
+                '"delta.minReaderVersion" = "2", '
+                '"delta.minWriterVersion" = "5", '
+                '"delta.columnMapping.mode" = "name")',
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT "
+                '"gains not null"',
+                'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT ""',
+                "TRUNCATE TABLE mydeltatablespectestdb.tbl",
+                'COMMENT ON TABLE mydeltatablespectestdb.tbl is "Contains useful data"',
             ],
         )

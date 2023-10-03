@@ -132,7 +132,7 @@ class TestTableSpec(DataframeTestCase):
         self.base.make_storage_match()
 
         # drop the table. Now it does not exist by name
-        Spark.get().sql(f"DROP TABLE {self.base.name}")
+        Spark.get().sql(f"DROP TABLE {self.base.fully_substituted().name}")
         # also the delta table on disk is incompatible.
         # a normal create statement for target would fail
 

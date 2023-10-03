@@ -196,6 +196,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
         allow_location_change=False,
         allow_table_create=True,
         errors_as_warnings=False,
+        schema_change_as_truncate=False,
     ) -> None:
         """If storage is not exactly like the specification,
         change the storage to make it match."""
@@ -213,6 +214,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
                 allow_location_change=allow_location_change,
                 allow_table_create=allow_table_create,
                 errors_as_warnings=errors_as_warnings,
+                schema_change_as_truncate=schema_change_as_truncate,
             ):
                 print(f"Executing SQL: {statement}")
                 spark.sql(statement)

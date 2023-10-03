@@ -1,10 +1,10 @@
 import unittest
 
+from pyspark.sql import DataFrame
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr import Configurator
 from spetlr.deltaspec import DeltaTableSpec
-from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 from tests.cluster.delta.deltaspec import tables
 
@@ -34,6 +34,11 @@ class TestTableSpec(DataframeTestCase):
         # clean up after test.
         Spark.get().sql(f"DROP DATABASE {db} CASCADE")
 
+    def target_test_df(self) -> DataFrame:
+        return Spark.get().createDataFrame(
+            [(1, "a", 3.14, "b", "c")], self.target.schema
+        )
+
     def test_01_tblspec(self):
         # at first the table does not exist
         diff = self.base.compare_to_name()
@@ -58,10 +63,11 @@ class TestTableSpec(DataframeTestCase):
         self.assertFalse(self.target.is_readable())
 
         # overwriting is possible and updates to the target schema
-        df = Spark.get().createDataFrame([(1, "a", 3.14, "b", "c")], self.target.schema)
-        self.target.make_storage_match(errors_as_warnings=True)
+        self.target.make_storage_match(
+            errors_as_warnings=True, schema_change_as_truncate=True
+        )
 
-        self.target.get_dh().overwrite(df, overwriteSchema=True)
+        self.target.get_dh().overwrite(self.target_test_df(), overwriteSchema=True)
 
         # now the base no longer matches
         diff = self.base.compare_to_name()
@@ -120,7 +126,8 @@ class TestTableSpec(DataframeTestCase):
 
     def test_06_make_match_on_incompatible_data(self):
         # clean away old data if any
-        init_dbutils().fs.rm(self.base.location, True)
+        self.base.get_dh().drop_and_delete()
+
         # create table
         self.base.make_storage_match()
 
@@ -129,13 +136,8 @@ class TestTableSpec(DataframeTestCase):
         # also the delta table on disk is incompatible.
         # a normal create statement for target would fail
 
-        self.target.make_storage_match(
-            allow_columns_add=True,
-            allow_columns_drop=True,
-            allow_columns_type_change=True,
-            allow_columns_reorder=True,
-            allow_table_create=True,
-        )
+        self.target.make_storage_match(schema_change_as_truncate=True)
+        self.target.get_dh().overwrite(self.target_test_df(), overwriteSchema=True)
 
         diff = self.target.compare_to_name()
         self.assertTrue(diff.complete_match(), diff)

@@ -298,14 +298,9 @@ class TestDeltaTableSpec(unittest.TestCase):
 
         self.maxDiff = None
         self.assertEqual(
-            diff.alter_statements(
-                allow_columns_add=True,
-                allow_columns_type_change=True,
-                allow_columns_drop=True,
-                allow_columns_reorder=True,
-            ),
+            diff.alter_statements(schema_change_as_truncate=True),
             [
-                # first, create a name for the data table
+                # first create a name for the old data.
                 "CREATE TABLE mydeltatablespectestdb.tbl\n"
                 "(\n"
                 "  c double,\n"
@@ -316,23 +311,15 @@ class TestDeltaTableSpec(unittest.TestCase):
                 ")\n"
                 "USING DELTA\n"
                 'LOCATION "dbfs:/tmp/somewhere/over/the/rainbow"\n',
-                "ALTER TABLE mydeltatablespectestdb.tbl "
-                "SET TBLPROPERTIES ("
+                "ALTER TABLE mydeltatablespectestdb.tbl SET TBLPROPERTIES ("
                 '"my.cool.peoperty" = "bacon", '
                 '"delta.minReaderVersion" = "2", '
                 '"delta.minWriterVersion" = "5", '
                 '"delta.columnMapping.mode" = "name")',
-                "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMNS (b, onlyb)",
-                "ALTER TABLE mydeltatablespectestdb.tbl ADD COLUMNS (\n"
-                "  b string,\n"
-                '  onlyt string COMMENT "Only in target"\n'
-                ")",
-                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a "
-                'COMMENT "gains not null"',
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT "
+                '"gains not null"',
                 'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT ""',
-                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a FIRST",
-                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN b AFTER a",
-                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyt AFTER d",
+                "TRUNCATE TABLE mydeltatablespectestdb.tbl",
                 'COMMENT ON TABLE mydeltatablespectestdb.tbl is "Contains useful data"',
             ],
         )

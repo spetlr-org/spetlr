@@ -107,6 +107,7 @@ class DeltaHandle(TableHandle):
             else:
                 raise DeltaHandleInvalidName(f"Could not parse name {self._name}")
 
+
         # only format delta is supported.
         if self._data_format != "delta":
             raise DeltaHandleInvalidFormat("Only format delta is supported.")

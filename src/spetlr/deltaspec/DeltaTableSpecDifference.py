@@ -1,6 +1,7 @@
 import copy
+import dataclasses
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import _MISSING_TYPE, asdict, dataclass
 from typing import Dict, List, Optional
 
 from pyspark.sql.types import StructField, StructType
@@ -43,6 +44,32 @@ class DeltaTableSpecDifference:
             level = min(t_name.level(), b_name.level())
             self.base.name = str(b_name.to_level(level))
             self.target.name = str(t_name.to_level(level))
+
+    def ignore(self, *keys: str):
+        """Returns a new DeltaTableSpecDifference where the given set of
+        keys are reset to default for both base and target."""
+
+        # map each name to either a default factory object,
+        # or a default object, or None
+        # depending on what we have
+        delta_spec_defaults = {
+            f.name: (
+                f.default_factory()
+                if not isinstance(f.default_factory, _MISSING_TYPE)
+                else f.default
+                if not isinstance(f.default, _MISSING_TYPE)
+                else None
+            )
+            for f in dataclasses.fields(self.target)
+        }
+        ignored_values = {key: delta_spec_defaults[key] for key in keys}
+        new_base = (
+            None
+            if self.base is None
+            else dataclasses.replace(self.base, **ignored_values)
+        )
+        new_target = dataclasses.replace(self.target, **ignored_values)
+        return DeltaTableSpecDifference(base=new_base, target=new_target)
 
     def nullbase(self) -> bool:
         """is the comparison to a null base. Meaing there is no table."""

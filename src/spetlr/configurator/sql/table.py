@@ -61,13 +61,6 @@ def _extract_table_blocks(stmt: _PeekableTokenList) -> StatementBlocks:
     else:
         raise _UnpackAttemptFailed("No valid table schema")
 
-    token = next(stmt)
-    val = token.value.upper()
-    if val == "USING":
-        blocks.using = next(stmt).value
-    else:
-        raise SpetlrConfiguratorInvalidSqlException("No valid table data source")
-
     for token in stmt:
         val = token.value.upper()
 
@@ -75,6 +68,10 @@ def _extract_table_blocks(stmt: _PeekableTokenList) -> StatementBlocks:
             blocks.options = {}
             for k, v in _unpack_options(stmt):
                 blocks.options[k] = v
+            continue
+
+        if val == "USING":
+            blocks.using = next(stmt).value
             continue
 
         if re.match(r"PARTITIONED\s+BY", val):

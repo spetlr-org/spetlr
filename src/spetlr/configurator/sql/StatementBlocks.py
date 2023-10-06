@@ -21,7 +21,7 @@ class ClusteredBy:
 @dataclass
 class StatementBlocks:
     schema: str = None
-    using: str = None
+    using: str = "DELTA"
     options: Dict[str, str] = None
     partitioned_by: List[str] = None
     clustered_by: ClusteredBy = None

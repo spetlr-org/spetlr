@@ -71,8 +71,12 @@ def _get_schema(iter) -> t.StructType:
             # - or the struct definition ends with ">"
             # - or a StopIteration is raised at the end of the string
             while iter.peek().value not in ",>":
-                # GENERATED ALWAYS AS is simply ignored in this parsing
+                # GENERATED is simply ignored in this parsing
                 if _ignore_generated(iter):
+                    continue
+
+                # DEFAULT is simply ignored in this parsing
+                if _ignore_default(iter):
                     continue
 
                 comment = _get_comment(iter)
@@ -134,21 +138,70 @@ def _get_comment(iter) -> Optional[str]:
 
 
 def _ignore_generated(iter):
+    """
+    The syntax for GENERATED:
+    ( { column_identifier column_type [ NOT NULL ]
+      [ GENERATED ALWAYS AS ( expr ) |
+        GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [
+         ( [ START WITH start ] [ INCREMENT BY step ] )
+        ] |
+        DEFAULT default_expression ]
+      [ COMMENT column_comment ]
+      [ column_constraint ] } [, ...]
+    [ , table_constraint ] [...] )
+    returns true if a GENRATED expression was parsed
+    """
     if iter.peek().value.upper() != "GENERATED":
         return False
-
     next(iter)
 
-    if next(iter).value.upper() != "ALWAYS":
-        raise SchemaExtractionError("Generated Always As expression is malformed")
+    while True:
+        peek_val = iter.peek().value.upper()
+        if peek_val in ["ALWAYS", "AS", "BY", "DEFAULT", "IDENTITY"]:
+            next(iter)
+            continue
+        if peek_val == "(":
+            next(iter)
+            _ignore_paren(iter, ")")
+            continue
+        else:
+            break
 
-    if next(iter).value.upper() != "AS":
-        raise SchemaExtractionError("Generated Always As expression is malformed")
+    return True
 
-    if next(iter).value != "(":
-        raise SchemaExtractionError("Generated Always As expression is malformed")
 
-    _ignore_paren(iter, ")")
+def _ignore_default(iter):
+    """
+    The syntax for GENERATED:
+    ( { column_identifier column_type [ NOT NULL ]
+      [ GENERATED ALWAYS AS ( expr ) |
+        GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [
+            ( [ START WITH start ] [ INCREMENT BY step ] )
+        ] |
+        DEFAULT default_expression ]
+      [ COMMENT column_comment ]
+      [ column_constraint ] } [, ...]
+    [ , table_constraint ] [...] )
+    returns true if a GENRATED expression was parsed
+    """
+    if iter.peek().value.upper() != "DEFAULT":
+        return False
+    next(iter)
+
+    # ignore to next comma
+    while True:
+        peek_val = iter.peek().value.upper()
+
+        if peek_val == "(":
+            next(iter)
+            _ignore_paren(iter, ")")
+            continue
+
+        if peek_val == ",":
+            break
+
+        next(iter)
+
     return True
 
 

@@ -11,3 +11,12 @@ b string
 )
 USING DELTA
 LOCATION '/{MNT}/foo/bar';
+
+-- SPETLR.CONFIGURATOR key: Table3
+CREATE TABLE IF NOT EXISTS rectangles
+(
+  id BIGINT GENERATED ALWAYS AS IDENTITY,
+  a INT,
+  b INT,
+  area INT GENERATED ALWAYS AS (a * b)
+);

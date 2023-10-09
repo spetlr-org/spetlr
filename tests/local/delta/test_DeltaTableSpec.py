@@ -1,10 +1,11 @@
+import dataclasses
 import unittest
 from textwrap import dedent
 
 from pyspark.sql import types as t
 
 from spetlr import Configurator
-from spetlr.deltaspec import TableSpectNotEnforcable
+from spetlr.deltaspec import DeltaTableSpecDifference, TableSpectNotEnforcable
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from tests.cluster.delta.deltaspec import tables
 from tests.local.delta import sql
@@ -288,3 +289,29 @@ class TestDeltaTableSpec(unittest.TestCase):
                 "ALTER TABLE mydeltatablespectestdb.direct DROP COLUMN (d)",
             ],
         )
+
+    def test_09_generated_and_default_expression(self):
+        c = Configurator()
+        c.clear_all_configurations()
+        c.add_sql_resource_path(sql)
+        ds = DeltaTableSpec.from_tc("Table3")
+        self.assertEqual(
+            ds.schema,
+            t.StructType(
+                [
+                    t.StructField("id", t.LongType(), True),
+                    t.StructField("a", t.IntegerType(), True),
+                    t.StructField("b", t.IntegerType(), True),
+                    t.StructField("area", t.IntegerType(), True),
+                ]
+            ),
+        )
+        diff = DeltaTableSpecDifference(
+            target=ds, base=dataclasses.replace(ds, tblproperties={})
+        )
+        # The diff is not a match, tableproperties, mismatch
+        self.assertFalse(diff.complete_match(), diff)
+
+        # ignore the tblproperties and it matches
+        diff = diff.ignore("tblproperties")
+        self.assertTrue(diff.complete_match(), diff)

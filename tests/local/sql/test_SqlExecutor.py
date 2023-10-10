@@ -19,3 +19,13 @@ class TestSqlExecutor(unittest.TestCase):
         s = SqlExecutor(sql, statement_spliter=None)
         statements = list(s.get_statements("*"))
         self.assertEqual(len(statements), 1)
+
+    def test_04_file_by_name(self):
+        s = SqlExecutor(sql, statement_spliter=None)
+        statements = list(s.get_statements("test1"))
+        self.assertEqual(len(statements), 1)
+
+    def test_05_file_not_found(self):
+        with self.assertRaises(ValueError):
+            s = SqlExecutor(sql, statement_spliter=None)
+            statements = list(s.get_statements("unknown"))

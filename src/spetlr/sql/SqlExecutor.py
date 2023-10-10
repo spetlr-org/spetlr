@@ -151,6 +151,7 @@ class SqlExecutor:
         if exclude_pattern is not None:
             exclude_pattern = self._wildcard_string_to_regexp(exclude_pattern)
 
+        found = False
         # loop the module contents and find matching files
         for file_name in ir.contents(self.base_module):
             extension = Path(file_name).suffix
@@ -165,9 +166,13 @@ class SqlExecutor:
             ):
                 continue
 
+            found = True
             with ir.path(self.base_module, file_name) as file_path:
                 with open(file_path) as file:
                     yield file.read()
+
+        if not found:
+            raise ValueError(f"No matching .sql files found in '{self.base_module}'")
 
     def execute_sql_file(self, file_pattern: str, exclude_pattern: str = None):
         """

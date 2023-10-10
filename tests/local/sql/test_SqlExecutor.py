@@ -28,7 +28,7 @@ class TestSqlExecutor(unittest.TestCase):
     def test_05_file_not_found(self):
         with self.assertRaises(ValueError):
             s = SqlExecutor(sql, statement_spliter=None)
-            statements = list(s.get_statements("unknown"))
+            list(s.get_statements("unknown"))
 
     def test_06_file_not_found_and_ignore_empty_folder(self):
         s = SqlExecutor(sql, statement_spliter=None, ignore_empty_folder=True)

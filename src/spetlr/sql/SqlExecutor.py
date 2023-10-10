@@ -22,6 +22,8 @@ class SqlExecutor:
         base_module: Union[str, ModuleType] = None,
         server: BaseExecutor = None,
         statement_spliter: Optional[List[str]] = _DEFAULT,
+        *,
+        ignore_empty_folder: bool = False,
     ):
         """Class to pre-treat sql statements and execute them.
         Replacement sequenced related to the Configurator will be inserted before
@@ -41,6 +43,7 @@ class SqlExecutor:
             # We treat it as another way to end a statement
             statement_spliter = [";", "-- COMMAND ----------"]
         self.statement_spliter = statement_spliter
+        self.ignore_empty_folder = ignore_empty_folder
 
     def _wildcard_string_to_regexp(self, instr: str) -> str:
         # prepare file pattern:
@@ -171,7 +174,7 @@ class SqlExecutor:
                 with open(file_path) as file:
                     yield file.read()
 
-        if not found:
+        if not found and not self.ignore_empty_folder:
             raise ValueError(f"No matching .sql files found in '{self.base_module}'")
 
     def execute_sql_file(self, file_pattern: str, exclude_pattern: str = None):

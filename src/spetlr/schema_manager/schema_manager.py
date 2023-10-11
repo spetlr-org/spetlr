@@ -1,4 +1,3 @@
-import json
 from string import Formatter
 from typing import Dict
 
@@ -11,7 +10,7 @@ from spetlr.exceptions import (
     NoSuchValueException,
     UnregisteredSchemaDefinitionException,
 )
-from spetlr.schema_manager.spark_schema import get_schema
+from spetlr.schema_manager.spark_schema import get_schema, schema_to_spark_sql
 from spetlr.singleton import Singleton
 
 
@@ -89,45 +88,11 @@ class SchemaManager(metaclass=Singleton):
         else:
             raise FalseSchemaDefinitionException(schema)
 
-    def struct_to_sql(self, schema: T.StructType, formatted=False) -> str:
-        """Convert the given schema into sql rows
-        that can form part of a CREATE TABLE statement.
-        Includes support for comments, nullability,
-        and complex data types (e.g. structs, arrays),
-
-        if formatted is True, the sql will contain newlines
-        and be indented for use in a long SQL schema.
-        """
-        return self._schema_to_spark_sql(schema, formatted=formatted)
-
-    def _schema_to_spark_sql(self, schema: T.StructType, formatted=False) -> str:
-        # TODO: Create a more capable method of translating StructTypes to
-        # spark sql strings
-        # Lacking:
-        # - generated-always-as
-
-        rows = []
-        for field in schema.fields:
-            row = f"{field.name} {field.dataType.simpleString()}"
-            if not field.nullable:
-                row += " NOT NULL"
-            if "comment" in field.metadata:
-                # I could have used a repr() here,
-                # but then I could get single quoted string. This ensured double quotes
-                row += f' COMMENT {json.dumps(field.metadata["comment"])}'
-            rows.append(row)
-
-        separator = ",\n  " if formatted else ", "
-
-        str_schema = separator.join(rows)
-
-        return str_schema
-
     def get_schema_as_string(self, schema_identifier: str) -> str:
         "return schema as a sql schema string"
         schema = self.get_schema(schema_identifier)
 
-        str_schema = self._schema_to_spark_sql(schema)
+        str_schema = schema_to_spark_sql(schema)
 
         return str_schema
 
@@ -145,7 +110,7 @@ class SchemaManager(metaclass=Singleton):
         str_schemas = {}
 
         for name, schema in schemas_dict.items():
-            str_schema = self._schema_to_spark_sql(schema, formatted=True)
+            str_schema = schema_to_spark_sql(schema, formatted=True)
             str_schemas[name] = str_schema
 
         return str_schemas

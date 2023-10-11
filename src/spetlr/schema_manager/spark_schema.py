@@ -1,3 +1,4 @@
+import json
 import re
 from typing import Optional
 
@@ -64,7 +65,9 @@ def _get_schema(iter) -> t.StructType:
         struct.add(name, dataType)
 
         # try parsing any further modifiers like nullability and comment.
-        set_comment, set_nullable = None, None
+        set_comment = None
+        set_nullable = None
+        set_default = None
         try:
             # loop over token blocks until either
             # - the next struct member definition starts at ,
@@ -76,7 +79,10 @@ def _get_schema(iter) -> t.StructType:
                     continue
 
                 # DEFAULT is simply ignored in this parsing
-                if _ignore_default(iter):
+                default = _get_default(iter)
+                if default is not None and not set_default:
+                    struct.fields[-1].metadata["CURRENT_DEFAULT"] = default
+                    set_default = True
                     continue
 
                 comment = _get_comment(iter)
@@ -111,6 +117,42 @@ def _get_schema(iter) -> t.StructType:
             raise SchemaExtractionError("Logic error")
 
     return struct
+
+
+def schema_to_spark_sql(schema: t.StructType, *, formatted=False) -> str:
+    """Convert the given schema into sql rows
+    that can form part of a CREATE TABLE statement.
+    Includes support for comments, nullability,
+    and complex data types (e.g. structs, arrays),
+
+    if formatted is True, the sql will contain newlines
+    and be indented for use in a long SQL schema.
+    """
+    # TODO: Create a more capable method of translating StructTypes to
+    # spark sql strings
+    # Lacking:
+    # - generated-always-as
+
+    rows = []
+    for field in schema.fields:
+        row = f"{field.name} {field.dataType.simpleString()}"
+        if not field.nullable:
+            row += " NOT NULL"
+        comment = field.metadata.get("comment", None)
+        if comment:
+            # I could have used a repr() here,
+            # but then I could get single quoted string. This ensured double quotes
+            row += f" COMMENT {json.dumps(comment)}"
+        default_clause = field.metadata.get("CURRENT_DEFAULT", None)
+        if default_clause:
+            row += f" DEFAULT {default_clause}"
+        rows.append(row)
+
+    separator = ",\n  " if formatted else ", "
+
+    str_schema = separator.join(rows)
+
+    return str_schema
 
 
 def _get_nullable(iter) -> Optional[bool]:
@@ -162,7 +204,7 @@ def _ignore_generated(iter):
             continue
         if peek_val == "(":
             next(iter)
-            _ignore_paren(iter, ")")
+            _captue_paren(iter, ")")
             continue
         else:
             break
@@ -170,7 +212,7 @@ def _ignore_generated(iter):
     return True
 
 
-def _ignore_default(iter):
+def _get_default(iter):
     """
     The syntax for GENERATED:
     ( { column_identifier column_type [ NOT NULL ]
@@ -182,35 +224,41 @@ def _ignore_default(iter):
       [ COMMENT column_comment ]
       [ column_constraint ] } [, ...]
     [ , table_constraint ] [...] )
-    returns true if a GENRATED expression was parsed
+    returns the value if a DEFAULT expression was parsed
     """
+
     if iter.peek().value.upper() != "DEFAULT":
-        return False
+        return None
     next(iter)
 
-    # ignore to next comma
+    # capture to next comma
+    parts = []
     while True:
-        peek_val = iter.peek().value.upper()
-
-        if peek_val == "(":
-            next(iter)
-            _ignore_paren(iter, ")")
-            continue
-
+        try:
+            peek_val = iter.peek().value.upper()
+        except StopIteration:
+            break
         if peek_val == ",":
             break
+        parts.append(next(iter))
+        if peek_val == "(":
+            parts.append(_captue_paren(iter, ")"))
+            continue
 
-        next(iter)
+    default = " ".join(str(p) for p in parts)
+    return default
 
-    return True
 
-
-def _ignore_paren(iter, closing=")") -> None:
+def _captue_paren(iter, closing=")") -> str:
+    parts = []
     for token in iter:
+        parts.append(token.value)
+
         if token.value == "(":
-            _ignore_paren(iter, ")")
-        if token.value == closing:
-            return
+            parts.append(_captue_paren(iter, ")"))
+        elif token.value == closing:
+            break
+    return " ".join(parts)
 
 
 def _get_data_type(iter) -> t.DataType:
@@ -296,3 +344,64 @@ def _get_data_type(iter) -> t.DataType:
         return t.MapType(key_type, value_type)
 
     raise NotImplementedError(f"Data type not implementd: {type_name}")
+
+
+def remove_nullability(schema: t.StructType) -> t.StructType:
+    """Return a schema where the nullability of all fields is reset to default"""
+    fields = []
+    for f in schema.fields:
+        fields.append(
+            t.StructField(
+                name=f.name, dataType=f.dataType, nullable=True, metadata=f.metadata
+            )
+        )
+    return t.StructType(fields)
+
+
+def remove_empty_comments(schema: t.StructType) -> t.StructType:
+    """Return a schema where the comment metadata is dropped if it is empty"""
+    fields = []
+    for f in schema.fields:
+        fields.append(
+            t.StructField(
+                name=f.name,
+                dataType=f.dataType,
+                nullable=f.nullable,
+                metadata={k: v for k, v in f.metadata.items() if k != "comment" or v},
+            )
+        )
+    return t.StructType(fields)
+
+
+def simplify_column_defaults(schema: t.StructType) -> t.StructType:
+    """
+    For columns that have a default value,
+    the metadata seems to contain three values
+        CURRENT_DEFAULT:
+          seems to contain the exact value and spelling as used in
+          the DEFAULT claus of the table creation
+          example: 'CURRENT_tIMEsTAMP()'
+        EXISTS_DEFAULT:
+          seems to contain the value of the expression if it were
+          used right now. example "TIMESTAMP '2023-10-10 14:55:11.315'"
+        default:
+          maybe a standardize form of the manually given default.
+          example 'current_timestamp()'
+
+    I have no simple way of extracting the values of
+    EXISTS_DEFAULT or 'default' for comparison. Therefore,
+    I will standardize the schema to only keep the value of
+    CURRENT_DEFAULT and compare those exactly.
+    """
+    removed_keys = ["EXISTS_DEFAULT", "default"]
+    fields = []
+    for f in schema.fields:
+        fields.append(
+            t.StructField(
+                name=f.name,
+                dataType=f.dataType,
+                nullable=f.nullable,
+                metadata={k: v for k, v in f.metadata.items() if k not in removed_keys},
+            )
+        )
+    return t.StructType(fields)

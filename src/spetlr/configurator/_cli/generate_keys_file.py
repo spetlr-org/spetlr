@@ -1,6 +1,7 @@
 import argparse
 import os.path
 
+from spetlr.configurator._cli.bformat import bformat
 from spetlr.exceptions.cli_exceptions import SpetlrCliCheckFailed
 
 
@@ -34,14 +35,7 @@ def generate_keys_file(options):
     )
 
     # if black is installed, use it to format the contents
-    try:
-        import black
-
-        new_conts = black.format_file_contents(
-            new_conts, fast=False, mode=black.FileMode()
-        )
-    except ModuleNotFoundError:
-        pass
+    new_conts = bformat(new_conts)
 
     output_file = options.output_file or ""
     output_file = output_file.replace("\\", "/")

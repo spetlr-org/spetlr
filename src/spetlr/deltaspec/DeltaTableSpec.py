@@ -1,14 +1,10 @@
-import pyspark.sql.types
 from pyspark.sql import DataFrame
 from pyspark.sql.utils import AnalysisException
 
 from spetlr import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
-from spetlr.deltaspec.DeltaTableSpecBase import (
-    DeltaTableSpecBase,
-    _DEFAULT_blankedPropertyKeys,
-)
+from spetlr.deltaspec.DeltaTableSpecBase import DeltaTableSpecBase
 from spetlr.deltaspec.DeltaTableSpecDifference import DeltaTableSpecDifference
 from spetlr.deltaspec.exceptions import (
     InvalidSpecificationError,
@@ -17,7 +13,6 @@ from spetlr.deltaspec.exceptions import (
 )
 from spetlr.schema_manager.spark_schema import get_schema
 from spetlr.spark import Spark
-from spetlr.sqlrepr.sql_types import repr_sql_types
 
 
 class DeltaTableSpec(DeltaTableSpecBase):
@@ -112,42 +107,6 @@ class DeltaTableSpec(DeltaTableSpecBase):
             location=details["location"],
             comment=details["description"],
         )
-
-    # String representations
-
-    def __repr__(self):
-        """Return a correct and minimal string,
-         that can be evaluated as python code to return a DeltaTableSpec instance
-        that will compare equal to the current instance."""
-        parts = [
-            (f"name={repr(self.name)}"),
-            f"schema={repr_sql_types(self.schema)}",
-            (f"options={repr(self.options)}" if self.options else ""),
-            (
-                f"partitioned_by={repr(self.partitioned_by)}"
-                if self.partitioned_by
-                else ""
-            ),
-            (f"tblproperties={repr(self.tblproperties)}" if self.tblproperties else ""),
-            (f"comment={repr(self.comment)}" if self.comment else ""),
-            (f"location={repr(self.location)}" if self.location else ""),
-            (
-                f"blankedPropertyKeys={repr(self.blankedPropertyKeys)}"
-                if self.blankedPropertyKeys != _DEFAULT_blankedPropertyKeys
-                else ""
-            ),
-        ]
-
-        return "DeltaTableSpec(" + (", ".join(p for p in parts if p)) + ")"
-
-    # identity manipulation
-    def copy(self) -> "DeltaTableSpec":
-        """Return an independent object that compares equal to this one."""
-        globals = {
-            k: v for k, v in vars(pyspark.sql.types).items() if not k.startswith("_")
-        }
-        globals.update(dict(DeltaTableSpec=DeltaTableSpec))
-        return eval(repr(self), globals)
 
     def get_dh(self) -> DeltaHandle:
         full = self.fully_substituted()

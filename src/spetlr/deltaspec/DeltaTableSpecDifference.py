@@ -1,7 +1,7 @@
 import copy
 import dataclasses
 import json
-from dataclasses import _MISSING_TYPE, asdict, dataclass
+from dataclasses import _MISSING_TYPE, dataclass
 from typing import Dict, List, Optional
 
 from pyspark.sql.types import StructField, StructType
@@ -9,7 +9,7 @@ from pyspark.sql.types import StructField, StructType
 from spetlr.deltaspec.DeltaTableSpecBase import DeltaTableSpecBase
 from spetlr.deltaspec.exceptions import TableSpectNotEnforcable
 from spetlr.deltaspec.helpers import TableName
-from spetlr.schema_manager import SchemaManager
+from spetlr.schema_manager.spark_schema import schema_to_spark_sql
 
 
 @dataclass
@@ -27,10 +27,12 @@ class DeltaTableSpecDifference:
 
     def __post_init__(self):
         # decouple from the initializing objects
-        self.base = (
-            DeltaTableSpecBase(**asdict(self.base.copy())) if self.base else None
-        )
-        self.target = DeltaTableSpecBase(**asdict(self.target.copy()))
+        self.base = DeltaTableSpecBase.as_spec(self.base)
+        self.target = DeltaTableSpecBase.as_spec(self.target)
+
+        # simplification blinds us to things that are not supported
+        self.base = self.base.simplify() if self.base else None
+        self.target = self.target.simplify()
 
         # Only compare table names up to the highest level
         # that both DeltaTableSpec have information about.
@@ -221,6 +223,7 @@ class DeltaTableSpecDifference:
         fields_to_add = []
         alter_comment = []  # (name,newValue)
         alter_nullability = []  # (name,newValue)
+        alter_defaults = []  # (name,newValue)
         fields_to_remove = []
 
         for key, targetField in target_fields.items():
@@ -265,6 +268,11 @@ class DeltaTableSpecDifference:
             if base_comment != target_comment:
                 alter_comment.append((key, target_comment))
 
+            base_default = base_field.metadata.get("CURRENT_DEFAULT", None)
+            target_default = targetField.metadata.get("CURRENT_DEFAULT", None)
+            if base_default != target_default:
+                alter_defaults.append((key, target_default))
+
             if base_field.nullable != targetField.nullable:
                 alter_nullability.append((key, targetField.nullable))
 
@@ -293,17 +301,13 @@ class DeltaTableSpecDifference:
             statement = f"ALTER TABLE {self.base.name} ADD COLUMN"
             if len(fields_to_add) == 1:
                 statement += (
-                    " ("
-                    + SchemaManager().struct_to_sql(StructType(fields_to_add)).strip()
-                    + ")"
+                    " (" + schema_to_spark_sql(StructType(fields_to_add)).strip() + ")"
                 )
             else:
                 statement += "S"
                 statement += (
                     " (\n  "
-                    + SchemaManager().struct_to_sql(
-                        StructType(fields_to_add), formatted=True
-                    )
+                    + schema_to_spark_sql(StructType(fields_to_add), formatted=True)
                     + "\n)"
                 )
 
@@ -321,6 +325,17 @@ class DeltaTableSpecDifference:
                 f"ALTER TABLE {self.base.name} ALTER COLUMN "
                 f"{key} COMMENT {json.dumps(newComment)}"
             )
+
+        for key, newDefault in alter_defaults:
+            if newDefault is None:
+                statements.append(
+                    f"ALTER TABLE {self.base.name} ALTER COLUMN " f"{key} DROP DEFAULT"
+                )
+            else:
+                statements.append(
+                    f"ALTER TABLE {self.base.name} ALTER COLUMN "
+                    f"{key} SET DEFAULT {newDefault}"
+                )
 
         # Finally address the possible change of order.
         base_order_so_far = copy.copy(base_order)

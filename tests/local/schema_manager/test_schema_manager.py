@@ -74,5 +74,5 @@ class TestSchemaManager(unittest.TestCase):
         )
         self.assertEqual(
             "Column1 int,\n  Column2 string,\n  Column3 float",
-            self.sc.struct_to_sql(schema, formatted=True),
+            schema_to_spark_sql(schema, formatted=True),
         )

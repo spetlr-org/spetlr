@@ -155,6 +155,14 @@ def schema_to_spark_sql(schema: t.StructType, *, formatted=False) -> str:
     return str_schema
 
 
+def schema_has_any_defaults(schema: t.StructType) -> bool:
+    """Return true if any column in the schema has a default value"""
+    for field in schema.fields:
+        if "CURRENT_DEFAULT" in field.metadata:
+            return True
+    return False
+
+
 def _get_nullable(iter) -> Optional[bool]:
     """See if a nullability follows. If it does, return the bool"""
     token = iter.peek()

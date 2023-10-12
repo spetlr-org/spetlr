@@ -40,6 +40,7 @@ class TestDeltaTableSpec(unittest.TestCase):
                 LOCATION "dbfs:/tmp/somewhere{ID}/over/the/rainbow"
                 TBLPROPERTIES (
                   "delta.columnMapping.mode" = "name",
+                  "delta.feature.allowColumnDefaults" = "supported",
                   "delta.minReaderVersion" = "2",
                   "delta.minWriterVersion" = "5"
                 )
@@ -90,6 +91,8 @@ class TestDeltaTableSpec(unittest.TestCase):
             [
                 "ALTER TABLE mydeltatablespectestdb.tbl "
                 'SET TBLPROPERTIES ("my.cool.peoperty" = "bacon")',
+                "ALTER TABLE mydeltatablespectestdb.tbl UNSET TBLPROPERTIES "
+                '("delta.feature.allowColumnDefaults")',
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMNS (b, onlyb)",
                 dedent(
                     """\
@@ -122,6 +125,8 @@ class TestDeltaTableSpec(unittest.TestCase):
                 allow_location_change=True,
             ),
             [
+                "ALTER TABLE mydeltatablespectestdb.tbl SET TBLPROPERTIES "
+                '("delta.feature.allowColumnDefaults" = "supported")',
                 "ALTER TABLE mydeltatablespectestdb.tbl "
                 'UNSET TBLPROPERTIES ("my.cool.peoperty")',
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMNS (b, onlyt)",

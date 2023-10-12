@@ -12,6 +12,7 @@ from spetlr.deltaspec.helpers import ensureStr, standard_databricks_location
 from spetlr.schema_manager.spark_schema import (
     remove_empty_comments,
     remove_nullability,
+    schema_has_any_defaults,
     schema_to_spark_sql,
     simplify_column_defaults,
 )
@@ -145,6 +146,12 @@ class DeltaTableSpecBase:
                 )
         else:
             self.tblproperties["delta.columnMapping.mode"] = "name"
+
+        if schema_has_any_defaults(self.schema):
+            # if defaults are used, this key is necessary
+            self.tblproperties.setdefault(
+                "delta.feature.allowColumnDefaults", "supported"
+            )
 
     def data_name(self) -> str:
         """Get a name that can be used in spark to access the underlying data."""

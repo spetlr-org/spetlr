@@ -27,5 +27,6 @@ param (
 ###############################################################################################
 
 Get-ChildItem "$PSScriptRoot/steps" -Filter *.ps1 | Sort-Object name | Foreach-Object {
+  Write-Host "###### Now running step $_"
   . ("$_")
 }

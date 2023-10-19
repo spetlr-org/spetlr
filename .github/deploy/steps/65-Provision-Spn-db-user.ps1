@@ -5,7 +5,17 @@ $sqlServerInstance = $databaseServerName + ".database.windows.net"
 # https://learn.microsoft.com/en-us/azure/active-directory/roles/custom-assign-graph
 # https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/howto-assign-access-cli
 Write-Host "Giving sql server Directory Reader role...."
-$spID=$(az resource list -n $databaseServerName --query [*].identity.principalId --out tsv)
+
+for ($i = 1; $i -le 30; $i++) {
+  $spId=$(az sql server show -n $databaseServerName -g $resourceGroupName --query identity.principalId --out tsv)
+  if ($spId){break}
+  Write-Host "Getting the spID failed. Wait 1 second."
+  Start-Sleep -Seconds 1
+}
+if($spId -eq ""){
+  throw "Unable to get spId"
+}
+
 Graph-CreateRole -principalId $spId -roleDefinitionId 88d8e3e3-8f55-4a1e-953a-9b9898b8876b
 Ignore-Errors  # The role may already be there if we re-deploy
 

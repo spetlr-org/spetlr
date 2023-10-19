@@ -7,13 +7,13 @@ $sqlServerInstance = $databaseServerName + ".database.windows.net"
 Write-Host "Giving sql server Directory Reader role...."
 
 for ($i = 1; $i -le 30; $i++) {
-  $spID=$(az resource list -n $databaseServerName --resource-type "Microsoft.Sql/servers" --query [*].identity.principalId --out tsv)
-  if ($spID){break}
+  $spId=$(az sql server show -n $databaseServerName -g $resourceGroupName --query identity.principalId --out tsv)
+  if ($spId){break}
   Write-Host "Getting the spID failed. Wait 1 second."
   Start-Sleep -Seconds 1
 }
-if($spID -eq ""){
-  throw "Unable to get spID"
+if($spId -eq ""){
+  throw "Unable to get spId"
 }
 
 Graph-CreateRole -principalId $spId -roleDefinitionId 88d8e3e3-8f55-4a1e-953a-9b9898b8876b

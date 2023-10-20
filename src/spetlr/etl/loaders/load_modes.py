@@ -9,10 +9,12 @@ class Upsertable(Protocol):
 
 
 class Overwritable(Protocol):
-    def overwrite(self, df: DataFrame) -> None:
+    def overwrite(
+        self, df: DataFrame, mergeSchema: bool = None, overwriteSchema: bool = None
+    ) -> None:
         pass
 
 
 class Appendable(Protocol):
-    def append(self, df: DataFrame) -> None:
+    def append(self, df: DataFrame, mergeSchema: bool = None) -> None:
         pass

@@ -52,12 +52,22 @@ class SqlHandle(TableHandle):
             df_source=df, table_name=self._name, append=append
         )
 
-    def overwrite(self, df: DataFrame) -> None:
+    def overwrite(
+        self, df: DataFrame, mergeSchema: bool = None, overwriteSchema: bool = None
+    ) -> None:
+        if mergeSchema is not None or overwriteSchema is not None:
+            raise ValueError("Schema evolution not supported in sql server")
         return self._sql_server.write_table_by_name(
             df_source=df, table_name=self._name, append=False
         )
 
-    def append(self, df: DataFrame) -> None:
+    def append(
+        self,
+        df: DataFrame,
+        mergeSchema: bool = None,
+    ) -> None:
+        if mergeSchema is not None:
+            raise ValueError("Schema evolution not supported in sql server")
         return self._sql_server.write_table_by_name(
             df_source=df, table_name=self._name, append=True
         )

@@ -3,7 +3,8 @@ import unittest
 from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.spark import Spark
-from tests.cluster.delta import extras
+from spetlr.sql import SqlExecutor
+from tests.cluster.delta import extras, views
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 
@@ -26,7 +27,7 @@ class DeliverySparkExecutorTests(unittest.TestCase):
         DbHandle.from_tc("SparkTestDb").drop_cascade()
         DeltaHandle.from_tc("SparkTestTable1").drop()
 
-    def test_can_execute(self):
+    def test_01_can_execute(self):
         SparkSqlExecutor().execute_sql_file("*", exclude_pattern="debug")
 
         DeltaHandle.from_tc("SparkTestTable1").read()
@@ -40,3 +41,9 @@ class DeliverySparkExecutorTests(unittest.TestCase):
         SparkSqlExecutor().execute_sql_file("*")
 
         DeltaHandle.from_tc("SparkTestTable2").read()
+
+    def test_02_can_use_replacments(self):
+        e = SqlExecutor(base_module=views)
+        e.execute_sql_file("*", replacements={"my_view_name": "customview"})
+
+        _ = Spark.get().table("customview")  # excute without error

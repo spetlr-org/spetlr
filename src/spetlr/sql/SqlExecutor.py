@@ -181,7 +181,7 @@ class SqlExecutor:
         self,
         file_pattern: str,
         exclude_pattern: str = None,
-        replacements: Optional[dict[str, str]] = None,
+        replacements: Optional[Dict[str, str]] = None,
     ):
         """
         NB: This sql parser can be challenged in parsing sql statements

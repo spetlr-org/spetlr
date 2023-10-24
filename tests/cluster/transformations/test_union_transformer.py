@@ -1,6 +1,6 @@
 import unittest
 
-from pyspark.sql import DataFrame
+from spetlrtools.testing import TestHandle
 
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors import SimpleExtractor
@@ -10,36 +10,13 @@ from spetlr.transformers import UnionTransformer
 
 
 class MergeDfIntoTargetTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        pass
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        pass
-
     def test_01_union(self):
         schema = "i integer, s string"
 
-        class Reader:
-            df: DataFrame
+        th1 = TestHandle(provides=Spark.get().createDataFrame([(1, "a")], schema))
+        th2 = TestHandle(provides=Spark.get().createDataFrame([(1, "a")], schema))
 
-            def read(self):
-                return self.df
-
-        th1 = Reader()
-        th1.df = Spark.get().createDataFrame([(1, "a")], schema)
-
-        th2 = Reader()
-        th2.df = Spark.get().createDataFrame([(1, "a")], schema)
-
-        class Writer:
-            df: DataFrame
-
-            def overwrite(self, df: DataFrame):
-                self.df = df
-
-        th3 = Writer()
+        th3 = TestHandle()
 
         o = Orchestrator()
         o.extract_from(SimpleExtractor(th1, "th1"))
@@ -48,4 +25,4 @@ class MergeDfIntoTargetTest(unittest.TestCase):
         o.load_into(SimpleLoader(th3))
         o.execute()
 
-        self.assertEqual(th1.df.schema, th3.df.schema)
+        self.assertEqual(th1.provides.schema, th3.overwritten.schema)

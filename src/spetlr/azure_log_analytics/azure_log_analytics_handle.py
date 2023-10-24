@@ -100,7 +100,9 @@ class AzureLogAnalyticsHandle(TableHandle):
             "x-ms-date": date_rfc1123_format,
         }
 
-    def api_post(self, df: DataFrame) -> None:
+    def api_post(self, df: DataFrame, mergeSchema: bool = None) -> None:
+        # silently ignore irrelevant mergeSchema
+
         resource = "/api/logs"
 
         uri = self._create_uri(resource=resource)

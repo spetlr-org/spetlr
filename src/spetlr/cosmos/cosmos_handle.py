@@ -41,7 +41,12 @@ class CosmosHandle(TableHandle):
     def recreate(self):
         self._cosmos_db.recreate_container_by_name(self._name)
 
-    def append(self, df: DataFrame) -> None:
+    def append(
+        self,
+        df: DataFrame,
+        mergeSchema: bool = None,
+    ) -> None:
+        # ignore mergeSchema silently. Schema evolution works implicitly in cosmos
         self._cosmos_db.write_table_by_name(df, self._name, self._rows_per_partition)
 
     def truncate(self) -> None:
@@ -59,7 +64,9 @@ class CosmosHandle(TableHandle):
         else:
             raise ValueError(f"unsupported flag value of mode: {mode}")
 
-    def overwrite(self, df: DataFrame) -> None:
+    def overwrite(
+        self, df: DataFrame, mergeSchema: bool = None, overwriteSchema: bool = None
+    ) -> None:
         raise NotImplementedError("Method not supported in Cosmos")
 
     def upsert(self, df: DataFrame, join_cols: List[str]) -> Union[DataFrame, None]:

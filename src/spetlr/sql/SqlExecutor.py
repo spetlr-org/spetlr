@@ -177,7 +177,12 @@ class SqlExecutor:
         if not found and not self.ignore_empty_folder:
             raise ValueError(f"No matching .sql files found in '{self.base_module}'")
 
-    def execute_sql_file(self, file_pattern: str, exclude_pattern: str = None):
+    def execute_sql_file(
+        self,
+        file_pattern: str,
+        exclude_pattern: str = None,
+        replacements: Optional[Dict[str, str]] = None,
+    ):
         """
         NB: This sql parser can be challenged in parsing sql statements
         which do not use semicolon as a query separator only.
@@ -187,7 +192,9 @@ class SqlExecutor:
 
         statement = None
 
-        for statement in self.get_statements(file_pattern, exclude_pattern):
+        for statement in self.get_statements(
+            file_pattern, exclude_pattern, replacements
+        ):
             executor.sql(statement)
 
         if statement is None:

@@ -7,10 +7,12 @@ class TableHandle:
     def read(self) -> DataFrame:
         raise NotImplementedError()
 
-    def overwrite(self, df: DataFrame) -> None:
+    def overwrite(
+        self, df: DataFrame, mergeSchema: bool = None, overwriteSchema: bool = None
+    ) -> None:
         raise NotImplementedError()
 
-    def append(self, df: DataFrame) -> None:
+    def append(self, df: DataFrame, mergeSchema: bool = None) -> None:
         raise NotImplementedError()
 
     def truncate(self) -> None:

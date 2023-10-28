@@ -2,9 +2,11 @@ import dataclasses
 import unittest
 from textwrap import dedent
 
+import pyspark
 from pyspark.sql import types as t
 
 from spetlr import Configurator
+from spetlr.configurator._cli.bformat import bformat
 from spetlr.deltaspec import DeltaTableSpecDifference, TableSpectNotEnforcable
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from tests.cluster.delta.deltaspec import tables
@@ -28,8 +30,8 @@ class TestDeltaTableSpec(unittest.TestCase):
                 """\
                 CREATE TABLE myDeltaTableSpecTestDb{ID}.tbl
                 (
-                  c double,
-                  d string COMMENT "Whatsupp",
+                  c double DEFAULT 3.14,
+                  d string NOT NULL COMMENT "Whatsupp",
                   onlyb int,
                   a int,
                   b int
@@ -38,6 +40,7 @@ class TestDeltaTableSpec(unittest.TestCase):
                 LOCATION "dbfs:/tmp/somewhere{ID}/over/the/rainbow"
                 TBLPROPERTIES (
                   "delta.columnMapping.mode" = "name",
+                  "delta.feature.allowColumnDefaults" = "supported",
                   "delta.minReaderVersion" = "2",
                   "delta.minWriterVersion" = "5"
                 )
@@ -88,6 +91,8 @@ class TestDeltaTableSpec(unittest.TestCase):
             [
                 "ALTER TABLE mydeltatablespectestdb.tbl "
                 'SET TBLPROPERTIES ("my.cool.peoperty" = "bacon")',
+                "ALTER TABLE mydeltatablespectestdb.tbl UNSET TBLPROPERTIES "
+                '("delta.feature.allowColumnDefaults")',
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMNS (b, onlyb)",
                 dedent(
                     """\
@@ -101,6 +106,7 @@ class TestDeltaTableSpec(unittest.TestCase):
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT"
                 ' "gains not null"',
                 'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT ""',
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN c DROP DEFAULT",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a FIRST",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN b AFTER a",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyt AFTER d",
@@ -119,6 +125,8 @@ class TestDeltaTableSpec(unittest.TestCase):
                 allow_location_change=True,
             ),
             [
+                "ALTER TABLE mydeltatablespectestdb.tbl SET TBLPROPERTIES "
+                '("delta.feature.allowColumnDefaults" = "supported")',
                 "ALTER TABLE mydeltatablespectestdb.tbl "
                 'UNSET TBLPROPERTIES ("my.cool.peoperty")',
                 "ALTER TABLE mydeltatablespectestdb.tbl DROP COLUMNS (b, onlyt)",
@@ -134,6 +142,8 @@ class TestDeltaTableSpec(unittest.TestCase):
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT "
                 '"Whatsupp"',
                 'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT ""',
+                "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN c "
+                "SET DEFAULT 3.14",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN c FIRST",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d AFTER c",
                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyb AFTER d",
@@ -180,7 +190,7 @@ class TestDeltaTableSpec(unittest.TestCase):
         )
         Configurator().set_prod()
         d = tbl2.compare_to(tbl1.fully_substituted())
-        self.assertFalse(d.is_different(), d)
+        self.assertFalse(d.is_different(), bformat(repr(d)))
 
     def test_05_namechagne(self):
         statements = tables.newname.compare_to(tables.oldname).alter_statements(
@@ -315,3 +325,14 @@ class TestDeltaTableSpec(unittest.TestCase):
         # ignore the tblproperties and it matches
         diff = diff.ignore("tblproperties")
         self.assertTrue(diff.complete_match(), diff)
+
+    def test_10_repr(self):
+        base = tables.base
+        globals = {
+            k: v for k, v in vars(pyspark.sql.types).items() if not k.startswith("_")
+        }
+        globals.update(dict(DeltaTableSpec=DeltaTableSpec))
+
+        copy_of_base = eval(repr(base), globals)
+
+        self.assertEqual(base, copy_of_base)

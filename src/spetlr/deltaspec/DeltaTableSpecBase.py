@@ -1,4 +1,5 @@
 import copy
+import dataclasses
 import json
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional, Union
@@ -8,7 +9,14 @@ from pyspark.sql.types import StructField, StructType
 from spetlr import Configurator
 from spetlr.deltaspec.exceptions import InvalidSpecificationError, TableSpecNotReadable
 from spetlr.deltaspec.helpers import ensureStr, standard_databricks_location
-from spetlr.schema_manager import SchemaManager
+from spetlr.schema_manager.spark_schema import (
+    remove_empty_comments,
+    remove_nullability,
+    schema_has_any_defaults,
+    schema_to_spark_sql,
+    simplify_column_defaults,
+)
+from spetlr.sqlrepr.sql_types import repr_sql_types
 
 _DEFAULT = object()
 
@@ -65,14 +73,6 @@ class DeltaTableSpecBase:
 
         self.location = standard_databricks_location(self.location)
 
-        # Experiments have shown that the statement
-        # ALTER TABLE she_test.tbl ALTER COLUMN a DROP NOT NULL
-        # does not actually take effect on a table.
-        # So we cannot work with not-nullable columns
-        # in the future, if we want to generate these types
-        # of alter statement, simply remove the following line.
-        self.schema = self.remove_nullability(self.schema)
-
         # the functionality enabled by 'delta.columnMapping.mode' = 'name',
         # is needed for column manipulation and seems to go along with another
         # property "delta.columnMapping.maxColumnId": "5" which increases when
@@ -83,6 +83,31 @@ class DeltaTableSpecBase:
         for key in self.blankedPropertyKeys:
             if key in self.tblproperties:
                 del self.tblproperties[key]
+
+    def __repr__(self):
+        """Return a correct and minimal string,
+         that can be evaluated as python code to return a DeltaTableSpec instance
+        that will compare equal to the current instance."""
+        parts = [
+            (f"name={repr(self.name)}"),
+            f"schema={repr_sql_types(self.schema)}",
+            (f"options={repr(self.options)}" if self.options else ""),
+            (
+                f"partitioned_by={repr(self.partitioned_by)}"
+                if self.partitioned_by
+                else ""
+            ),
+            (f"tblproperties={repr(self.tblproperties)}" if self.tblproperties else ""),
+            (f"comment={repr(self.comment)}" if self.comment else ""),
+            (f"location={repr(self.location)}" if self.location else ""),
+            (
+                f"blankedPropertyKeys={repr(self.blankedPropertyKeys)}"
+                if self.blankedPropertyKeys != _DEFAULT_blankedPropertyKeys
+                else ""
+            ),
+        ]
+
+        return f"{self.__class__.__name__}(" + (", ".join(p for p in parts if p)) + ")"
 
     def set_good_defaults(self):
         """
@@ -122,6 +147,12 @@ class DeltaTableSpecBase:
         else:
             self.tblproperties["delta.columnMapping.mode"] = "name"
 
+        if schema_has_any_defaults(self.schema):
+            # if defaults are used, this key is necessary
+            self.tblproperties.setdefault(
+                "delta.feature.allowColumnDefaults", "supported"
+            )
+
     def data_name(self) -> str:
         """Get a name that can be used in spark to access the underlying data."""
         c = Configurator()
@@ -134,8 +165,64 @@ class DeltaTableSpecBase:
             raise TableSpecNotReadable("Name or location required to access data.")
         return data_name
 
+    def simplify(self) -> "DeltaTableSpecBase":
+        return dataclasses.replace(self, schema=self.simplified_schema())
+
+    def simplified_schema(self) -> StructType:
+        schema = self.schema
+        # Experiments have shown that the statement
+        # ALTER TABLE she_test.tbl ALTER COLUMN a DROP NOT NULL
+        # does not actually take effect on a table.
+        # So we cannot work with not-nullable columns
+        # in the future, if we want to generate these types
+        # of alter statement, simply remove the following line.
+        schema = remove_nullability(schema)
+
+        # when working with ALTER TABLE statements, there
+        # is no statement to ALTER COLUMN xxx DROP COMMENT
+        # therefore we need to consider empty column comments
+        # as no comments
+        schema = remove_empty_comments(schema)
+
+        # For columns that have a default value,
+        # the metadata seems to contain three values
+        # CURRENT_DEFAULT:
+        #   seems to contain the exact value and spelling as used in
+        #   the DEFAULT claus of the table creation
+        #   example: 'CURRENT_tIMEsTAMP()'
+        # EXISTS_DEFAULT:
+        #   seems to contain the value of the expression if it were
+        #   used right now. example "TIMESTAMP '2023-10-10 14:55:11.315'"
+        # default:
+        #   maybe a standardize form of the manually given default.
+        #   example 'current_timestamp()'
+        #
+        # I have no simple way of extracting the values of
+        # EXISTS_DEFAULT or 'default' for comparison. Therefore,
+        # I will standardize the schema to only keed the value of
+        # CURRENT_DEFAULT and compare those exactly.
+        schema = simplify_column_defaults(schema)
+
+        # as a final precaution, check that the metadata does not contain
+        # anything that we do not support
+        supported_keys = [
+            "comment",
+            "CURRENT_DEFAULT",
+        ]
+        for f in schema.fields:
+            for m_key in f.metadata.keys():
+                if m_key not in supported_keys:
+                    print(
+                        f"WARNING: Column {f.name} "
+                        f"has unknown metadata key {m_key}."
+                        "Expect the make_storage_match method "
+                        "to be insufficient."
+                    )
+
+        return schema
+
     @classmethod
-    def remove_nullability(self, schema: StructType) -> StructType:
+    def remove_nullability_and_commets(cls, schema: StructType) -> StructType:
         """Return a schema where the nullability of all fields is reset to default"""
         fields = []
         for f in schema.fields:
@@ -149,10 +236,14 @@ class DeltaTableSpecBase:
             )
         return StructType(fields)
 
-    # identity manipulation
-    def copy(self) -> "DeltaTableSpecBase":
-        """Return an independent object that compares equal to this one."""
-        return copy.deepcopy(self)
+    @classmethod
+    def as_spec(cls, other):
+        if other is None:
+            return None
+
+        from spetlr.deltaspec import DeltaTableSpec
+
+        return DeltaTableSpec(**dataclasses.asdict(other))
 
     def fully_substituted(self, name=_DEFAULT) -> "DeltaTableSpecBase":
         """Return a new DeltaTableSpec
@@ -175,7 +266,7 @@ class DeltaTableSpecBase:
          that creates the table described by the current DeltaTableSpec instance.
         This method is guaranteed to be the inverse of the `.from_sql(sql)` constructor.
         """
-        schema_str = SchemaManager().struct_to_sql(self.schema, formatted=True)
+        schema_str = schema_to_spark_sql(self.schema, formatted=True)
         self.data_name()  # raise if we cannot point to data
 
         sql = (

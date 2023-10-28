@@ -4,6 +4,7 @@ import pyspark.sql.types as T
 
 from spetlr.configurator import Configurator
 from spetlr.schema_manager import SchemaManager
+from spetlr.schema_manager.spark_schema import schema_to_spark_sql
 
 from . import extras
 from .extras import initSchemaManager
@@ -69,9 +70,9 @@ class TestSchemaManager(unittest.TestCase):
             ]
         )
         self.assertEqual(
-            "Column1 int, Column2 string, Column3 float", self.sc.struct_to_sql(schema)
+            "Column1 int, Column2 string, Column3 float", schema_to_spark_sql(schema)
         )
         self.assertEqual(
             "Column1 int,\n  Column2 string,\n  Column3 float",
-            self.sc.struct_to_sql(schema, formatted=True),
+            schema_to_spark_sql(schema, formatted=True),
         )

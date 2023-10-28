@@ -6,7 +6,7 @@ base = DeltaTableSpec.from_sql(
     """
     CREATE TABLE myDeltaTableSpecTestDb{ID}.tbl
     (
-        c double,
+        c double DEFAULT 3.14,
         d string NOT NULL COMMENT "Whatsupp",
         onlyb int,
         a int,

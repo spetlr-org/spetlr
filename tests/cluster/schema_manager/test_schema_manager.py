@@ -6,7 +6,7 @@ from spetlrtools.testing import DataframeTestCase
 from spetlr.configurator import Configurator
 from spetlr.delta import DeltaHandle
 from spetlr.schema_manager import SchemaManager
-from spetlr.schema_manager.spark_schema import get_schema
+from spetlr.schema_manager.spark_schema import get_schema, schema_to_spark_sql
 
 from . import extras
 from .SparkExecutor import SparkSqlExecutor
@@ -98,7 +98,7 @@ class TestSchemaManager(DataframeTestCase):
             ]
         )
 
-        transformed_str = SchemaManager()._schema_to_spark_sql(schema=schema)
+        transformed_str = schema_to_spark_sql(schema=schema)
         expected_str = "Column1 int, Column2 string, Column3 float"
 
         self.maxDiff = None

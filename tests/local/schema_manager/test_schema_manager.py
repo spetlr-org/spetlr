@@ -4,9 +4,9 @@ import pyspark.sql.types as T
 
 from spetlr.configurator import Configurator
 from spetlr.schema_manager import SchemaManager
-
-from . import extras
-from .extras import initSchemaManager
+from spetlr.schema_manager.spark_schema import get_schema
+from tests.local.schema_manager import extras
+from tests.local.schema_manager.extras import initSchemaManager
 
 
 class TestSchemaManager(unittest.TestCase):
@@ -75,3 +75,11 @@ class TestSchemaManager(unittest.TestCase):
             "Column1 int,\n  Column2 string,\n  Column3 float",
             self.sc.struct_to_sql(schema, formatted=True),
         )
+
+    def test_05_parse_comments(self):
+        d_field = get_schema(
+            """
+            d string COMMENT 'Whatsupp with "you"',
+        """
+        ).fields[0]
+        self.assertEqual(d_field.metadata, {"comment": 'Whatsupp with "you"'})

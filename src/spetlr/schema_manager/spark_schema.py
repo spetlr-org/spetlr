@@ -1,4 +1,5 @@
 import re
+from ast import literal_eval
 from typing import Optional
 
 from more_itertools import peekable
@@ -134,7 +135,7 @@ def _get_comment(iter) -> Optional[str]:
     next(iter)
 
     comment = next(iter).value
-    return comment.strip("'\"")
+    return literal_eval(comment)
 
 
 def _ignore_generated(iter):

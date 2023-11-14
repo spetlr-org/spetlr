@@ -252,3 +252,18 @@ class TestConfigurator(unittest.TestCase):
         c.add_sql_resource_path(views)
 
         self.assertEqual(c.get("MyViewId", "name"), "SomeViewName")
+
+    def test_15_update_registration(self):
+        c = Configurator()
+        c.add_sql_resource_path(views)
+        # the view is registered as expected
+        self.assertEqual(c.get("MyViewId", "name"), "SomeViewName")
+
+        # we register additional details for the view
+        # This could be in a yaml file from before the details were put in sql
+        c.register("MyViewId", {"my aux detail": "MyValue"})
+
+        # the view is still there
+        self.assertEqual(c.get("MyViewId", "name"), "SomeViewName")
+        # and the extra detail also
+        self.assertEqual(c.get("MyViewId", "my aux detail"), "MyValue")

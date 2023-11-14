@@ -63,6 +63,12 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         self.table_details = dict()
         self._set_extras()
 
+    def verify_consistency(self):
+        """This method will re-build the table details. This requires that all
+        internally recursive references can be resolved."""
+        self.table_details = dict()
+        return self.get_all_details()
+
     ############################################
     # the core logic of this class is contained
     # in the following methods
@@ -225,7 +231,10 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         # exception for any missing key, which will give a meaningful error to the user.
         return raw_string.format(**replacements)
 
-    def add_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
+    def add_resource_path(
+        self, resource_path: Union[str, ModuleType], consistency_check=True
+    ) -> None:
+        self.table_details = dict()
         backup_details = self._raw_resource_details.copy()
         try:
             for file_name in importlib.resources.contents(resource_path):
@@ -246,16 +255,22 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
                             self._raw_resource_details[key] = value
 
             # try re-building all details
-            self.table_details = dict()
-            self.get_all_details()
+            if consistency_check:
+                self.verify_consistency()
         except:  # noqa: E722  we re-raise the exception, so bare except is ok.
             # this piece makes it so that the Configurator can still be used
             # if any exception raised by the above code is caught.
             self._raw_resource_details = backup_details
             raise
 
-    def add_sql_resource_path(self, resource_path: Union[str, ModuleType]) -> None:
+    def add_sql_resource_path(
+        self, resource_path: Union[str, ModuleType], consistency_check=True
+    ) -> None:
+        self.table_details = dict()
         self._raw_resource_details.update(_parse_sql_to_config(resource_path))
+
+        if consistency_check:
+            self.verify_consistency()
 
     def key_of(self, attribute: str, value: str) -> str:
         """Obtain the key of the first registered item that has a given attribute
@@ -284,6 +299,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     def set_extra(self, **kwargs: str):
         """Use .register(key,value) instead.
         for example call .register('ENV','prod')"""
+        self.table_details = dict()
         for key, value in kwargs.items():
             self.register(key, value)
 

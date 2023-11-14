@@ -252,7 +252,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
                         for key, value in update.items():
                             # we now support all bare value types in yaml.
                             # no further checking
-                            self._raw_resource_details[key] = value
+                            self.register(key, value)
 
             # try re-building all details
             if consistency_check:
@@ -267,7 +267,8 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         self, resource_path: Union[str, ModuleType], consistency_check=True
     ) -> None:
         self.table_details = dict()
-        self._raw_resource_details.update(_parse_sql_to_config(resource_path))
+        for key, value in _parse_sql_to_config(resource_path).items():
+            self.register(key, value)
 
         if consistency_check:
             self.verify_consistency()
@@ -299,7 +300,6 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     def set_extra(self, **kwargs: str):
         """Use .register(key,value) instead.
         for example call .register('ENV','prod')"""
-        self.table_details = dict()
         for key, value in kwargs.items():
             self.register(key, value)
 
@@ -341,8 +341,18 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     def register(self, key: str, value: TcValue) -> str:
         """
         Register a new item and return its key.
+        If both the new and old items are dictionaries, their contents are merged.
+        Supply value=None to clear a key.
         """
-        self._raw_resource_details[key] = value
+        if value is None:
+            self._raw_resource_details.pop(key, None)
+        elif isinstance(value, dict) and isinstance(
+            self._raw_resource_details.get(key), dict
+        ):
+            # if both are dicts, update the contents.
+            self._raw_resource_details[key].update(value)
+        else:
+            self._raw_resource_details[key] = value
         self.table_details = dict()
         return key
 

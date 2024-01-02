@@ -17,6 +17,7 @@ Transformations in spetlr:
   - [CountryToAlphaCodeTransformer](#countrytoalphacodetransformer)
   - [GenerateMd5ColumnTransformer](#generatemd5columntransformer)
   - [DataChangeCaptureTransformer](#datachangecapturetransformer)
+  - [CleanColumnNamesTransformer](#cleancolumnnamestransformer)
 ## Concatenate data frames
 
 *UPDATE: Pyspark has an equivalent implementation  `.unionByName(df, allowMissingColumns=False)`, see the [documentation](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrame.unionByName.html) for more information.*
@@ -559,4 +560,33 @@ df.show()
 |  2| Gibson|  Les Paul|        200|
 |  4| Falcon|   Gretsch|        250|
 +---+------+----------+-----------+
+```
+
+## CleanColumnNamesTransformer
+
+This class cleans the column names of the dataframe, it does so by.
+  * Removing special characters,
+  * Trimming whitespaces 
+  * Changing remaining whitespaces to underscores
+
+Usage example:
+
+
+``` python 
+from spetlr.transformers import CleanColumnNamesTransformer
+
+df_input.show()
+
+|col (col) |col |col three|
++----------+----+---------+
++----------+----+---------+
+
+df_transformed = CleanColumnNamesTransformer().process(df_input)
+
+df_transformed.show() 
+
++-------+---+---------+
+|col_col|col|col_three|
++-------+---+---------+
++-------+---+---------+
 ```

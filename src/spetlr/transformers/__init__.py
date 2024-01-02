@@ -1,3 +1,4 @@
+from .clean_column_names_transformer import CleanColumnNamesTransformer  # noqa: F401
 from .country_to_alphacode_transformer import (  # noqa: F401
     CountryToAlphaCodeTransformer,
 )

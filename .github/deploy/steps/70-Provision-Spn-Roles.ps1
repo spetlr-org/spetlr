@@ -4,6 +4,6 @@ $output = az role assignment create `
   --role "Storage Blob Data Contributor" `
   --assignee-principal-type ServicePrincipal `
   --assignee-object-id $mountSpn.objectId `
-  --resource-group $resourceGroupName
+  --scope "/subscriptions/$($subscriptionId)/resourceGroups/$($resourceGroupName)"
 
 Throw-WhenError -output $output

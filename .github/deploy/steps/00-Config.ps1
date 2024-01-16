@@ -91,7 +91,7 @@ $metastoreAccessConnectorName   = "ac-metastore"
 $metastoreDatabricksName        = "dbws-metastore"
 $metastoreName                  = "spetlr-metastore"
 $metastoreCatalogName           = "spetlr_catalog"
-
+$subscriptionId = "c3a3d88f-e2a3-40c1-8ce7-e88453a01548"
 
 
 

@@ -81,3 +81,8 @@ class UnknownStreamOutputMode(SpetlrException):
 class SparkVersionNotSupportedForSpetlrStreaming(SpetlrException):
     value = "Only DATABRICKS_RUNTIME_10_4 or above is supported for Spetlr streaming."
     pass
+
+
+class AmbiguousColumnsAfterCleaning(SpetlrException):
+    value = "Column names after cleaning are ambiguous!"
+    pass

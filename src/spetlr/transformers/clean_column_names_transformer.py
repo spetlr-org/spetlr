@@ -3,12 +3,15 @@ from typing import List
 from pyspark.sql import DataFrame
 
 from spetlr.etl import Transformer
+from spetlr.exceptions import AmbiguousColumnsAfterCleaning
 
 
 class CleanColumnNamesTransformer(Transformer):
     """
     Clean up columns names by removing special characters,
     trimming whitespaces and changing other whitespaces to underscores
+
+    NB: This transformer throws exception if ambiguous column names are created
 
     Parameters
     ----------
@@ -28,8 +31,8 @@ class CleanColumnNamesTransformer(Transformer):
             consume_inputs=consume_inputs,
         )
         self.exclude_columns = exclude_columns or []
-        self.keep_chars = [" ", "_"]
-        self.replace_chars = [" ", "-"]
+        self.keep_chars = [" ", "_", "-"]  # Special characters not removed
+        self.replace_chars = [" ", "-"]  # Characters that are replaced with "_"
 
     def process(self, df: DataFrame) -> DataFrame:
         columns = [col for col in df.columns if col not in self.exclude_columns]
@@ -41,5 +44,10 @@ class CleanColumnNamesTransformer(Transformer):
             for c in self.replace_chars:
                 new_col_name = new_col_name.replace(c, "_")
             df = df.withColumnRenamed(col, new_col_name)
+
+        if len(set(df.columns)) != len(df.columns):
+            raise AmbiguousColumnsAfterCleaning(
+                "Column names after cleaning are ambiguous!"
+            )
 
         return df

@@ -135,7 +135,7 @@ dmypy.json
 .github/deploy/local.ps1
 
 # driver file - this file is automatically downloaded
-.github/deploy/drivers/msodbcsql17_17.7.2.1-1_amd64.deb
+.github/deploy/drivers/*
 .DS_Store
 
 # environment dependent files

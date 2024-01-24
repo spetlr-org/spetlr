@@ -4,6 +4,7 @@ from textwrap import dedent
 from pyspark.sql import types as t
 
 from spetlr import Configurator
+from spetlr.exceptions import NoSuchValueException
 from spetlr.schema_manager import SchemaManager
 from spetlr.schema_manager.spark_schema import get_schema
 from spetlr.sql import SqlExecutor
@@ -267,3 +268,22 @@ class TestConfigurator(unittest.TestCase):
         self.assertEqual(c.get("MyViewId", "name"), "SomeViewName")
         # and the extra detail also
         self.assertEqual(c.get("MyViewId", "my aux detail"), "MyValue")
+
+    def test_16_get_default_value_when_key_is_missing(self):
+        c = Configurator()
+        c.clear_all_configurations()
+
+        c.register("MyTable", {"name": "MyDb.MyTable{ID}", "path": "/mnt/to/data"})
+
+        # test return None when default is None for missing property
+        self.assertEqual(c.get("MyTable", "Missing_Property", None), None)
+
+    def test_17_get_exception_when_key_is_missing(self):
+        c = Configurator()
+        c.clear_all_configurations()
+
+        c.register("MyTable", {"name": "MyDb.MyTable{ID}", "path": "/mnt/to/data"})
+
+        # test exception for missing property
+        with self.assertRaises(NoSuchValueException):
+            c.get("MyTable", "Missing_Property")

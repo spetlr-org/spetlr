@@ -1,6 +1,6 @@
 import json
 from string import Formatter
-from typing import Dict
+from typing import Any, Dict
 
 import pyspark.sql.types as T
 
@@ -16,6 +16,7 @@ from spetlr.singleton import Singleton
 
 
 class SchemaManager(metaclass=Singleton):
+    _DEFAULT = object()
     # This dict contains the registered schemas
     _registered_schemas: Dict[str, T.StructType] = {}
 
@@ -28,7 +29,11 @@ class SchemaManager(metaclass=Singleton):
     def register_schema(self, schema_name: str, schema: T.StructType) -> None:
         self._registered_schemas[schema_name] = schema
 
-    def get_schema(self, schema_identifier: str) -> T.StructType:
+    def get_schema(
+        self,
+        schema_identifier: str,
+        default: Any = _DEFAULT,
+    ) -> T.StructType:
         """
         Get a schema from either the registered schemas or the tables available
         to the Configurator.\n
@@ -40,11 +45,14 @@ class SchemaManager(metaclass=Singleton):
         if schema_identifier in self._registered_schemas.keys():
             return self._registered_schemas[schema_identifier]
 
-        # Otherwise, check if the schema identifier is a table identifier
+        # Otherwise, the schema identifier must be table identifier
         try:
             schema = Configurator().get(table_id=schema_identifier, property="schema")
         except NoSuchValueException:
-            raise NoSuchSchemaException(schema_identifier)
+            if default is self._DEFAULT:
+                raise NoSuchSchemaException(schema_identifier)
+            else:
+                return default
 
         # If the schema is a string, look it up as another schema
         if isinstance(schema, str):

@@ -86,3 +86,8 @@ class SparkVersionNotSupportedForSpetlrStreaming(SpetlrException):
 class AmbiguousColumnsAfterCleaning(SpetlrException):
     value = "Column names after cleaning are ambiguous!"
     pass
+
+
+class SchemasNotEqualException(SpetlrException):
+    value = "Column names after cleaning are ambiguous!"
+    pass

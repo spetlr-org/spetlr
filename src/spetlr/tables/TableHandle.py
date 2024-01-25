@@ -1,5 +1,6 @@
 from typing import Any, List, Union
 
+import pyspark.sql.types as T
 from pyspark.sql import DataFrame
 
 
@@ -43,4 +44,10 @@ class TableHandle:
         pass
 
     def get_table_id(self):
+        raise NotImplementedError()
+
+    def get_schema(self) -> T.StructType:
+        raise NotImplementedError()
+
+    def set_schema(self, schema: T.StructType) -> T.StructType:
         raise NotImplementedError()

@@ -91,7 +91,7 @@ class FileHandleTests(unittest.TestCase):
         FileHandle.from_tc("AvroSource")
         DeltaHandle.from_tc("AvroSink")
 
-    def test_01_read_avro(self):
+    def test_02_read_avro(self):
         tc = Configurator()
         DbHandle.from_tc("MyDb").create()
 

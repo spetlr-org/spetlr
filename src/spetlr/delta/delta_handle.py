@@ -1,11 +1,13 @@
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Union
 
+import pyspark.sql.types as T
 from pyspark.sql import DataFrame
 
 from spetlr.configurator.configurator import Configurator
 from spetlr.exceptions import SpetlrException
 from spetlr.functions import get_unique_tempview_name, init_dbutils
+from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
 from spetlr.tables.TableHandle import TableHandle
 from spetlr.utils.CheckDfMerge import CheckDfMerge
@@ -29,6 +31,7 @@ class DeltaHandle(TableHandle):
         self,
         name: str,
         location: str = None,
+        schema: T.StructType = None,
         data_format: str = "delta",
         options_dict: Dict[str, str] = None,
         ignore_changes: bool = True,
@@ -49,6 +52,7 @@ class DeltaHandle(TableHandle):
         """
         self._name = name
         self._location = location
+        self._schema = schema
         self._data_format = data_format
 
         self._partitioning: Optional[List[str]] = None
@@ -78,6 +82,7 @@ class DeltaHandle(TableHandle):
         return cls(
             name=tc.table_property(id, "name", ""),
             location=tc.table_property(id, "path", ""),
+            schema=SchemaManager().get_schema(id, None),
             data_format=tc.table_property(id, "format", "delta"),
             ignore_changes=tc.table_property(id, "ignore_changes", "True"),
             stream_start=tc.table_property(id, "stream_start", ""),
@@ -281,3 +286,9 @@ class DeltaHandle(TableHandle):
 
     def set_options_dict(self, options: Dict[str, str]):
         self._options_dict = options
+
+    def get_schema(self) -> T.StructType:
+        return self._schema
+
+    def set_schema(self, schema: T.StructType) -> T.StructType:
+        self._schema = schema

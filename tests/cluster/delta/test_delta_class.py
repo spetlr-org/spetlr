@@ -1,6 +1,5 @@
-import unittest
-
 from pyspark.sql.utils import AnalysisException
+from spetlrtools.testing import DataframeTestCase
 
 from spetlr import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
@@ -8,10 +7,13 @@ from spetlr.etl import Orchestrator
 from spetlr.etl.extractors import SimpleExtractor
 from spetlr.etl.extractors.schema_extractor import SchemaExtractor
 from spetlr.etl.loaders import SimpleLoader
+from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
 
+from .extras.schemas import test_schema
 
-class DeltaTests(unittest.TestCase):
+
+class DeltaTests(DataframeTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         c = Configurator()
@@ -19,7 +21,11 @@ class DeltaTests(unittest.TestCase):
         c.set_debug()
 
     def test_01_configure(self):
+        sc = SchemaManager()
+        sc.register_schema("TEST_SCHEMA", test_schema)
+
         tc = Configurator()
+
         tc.register(
             "MyDb", {"name": "TestDb{ID}", "path": "/mnt/spetlr/silver/testdb{ID}"}
         )
@@ -60,6 +66,15 @@ class DeltaTests(unittest.TestCase):
             },
         )
 
+        tc.register(
+            "MyTblWithSchema",
+            {
+                "name": "TestDb{ID}.MyTblWithSchema",
+                "path": "/mnt/spetlr/silver/testdb{ID}/mytblwithschema",
+                "schema": "TEST_SCHEMA",
+            },
+        )
+
         # test instantiation without error
         DbHandle.from_tc("MyDb")
         DeltaHandle.from_tc("MyTbl")
@@ -67,6 +82,7 @@ class DeltaTests(unittest.TestCase):
         DeltaHandle.from_tc("MyTbl3")
         DeltaHandle.from_tc("MyTbl4")
         DeltaHandle.from_tc("MyTbl5")
+        DeltaHandle.from_tc("MyTblWithSchema")
 
     def test_02_write(self):
         dh = DeltaHandle.from_tc("MyTbl")
@@ -178,3 +194,17 @@ class DeltaTests(unittest.TestCase):
         )
 
         self.assertEqual(dh2.get_partitioning(), [])
+
+    def test_10_get_schema(self):
+        # test instantiation without error
+        dh = DeltaHandle.from_tc("MyTblWithSchema")
+
+        self.assertEqualSchema(test_schema, dh.get_schema())
+
+    def test_11_set_schema(self):
+        # test instantiation without error
+        dh = DeltaHandle.from_tc("MyTblWithSchema")
+
+        dh.set_schema(None)
+
+        self.assertIsNone(dh.get_schema())

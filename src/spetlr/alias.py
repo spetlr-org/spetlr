@@ -6,6 +6,7 @@ This fake script is added to the path as "python3" in you virtual environment
 and calls the same interpreter as the "python" executable.
 This makes spark testing work on windows using local sessions.
 """
+
 import os
 import sys
 

@@ -3,6 +3,7 @@ This test exists both in the 'local' and in the 'cluster' folder.
 The tests are not completely equal.
 The reason is that the slack notifier should work both in a job and outside one.
 """
+
 import json
 import threading
 import unittest

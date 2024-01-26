@@ -5,6 +5,7 @@ https://spark.apache.org/docs/3.0.0-preview/sql-ref-syntax-ddl-create-database.h
 https://spark.apache.org/docs/latest/sql-ref-syntax-ddl-create-table-datasource.html
 and returns a dictionary of configuration details.
 """
+
 import importlib.resources
 from pathlib import Path
 from types import ModuleType

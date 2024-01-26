@@ -1,6 +1,7 @@
 """This file contains helper classes and functions that are shared
 by the DeltaTableSpec and the DeltaDatabaseSpec.
 """
+
 from dataclasses import dataclass
 from typing import Union
 from urllib.parse import urlparse

@@ -11,7 +11,6 @@ from tests.cluster.utils import extras
 
 
 class DeleteSchemaMismatch(DataframeTestCase):
-
     """
     Test class for DeleteMismatchedSchemas.
 

@@ -1,5 +1,6 @@
 import uuid
 import warnings
+from typing import List, Union
 
 from pyspark.sql import DataFrame
 from pyspark.sql.streaming import DataStreamWriter
@@ -26,6 +27,7 @@ class StreamLoader(Loader):
         outputmode: str = "update",
         query_name: str = None,
         await_termination: bool = False,
+        dataset_input_keys: Union[str, List[str]] = None,
     ):
         """
         loader: A SPETLR Loader
@@ -50,7 +52,7 @@ class StreamLoader(Loader):
 
         """
 
-        super().__init__()
+        super().__init__(dataset_input_keys=dataset_input_keys)
         self._loader = loader
         self._options_dict = options_dict
         self._outputmode = outputmode

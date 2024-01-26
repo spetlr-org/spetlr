@@ -9,6 +9,7 @@ To uninstall the git hooks, run
 $> python git_hooks.py uninstall
 
 """
+
 import os
 import subprocess
 import sys

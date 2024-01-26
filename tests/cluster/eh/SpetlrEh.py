@@ -2,6 +2,7 @@
 This file sets up the EventHub that is deployed
 as part of the spetlr integration pipeline
 """
+
 from spetlr.eh import EventHubStream
 from spetlr.functions import init_dbutils
 

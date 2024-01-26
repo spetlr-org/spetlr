@@ -56,9 +56,7 @@ class DeltaTableSpecDifference:
             f.name: (
                 f.default_factory()
                 if not isinstance(f.default_factory, _MISSING_TYPE)
-                else f.default
-                if not isinstance(f.default, _MISSING_TYPE)
-                else None
+                else f.default if not isinstance(f.default, _MISSING_TYPE) else None
             )
             for f in dataclasses.fields(self.target)
         }

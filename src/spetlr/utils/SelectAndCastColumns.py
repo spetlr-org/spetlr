@@ -25,9 +25,11 @@ def SelectAndCastColumns(
     dfColumns = [_lower(col, caseInsensitiveMatching) for col in df.columns]
 
     selectAndCastColumnsList = [
-        F.col(c.name).cast(c.dataType).alias(c.name)
-        if _lower(c.name, caseInsensitiveMatching) in dfColumns
-        else F.lit(None).cast(c.dataType).alias(c.name)
+        (
+            F.col(c.name).cast(c.dataType).alias(c.name)
+            if _lower(c.name, caseInsensitiveMatching) in dfColumns
+            else F.lit(None).cast(c.dataType).alias(c.name)
+        )
         for c in schema
     ]
 

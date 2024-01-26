@@ -3,6 +3,7 @@ Replace whatever version is in src/VERSION.txt
 with a version that is larger than whatever is already published on test.pypi.org
 This facilitates continuous release.
 """
+
 import json
 from urllib.request import urlopen
 

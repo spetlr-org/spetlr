@@ -69,9 +69,11 @@ class TimeZoneTransformer(Transformer):
             )
 
         timezone_extractor = F.udf(
-            lambda latitude, longitude: None
-            if latitude is None or longitude is None
-            else TimezoneFinder().timezone_at(lat=latitude, lng=longitude)
+            lambda latitude, longitude: (
+                None
+                if latitude is None or longitude is None
+                else TimezoneFinder().timezone_at(lat=latitude, lng=longitude)
+            )
         )
 
         df = df.withColumn(

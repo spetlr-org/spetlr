@@ -75,12 +75,12 @@ $eventHubConfig = (, @(
 $eventHubConfigJson = ($eventHubConfig | ConvertTo-Json -Depth 4 -Compress)
 #$eventHubConfigJson = $eventHubConfigJson -replace '"', '\"'
 
-#if ($IsLinux)
-#{
-#    $dataLakeContainersJson = $dataLakeContainersJson -replace '\"', '"'
-#    $resourceTags = $resourceTags -replace '\"', '"'
-#    $eventHubConfigJson = $eventHubConfigJson -replace '\"', '"'
-#}
+if (!$IsLinux)
+{
+    $dataLakeContainersJson = $dataLakeContainersJson -replace '"', '\"'
+    $resourceTagsJson = $resourceTagsJson -replace '"', '\"'
+    $eventHubConfigJson = $eventHubConfigJson -replace '"', '\"'
+}
 
 $sqlAdminSpnName = $cicdSpnName
 

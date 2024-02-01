@@ -690,7 +690,8 @@ class TestSCD2Loader(DataframeTestCase):
                 "name": "TestDb{ID}.MyTblStreamSource",
                 "path": "/mnt/spetlr/silver/testdb{ID}/testtblstreamsource",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tblstreamsource",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
+                "_checkpoint_path_tblstreamsource",
                 "query_name": "testquerytblstreamsource{ID}",
             },
         )
@@ -701,7 +702,8 @@ class TestSCD2Loader(DataframeTestCase):
                 "name": "TestDb{ID}.TestTblStreamSink",
                 "path": "/mnt/spetlr/silver/testdb{ID}/testtblstreamsink",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tblstreamsink",
+                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
+                "_checkpoint_path_tblstreamsink",
                 "query_name": "testquerytblstreamsink{ID}",
             },
         )

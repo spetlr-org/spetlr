@@ -30,7 +30,7 @@ class ValidFromToUpsertLoader(Loader):
                    These rows (with the given join_cols)
                    Should have "rerunned" their SCD2 values
         time_col: The column used for creating the SCD2 logic.
-        hash_value_col: The name of the column where the sha256 encoding of the data
+        hash_value_col: The name of the column where the md5 encoding of the data
 
 
         """
@@ -63,11 +63,9 @@ class ValidFromToUpsertLoader(Loader):
         # Find the rows that have the same join column values
         # as the ones from the source table
         # These values could potentially be updated
-        # Some Iscurrent=true rows could potential be isvcurrent=false
+        # Some IsCurrent=true rows could potential be IsCurrent=false
         # also, if any data is late arrivals
-        # the validto and validfrom could also gets updated
-        _sink_table_name = self.sink_handle.get_tablename()
-
+        # the ValidTo and ValidFrom could also get updated
         df_sink_data = self.sink_handle.read()
 
         # This ensures, that the sink table is filtered

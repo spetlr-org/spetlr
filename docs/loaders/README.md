@@ -8,7 +8,7 @@ Loaders in spetlr:
 
 # SCD2UpsertLoader
 *Class implemented as: ValidFromToUpsertLoader. SCD2 can potentially be implemented in many ways. This loader 
-ssociates with SPETLR's existing ValidFromValidToTransformer.*
+associates with SPETLR's existing ValidFromValidToTransformer.*
 
 The SCD2UpsertLoader is a class designed for handling Slowly Changing Dimensions (SCD) Type 2 in PySpark dataframes. 
 This loader is particularly useful in scenarios where data evolves over time, and there is a need to maintain 

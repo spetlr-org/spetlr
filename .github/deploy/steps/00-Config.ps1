@@ -58,12 +58,12 @@ $resourceTags = @{
   "deployedAt" = "$(Get-Date -Format "o" -AsUTC)"
 }
 $resourceTagsJson = ($resourceTags | ConvertTo-Json -Depth 4 -Compress)
-$resourceTagsJson = $resourceTagsJson -replace '"', '\"'
+#$resourceTagsJson = $resourceTagsJson -replace '"', '\"'
 
 $dataLakeContainers = (, @(@{"name" = "silver" }))
 
 $dataLakeContainersJson = ($dataLakeContainers | ConvertTo-Json -Depth 4 -Compress)
-$dataLakeContainersJson = $dataLakeContainersJson -replace '"', '\"'
+#$dataLakeContainersJson = $dataLakeContainersJson -replace '"', '\"'
 
 $eventHubConfig = (, @(
     @{
@@ -73,7 +73,7 @@ $eventHubConfig = (, @(
     }
   ))
 $eventHubConfigJson = ($eventHubConfig | ConvertTo-Json -Depth 4 -Compress)
-$eventHubConfigJson = $eventHubConfigJson -replace '"', '\"'
+#$eventHubConfigJson = $eventHubConfigJson -replace '"', '\"'
 
 #if ($IsLinux)
 #{

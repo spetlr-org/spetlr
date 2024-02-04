@@ -1,72 +1,65 @@
 import unittest
+import uuid
 
-from azure.cosmos.exceptions import CosmosHttpResponseError
-
-import spetlr.cosmos
 from spetlr import Configurator
+from spetlr.cosmos import CosmosDb
 from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 
 
-class TestCosmos(spetlr.cosmos.CosmosDb):
-    def __init__(self):
+class CosmosTests(unittest.TestCase):
+    _cm: CosmosDb
+    _tc: Configurator
+
+    @classmethod
+    def setUpClass(cls):
         dbutils = init_dbutils()
-        super().__init__(
+
+        cls._cm = CosmosDb(
             endpoint=dbutils.secrets.get("values", "Cosmos--Endpoint"),
             account_key=dbutils.secrets.get("secrets", "Cosmos--AccountKey"),
-            database="SpetlrCosmosContainer",
+            database=f"SpetlrCosmosContainer{uuid.uuid4().hex}",
             catalog_name=None,
         )
 
-
-class CosmosTests(unittest.TestCase):
-    def test_01_tables(self):
-        tc = Configurator()
-        tc.clear_all_configurations()
-        tc.register(
+        cls._tc = Configurator()
+        cls._tc.clear_all_configurations()
+        cls._tc.set_debug()
+        cls._tc.register(
             "CmsTbl",
             {
-                "name": "CosmosTable",
+                "name": "CosmosTable{ID}",
                 "schema": {"sql": "id string, pk string, value int"},
                 "rows_per_partition": 5,
             },
         )
 
-    def test_02_create_db(self):
-        cm = TestCosmos()
-        # clean up the database in case it exists from last run
-        try:
-            cm.client.delete_database(cm.database)
-        except CosmosHttpResponseError:
-            pass
-
-        cm.execute_sql(
-            f"CREATE DATABASE IF NOT EXISTS {cm.catalog_name}.{cm.database};"
+    def test_01_create_db(self):
+        self._cm.execute_sql(
+            "CREATE DATABASE IF NOT EXISTS"
+            f" {self._cm.catalog_name}.{self._cm.database};"
         )
-        tc = Configurator()
-        cm.execute_sql(
+        self._cm.execute_sql(
             "CREATE TABLE IF NOT EXISTS"
-            f" {cm.catalog_name}.{cm.database}.{tc.table_name('CmsTbl')}"
+            f" {self._cm.catalog_name}.{self._cm.database}.{self._tc.table_name('CmsTbl')}"  # noqa
             " using cosmos.oltp"
             " TBLPROPERTIES(partitionKeyPath = '/pk', manualThroughput = '400')"
         )
 
-    def test_03_write_table(self):
-        cm = TestCosmos()
+    def test_02_write_table(self):
         df = Spark.get().createDataFrame(
             [("first", "pk1", 56), ("second", "pk2", 987)],
             "id string, pk string, value int",
         )
-        cm.write_table(df, "CmsTbl")
+        self._cm.write_table(df, "CmsTbl")
 
-    def test_04_read_table(self):
-        cm = TestCosmos()
-        df = cm.read_table("CmsTbl")
+    def test_03_read_table(self):
+        df = self._cm.read_table("CmsTbl")
         data = set(tuple(row) for row in df.collect())
         self.assertEqual({("first", "pk1", 56), ("second", "pk2", 987)}, data)
 
-    def test_05_use_handle(self):
-        ch = TestCosmos().from_tc("CmsTbl")
+    def test_04_use_handle(self):
+        ch = self._cm.from_tc("CmsTbl")
         df = ch.read()
         data = set(tuple(row) for row in df.collect())
         self.assertEqual({("first", "pk1", 56), ("second", "pk2", 987)}, data)
@@ -87,9 +80,9 @@ class CosmosTests(unittest.TestCase):
         ch.append(new_df)
         self.assertEqual(ch.read().count(), 2)
 
-    def test_10_delete_items(self):
-        cm = TestCosmos()
-        cm.delete_item("CmsTbl", "third", "pk1")
-        cm.delete_item("CmsTbl", "fourth", "pk2")
+    @classmethod
+    def tearDownClass(cls):
+        cls._cm.delete_item("CmsTbl", "third", "pk1")
+        cls._cm.delete_item("CmsTbl", "fourth", "pk2")
 
-        cm.client.delete_database(cm.database)
+        cls._cm.client.delete_database(cls._cm.database)

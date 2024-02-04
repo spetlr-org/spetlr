@@ -1,7 +1,8 @@
-import unittest
+from typing import Any, Iterable
 
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StringType, StructField, StructType
+from spetlrtools.testing import DataframeTestCase
 
 from spetlr.functions import get_unique_tempview_name
 from spetlr.spark import Spark
@@ -9,7 +10,7 @@ from spetlr.transformations import merge_df_into_target
 from spetlr.utils import DataframeCreator
 
 
-class MergeDfIntoTargetTest(unittest.TestCase):
+class MergeDfIntoTargetTest(DataframeTestCase):
     db_name = "test" + get_unique_tempview_name()
     table_name = "testTarget"
 
@@ -76,10 +77,10 @@ class MergeDfIntoTargetTest(unittest.TestCase):
         df = self.create_data()
         merge_df_into_target(df, self.table_name, self.db_name, ["Id"])
 
-        # Compare
-        df_expected = self.expected_data_01()
-        df_result = self.get_target_table()
-        self.equal_dfs(df_expected, df_result)
+        self.assertDataframeMatches(
+            df=self.get_target_table(),
+            expected_data=self.expected_data_01(),
+        )
 
     def test_02_merge(self):
         """Tests that a new row is merged
@@ -113,10 +114,10 @@ class MergeDfIntoTargetTest(unittest.TestCase):
         df = self.create_data()
         merge_df_into_target(df, self.table_name, self.db_name, ["Id"])
 
-        # Compare
-        df_expected = self.expected_data_02()
-        df_result = self.get_target_table()
-        self.equal_dfs(df_expected, df_result)
+        self.assertDataframeMatches(
+            df=self.get_target_table(),
+            expected_data=self.expected_data_02(),
+        )
 
     def test_03_merge_insert(self):
         """Tests that one row is merged and one inserted
@@ -155,10 +156,10 @@ class MergeDfIntoTargetTest(unittest.TestCase):
         df = self.create_data()
         merge_df_into_target(df, self.table_name, self.db_name, ["Id"])
 
-        # Compare
-        df_expected = self.expected_data_03()
-        df_result = self.get_target_table()
-        self.equal_dfs(df_expected, df_result)
+        self.assertDataframeMatches(
+            df=self.get_target_table(),
+            expected_data=self.expected_data_03(),
+        )
 
     @classmethod
     def create_test_table(self, table_name="testTarget", db_name="test"):
@@ -187,38 +188,14 @@ class MergeDfIntoTargetTest(unittest.TestCase):
 
         return df_new.orderBy("Id")
 
-    def expected_data_01(self) -> DataFrame:
-        df_new = DataframeCreator.make_partial(
-            schema=self.schema,
-            columns=self.cols,
-            data=[self.targetrow1, self.row1, self.row2, self.row3],
-        )
+    def expected_data_01(self) -> Iterable[Iterable[Any]]:
+        return [self.targetrow1, self.row1, self.row2, self.row3]
 
-        return df_new.orderBy("Id")
+    def expected_data_02(self) -> Iterable[Iterable[Any]]:
+        return [self.row1, self.row2, self.row3]
 
-    def expected_data_02(self) -> DataFrame:
-        df_new = DataframeCreator.make_partial(
-            schema=self.schema,
-            columns=self.cols,
-            data=[self.row1, self.row2, self.row3],
-        )
-
-        return df_new.orderBy("Id")
-
-    def expected_data_03(self) -> DataFrame:
-        df_new = DataframeCreator.make_partial(
-            schema=self.schema,
-            columns=self.cols,
-            data=[self.targetrow1, self.row1, self.row2, self.row3],
-        )
-
-        return df_new.orderBy("Id")
+    def expected_data_03(self) -> Iterable[Iterable[Any]]:
+        return [self.targetrow1, self.row1, self.row2, self.row3]
 
     def get_target_table(self):
         return Spark.get().read.table(f"{self.db_name}.{self.table_name}").orderBy("Id")
-
-    def equal_dfs(self, df1, df2):
-        df_expected_pd = df1.toPandas()
-        df_result_pd = df2.toPandas()
-
-        self.assertTrue(df_result_pd.equals(df_expected_pd))

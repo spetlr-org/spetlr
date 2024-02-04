@@ -18,8 +18,8 @@ class JsonEhOrchestratorUnitTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.tc = Configurator()
-        cls.tc.set_debug()
         cls.tc.clear_all_configurations()
+        cls.tc.set_debug()
         cls.tc.register("TblYMD", {"name": "TableYMD{ID}"})
         cls.tc.register("TblYMDH", {"name": "TableYMDH{ID}"})
         cls.tc.register("TblPdate", {"name": "TablePdate{ID}"})

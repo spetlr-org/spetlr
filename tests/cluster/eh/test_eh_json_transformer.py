@@ -43,8 +43,8 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.tc = Configurator()
-        cls.tc.set_debug()
         cls.tc.clear_all_configurations()
+        cls.tc.set_debug()
 
         cls.tc.register("TblPdate1", {"name": "TablePdate1{ID}"})
         cls.tc.register("TblPdate2", {"name": "TablePdate2{ID}"})

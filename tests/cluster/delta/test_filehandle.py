@@ -1,3 +1,4 @@
+import time
 import unittest
 import uuid
 from typing import List, Tuple
@@ -170,7 +171,20 @@ class FileHandleTests(unittest.TestCase):
             input_data, "id int, name string, _rescued_data string"
         )
 
-        df.write.format("avro").save(self.avro_source_path + "/" + str(uuid.uuid4()))
+        path = self.avro_source_path + "/" + str(uuid.uuid4())
+        df.write.format("avro").save(path)
+
+        for _ in range(20):
+            # ensure files are created.
+            df = Spark.get().read.format("avro").load(path)
+            if df.count() >= len(input_data):
+                break
+                # all data is in target
+            # else continue
+            time.sleep(1)
+        else:
+            # if the loop continues to the end, something went wrong.
+            raise Exception(f"Timeout waiting for avro test data in {path}")
 
     def _add_specific_data_to_source(self):
         df = Spark.get().createDataFrame(

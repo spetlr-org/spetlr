@@ -1,6 +1,4 @@
-import unittest
-
-from spetlrtools.testing import TestHandle
+from spetlrtools.testing import DataframeTestCase, TestHandle
 
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors import SimpleExtractor
@@ -9,7 +7,7 @@ from spetlr.spark import Spark
 from spetlr.transformers import UnionTransformer
 
 
-class MergeDfIntoTargetTest(unittest.TestCase):
+class MergeDfIntoTargetTest(DataframeTestCase):
     def test_01_union(self):
         schema = "i integer, s string"
 
@@ -25,4 +23,4 @@ class MergeDfIntoTargetTest(unittest.TestCase):
         o.load_into(SimpleLoader(th3))
         o.execute()
 
-        self.assertEqual(th1.provides.schema, th3.overwritten.schema)
+        self.assertEqualSchema(th1.provides.schema, th3.overwritten.schema)

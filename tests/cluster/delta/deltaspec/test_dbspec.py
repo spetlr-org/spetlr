@@ -15,7 +15,6 @@ class TestDbSpec(unittest.TestCase):
 
     def test_DbSpecFromDisk(self):
         c = Configurator()
-        c.clear_all_configurations()
         master_sql = """
             -- SPETLR.CONFIGURATOR key: MyDbAlias
             CREATE DATABASE IF NOT EXISTS my_db_name{ID}

@@ -39,9 +39,22 @@ class FileHandle(TableHandle):
         self._location = file_location
         self._data_format = data_format
 
+        self._options = options or {}
         self._schema_location = schema_location
-        self._options = options
         self._schema = schema
+
+        self._options.update(
+            {
+                "cloudFiles.format": self._data_format,
+            }
+        )
+
+        if schema_location:
+            self._options.update(
+                {
+                    "cloudFiles.schemaLocation": self._schema_location,
+                }
+            )
 
         self._validate()
 
@@ -78,15 +91,13 @@ class FileHandle(TableHandle):
         return reader.load(self._location)
 
     def read_stream(self) -> DataFrame:
-        reader = (
-            Spark.get()
-            .readStream.format("cloudFiles")
-            .option("cloudFiles.format", self._data_format)
-            .option("cloudFiles.schemaLocation", self._schema_location)
-        )
+        reader = Spark.get().readStream.format("cloudFiles")
 
         if self._options:
             reader = reader.options(**self._options)
+
+        if self._schema:
+            reader = reader.schema(self._schema)
 
         return reader.load(self._location)
 

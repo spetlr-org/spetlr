@@ -49,5 +49,5 @@ class TableHandle:
     def get_schema(self) -> T.StructType:
         raise NotImplementedError()
 
-    def set_schema(self, schema: T.StructType) -> T.StructType:
+    def set_schema(self, schema: T.StructType) -> "TableHandle":
         raise NotImplementedError()

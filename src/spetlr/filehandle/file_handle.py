@@ -91,5 +91,15 @@ class FileHandle(TableHandle):
     def get_schema(self) -> T.StructType:
         return self._schema
 
-    def set_schema(self, schema: T.StructType) -> T.StructType:
+    def set_schema(self, schema: T.StructType) -> "FileHandle":
         self._schema = schema
+
+        return self
+
+    def get_options(self) -> Dict[str, Any]:
+        return self._options
+
+    def set_options(self, options: Dict[str, Any]) -> "FileHandle":
+        self._options.update(options)
+
+        return self

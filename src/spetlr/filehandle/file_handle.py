@@ -63,9 +63,9 @@ class FileHandle(TableHandle):
         tc = Configurator()
         sm = SchemaManager()
         return cls(
-            file_location=tc.table_property(id, "path", ""),
-            data_format=tc.table_property(id, "format", ""),
-            schema_location=tc.table_property(id, "schema_location", None),
+            file_location=tc.get(id, "path"),
+            data_format=tc.get(id, "format"),
+            schema_location=tc.get(id, "schema_location", None),
             schema=sm.get_schema(id, None),
         )
 

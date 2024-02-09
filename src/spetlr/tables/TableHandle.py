@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, Dict, List, Union
 
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame
@@ -50,4 +50,10 @@ class TableHandle:
         raise NotImplementedError()
 
     def set_schema(self, schema: T.StructType) -> "TableHandle":
+        raise NotImplementedError()
+
+    def get_options(self) -> Dict[str, Any]:
+        raise NotImplementedError()
+
+    def set_options(self, options: Dict[str, Any]) -> "TableHandle":
         raise NotImplementedError()

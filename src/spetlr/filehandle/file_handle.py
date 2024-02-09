@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame
 
@@ -67,7 +69,7 @@ class FileHandle(TableHandle):
     def read(self) -> DataFrame:
         reader = Spark.get().read.format(self._data_format)
 
-        if self._options is not None:
+        if self._options:
             reader = reader.options(**self._options)
 
         if self._schema:
@@ -83,7 +85,7 @@ class FileHandle(TableHandle):
             .option("cloudFiles.schemaLocation", self._schema_location)
         )
 
-        if self._options is not None:
+        if self._options:
             reader = reader.options(**self._options)
 
         return reader.load(self._location)

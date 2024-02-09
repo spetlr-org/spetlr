@@ -16,9 +16,9 @@ class FileHandle(TableHandle):
         self,
         *,
         file_location: str,
-        schema_location: str,
         data_format: str,
-        options: dict = None,
+        options: Dict[str, Any] = None,
+        schema_location: str = None,
         schema: T.StructType = None,
     ):
         """
@@ -52,7 +52,7 @@ class FileHandle(TableHandle):
         return cls(
             file_location=tc.table_property(id, "path", ""),
             data_format=tc.table_property(id, "format", ""),
-            schema_location=tc.table_property(id, "schema_location", ""),
+            schema_location=tc.table_property(id, "schema_location", None),
             schema=sm.get_schema(id, None),
         )
 

@@ -290,5 +290,7 @@ class DeltaHandle(TableHandle):
     def get_schema(self) -> T.StructType:
         return self._schema
 
-    def set_schema(self, schema: T.StructType) -> T.StructType:
+    def set_schema(self, schema: T.StructType) -> "DeltaHandle":
         self._schema = schema
+
+        return self

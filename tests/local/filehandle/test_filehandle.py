@@ -20,6 +20,11 @@ class FileHandleTests(DataframeTestCase):
 
     options = {"test_option": "test_value"}
 
+    cloud_files_options = {
+        "cloudFiles.format": data_format,
+        "cloudFiles.schemaLocation": schema_location,
+    }
+
     schema = T.StructType(
         [
             T.StructField("id", T.IntegerType(), True),
@@ -60,7 +65,7 @@ class FileHandleTests(DataframeTestCase):
         self.assertEquals(handle._location, self.file_location)
         self.assertEquals(handle._data_format, self.data_format)
         self.assertEquals(handle._schema_location, self.schema_location)
-        self.assertEquals(handle._options, self.options)
+        self.assertEquals(handle._options, {**self.options, **self.cloud_files_options})
         self.assertEqualSchema(handle._schema, self.schema)
 
     def test_02_create_file_handle_from_tc(self):
@@ -69,9 +74,7 @@ class FileHandleTests(DataframeTestCase):
         self.assertEquals(handle._location, self.file_location)
         self.assertEquals(handle._data_format, self.data_format)
         self.assertEquals(handle._schema_location, self.schema_location)
-        self.assertEquals(
-            handle._options, None
-        )  # Options are not defined from table config
+        self.assertEquals(handle._options, self.cloud_files_options)
         self.assertEqualSchema(handle._schema, self.schema)
 
     def test_03_validate_wrong_format_exception(self):

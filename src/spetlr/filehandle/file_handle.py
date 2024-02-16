@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import pyspark.sql.types as T
 from pyspark.sql import DataFrame
 
@@ -14,9 +16,9 @@ class FileHandle(TableHandle):
         self,
         *,
         file_location: str,
-        schema_location: str,
         data_format: str,
-        options: dict = None,
+        options: Dict[str, Any] = None,
+        schema_location: str = None,
         schema: T.StructType = None,
     ):
         """
@@ -37,9 +39,22 @@ class FileHandle(TableHandle):
         self._location = file_location
         self._data_format = data_format
 
+        self._options = options or {}
         self._schema_location = schema_location
-        self._options = options
         self._schema = schema
+
+        self._options.update(
+            {
+                "cloudFiles.format": self._data_format,
+            }
+        )
+
+        if schema_location:
+            self._options.update(
+                {
+                    "cloudFiles.schemaLocation": self._schema_location,
+                }
+            )
 
         self._validate()
 
@@ -48,9 +63,9 @@ class FileHandle(TableHandle):
         tc = Configurator()
         sm = SchemaManager()
         return cls(
-            file_location=tc.table_property(id, "path", ""),
-            data_format=tc.table_property(id, "format", ""),
-            schema_location=tc.table_property(id, "schema_location", ""),
+            file_location=tc.get(id, "path"),
+            data_format=tc.get(id, "format"),
+            schema_location=tc.get(id, "schema_location", None),
             schema=sm.get_schema(id, None),
         )
 
@@ -67,7 +82,7 @@ class FileHandle(TableHandle):
     def read(self) -> DataFrame:
         reader = Spark.get().read.format(self._data_format)
 
-        if self._options is not None:
+        if self._options:
             reader = reader.options(**self._options)
 
         if self._schema:
@@ -76,20 +91,28 @@ class FileHandle(TableHandle):
         return reader.load(self._location)
 
     def read_stream(self) -> DataFrame:
-        reader = (
-            Spark.get()
-            .readStream.format("cloudFiles")
-            .option("cloudFiles.format", self._data_format)
-            .option("cloudFiles.schemaLocation", self._schema_location)
-        )
+        reader = Spark.get().readStream.format("cloudFiles")
 
-        if self._options is not None:
+        if self._options:
             reader = reader.options(**self._options)
+
+        if self._schema:
+            reader = reader.schema(self._schema)
 
         return reader.load(self._location)
 
     def get_schema(self) -> T.StructType:
         return self._schema
 
-    def set_schema(self, schema: T.StructType) -> T.StructType:
+    def set_schema(self, schema: T.StructType) -> "FileHandle":
         self._schema = schema
+
+        return self
+
+    def get_options(self) -> Dict[str, Any]:
+        return self._options
+
+    def set_options(self, options: Dict[str, Any]) -> "FileHandle":
+        self._options.update(options)
+
+        return self

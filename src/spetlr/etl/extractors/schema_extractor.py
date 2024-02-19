@@ -10,7 +10,7 @@ class SchemaExtractor(Extractor):
     the resulting data frame will have zero rows and is intended for schema
     manipulation only."""
 
-    def __init__(self, handle: Readable, dataset_key: str):
+    def __init__(self, handle: Readable, dataset_key: str = None):
         super().__init__(dataset_key=dataset_key)
         self.handle = handle
 

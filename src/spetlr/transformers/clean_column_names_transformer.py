@@ -23,7 +23,7 @@ class CleanColumnNamesTransformer(Transformer):
         exclude_columns: List[str] = None,
         dataset_input_keys: List[str] = None,
         dataset_output_key: str = None,
-        consume_inputs: bool = False,
+        consume_inputs: bool = True,
     ):
         super().__init__(
             dataset_input_keys=dataset_input_keys,

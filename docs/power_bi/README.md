@@ -133,6 +133,11 @@ Refresh completed successfully at 2024-02-01 10:15 (local time).
 True   
 ```
 
+```
+Exception: Last refresh finished more than 1 minutes ago
+at 2024-02-01 10:15 (local time) !
+```
+
 ## Step 5: Start a new refresh of a given dataset without waiting
 
 The start_refresh() method starts a new refresh of the given PowerBI
@@ -161,12 +166,14 @@ True
 
 The refresh() method starts a new refresh of the given PowerBI dataset
 synchronously. It waits until the refresh is finished or until a time-out
-occurs. The time-out can be specified using the "timeout_in_seconds" parameter.
+occurs. The time-out can be specified using the optional "timeout_in_seconds"
+parameter (default is 15 minutes). 
 If the refresh fails or a time-out occurs, the method casts an exception.
 
-The wait time is synchronized with the execution time of the previous refresh,
-making sure as few requests to the PowerBI API would be made as possible,
-while ensuring the method would finish as soon as possible. 
+The wait time between calls to the PowerBI API is synchronized with the
+execution time of the previous dataset refresh, making sure as few requests
+to the PowerBI API would be made as possible, while ensuring the method
+would finish as soon as possible. 
 
 ```python
 # example starting of a dataset refresh
@@ -188,3 +195,13 @@ Waiting 15 seconds...
 Refresh completed successfully at 2024-02-02 09:02 (local time).
 True
 ```
+
+# Testing
+
+Due to license restrictions, testing requires a valid PowerBI license.
+Because of this, testing must be executed manually in each project
+that uses spetlr to refresh datasets.
+
+Recommended integration tests should include all above examples, i.e. 
+listing of workspaces and datasets, checking a refresh, and possibly
+triggering a new refresh.

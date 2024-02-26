@@ -11,9 +11,9 @@ if (-not $secrets) {
 $repoRoot = (git rev-parse --show-toplevel)
 $sqlSourceDir = Resolve-Path $PSScriptRoot/sql
 
-$permanentResourceName = "githubatc"
-$permanentResourceGroup = "atc-permanent"
-$keyVaultName = "atcGithubCiCd"
+$permanentResourceName = "spetlrpermanent"
+$permanentResourceGroup = "spetlr-permanent"
+$keyVaultName = "spetlrGithubCiCdv2"
 
 # at some point, the following will be made variable between deployments
 $resourceName = "githubspetlr$uniqueRunId"
@@ -86,13 +86,13 @@ $sqlAdminSpnName = $cicdSpnName
 
 $logAnalyticsWsName = $resourceGroupName
 
-$metastoreStorageAccountName = "githubspetlrmetastore"
-$metastoreContainerName = "metastore"
-$metastoreAccessConnectorName = "ac-metastore"
-$metastoreDatabricksName = "dbws-metastore"
-$metastoreName = "spetlr-metastore"
-$metastoreCatalogName = "spetlr_catalog"
-$subscriptionId = "c3a3d88f-e2a3-40c1-8ce7-e88453a01548"
+$metastoreStorageAccountName = "githubspetlrmetastorev2"
+$metastoreContainerName = "metastorev2"
+$metastoreAccessConnectorName = "ac-metastorev2"
+$metastoreDatabricksName = "dbws-metastorev2"
+$metastoreName = "spetlr-metastorev2"
+$metastoreCatalogName = "spetlr_catalogv2"
+$subscriptionId = "f861842b-e686-40fb-8b34-87e8735e8749"
 
 Write-Host "**********************************************************************" -ForegroundColor White
 Write-Host "* Base Configuration       *******************************************" -ForegroundColor White

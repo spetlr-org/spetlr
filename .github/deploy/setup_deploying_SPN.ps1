@@ -7,14 +7,24 @@
 #az account list
 ## find the corect one
 #az account set --subscription $mySpetlrAzureSubscription
-Write-Host "Check correct subsctiption is selected."
-$account = az account show | ConvertFrom-Json
-Write-Host "Current subscription is $($account.name)"
-if ($account.name -notmatch "ATC"){
-  Write-Host "Expected subscription to match ATC" -ForegroundColor Red
+
+# Get the current subscription name
+$subscriptionName = az account show --query name -o tsv
+
+# Use the subscription name to get the subscription ID
+$subscriptionId = az account list --query "[?name=='$subscriptionName'].id" -o tsv
+
+# Output the subscription ID
+Write-Output "Current subscription ID: $subscriptionId"
+
+
+Write-Host "Checkinjg.. correct subsription is selected."
+if ($subscriptionId -ne "f861842b-e686-40fb-8b34-87e8735e8749"){
+  Write-Host "Expected subscription to match f861842b-e686-40fb-8b34-87e8735e8749" -ForegroundColor Red
   Write-Host "Please change subscription" -ForegroundColor Red
   Exit 1
 }
+Write-Host "Subscription Id is correct!" -ForegroundColor Green
 
 ####################################################################################
 ## Step 2. Create app registration

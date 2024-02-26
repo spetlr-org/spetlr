@@ -35,7 +35,7 @@ resource rsdatabricks 'Microsoft.Databricks/workspaces@2022-04-01-preview' = {
 
 resource staccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   name: dataLakeName
-  location: location
+  location: 'northeurope'
   tags: resourceTags
   sku: {
     name: 'Standard_LRS'
@@ -115,7 +115,7 @@ resource eventhubs 'Microsoft.EventHub/namespaces@2021-11-01' = {
 
 resource sqlserver 'Microsoft.Sql/servers@2022-02-01-preview' = {
   name: databaseServerName
-  location: location
+  location: 'eastus'
   tags: resourceTags
   identity: {
     type: 'SystemAssigned'
@@ -157,7 +157,7 @@ resource sqlserver 'Microsoft.Sql/servers@2022-02-01-preview' = {
 resource sqlDb 'Microsoft.Sql/servers/databases@2022-02-01-preview' = {
   name: deliveryDatabase
   parent: sqlserver
-  location: location
+  location: 'eastus'
   tags: resourceTags
   sku: {
     name: 'GP_S_Gen5'

@@ -21,7 +21,9 @@ jobs:
           az login --service-principal `
             -u ${{ secrets.SPN_CLIENT_ID }} `
             -p ${{ secrets.SPN_CLIENT_SECRET }} `
-            --tenant ${{ secrets.SPN_TENANT_ID }}
+            --tenant ${{ secrets.SPN_TENANT_ID }} `
+            --output none
+            
       - name: Delete Deployment
         shell: pwsh
         run: |

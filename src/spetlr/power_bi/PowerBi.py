@@ -7,6 +7,8 @@ import requests
 from dateutil import parser
 from pytz import timezone, utc
 
+from spetlr.exceptions import SpetlrException
+
 from .PowerBiClient import PowerBiClient
 
 
@@ -47,7 +49,7 @@ class PowerBi:
         :param str local_timezone_name: The time zone to use when showing
             refresh timestamps.
         :param bool ignore_errors: True to print errors in the output
-            or False (default) to cast an exception.
+            or False (default) to cast a SpetlrException.
         """
 
         if workspace_id is not None and workspace_name is not None:
@@ -64,9 +66,6 @@ class PowerBi:
         self.client = client
 
         self.max_minutes_after_last_refresh = max_minutes_after_last_refresh
-        self.min_refresh_time_utc = datetime.now(utc) - timedelta(
-            minutes=self.max_minutes_after_last_refresh
-        )
         self.timeout_in_seconds = timeout_in_seconds
         self.local_timezone_name = local_timezone_name
         self.ignore_errors = ignore_errors
@@ -82,7 +81,7 @@ class PowerBi:
         if self.ignore_errors:
             print(message)
         else:
-            raise Exception(message)
+            raise SpetlrException(message)
 
     def _raise_api_error(self, message: str, api_call: requests.Response):
         print(api_call.text)
@@ -96,7 +95,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         if self.expire_time != 0:
@@ -121,11 +120,14 @@ class PowerBi:
             self._raise_error("Failed to acquire token!")
             return False
 
+        default_expires_in = 5 * 60
+        extra_seconds = 3
+
         access_token = result["access_token"]
         if "expires_in" in result:
-            self.expire_time = time.time() + result["expires_in"] - 3
+            self.expire_time = time.time() + result["expires_in"] - extra_seconds
         else:
-            self.expire_time = time.time() + (5 * 60) - 3
+            self.expire_time = time.time() + default_expires_in - extra_seconds
 
         # Get latest Power BI Dataset refresh record
         self.api_header = {
@@ -134,6 +136,24 @@ class PowerBi:
         }
         return True
 
+    @staticmethod
+    def _show_workspaces(df: pd.DataFrame):
+        print("Available workspaces:")
+        df.rename(
+            columns={"id": "workspace_id", "name": "workspace_name"},
+            inplace=True,
+        )
+        df.display()
+
+    @staticmethod
+    def _show_datasets(df: pd.DataFrame):
+        print("Available datasets:")
+        df.rename(
+            columns={"id": "dataset_id", "name": "dataset_name"},
+            inplace=True,
+        )
+        df.display()
+
     def _get_workspace(self) -> bool:
         """
         Gets workspace ID based on the workspace name, or shows all workspaces
@@ -141,7 +161,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         if self.workspace_id is None:
@@ -154,12 +174,7 @@ class PowerBi:
             df = pd.DataFrame(api_call.json()["value"], columns=["id", "name"])
 
             if self.workspace_name is None:
-                print("Available workspaces:")
-                df.rename(
-                    columns={"id": "workspace_id", "name": "workspace_name"},
-                    inplace=True,
-                )
-                df.display()
+                self._show_workspaces(df)
                 return False
 
             rows = df.loc[df["name"] == self.workspace_name, "id"]
@@ -179,7 +194,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         if self.dataset_id is None:
@@ -193,12 +208,7 @@ class PowerBi:
             df = pd.DataFrame(api_call.json()["value"], columns=["id", "name"])
 
             if self.dataset_name is None:
-                print("Available datasets:")
-                df.rename(
-                    columns={"id": "dataset_id", "name": "dataset_name"},
-                    inplace=True,
-                )
-                df.display()
+                self._show_datasets(df)
                 return False
 
             rows = df.loc[df["name"] == self.dataset_name, "id"]
@@ -218,7 +228,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         if not self._get_access_token():
@@ -236,7 +246,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         if not self._connect():
@@ -295,7 +305,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         if self.last_status is None:
@@ -310,9 +320,12 @@ class PowerBi:
                     ).strftime("%Y-%m-%d %H:%M")
                     + " (local time)"
                 )
+                min_refresh_time_utc = datetime.now(utc) - timedelta(
+                    minutes=self.max_minutes_after_last_refresh
+                )
                 if (
                     self.max_minutes_after_last_refresh > 0
-                    and self.last_refresh_utc < self.min_refresh_time_utc
+                    and self.last_refresh_utc < min_refresh_time_utc
                 ):
                     self._raise_error(
                         "Last refresh finished more than "
@@ -340,7 +353,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         if self.last_status is None or self.last_status in ["Completed", "Failed"]:
@@ -390,7 +403,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         return self._get_last_refresh() and self._verify_last_refresh()
@@ -401,7 +414,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         return self._get_last_refresh() and self._trigger_new_refresh()
@@ -412,7 +425,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises Exception: if failed and ignore_errors==False
+        :raises SpetlrException: if failed and ignore_errors==False
         """
 
         start_time = time.time()

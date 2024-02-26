@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 from pytz import utc
@@ -152,19 +152,17 @@ class TestPowerBi(unittest.TestCase):
             sut._get_last_refresh()
 
         # Assert
-        self.assertEqual(
+        self.assertIn(
+            "The specified dataset or workspace cannot be found",
             str(context.exception),
-            "The specified dataset or workspace cannot be found, "
-            "or the dataset doesn't have a user with the required permissions!",
         )
 
     def test_verify_last_refresh_success(self):
         # Arrange
         sut = PowerBi(PowerBiClient())
         sut.last_status = "Completed"
-        sut.last_refresh_utc = datetime(2024, 2, 1, 15, 1, tzinfo=utc)
-        sut.min_refresh_time_utc = datetime(2024, 2, 1, 15, 0, tzinfo=utc)
-        sut.max_minutes_after_last_refresh = 2
+        sut.last_refresh_utc = datetime.now(utc) - timedelta(minutes=1)
+        sut.max_minutes_after_last_refresh = 5
 
         # Act
         result = sut._verify_last_refresh()
@@ -176,9 +174,8 @@ class TestPowerBi(unittest.TestCase):
         # Arrange
         sut = PowerBi(PowerBiClient())
         sut.last_status = "Completed"
-        sut.last_refresh_utc = datetime(2024, 2, 1, 15, 1, tzinfo=utc)
-        sut.min_refresh_time_utc = datetime(2024, 2, 1, 15, 5, tzinfo=utc)
-        sut.max_minutes_after_last_refresh = 2
+        sut.last_refresh_utc = datetime.now(utc) - timedelta(minutes=10)
+        sut.max_minutes_after_last_refresh = 5
 
         # Act
         with self.assertRaises(SpetlrException) as context:

@@ -322,9 +322,10 @@ class PowerBi:
                     ).strftime("%Y-%m-%d %H:%M")
                     + " (local time)"
                 )
-                min_refresh_time_utc = datetime.now(utc) - timedelta(
-                    minutes=self.max_minutes_after_last_refresh
-                )
+                min_refresh_time_utc = (
+                    datetime.now(utc)
+                    - timedelta(minutes=self.max_minutes_after_last_refresh)
+                ).replace(tzinfo=utc)
                 if (
                     self.max_minutes_after_last_refresh > 0
                     and self.last_refresh_utc < min_refresh_time_utc

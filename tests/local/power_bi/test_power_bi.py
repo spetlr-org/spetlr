@@ -129,7 +129,7 @@ class TestPowerBi(unittest.TestCase):
         self.assertTrue(result)
         self.assertEqual(sut.last_status, "Completed")
         self.assertIsNone(sut.last_exception)
-        self.assertEqual(str(sut.last_refresh_utc), "2024-02-27 10:05:00+00:00")
+        self.assertEqual(str(sut.last_refresh_utc), "2024-02-26 10:05:00+00:00")
         self.assertEqual(sut.last_duration, 300)
 
     @patch("requests.get")

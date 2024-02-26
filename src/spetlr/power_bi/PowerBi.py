@@ -326,9 +326,8 @@ class PowerBi:
                     datetime.now(utc)
                     - timedelta(minutes=self.max_minutes_after_last_refresh)
                 ).replace(tzinfo=utc)
-                if (
-                    self.max_minutes_after_last_refresh > 0
-                    and self.last_refresh_utc < min_refresh_time_utc
+                if (self.max_minutes_after_last_refresh > 0) and (
+                    self.last_refresh_utc < min_refresh_time_utc
                 ):
                     self._raise_error(
                         "Last refresh finished more than "

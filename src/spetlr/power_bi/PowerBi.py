@@ -280,8 +280,8 @@ class PowerBi:
                     and df.endTime[0] is not None
                     and len(df.endTime[0]) > 0
                 ):
-                    self.last_refresh_utc = (
-                        parser.parse(df.endTime[0]).replace(tzinfo=utc).astimezone(utc)
+                    self.last_refresh_utc = parser.parse(df.endTime[0]).replace(
+                        tzinfo=utc
                     )
                     if df.startTime[0] is not None and len(df.startTime[0]) > 0:
                         self.last_duration = int(
@@ -322,12 +322,12 @@ class PowerBi:
                     ).strftime("%Y-%m-%d %H:%M")
                     + " (local time)"
                 )
-                min_refresh_time_utc = (
-                    datetime.now(utc)
-                    - timedelta(minutes=self.max_minutes_after_last_refresh)
-                ).replace(tzinfo=utc)
-                if (self.max_minutes_after_last_refresh > 0) and (
-                    self.last_refresh_utc < min_refresh_time_utc
+                min_refresh_time_utc = datetime.now(utc) - timedelta(
+                    minutes=self.max_minutes_after_last_refresh
+                )
+                if (
+                    self.max_minutes_after_last_refresh > 0
+                    and self.last_refresh_utc < min_refresh_time_utc
                 ):
                     self._raise_error(
                         "Last refresh finished more than "

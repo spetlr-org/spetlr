@@ -280,8 +280,8 @@ class PowerBi:
                     and df.endTime[0] is not None
                     and len(df.endTime[0]) > 0
                 ):
-                    self.last_refresh_utc = parser.parse(df.endTime[0]).replace(
-                        tzinfo=utc
+                    self.last_refresh_utc = (
+                        parser.parse(df.endTime[0]).replace(tzinfo=utc).astimezone(utc)
                     )
                     if df.startTime[0] is not None and len(df.startTime[0]) > 0:
                         self.last_duration = int(

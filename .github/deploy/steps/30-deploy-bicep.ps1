@@ -11,6 +11,7 @@ $sqlAdminSpnName=$dbSpn.name
 $sqlAdminObjectId=$dbSpn.objectId
 
 $output = az deployment sub create `
+  --name $resourceName `
   --location $location `
   --template-file $repoRoot\.github\deploy-bicep\main.bicep `
   --parameters `

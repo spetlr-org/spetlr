@@ -18,6 +18,7 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
   location: location
   tags: tags
   properties: {
+
     sku: {
       family: 'A'
       name: 'standard'
@@ -36,6 +37,7 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
         tenantId: tenant().tenantId
       }
     ]
+
   }
 }
 
@@ -53,8 +55,11 @@ resource csdb 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
     locations: [ {
         failoverPriority: 0
         isZoneRedundant: false
-        locationName: location
+        locationName: 'northeurope'
       } ]
+    //capabilities: [ {
+    //    name: 'EnableServerless'
+     // } ]
   }
 }
 

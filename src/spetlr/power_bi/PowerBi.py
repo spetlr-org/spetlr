@@ -21,6 +21,7 @@ class PowerBi:
         dataset_name: str = None,
         max_minutes_after_last_refresh: int = 60 * 12,
         timeout_in_seconds: int = 60 * 15,
+        local_timezone_name: str = "Europe/Copenhagen",
         ignore_errors: bool = False,
     ):
         """
@@ -42,7 +43,9 @@ class PowerBi:
             for which the last succeeded refresh is considered valid,
             or 0 to disable time checking. Default is 12 hours.
         :param bool timeout_in_seconds: The number of seconds after which
-            the refresh_and_wait() method times out. Default is 15 minutes.
+            the refresh() method times out. Default is 15 minutes.
+        :param str local_timezone_name: The time zone to use when showing
+            refresh timestamps.
         :param bool ignore_errors: True to print errors in the output
             or False (default) to cast an exception.
         """
@@ -65,10 +68,10 @@ class PowerBi:
             minutes=self.max_minutes_after_last_refresh
         )
         self.timeout_in_seconds = timeout_in_seconds
+        self.local_timezone_name = local_timezone_name
         self.ignore_errors = ignore_errors
         self.api_header = None
         self.expire_time = 0
-        self.local_timezone_name = "Europe/Copenhagen"
 
         self.last_status = None
         self.last_exception = None
@@ -413,7 +416,7 @@ class PowerBi:
         """
 
         start_time = time.time()
-        if not self.refresh():
+        if not self.start_refresh():
             return False
 
         while True:

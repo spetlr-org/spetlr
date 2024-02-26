@@ -2,6 +2,8 @@ import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch
 
+from pytz import utc
+
 from spetlr.exceptions import SpetlrException
 from spetlr.power_bi.PowerBi import PowerBi
 from spetlr.power_bi.PowerBiClient import PowerBiClient
@@ -160,8 +162,8 @@ class TestPowerBi(unittest.TestCase):
         # Arrange
         sut = PowerBi(PowerBiClient())
         sut.last_status = "Completed"
-        sut.last_refresh_utc = datetime(2024, 2, 1, 15, 1)
-        sut.min_refresh_time_utc = datetime(2024, 2, 1, 15, 0)
+        sut.last_refresh_utc = datetime(2024, 2, 1, 15, 1, tzinfo=utc)
+        sut.min_refresh_time_utc = datetime(2024, 2, 1, 15, 0, tzinfo=utc)
         sut.max_minutes_after_last_refresh = 2
 
         # Act
@@ -174,8 +176,8 @@ class TestPowerBi(unittest.TestCase):
         # Arrange
         sut = PowerBi(PowerBiClient())
         sut.last_status = "Completed"
-        sut.last_refresh_utc = datetime(2024, 2, 1, 15, 1)
-        sut.min_refresh_time_utc = datetime(2024, 2, 1, 15, 5)
+        sut.last_refresh_utc = datetime(2024, 2, 1, 15, 1, tzinfo=utc)
+        sut.min_refresh_time_utc = datetime(2024, 2, 1, 15, 5, tzinfo=utc)
         sut.max_minutes_after_last_refresh = 2
 
         # Act

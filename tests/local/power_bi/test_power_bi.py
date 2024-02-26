@@ -120,7 +120,7 @@ class TestPowerBi(unittest.TestCase):
         sut.powerbi_url = "test"
         sut.workspace_id = "test"
         sut.dataset_id = "test"
-        sut._connect = lambda: None
+        sut._connect = lambda: True
 
         # Act
         result = sut._get_last_refresh()
@@ -143,7 +143,7 @@ class TestPowerBi(unittest.TestCase):
         sut.powerbi_url = "test"
         sut.workspace_id = "test"
         sut.dataset_id = "test"
-        sut._connect = lambda: None
+        sut._connect = lambda: True
 
         # Act
         with self.assertRaises(SpetlrException) as context:

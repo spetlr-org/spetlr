@@ -2,6 +2,7 @@ import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch
 
+from spetlr.exceptions import SpetlrException
 from spetlr.power_bi.PowerBi import PowerBi
 from spetlr.power_bi.PowerBiClient import PowerBiClient
 
@@ -43,7 +44,7 @@ class TestPowerBi(unittest.TestCase):
         sut.workspace_name = "Finance"
 
         # Act
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(SpetlrException) as context:
             sut._get_workspace()
 
         # Assert
@@ -89,7 +90,7 @@ class TestPowerBi(unittest.TestCase):
         sut.dataset_name = "Invoicing"
 
         # Act
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(SpetlrException) as context:
             sut._get_dataset()
 
         # Assert
@@ -145,7 +146,7 @@ class TestPowerBi(unittest.TestCase):
         sut._connect = lambda: None
 
         # Act
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(SpetlrException) as context:
             sut._get_last_refresh()
 
         # Assert
@@ -178,13 +179,13 @@ class TestPowerBi(unittest.TestCase):
         sut.max_minutes_after_last_refresh = 2
 
         # Act
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(SpetlrException) as context:
             sut._verify_last_refresh()
 
         # Assert
         self.assertIn("Last refresh finished more than", str(context.exception))
 
- @patch('requests.post')
+    @patch("requests.post")
     def test_trigger_new_refresh_success(self, mock_get):
         # Arrange
         mock_response = Mock()
@@ -203,7 +204,7 @@ class TestPowerBi(unittest.TestCase):
         # Assert
         self.assertTrue(result)
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_trigger_new_refresh_failure(self, mock_get):
         # Arrange
         mock_response = Mock()
@@ -218,7 +219,7 @@ class TestPowerBi(unittest.TestCase):
         sut.dataset_id = "b1f0a07e-e348-402c-a2b2-11f3e31181ce"
 
         # Act
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(SpetlrException) as context:
             sut._trigger_new_refresh()
 
         # Assert

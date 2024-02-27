@@ -23,7 +23,7 @@ class PowerBi:
         dataset_name: str = None,
         max_minutes_after_last_refresh: int = 60 * 12,
         timeout_in_seconds: int = 60 * 15,
-        local_timezone_name: str = "Europe/Copenhagen",
+        local_timezone_name: str = "UTC",
         ignore_errors: bool = False,
     ):
         """
@@ -47,7 +47,7 @@ class PowerBi:
         :param bool timeout_in_seconds: The number of seconds after which
             the refresh() method times out. Default is 15 minutes.
         :param str local_timezone_name: The time zone to use when showing
-            refresh timestamps.
+            refresh timestamps. Default is UTC.
         :param bool ignore_errors: True to print errors in the output
             or False (default) to cast a SpetlrException.
         """
@@ -303,7 +303,7 @@ class PowerBi:
     def _verify_last_refresh(self) -> bool:
         """
         Checks if the last refresh of the PowerBI dataset completed successfully,
-        and verifies if it happened recently enough.
+            and verifies if it happened recently enough.
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
@@ -316,11 +316,12 @@ class PowerBi:
             if self.last_refresh_utc is None:
                 self._raise_error("Completed at unknown refresh time!")
             else:
-                last_refresh_str = (
-                    self.last_refresh_utc.astimezone(
-                        timezone(self.local_timezone_name)
-                    ).strftime("%Y-%m-%d %H:%M")
-                    + " (local time)"
+                last_refresh_str = self.last_refresh_utc.astimezone(
+                    timezone(self.local_timezone_name)
+                ).strftime("%Y-%m-%d %H:%M") + (
+                    " (UTC)"
+                    if self.local_timezone_name.lower() == "utc"
+                    else " (local time)"
                 )
                 min_refresh_time_utc = datetime.now(utc) - timedelta(
                     minutes=self.max_minutes_after_last_refresh
@@ -387,11 +388,17 @@ class PowerBi:
     def _get_seconds_to_wait(self, elapsed: int) -> int:
         """
         Returns the number of seconds to wait before rechecking
-            if the refresh has completed.
+            if the refresh has completed. The method makes sure as few requests
+            to the PowerBI API as possible would be made.
 
         :return: number of seconds to wait
         :rtype: int
         """
+
+        # Microsoft set a limit of how many API requests in an hour can be made
+        # to the PowerBI API. This logic is a fine compromise between how often
+        # (small delay) we check through polling if the refresh has finished and
+        # how soon (large delay) will the refresh() method complete.
 
         if self.last_duration > 0:
             elapsed = abs(self.last_duration - elapsed)
@@ -401,7 +408,7 @@ class PowerBi:
     def check(self) -> bool:
         """
         Checks if the last refresh of the PowerBI dataset completed successfully,
-        and verifies if it happened recently enough.
+            and verifies if it happened recently enough.
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool

@@ -102,8 +102,8 @@ Available datasets:
 |    |             dataset_id               |  dataset_name  |
 +----+--------------------------------------+----------------+
 |   1| b1f0a07e-e348-402c-a2b2-11f3e31181ce | Invoicing      |
-|   3| 4de28a6f-f7d4-4186-a529-bf6c65e67b31 | Fees           |
 |   2| 2e848e9a-47a3-4b0e-a22a-af35507ec8c4 | Reimbursement  |
+|   3| 4de28a6f-f7d4-4186-a529-bf6c65e67b31 | Fees           |
 +----+--------------------------------------+----------------+
 ```
 
@@ -173,7 +173,7 @@ If the refresh fails or a time-out occurs, the method casts an exception.
 The wait time between calls to the PowerBI API is synchronized with the
 execution time of the previous dataset refresh, making sure as few requests
 to the PowerBI API would be made as possible, while ensuring the method
-would finish as soon as possible. 
+would finish as soon as possible.
 
 ```python
 # example starting of a dataset refresh

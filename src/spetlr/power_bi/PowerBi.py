@@ -46,8 +46,9 @@ class PowerBi:
             or 0 to disable time checking. Default is 12 hours.
         :param bool timeout_in_seconds: The number of seconds after which
             the refresh() method times out. Default is 15 minutes.
-        :param str local_timezone_name: The time zone to use when showing
-            refresh timestamps. Default is UTC.
+        :param str local_timezone_name: The timezone to use when showing
+            refresh timestamps. Only used for printing timestamps.
+            Default timezone is UTC.
         :param bool ignore_errors: True to print errors in the output
             or False (default) to cast a SpetlrException.
         """

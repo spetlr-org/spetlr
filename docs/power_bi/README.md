@@ -85,6 +85,8 @@ If no dataset parameter is specified, a list of available datasets
 in the given workspace is shown using Pandas.
 This logic can be used in a notebook.
 
+The workspace can be specified either as name or id, but not both.
+
 ```python
 # example listing of available datasets
 from spetlr.power_bi.PowerBi import PowerBi 
@@ -115,17 +117,27 @@ or if the last refresh finished more the given number of minutes ago.
 The number of minutes can be specified in the optional
 "max_minutes_after_last_refresh" parameter (default is 12 hours).
 
+You can also specify the optional "local_timezone_name" parameter to show
+the last refresh time of the PowerBI dataset in a local timezone.
+Default timezone is UTC.
+
 ```python
 # example last refresh time checking
 from spetlr.power_bi.PowerBi import PowerBi 
 
 client = MyPowerBiClient()
-PowerBi(client, workspace_name="Finance", dataset_name="Invoicing",
-        max_minutes_after_last_refresh=2*60).check()
+PowerBi(client,
+        workspace_name="Finance",
+        dataset_name="Invoicing",
+        max_minutes_after_last_refresh=2*60,
+        local_timezone_name="Europe/Copenhagen").check()
 
 # alternatively:
-PowerBi(client, workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
-        dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce").check()
+PowerBi(client,
+        workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+        dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+        max_minutes_after_last_refresh=2*60,
+        local_timezone_name="Europe/Copenhagen").check()
 ```
 
 ```
@@ -134,7 +146,7 @@ True
 ```
 
 ```
-Exception: Last refresh finished more than 1 minutes ago
+Exception: Last refresh finished more than 15 minutes ago
 at 2024-02-01 10:15 (local time) !
 ```
 
@@ -150,10 +162,13 @@ if the refresh succeeded.
 from spetlr.power_bi.PowerBi import PowerBi 
 
 client = MyPowerBiClient()
-PowerBi(client, workspace_name="Finance", dataset_name="Invoicing").start_refresh()
+PowerBi(client,
+        workspace_name="Finance",
+        dataset_name="Invoicing").start_refresh()
 
 # alternatively:
-PowerBi(client, workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+PowerBi(client,
+        workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
         dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce").start_refresh()
 ```
 
@@ -180,12 +195,16 @@ would finish as soon as possible.
 from spetlr.power_bi.PowerBi import PowerBi 
 
 client = MyPowerBiClient()
-PowerBi(client, workspace_name="Finance", dataset_name="Invoicing",
+PowerBi(client,
+        workspace_name="Finance",
+        dataset_name="Invoicing",
         timeout_in_seconds=10*60).refresh()
 
 # alternatively:
-PowerBi(client, workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
-        dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce").refresh()
+PowerBi(client,
+        workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+        dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+        timeout_in_seconds=10*60).refresh()
 ```
 
 ```

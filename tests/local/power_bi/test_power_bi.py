@@ -20,10 +20,8 @@ class TestPowerBi(unittest.TestCase):
         }
         mock_get.return_value = mock_response
 
-        sut = PowerBi(PowerBiClient())
-        sut.powerbi_url = "abc"
-        sut.workspace_id = None
-        sut.workspace_name = "Finance"
+        sut = PowerBi(PowerBiClient(), workspace_name="Finance")
+        sut.powerbi_url = "test"
 
         # Act
         result = sut._get_workspace()
@@ -40,17 +38,15 @@ class TestPowerBi(unittest.TestCase):
         mock_response.text = "error"
         mock_get.return_value = mock_response
 
-        sut = PowerBi(PowerBiClient())
-        sut.powerbi_url = "abc"
-        sut.workspace_id = None
-        sut.workspace_name = "Finance"
+        sut = PowerBi(PowerBiClient(), workspace_name="Finance")
+        sut.powerbi_url = "test"
 
         # Act
         with self.assertRaises(SpetlrException) as context:
             sut._get_workspace()
 
         # Assert
-        self.assertIn("Failed to fetch workspaces!", str(context.exception))
+        self.assertIn("Failed to fetch workspaces", str(context.exception))
 
     @patch("requests.get")
     def test_get_dataset_success(self, mock_get):
@@ -64,11 +60,12 @@ class TestPowerBi(unittest.TestCase):
         }
         mock_get.return_value = mock_response
 
-        sut = PowerBi(PowerBiClient())
-        sut.powerbi_url = "abc"
-        sut.workspace_id = "614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0"
-        sut.dataset_id = None
-        sut.dataset_name = "Invoicing"
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_name="Finance",
+            dataset_name="Invoicing",
+        )
+        sut.powerbi_url = "test"
 
         # Act
         result = sut._get_dataset()
@@ -85,18 +82,19 @@ class TestPowerBi(unittest.TestCase):
         mock_response.text = "error"
         mock_get.return_value = mock_response
 
-        sut = PowerBi(PowerBiClient())
-        sut.powerbi_url = "abc"
-        sut.workspace_id = "614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0"
-        sut.dataset_id = None
-        sut.dataset_name = "Invoicing"
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_name="Finance",
+            dataset_name="Invoicing",
+        )
+        sut.powerbi_url = "test"
 
         # Act
         with self.assertRaises(SpetlrException) as context:
             sut._get_dataset()
 
         # Assert
-        self.assertIn("Failed to fetch datasets!", str(context.exception))
+        self.assertIn("Failed to fetch datasets", str(context.exception))
 
     @patch("requests.get")
     def test_get_last_refresh_success(self, mock_get):
@@ -118,10 +116,8 @@ class TestPowerBi(unittest.TestCase):
         }
         mock_get.return_value = mock_response
 
-        sut = PowerBi(PowerBiClient())
+        sut = PowerBi(PowerBiClient(), workspace_id="test", dataset_id="test")
         sut.powerbi_url = "test"
-        sut.workspace_id = "test"
-        sut.dataset_id = "test"
         sut._connect = lambda: True
 
         # Act
@@ -141,10 +137,8 @@ class TestPowerBi(unittest.TestCase):
         mock_response.status_code = 404  # dataset or workspace not found
         mock_get.return_value = mock_response
 
-        sut = PowerBi(PowerBiClient())
+        sut = PowerBi(PowerBiClient(), workspace_id="test", dataset_id="test")
         sut.powerbi_url = "test"
-        sut.workspace_id = "test"
-        sut.dataset_id = "test"
         sut._connect = lambda: True
 
         # Act
@@ -159,10 +153,15 @@ class TestPowerBi(unittest.TestCase):
 
     def test_verify_last_refresh_success(self):
         # Arrange
-        sut = PowerBi(PowerBiClient())
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="test",
+            dataset_id="test",
+            max_minutes_after_last_refresh=5,
+            local_timezone_name="Europe/Copenhagen",
+        )
         sut.last_status = "Completed"
         sut.last_refresh_utc = datetime.now(utc) - timedelta(minutes=1)
-        sut.max_minutes_after_last_refresh = 5
 
         # Act
         result = sut._verify_last_refresh()
@@ -172,10 +171,15 @@ class TestPowerBi(unittest.TestCase):
 
     def test_verify_last_refresh_failure(self):
         # Arrange
-        sut = PowerBi(PowerBiClient())
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="test",
+            dataset_id="test",
+            max_minutes_after_last_refresh=5,
+            local_timezone_name="Europe/Copenhagen",
+        )
         sut.last_status = "Completed"
         sut.last_refresh_utc = datetime.now(utc) - timedelta(minutes=10)
-        sut.max_minutes_after_last_refresh = 5
 
         # Act
         with self.assertRaises(SpetlrException) as context:
@@ -191,11 +195,13 @@ class TestPowerBi(unittest.TestCase):
         mock_response.status_code = 202
         mock_get.return_value = mock_response
 
-        sut = PowerBi(PowerBiClient())
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+        )
         sut.last_status = "Completed"
-        sut.powerbi_url = "abc"
-        sut.workspace_id = "614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0"
-        sut.dataset_id = "b1f0a07e-e348-402c-a2b2-11f3e31181ce"
+        sut.powerbi_url = "test"
 
         # Act
         result = sut._trigger_new_refresh()
@@ -211,37 +217,43 @@ class TestPowerBi(unittest.TestCase):
         mock_response.text = "error"
         mock_get.return_value = mock_response
 
-        sut = PowerBi(PowerBiClient())
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+        )
         sut.last_status = "Completed"
-        sut.powerbi_url = "abc"
-        sut.workspace_id = "614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0"
-        sut.dataset_id = "b1f0a07e-e348-402c-a2b2-11f3e31181ce"
+        sut.powerbi_url = "test"
 
         # Act
         with self.assertRaises(SpetlrException) as context:
             sut._trigger_new_refresh()
 
         # Assert
-        self.assertIn("Failed to trigger a refresh!", str(context.exception))
+        self.assertIn("Failed to trigger a refresh", str(context.exception))
 
     def test_get_seconds_to_wait_first(self):
+        # Arrange
         sut = PowerBi(PowerBiClient())
         sut.last_duration = 0
         elapsed = 5
+        expected_result = 15
 
-        # Call the method you want to test
+        # Act
         result = sut._get_seconds_to_wait(elapsed)
 
-        # Assertions
-        self.assertEqual(result, 15)
+        # Assert
+        self.assertEqual(result, expected_result)
 
     def test_get_seconds_to_wait_next(self):
+        # Arrange
         sut = PowerBi(PowerBiClient())
         sut.last_duration = 60 * 15
         elapsed = 5
+        expected_result = 60 * 5
 
-        # Call the method you want to test
+        # Act
         result = sut._get_seconds_to_wait(elapsed)
 
-        # Assertions
-        self.assertEqual(result, 60 * 5)
+        # Assert
+        self.assertEqual(result, expected_result)

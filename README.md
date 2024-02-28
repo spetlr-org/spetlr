@@ -21,6 +21,7 @@ TransformerNC class will be removed permanently. [Follow the PR.](https://github
 - [Contributing](#contributing)
 - [Build Status](#build-status)
 - [Releases](#releases)
+- [Requirements](#requirements-and-dependencies)
 - [Contact](#contact)
 
 # Description
@@ -131,6 +132,24 @@ Releases to PyPI is an Github Action which needs to be manually triggered.
 
 [![Release](https://github.com/spetlr-org/spetlr/actions/workflows/release.yml/badge.svg)](https://github.com/spetlr-org/spetlr/actions/workflows/release.yml)
 [![PyPI spetlr badge](https://img.shields.io/pypi/v/spetlr)](https://pypi.org/project/spetlr/)
+
+
+# Requirements and dependencies
+The library has three txt-files at the root of the repo. These files defines three levels of requirements:
+- `requirements_install.txt` - this file contains the required libraries to be able to install spetlr.
+- `requirements_test.txt` - libraries required to run unit- and integration tests
+- `requirements_dev.txt` - libraries required in the development process in order to contribute to the repo
+
+All libraries and their dependencies are added with a fixed version to the configuration file `setup.cfg` using the defined requirements from `requirements_install.txt`.
+
+To __upgrade__ the the dependencies in the `setup.cfg` file do the following:
+
+1. Create a new branch
+2. Run `upgrade_requirements.ps1` in your terminal
+3. Commit the changes the script has made to the cfg file. If there are no changes, everything is up to date.
+4. The PR runs all tests and ensure that the library is compliant with any updates
+
+Note that if it is desired to upgrade a dependency, but not to its newest version, it is possible to set the desired version in the `requirements_install.txt`, then this will be respected by the upgrade script.
 
 # Contact
 

@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install test requirements
-        run: pip install -r dev_requirements.txt
+        run: pip install -r requirements_dev.txt
       - name: Check code formatting
         run: |
           black --check .

@@ -23,6 +23,7 @@ class PowerBi:
         dataset_name: str = None,
         max_minutes_after_last_refresh: int = 60 * 12,
         timeout_in_seconds: int = 60 * 15,
+        number_of_retries: int = 0,
         local_timezone_name: str = "UTC",
         ignore_errors: bool = False,
     ):
@@ -46,6 +47,10 @@ class PowerBi:
             or 0 to disable time checking. Default is 12 hours.
         :param bool timeout_in_seconds: The number of seconds after which
             the refresh() method times out. Default is 15 minutes.
+        :param int number_of_retries: The number of retries on transient
+            errors when calling refresh(). Default is 0 (no retries).
+            (e.g. 1 means two attempts in total.)
+            Used only when the timeout_in_seconds parameter allows it!
         :param str local_timezone_name: The timezone to use when showing
             refresh timestamps. Only used for printing timestamps.
             Default timezone is UTC.
@@ -68,6 +73,7 @@ class PowerBi:
 
         self.max_minutes_after_last_refresh = max_minutes_after_last_refresh
         self.timeout_in_seconds = timeout_in_seconds
+        self.number_of_retries = number_of_retries
         self.local_timezone_name = local_timezone_name
         self.ignore_errors = ignore_errors
         self.api_header = None
@@ -78,13 +84,13 @@ class PowerBi:
         self.last_refresh_utc = None
         self.last_duration = 0
 
-    def _raise_error(self, message: str):
+    def _raise_error(self, message: str) -> None:
         if self.ignore_errors:
             print(message)
         else:
             raise SpetlrException(message)
 
-    def _raise_api_error(self, message: str, api_call: requests.Response):
+    def _raise_api_error(self, message: str, api_call: requests.Response) -> None:
         print(api_call.text)
         self._raise_error(
             message + f" Response: {api_call.status_code} {api_call.reason}"
@@ -138,7 +144,7 @@ class PowerBi:
         return True
 
     @staticmethod
-    def _show_workspaces(df: pd.DataFrame):
+    def _show_workspaces(df: pd.DataFrame) -> None:
         print("Available workspaces:")
         df.rename(
             columns={"id": "workspace_id", "name": "workspace_name"},
@@ -147,7 +153,7 @@ class PowerBi:
         df.display()
 
     @staticmethod
-    def _show_datasets(df: pd.DataFrame):
+    def _show_datasets(df: pd.DataFrame) -> None:
         print("Available datasets:")
         df.rename(
             columns={"id": "dataset_id", "name": "dataset_name"},
@@ -253,6 +259,11 @@ class PowerBi:
         if not self._connect():
             return False
 
+        self.last_status = None
+        self.last_exception = None
+        self.last_refresh_utc = None
+        self.last_duration = 0
+
         api_url = (
             f"{self.powerbi_url}groups/{self.workspace_id}"
             f"/datasets/{self.dataset_id}/refreshes?$top=1"
@@ -272,23 +283,22 @@ class PowerBi:
                     "serviceExceptionJson",
                 ],
             )
-            df.set_index("id")
-            if len(df.index) > 0:
+            if not df.empty:
+                df.set_index("id")
                 self.last_status = df.status[0]
                 self.last_exception = df.serviceExceptionJson[0]
+                start_time = df.startTime[0]
+                end_time = df.endTime[0]
                 if (
                     self.last_status == "Completed"
-                    and df.endTime[0] is not None
-                    and len(df.endTime[0]) > 0
+                    and end_time is not None
+                    and len(end_time) > 0
                 ):
-                    self.last_refresh_utc = parser.parse(df.endTime[0]).replace(
-                        tzinfo=utc
-                    )
-                    if df.startTime[0] is not None and len(df.startTime[0]) > 0:
+                    self.last_refresh_utc = parser.parse(end_time).replace(tzinfo=utc)
+                    if start_time is not None and len(start_time) > 0:
                         self.last_duration = int(
                             (
-                                parser.parse(df.endTime[0])
-                                - parser.parse(df.startTime[0])
+                                parser.parse(end_time) - parser.parse(start_time)
                             ).total_seconds()
                         )
             return True
@@ -438,6 +448,7 @@ class PowerBi:
         :raises SpetlrException: if failed and ignore_errors==False
         """
 
+        retries = self.number_of_retries
         start_time = time.time()
         if not self.start_refresh():
             return False
@@ -453,6 +464,13 @@ class PowerBi:
 
             if not self._get_last_refresh():
                 return False
+
+            if self.last_status == "Failed" and retries > 0:
+                retries = retries - 1
+                if not self._trigger_new_refresh():
+                    return False
+                continue
+
             if self.last_status != "Unknown":
                 break
 

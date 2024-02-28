@@ -59,7 +59,7 @@ dbfs mkdirs $testDir
 Write-Host "To be installed on cluster: $($libs -join ", ")"
 [array]$sparkWheels =  $libs | ForEach-Object -Process {@{whl = "$testDir/dist/$_"}}
 
-[array]$testWheels = Get-Content -Path "$repoRoot/test_requirements.txt" | ForEach-Object -Process {@{pypi = @{package="$_"}}}
+[array]$testWheels = Get-Content -Path "$repoRoot/requirements_test.txt" | ForEach-Object -Process {@{pypi = @{package="$_"}}}
 
 
 # upload the library

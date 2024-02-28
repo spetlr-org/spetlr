@@ -11,8 +11,8 @@ class object.
 
 ## PowerBI Permissions
 
-To enable PowerBI API access in your PowerBI, you need to enable
-the "Service principals can use Fabric APIs" setting (see the screen-shot).
+To enable PowerBI API access in your PowerBI, you need to enable the setting
+"Service principals can use Fabric APIs" in Fabric (see the screen-shot).
 Additionally, you need to specify the user group that should have access 
 to the API.
 
@@ -24,7 +24,7 @@ attached, that is part of this user group.
 
 ## Links
 
-[Register an App and give the needed permissions. A very well how-to-guide can be found here.](https://www.sqlshack.com/how-to-access-power-bi-rest-apis-programmatically/)
+[Register an App and give the needed permissions. A very good how-to-guide can be found here.](https://www.sqlshack.com/how-to-access-power-bi-rest-apis-programmatically/)
 
 [How to Refresh a Power BI Dataset with Python.](https://pbi-guy.com/2022/01/07/refresh-a-power-bi-dataset-with-python/)
 
@@ -40,7 +40,7 @@ attached, that is part of this user group.
 ## Step 1: Create PowerBI credentials
 
 The client ID, client secret, and tenant ID values should be stored in a key vault,
-and loaded from the key vault or Databricks secrets scope.
+and loaded from the key vault or Databricks secret scope.
 
 ```python
 # example PowerBiClient credentials object
@@ -85,7 +85,7 @@ If no dataset parameter is specified, a list of available datasets
 in the given workspace is shown using Pandas.
 This logic can be used in a notebook.
 
-The workspace can be specified either as name or id, but not both.
+The workspace can be specified either as a name or id, but not both.
 
 ```python
 # example listing of available datasets
@@ -119,7 +119,10 @@ The number of minutes can be specified in the optional
 
 You can also specify the optional "local_timezone_name" parameter to show
 the last refresh time of the PowerBI dataset in a local timezone.
-Default timezone is UTC.
+It is only used for printing timestamps. Default timezone is UTC.
+
+All parameters can only be specified in the constructor. 
+
 
 ```python
 # example last refresh time checking
@@ -157,6 +160,9 @@ dataset asynchronously. You need to call the check() method after waiting
 for some sufficient time (e.g. from a separate monitoring job) to verify
 if the refresh succeeded.
 
+All parameters can only be specified in the constructor. 
+
+
 ```python
 # example starting of a dataset refresh
 from spetlr.power_bi.PowerBi import PowerBi 
@@ -189,6 +195,19 @@ The wait time between calls to the PowerBI API is synchronized with the
 execution time of the previous dataset refresh, making sure as few requests
 to the PowerBI API would be made as possible, while ensuring the method
 would finish as soon as possible.
+
+Additionally, you can set the optional "number_of_retries" parameter to
+specify the number of retries on transient errors when calling refresh().
+Default is 0 (no retries). E.g. 1 means two attempts in total.
+It is used only when the "timeout_in_seconds" parameter allows it,
+so you need to set the "timeout_in_seconds" parameter high enough.
+
+You can also specify the optional "local_timezone_name" parameter to show
+the last refresh time of the PowerBI dataset in a local timezone.
+It is only used for printing timestamps. Default timezone is UTC.
+
+All parameters can only be specified in the constructor. 
+
 
 ```python
 # example starting of a dataset refresh

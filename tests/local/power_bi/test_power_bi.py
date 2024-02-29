@@ -128,7 +128,7 @@ class TestPowerBi(unittest.TestCase):
         self.assertEqual(sut.last_status, "Completed")
         self.assertIsNone(sut.last_exception)
         self.assertEqual(str(sut.last_refresh_utc), "2024-02-26 10:05:00+00:00")
-        self.assertEqual(sut.last_duration, 300)
+        self.assertEqual(sut.last_duration_in_seconds, 5 * 60)
 
     @patch("requests.get")
     def test_get_last_refresh_failure(self, mock_get):
@@ -235,7 +235,7 @@ class TestPowerBi(unittest.TestCase):
     def test_get_seconds_to_wait_first(self):
         # Arrange
         sut = PowerBi(PowerBiClient())
-        sut.last_duration = 0
+        sut.last_duration_in_seconds = 0
         elapsed = 5
         expected_result = 15
 
@@ -248,9 +248,22 @@ class TestPowerBi(unittest.TestCase):
     def test_get_seconds_to_wait_next(self):
         # Arrange
         sut = PowerBi(PowerBiClient())
-        sut.last_duration = 60 * 15
+        sut.last_duration_in_seconds = 15 * 60
         elapsed = 5
-        expected_result = 60 * 5
+        expected_result = 5 * 60
+
+        # Act
+        result = sut._get_seconds_to_wait(elapsed)
+
+        # Assert
+        self.assertEqual(result, expected_result)
+
+    def test_get_seconds_to_wait_exceeding_timeout(self):
+        # Arrange
+        sut = PowerBi(PowerBiClient(), timeout_in_seconds=90)
+        sut.last_duration_in_seconds = 15 * 60
+        elapsed = 5
+        expected_result = 90 - elapsed
 
         # Act
         result = sut._get_seconds_to_wait(elapsed)

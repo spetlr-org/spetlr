@@ -126,7 +126,7 @@ class PowerBi:
                 return True
             print("Renewing access token...")
 
-        # Prepare URLs (note: we fetch only the latest refresh record, i.e. top=1)
+        # Prepare URLs
         authority_url = f"https://login.microsoftonline.com/{self.client.tenant_id}/"
         scope = ["https://analysis.windows.net/powerbi/api/.default"]
         self.powerbi_url = "https://api.powerbi.com/v1.0/myorg/"
@@ -152,7 +152,6 @@ class PowerBi:
         else:
             self.expire_time = time.time() + default_expires_in - extra_seconds
 
-        # Get latest Power BI Dataset refresh record
         self.api_header = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {access_token}",
@@ -280,6 +279,7 @@ class PowerBi:
         self.last_refresh_utc = None
         self.last_duration_in_seconds = 0
 
+        # Note: we fetch only the latest refresh record, i.e. top=1
         api_url = (
             f"{self.powerbi_url}groups/{self.workspace_id}"
             f"/datasets/{self.dataset_id}/refreshes?$top=1"

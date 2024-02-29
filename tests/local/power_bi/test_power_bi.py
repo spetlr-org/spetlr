@@ -263,7 +263,7 @@ class TestPowerBi(unittest.TestCase):
         sut = PowerBi(PowerBiClient(), timeout_in_seconds=90)
         sut.last_duration_in_seconds = 15 * 60
         elapsed = 5
-        expected_result = 90
+        expected_result = 90 - elapsed
 
         # Act
         result = sut._get_seconds_to_wait(elapsed)

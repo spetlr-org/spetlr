@@ -139,6 +139,8 @@ class TestPowerBi(unittest.TestCase):
 
         sut = PowerBi(PowerBiClient(), workspace_id="test", dataset_id="test")
         sut.powerbi_url = "test"
+        sut.last_status = "test"
+        sut.last_duration_in_seconds = 5
         sut._connect = lambda: True
 
         # Act
@@ -150,6 +152,8 @@ class TestPowerBi(unittest.TestCase):
             "The specified dataset or workspace cannot be found",
             str(context.exception),
         )
+        self.assertIsNone(sut.last_status)  # must be cleared!
+        self.assertEqual(sut.last_duration_in_seconds, 5)  # must be kept unchanged!
 
     def test_verify_last_refresh_success(self):
         # Arrange

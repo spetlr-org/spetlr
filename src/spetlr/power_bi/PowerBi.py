@@ -277,7 +277,6 @@ class PowerBi:
         self.last_status = None
         self.last_exception = None
         self.last_refresh_utc = None
-        self.last_duration_in_seconds = 0
 
         # Note: we fetch only the latest refresh record, i.e. top=1
         api_url = (

@@ -127,7 +127,7 @@ Given a dataframe `df`, this code renames all columns:
 |   1|    2|   foo|
 |   3|    4|   bar|
 +----+-----+------+
->>> from spetlr.transformers.fuzzy_select import FuzzySelectTransformer
+>>> from spetlr.etl.transformers.fuzzy_select import FuzzySelectTransformer
 >>> ft = FuzzySelectTransformer(["Index", "Count", "Label"])
 >>> ft.process(df).show()
 +-----+-----+-----+
@@ -264,7 +264,7 @@ latitude or longitude value is *None*, the returned timezone will also be *None*
 
 
 ``` python 
-from spetlr.transformers import TimeZoneTransformer
+from spetlr.etl.transformers import TimeZoneTransformer
 data =
 
 |   latitude| longitude|
@@ -300,7 +300,7 @@ on pyspark schema.
 If case-insensitive matching is desired, caseInsensitiveMatching can be set to True
 
 ``` python 
-from spetlr.transformers import SelectAndCastColumnsTransformer
+from spetlr.etl.transformers import SelectAndCastColumnsTransformer
 data =
 
 |         id|    number|     value|
@@ -339,7 +339,7 @@ Usage example:
 
 
 ``` python 
-from spetlr.transformers.ValidFromToTransformer import ValidFromToTransformer
+from spetlr.etl.transformers.ValidFromToTransformer import ValidFromToTransformer
 data =
 
 | id| model|     brand|amount|         timecolumn|
@@ -396,7 +396,7 @@ This is a simple transformer for filtering a single column with a single value.
 Usage example
 
 ```python
-from spetlr.transformers import DataFrameFilterTransformer
+from spetlr.etl.transformers import DataFrameFilterTransformer
 import pyspark.sql.types as T
 
 from spetlr.spark import Spark
@@ -441,7 +441,7 @@ This is a simple transformer for translating country names to their alpha-2 code
 Usage example
 
 ```python
-from spetlr.transformers import CountryToAlphaCodeTransformer
+from spetlr.etl.transformers import CountryToAlphaCodeTransformer
 import pyspark.sql.types as T
 
 from spetlr.spark import Spark
@@ -481,7 +481,7 @@ This transformer generates a unique column with md5 encoding based on other colu
 Usage example
 
 ```python
-from spetlr.transformers import GenerateMd5ColumnTransformer
+from spetlr.etl.transformers import GenerateMd5ColumnTransformer
 import pyspark.sql.types as T
 
 from spetlr.spark import Spark
@@ -525,7 +525,7 @@ Usage example:
 
 
 ``` python 
-from spetlr.transformers.data_change_capture_transformer import DataChangeCaptureTransformer
+from spetlr.etl.transformers.data_change_capture_transformer import DataChangeCaptureTransformer
 
 df_target =
 
@@ -573,7 +573,7 @@ Usage example:
 
 
 ``` python 
-from spetlr.transformers import CleanColumnNamesTransformer
+from spetlr.etl.transformers import CleanColumnNamesTransformer
 
 df_input.show()
 

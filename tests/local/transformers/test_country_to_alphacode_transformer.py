@@ -1,8 +1,8 @@
 import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
+from spetlr.etl.transformers import CountryToAlphaCodeTransformer
 from spetlr.spark import Spark
-from spetlr.transformers import CountryToAlphaCodeTransformer
 
 
 class CountryToAlphaCodeTransformerTest(DataframeTestCase):

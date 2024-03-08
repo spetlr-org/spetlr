@@ -30,5 +30,17 @@ Write-Host "  Now Destroying Parent Resource Group!" -ForegroundColor Red
 
 az group delete --name $resourceGroupName --yes --no-wait
 
+# Check if the resource group exists
+$clusterrg= "$($resourceGroupName)Cluster"
+$exists = az group exists --name $clusterrg
+
+if ($exists -eq "true") {
+    Write-Host "Resource group $clusterrg exists. Deleting..."
+    az group delete --name $clusterrg --yes --no-wait
+    Write-Host "Deletion command sent for resource group $clusterrg."
+} else {
+    Write-Host "Resource group $clusterrg does not exist."
+}
+
 Write-Host "  Parent Resource Group Deleted" -ForegroundColor Green
 

@@ -1,11 +1,11 @@
 # delete the entire deployment to save running costs
 param (
-  [Parameter(Mandatory=$false)]
+  [Parameter(Mandatory = $false)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $environmentName="",
+  $environmentName = "",
 
-  [Parameter(Mandatory=$false)]
+  [Parameter(Mandatory = $false)]
   [string]
   $uniqueRunId
 )
@@ -29,6 +29,7 @@ Write-Host "Initialize deployment" -ForegroundColor Green
 Write-Host "  Now Destroying Parent Resource Group!" -ForegroundColor Red
 
 az group delete --name $resourceGroupName --yes --no-wait
+az group delete --name "$($resourceGroupName)Cluster" --yes --no-wait
 
 Write-Host "  Parent Resource Group Deleted" -ForegroundColor Green
 

@@ -81,7 +81,7 @@ class TestConfigurator(unittest.TestCase):
         tc.add_resource_path(tables4)
         details = tc.get_all_details()
         self.assertTrue("MyFreeTable_eggs", details)
-        self.assertEqual(tc.table_property("MyFreeTable", "bacon"), "")
+        self.assertEqual(tc.get("MyFreeTable", "bacon"), "")
 
     def test_07_bare_strings_and_structures(self):
         tc = Configurator()

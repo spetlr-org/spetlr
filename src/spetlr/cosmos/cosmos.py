@@ -173,7 +173,7 @@ class CosmosDb(CosmosBaseServer):
     def from_tc(self, table_id: str) -> CosmosHandle:
         tc = Configurator()
         name = tc.table_name(table_id)
-        rows_per_partition = tc.table_property(table_id, "rows_per_partition", "")
+        rows_per_partition = tc.get(table_id, "rows_per_partition", "")
         rows_per_partition = int(rows_per_partition) if rows_per_partition else None
 
         try:

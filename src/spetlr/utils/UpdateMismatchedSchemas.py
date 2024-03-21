@@ -45,5 +45,7 @@ def UpdateMismatchedSchemas(
                 allow_table_create=True,
                 errors_as_warnings=True,
             )
+            print(f"Truncating table with id {tbl_id}")
+            tbl_spec.get_dh().truncate()
         else:
             print(f"No change for table with id {tbl_id}")

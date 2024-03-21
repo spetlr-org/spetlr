@@ -5,6 +5,7 @@ from spetlrtools.testing import DataframeTestCase
 
 from spetlr.configurator import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
+from spetlr.spark import Spark
 from spetlr.sql import SqlExecutor
 from spetlr.utils import DeleteMismatchedSchemas
 from spetlr.utils.UpdateMismatchedSchemas import UpdateMismatchedSchemas
@@ -90,3 +91,28 @@ class TestUpdateSchemaMismatch(DataframeTestCase):
         self.executor.execute_sql_file("changed_schema")
 
         self.assertEqual(dh.read().schema, self.changed_schema_delta)
+
+    def test_03_change_delta_and_truncate(self):
+        """Test scenario with schema change in Delta table."""
+        # Ensure that the database is dropped
+        dbhandle = DbHandle.from_tc("SparkTestDbMismatch")
+        dbhandle.drop_cascade()
+
+        # Setup production table
+        self.executor.execute_sql_file("initial_schema")
+
+        dh = DeltaHandle.from_tc("MismatchSparkTestTable")
+        df = Spark.get().createDataFrame([(1,)], "a int")
+        dh.overwrite(df)
+
+        self.assertEqual(dh.read().schema, self.initial_schema_delta)
+
+        UpdateMismatchedSchemas()
+        self.executor.execute_sql_file("changed_schema")
+
+        self.assertEqual(dh.read().schema, self.changed_schema_delta)
+        self.assertEqual(dh.read().count(), 0)
+        _tbl_name = dh.get_tablename()
+        self.assertEqual(
+            Spark.get().read.option("versionAsOf", 0).table(_tbl_name).count(), 1
+        )

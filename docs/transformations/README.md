@@ -590,3 +590,38 @@ df_transformed.show()
 +-------+---+---------+
 +-------+---+---------+
 ```
+
+
+## FilterNullValuesColumnsTransformer
+
+This class filters any null values in a given list of columns.
+
+Usage example:
+
+``` python
+from spetlr.etl.transformers import FilterNullValuesColumnsTransformer
+
+
+
+df_input.show()
+
+| FirstName| LastName|
++----------+---------+
+| Arne     | Petersen|
+| None     | Petersen|
+| Arne     | None    |
+| None     | None    |
++----------+----+----+
+
+df_transformed = FilterNullValuesColumnsTransformer(
+    columns=["FirstName"]
+).process(df_input)
+
+df_transformed.show() 
+
+| FirstName| LastName|
++----------+---------+
+| Arne     | Petersen|
+| Arne     | None    |
++----------+----+----+
+```

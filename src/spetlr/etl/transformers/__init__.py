@@ -10,6 +10,9 @@ from spetlr.etl.transformers.drop_oldest_duplicate_transformer import (  # noqa:
 from spetlr.etl.transformers.dropColumnsTransformer import (  # noqa: F401
     DropColumnsTransformer,
 )
+from spetlr.etl.transformers.filter_null_values_transformer import (  # noqa: F401
+    FilterNullValuesTransformer,
+)
 from spetlr.etl.transformers.generate_md5_column_transformer import (  # noqa: F401
     GenerateMd5ColumnTransformer,
 )

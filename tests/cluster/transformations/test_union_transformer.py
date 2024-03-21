@@ -3,8 +3,8 @@ from spetlrtools.testing import DataframeTestCase, TestHandle
 from spetlr.etl import Orchestrator
 from spetlr.etl.extractors import SimpleExtractor
 from spetlr.etl.loaders import SimpleLoader
+from spetlr.etl.transformers import UnionTransformer
 from spetlr.spark import Spark
-from spetlr.transformers import UnionTransformer
 
 
 class MergeDfIntoTargetTest(DataframeTestCase):

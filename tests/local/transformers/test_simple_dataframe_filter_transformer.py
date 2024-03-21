@@ -1,8 +1,8 @@
 import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
+from spetlr.etl.transformers import DataFrameFilterTransformer
 from spetlr.spark import Spark
-from spetlr.transformers import DataFrameFilterTransformer
 
 
 class TestDataFrameFilterTransformer(DataframeTestCase):

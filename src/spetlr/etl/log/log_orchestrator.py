@@ -4,7 +4,7 @@ from uuid import uuid4
 from spetlr.etl import EtlBase, Orchestrator, dataset_group
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.simple_loader import Appendable
-from spetlr.transformers import UnionTransformer
+from spetlr.etl.transformers import UnionTransformer
 
 from .log_transformer import LogTransformer
 

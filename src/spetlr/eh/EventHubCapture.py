@@ -38,10 +38,10 @@ class EventHubCapture:
     def from_tc(cls, id: str):
         tc = Configurator()
         return cls(
-            name=tc.table_property(id, "name"),
-            path=tc.table_property(id, "path"),
-            format=tc.table_property(id, "format"),
-            partitioning=tc.table_property(id, "partitioning"),
+            name=tc.get(id, "name"),
+            path=tc.get(id, "path"),
+            format=tc.get(id, "format"),
+            partitioning=tc.get(id, "partitioning"),
         )
 
     def __init__(

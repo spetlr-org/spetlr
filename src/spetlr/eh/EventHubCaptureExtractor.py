@@ -27,10 +27,10 @@ class EventHubCaptureExtractor:
     @classmethod
     def from_tc(cls, tbl_id: str):
         tc = Configurator()
-        assert tc.table_property(tbl_id, "format") == "avro"
+        assert tc.get(tbl_id, "format") == "avro"
         return cls(
-            path=tc.table_property(tbl_id, "path"),
-            partitioning=tc.table_property(tbl_id, "partitioning"),
+            path=tc.get(tbl_id, "path"),
+            partitioning=tc.get(tbl_id, "partitioning"),
         )
 
     def __init__(self, path: str, partitioning: str):

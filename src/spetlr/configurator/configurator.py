@@ -367,6 +367,9 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         key = json_hash(kwargs)
         return self.register(key, kwargs)
 
+    @deprecated(
+        reason="Use .get(table_id,property_name) instead.",
+    )
     def table_property(
         self, table_id: str, property_name: str, default_value: str = None
     ):
@@ -395,7 +398,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         :param table_id: Table id in the .json or .yaml files.
         :return: str: table name
         """
-        return self.table_property(table_id, "name")
+        return self.get(table_id, "name")
 
     @deprecated(
         reason='Use .get(table_id,"path") instead.',

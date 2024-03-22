@@ -80,13 +80,13 @@ class DeltaHandle(TableHandle):
     def from_tc(cls, id: str) -> "DeltaHandle":
         tc = Configurator()
         return cls(
-            name=tc.table_property(id, "name", ""),
-            location=tc.table_property(id, "path", ""),
+            name=tc.get(id, "name", ""),
+            location=tc.get(id, "path", ""),
             schema=SchemaManager().get_schema(id, None),
-            data_format=tc.table_property(id, "format", "delta"),
-            ignore_changes=tc.table_property(id, "ignore_changes", "True"),
-            stream_start=tc.table_property(id, "stream_start", ""),
-            max_bytes_per_trigger=tc.table_property(id, "max_bytes_per_trigger", ""),
+            data_format=tc.get(id, "format", "delta"),
+            ignore_changes=tc.get(id, "ignore_changes", "True"),
+            stream_start=tc.get(id, "stream_start", ""),
+            max_bytes_per_trigger=tc.get(id, "max_bytes_per_trigger", ""),
         )
 
     def _validate(self):

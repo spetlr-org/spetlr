@@ -1,8 +1,8 @@
 import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
+from spetlr.etl.transformers import SelectColumnsTransformer
 from spetlr.spark import Spark
-from spetlr.transformers import SelectColumnsTransformer
 
 
 class TestSelectColumnsTransformer(DataframeTestCase):

@@ -3,8 +3,8 @@ import unittest
 import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
+from spetlr.etl.transformers import SelectAndCastColumnsTransformer
 from spetlr.spark import Spark
-from spetlr.transformers import SelectAndCastColumnsTransformer
 
 
 class TestSelectAndCastColumnsTransformerNC(DataframeTestCase):

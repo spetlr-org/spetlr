@@ -3,8 +3,8 @@ import hashlib
 import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
+from spetlr.etl.transformers import GenerateMd5ColumnTransformer
 from spetlr.spark import Spark
-from spetlr.transformers import GenerateMd5ColumnTransformer
 
 
 class TestGenerateMd5ColumnTransformer(DataframeTestCase):

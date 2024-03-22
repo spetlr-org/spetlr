@@ -1,10 +1,10 @@
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 from spetlrtools.testing import DataframeTestCase
 
-from spetlr.spark import Spark
-from spetlr.transformers.data_change_capture_transformer import (
+from spetlr.etl.transformers.data_change_capture_transformer import (
     DataChangeCaptureTransformer,
 )
+from spetlr.spark import Spark
 
 
 class CaptureHistoryTransformerTest(DataframeTestCase):

@@ -1,12 +1,12 @@
 import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
+from spetlr.etl.transformers import JoinDataframesTransformer
 from spetlr.exceptions import (
     ColumnDoesNotExistException,
     MoreThanTwoDataFramesException,
 )
 from spetlr.spark import Spark
-from spetlr.transformers import JoinDataframesTransformer
 
 
 class TestJoinDataframesTransformer(DataframeTestCase):

@@ -1,9 +1,9 @@
 import pyspark.sql.types as T
 from spetlrtools.testing import DataframeTestCase
 
+from spetlr.etl.transformers import CleanColumnNamesTransformer
 from spetlr.exceptions import AmbiguousColumnsAfterCleaning
 from spetlr.spark import Spark
-from spetlr.transformers import CleanColumnNamesTransformer
 
 
 class TestCleanColumnNamesTransformer(DataframeTestCase):

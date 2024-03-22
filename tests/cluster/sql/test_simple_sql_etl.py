@@ -15,9 +15,9 @@ from spetlrtools.time import dt_utc
 
 from spetlr import Configurator
 from spetlr.etl.loaders import SimpleLoader
+from spetlr.etl.transformers.simple_sql_transformer import SimpleSqlServerTransformer
 from spetlr.functions import get_unique_tempview_name
 from spetlr.spark import Spark
-from spetlr.transformers.simple_sql_transformer import SimpleSqlServerTransformer
 from spetlr.utils import DataframeCreator
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 

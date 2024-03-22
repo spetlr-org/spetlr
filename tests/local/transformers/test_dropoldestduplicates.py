@@ -8,10 +8,10 @@ from pyspark.sql.types import (
 from spetlrtools.testing import DataframeTestCase
 from spetlrtools.time import dt_utc
 
-from spetlr.spark import Spark
-from spetlr.transformers.drop_oldest_duplicate_transformer import (
+from spetlr.etl.transformers.drop_oldest_duplicate_transformer import (
     DropOldestDuplicatesTransformer,
 )
+from spetlr.spark import Spark
 
 
 class TestDropOldestDuplicatesTransformer(DataframeTestCase):

@@ -7,6 +7,7 @@ Utilities in spetlr:
 * [Git Hooks](#git-hooks)
 * [Cleanup Test Tables](#cleanup-test-tables)
 * [Delete Mismatched Schemas](#delete-mismatched-schemas)
+* [Update Mismatched Schemas](#update-mismatched-schemas)
 
 ## Api Auto Config
 
@@ -124,15 +125,14 @@ from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 DeleteMismatchedSchemas(spark_executor=SparkSqlExecutor())
 ```
 
-If the tables must not be down for too long (e.g Sql Server tables used in reports).
-One could do the mismatch deletion in the ETL job:
+If the tables must not be down for too long, one could do the mismatch deletion in the ETL job:
 
 ```python
 from spetlr.utils import DeleteMismatchedSchemas
 from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
 # Replace the SparkSqlExecutor with your dataplatform executor
-DeleteMismatchedSchemas(table_ids_to_check=["SqlServerTableId"],
+DeleteMismatchedSchemas(table_ids_to_check=["TableId"],
                         spark_executor=SparkSqlExecutor())
 # Recreate the table
 SparkSqlExecutor().execute_sql_file("some-file")
@@ -153,4 +153,37 @@ or, you give the ids as input:
 from spetlr.utils import DeleteMismatchedSchemas
 
 DeleteMismatchedSchemas(["TABLEID"])
+````
+
+
+## Update Mismatched Schemas
+If the dataplatform needs an dynamic approach to automatically update a delta table, if the table defined in code and the table
+that exists in production mismatches. Then, you can use `UpdateMismatchedSchemas`.
+
+*It is the responsibility of the developer to only add tables,
+where the code has the property that it can rebuild dropped tables.*
+
+Run this in your setup job:
+
+```python
+from spetlr.utils import UpdateMismatched
+
+UpdateMismatchedSchemas()
+```
+
+To configure which tables to delete on mismatch either you define it in the SPETLR yml configuration:
+
+```yaml
+SparkTestTable1:
+  name: "{SparkTestDb}.tbl1"
+  path: "{SparkTestDb_path}/tbl1"
+  update_on_delta_schema_mismatch: true
+```
+
+or, you give the ids as input:
+
+````python
+from spetlr.utils import DeleteMismatchedSchemas
+
+UpdateMismatchedSchemas(["TABLEID"])
 ````

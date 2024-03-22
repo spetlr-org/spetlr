@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Union
 
 from pyspark.sql.types import StructField, StructType
 
-from spetlr import Configurator
+from spetlr.configurator import Configurator
 from spetlr.deltaspec.exceptions import InvalidSpecificationError, TableSpecNotReadable
 from spetlr.deltaspec.helpers import ensureStr, standard_databricks_location
 from spetlr.schema_manager import SchemaManager

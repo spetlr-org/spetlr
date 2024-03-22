@@ -36,6 +36,18 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
           ] }
         tenantId: tenant().tenantId
       }
+      {
+        //spetlr-developers
+        objectId: '6b32ce80-82b5-434f-8120-9191cc48e16d'
+        permissions: {
+          secrets: [
+            'list'
+            'get'
+            'set'
+          ] }
+        tenantId: tenant().tenantId
+      }
+
     ]
 
   }

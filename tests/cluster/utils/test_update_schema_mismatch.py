@@ -102,6 +102,8 @@ class TestUpdateSchemaMismatch(DataframeTestCase):
 
         dh = DeltaHandle.from_tc("MismatchSparkTestTable")
         df = Spark.get().createDataFrame([(1,)], "a int")
+
+        # Delta version 1 will include data:
         dh.overwrite(df)
 
         self.assertEqual(dh.read().schema, self.initial_schema_delta)
@@ -112,6 +114,8 @@ class TestUpdateSchemaMismatch(DataframeTestCase):
         self.assertEqual(dh.read().schema, self.changed_schema_delta)
         self.assertEqual(dh.read().count(), 0)
         _tbl_name = dh.get_tablename()
+
+        # Check that the version=1 had data
         self.assertEqual(
-            Spark.get().read.option("versionAsOf", 0).table(_tbl_name).count(), 1
+            Spark.get().read.option("versionAsOf", 1).table(_tbl_name).count(), 1
         )

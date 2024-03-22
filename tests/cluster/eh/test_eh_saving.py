@@ -1,7 +1,9 @@
 import time
 import unittest
+import uuid as _uuid
 from datetime import datetime, timedelta, timezone
 
+import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from spetlrtools.time import dt_utc
 
@@ -10,8 +12,6 @@ from spetlr.delta import DeltaHandle
 from spetlr.eh import EventHubJsonPublisher
 from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from spetlr.etl import Transformer
-
-# from spetlr.functions import init_dbutils
 from spetlr.orchestrators import EhJsonToDeltaOrchestrator
 from spetlr.spark import Spark
 from tests.cluster.values import resourceName
@@ -23,11 +23,14 @@ class EventHubsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         Configurator().clear_all_configurations()
+        cls.UUID_test = _uuid.uuid4().hex
 
     def test_01_publish_and_read(self):
         eh = SpetlrEh()
 
-        df = Spark.get().createDataFrame([(1, "a"), (2, "b")], "id int, name string")
+        df = Spark.get().createDataFrame(
+            [(1, self.UUID_test), (2, self.UUID_test)], "id int, name string"
+        )
         publisher = EventHubJsonPublisher(eh)
         publisher.save(df)
 
@@ -44,14 +47,14 @@ class EventHubsTests(unittest.TestCase):
         )
         eh = EventHubCaptureExtractor.from_tc("SpetlrEh")
         df = eh.read()
-        self.assertTrue(df.count(), 2)
+        self.assertEqual(self._count_uuid_rows(df), 2)
 
         df = eh.read(
             (datetime.now() - timedelta(hours=24)).replace(
                 hour=0, minute=0, second=0, microsecond=0
             )
         )
-        self.assertTrue(df.count(), 2)
+        self.assertEqual(self._count_uuid_rows(df), 2)
 
         df = eh.read().select("EnqueuedTimestamp")
         self.assertEqual(
@@ -93,8 +96,12 @@ class EventHubsTests(unittest.TestCase):
 
         df = DeltaHandle.from_tc("CpTblYMD").read().select("id", "name")
 
+        # FILTER ONLY ROWS WITH UUID_TEST
+        df = df.filter(f.col("name").like("%" + self.UUID_test + "%"))
+
         rows = {tuple(row) for row in df.collect()}
-        self.assertEqual({(1, "a"), (2, "b")}, rows)
+
+        self.assertEqual({(1, self.UUID_test), (2, self.UUID_test)}, rows)
 
         # Part 2, pdate partitioned.
 
@@ -121,6 +128,21 @@ class EventHubsTests(unittest.TestCase):
         eh_orch2.execute()
 
         df2 = DeltaHandle.from_tc("CpTblDate").read().select("id", "name")
+        # FILTER ONLY ROWS WITH UUID_TEST
+        df2 = df2.filter(f.col("name").like("%" + self.UUID_test + "%"))
 
         rows = {tuple(row) for row in df2.collect()}
-        self.assertEqual({(2, "b")}, rows)
+        self.assertEqual({(2, self.UUID_test)}, rows)
+
+    def _count_uuid_rows(self, df: DataFrame) -> int:
+        """
+        This is a helper test function
+        that checks the number of rows with this test UUID.
+
+        Since multiple tests can add data to the eventhub
+        at the same time - the UUID ensures that we only work within
+        the scope of this test.
+        """
+        df = df.select(f.col("body").cast("string").alias("string_body"))
+
+        return df.filter(f.col("string_body").like("%" + self.UUID_test + "%")).count()

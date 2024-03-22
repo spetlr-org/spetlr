@@ -5,6 +5,7 @@ from spetlrtools.testing import DataframeTestCase
 
 from spetlr.configurator import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
+from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
 from spetlr.sql import SqlExecutor
 from spetlr.utils import UpdateMismatchedSchemas
@@ -62,10 +63,13 @@ class TestUpdateSchemaMismatch(DataframeTestCase):
         dbhandle.drop_cascade()
 
         # Setup production table
+        SchemaManager().register_schema(
+            "mismatch_update_schema", self.initial_schema_delta
+        )
 
-        self.executor.execute_sql_file("initial_schema")
+        self.executor.execute_sql_file("initial_schema_update")
 
-        dh = DeltaHandle.from_tc("MismatchSparkTestTable")
+        dh = DeltaHandle.from_tc("MismatchSparkTestTableToUpdate")
 
         self.assertEqual(dh.read().schema, self.initial_schema_delta)
 
@@ -80,14 +84,18 @@ class TestUpdateSchemaMismatch(DataframeTestCase):
         dbhandle.drop_cascade()
 
         # Setup production table
-        self.executor.execute_sql_file("initial_schema")
+        self.executor.execute_sql_file("initial_schema_update")
 
-        dh = DeltaHandle.from_tc("MismatchSparkTestTable")
+        # Register the expected schema defined in code
+        SchemaManager().register_schema(
+            "mismatch_update_schema", self.changed_schema_delta
+        )
+
+        dh = DeltaHandle.from_tc("MismatchSparkTestTableToUpdate")
 
         self.assertEqual(dh.read().schema, self.initial_schema_delta)
 
         UpdateMismatchedSchemas()
-        self.executor.execute_sql_file("changed_schema")
 
         self.assertEqual(dh.read().schema, self.changed_schema_delta)
 
@@ -98,9 +106,14 @@ class TestUpdateSchemaMismatch(DataframeTestCase):
         dbhandle.drop_cascade()
 
         # Setup production table
-        self.executor.execute_sql_file("initial_schema")
+        self.executor.execute_sql_file("initial_schema_update")
 
-        dh = DeltaHandle.from_tc("MismatchSparkTestTable")
+        # Register the expected schema defined in code
+        SchemaManager().register_schema(
+            "mismatch_update_schema", self.changed_schema_delta
+        )
+
+        dh = DeltaHandle.from_tc("MismatchSparkTestTableToUpdate")
         df = Spark.get().createDataFrame([(1,)], "a int")
 
         # Delta version 1 will include data:
@@ -109,7 +122,6 @@ class TestUpdateSchemaMismatch(DataframeTestCase):
         self.assertEqual(dh.read().schema, self.initial_schema_delta)
 
         UpdateMismatchedSchemas()
-        self.executor.execute_sql_file("changed_schema")
 
         self.assertEqual(dh.read().schema, self.changed_schema_delta)
         self.assertEqual(dh.read().count(), 0)

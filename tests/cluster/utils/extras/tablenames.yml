@@ -5,5 +5,10 @@ SparkTestDbMismatch:
 MismatchSparkTestTable:
   name: "{SparkTestDbMismatch}.tbl"
   path: "{SparkTestDbMismatch_path}/tbl"
-  delete_on_delta_schema_mismatch: true
+  update_on_delta_schema_mismatch: true
+
+MismatchSparkTestTableToUpdate:
+  name: "{SparkTestDbMismatch}.tbl"
+  path: "{SparkTestDbMismatch_path}/tbl"
+  schema: "mismatch_update_schema"
   update_on_delta_schema_mismatch: true

@@ -9,7 +9,7 @@ def get_table_ids_to_check():
     c = Configurator()
     table_ids_to_check = []
     for key in c._raw_resource_details.keys():
-        if c.table_property(key, "update_on_delta_schema_mismatch", False):
+        if c.get(key, "update_on_delta_schema_mismatch", False):
             table_ids_to_check.append(key)
     return table_ids_to_check
 

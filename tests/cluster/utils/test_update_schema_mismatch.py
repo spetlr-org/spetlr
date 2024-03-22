@@ -7,7 +7,7 @@ from spetlr.configurator import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.spark import Spark
 from spetlr.sql import SqlExecutor
-from spetlr.utils.UpdateMismatchedSchemas import UpdateMismatchedSchemas
+from spetlr.utils import UpdateMismatchedSchemas
 from tests.cluster.utils import extras
 
 

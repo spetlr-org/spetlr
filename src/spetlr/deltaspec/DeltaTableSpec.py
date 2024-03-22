@@ -2,7 +2,7 @@ import pyspark.sql.types
 from pyspark.sql import DataFrame
 from pyspark.sql.utils import AnalysisException
 
-from spetlr import Configurator
+from spetlr.configurator import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
 from spetlr.deltaspec.DeltaTableSpecBase import (

@@ -167,9 +167,7 @@ Run this in your setup job:
 
 ```python
 from spetlr.utils import UpdateMismatched
-from tests.cluster.delta.SparkExecutor import SparkSqlExecutor
 
-# Replace the SparkSqlExecutor with your dataplatform executor
 UpdateMismatchedSchemas()
 ```
 

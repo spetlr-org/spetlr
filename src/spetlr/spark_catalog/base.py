@@ -242,8 +242,12 @@ class DeltaModel(ABC, DeltaModelStructure):
     Usage pattern:
     """
 
-    def __init__(self, folder_name: str, description: str = "", **kwargs):
-        self._folder_name = folder_name
+    def __init__(self, folder_name: Union[str, None], description: str = "", **kwargs):
+        self._folder_name = None
+        if not folder_name:
+            self._folder_name = self.name
+        else:
+            self._folder_name = folder_name
         self._description = description
         self._options = kwargs
         self.set_instance_attr_as_cls_attr()
@@ -271,6 +275,7 @@ class DeltaModel(ABC, DeltaModelStructure):
         """
         return self.schema.name
 
+    @property
     def name(self):
         """
         Returns the class name, using snake casing.

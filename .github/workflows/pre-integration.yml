@@ -38,8 +38,6 @@ jobs:
       - name: Run Tests
         run: python -m pytest tests/local
 
-
-
   integration_test:
 #    needs: unit_test # integration can be run in parallel with unit-tests
     runs-on: ubuntu-latest
@@ -102,7 +100,7 @@ jobs:
 
       - name: Wait 2 min for things to settle
         shell: pwsh
-        run: Start-Sleep -s 120
+        run: Start-Sleep -s 1800
 
       - name: Fetch integration tests 10.4
         shell: pwsh

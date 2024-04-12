@@ -192,6 +192,38 @@ class TestPowerBi(unittest.TestCase):
         # Assert
         self.assertIn("Last refresh finished more than", str(context.exception))
 
+    def test_get_table_names_json_default(self):
+        # Arrange
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+        )
+
+        # Act
+        result = sut._get_table_names_json()
+
+        # Assert
+        self.assertIsNone(result)
+
+    def test_get_table_names_json_explicit(self):
+        # Arrange
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+            table_names=["Invoices", "Customers"],
+        )
+        expected_result = [{"table": "Invoices"}, {"table": "Customers"}]
+
+        # Act
+        result = sut._get_table_names_json()
+
+        # Assert
+        self.assertIsNotNone(result)
+        self.assertTrue("objects" in result)
+        self.assertEqual(result["objects"], expected_result)
+
     @patch("requests.post")
     def test_trigger_new_refresh_success(self, mock_get):
         # Arrange

@@ -7,7 +7,7 @@ indent-width = 4
 [format]
 quote-style = "double"
 indent-style = "space"
-line-ending = "auto"
+line-ending = "cr-lf"
 
 [lint]
 extend-select = [

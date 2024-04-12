@@ -214,7 +214,7 @@ class TestPowerBi(unittest.TestCase):
             dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
             table_names=["Invoices", "Customers"],
         )
-        expected_result = [{"table": "Invoices"}, {"table": "Invoices"}]
+        expected_result = [{"table": "Invoices"}, {"table": "Customers"}]
 
         # Act
         result = sut._get_table_names_json()

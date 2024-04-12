@@ -1,5 +1,6 @@
 import time
 from datetime import datetime, timedelta
+from typing import Dict, List, Union
 
 import msal
 import pandas as pd
@@ -8,8 +9,7 @@ from dateutil import parser
 from pytz import timezone, utc
 
 from spetlr.exceptions import SpetlrException
-
-from .PowerBiClient import PowerBiClient
+from spetlr.power_bi.PowerBiClient import PowerBiClient
 
 
 class PowerBi:
@@ -21,6 +21,7 @@ class PowerBi:
         workspace_name: str = None,
         dataset_id: str = None,
         dataset_name: str = None,
+        table_names: List[str] = None,
         max_minutes_after_last_refresh: int = 12 * 60,
         timeout_in_seconds: int = 15 * 60,
         number_of_retries: int = 0,
@@ -42,6 +43,8 @@ class PowerBi:
         :param str dataset_id: The GUID of the dataset.
         :param str dataset_name: The name of the dataset
             (specified instead of the dataset_id).
+        :param List[str] table_names: Optional list of table names to be
+            refreshed. By default all tables are refreshed.
         :param int max_minutes_after_last_refresh: The number of minutes
             for which the last succeeded refresh is considered valid,
             or 0 to disable time checking. Default is 12 hours.
@@ -81,6 +84,7 @@ class PowerBi:
         self.workspace_name = workspace_name
         self.dataset_id = dataset_id
         self.dataset_name = dataset_name
+        self.table_names = table_names
 
         # Set access parameters
         self.client = client
@@ -310,7 +314,9 @@ class PowerBi:
                     and len(end_time) > 0
                 ):
                     self.last_refresh_utc = parser.parse(end_time).replace(tzinfo=utc)
-                    if start_time is not None and len(start_time) > 0:
+                    if self.table_names:
+                        self.last_duration_in_seconds = 0
+                    elif start_time is not None and len(start_time) > 0:
                         self.last_duration_in_seconds = int(
                             (
                                 parser.parse(end_time) - parser.parse(start_time)
@@ -376,6 +382,22 @@ class PowerBi:
             )
         return False
 
+    def _get_table_names_json(self) -> Union[Dict[str, object], None]:
+        """
+        Returns the HTTP body of the PowerBI refresh API call
+        containing table names to refresh.
+
+        :rtype: JSON object or None
+        """
+        if self.table_names:
+            return {
+                "type": "full",
+                "commitMode": "transactional",
+                "objects": [{"table": table} for table in self.table_names],
+                "applyRefreshPolicy": "false",
+            }
+        return None
+
     def _trigger_new_refresh(self) -> bool:
         """
         Starts a refresh of the PowerBI dataset.
@@ -394,7 +416,9 @@ class PowerBi:
                 f"{self.powerbi_url}groups/{self.workspace_id}"
                 f"/datasets/{self.dataset_id}/refreshes"
             )
-            api_call = requests.post(url=api_url, headers=self.api_header)
+            api_call = requests.post(
+                url=api_url, headers=self.api_header, json=self._get_table_names_json()
+            )
             if api_call.status_code == 202:
                 print("A new refresh has been successfully triggered.")
                 return True

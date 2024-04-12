@@ -160,6 +160,10 @@ dataset asynchronously. You need to call the check() method after waiting
 for some sufficient time (e.g. from a separate monitoring job) to verify
 if the refresh succeeded.
 
+If you want to refresh only selected tables in the dataset, you can
+specify the optional "table_names" parameter with a list of table names.
+If the list is not empty, only the selected tables will be refreshed. 
+
 All parameters can only be specified in the constructor. 
 
 
@@ -170,12 +174,14 @@ from spetlr.power_bi.PowerBi import PowerBi
 client = MyPowerBiClient()
 PowerBi(client,
         workspace_name="Finance",
-        dataset_name="Invoicing").start_refresh()
+        dataset_name="Invoicing",
+        table_names=["Jan2024, Feb2024"]).start_refresh()
 
 # alternatively:
 PowerBi(client,
         workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
-        dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce").start_refresh()
+        dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+        table_names=["Jan2024, Feb2024"]).start_refresh()
 ```
 
 ```
@@ -195,6 +201,11 @@ The wait time between calls to the PowerBI API is synchronized with the
 execution time of the previous dataset refresh, making sure as few requests
 to the PowerBI API would be made as possible, while ensuring the method
 would finish as soon as possible.
+
+If you want to refresh only selected tables in the dataset, you can
+specify the optional "table_names" parameter with a list of table names.
+If the list is not empty, only the selected tables will be refreshed
+(and the previous refresh time will be ignored).
 
 Additionally, you can set the optional "number_of_retries" parameter to
 specify the number of retries on transient errors when calling refresh().
@@ -217,13 +228,17 @@ client = MyPowerBiClient()
 PowerBi(client,
         workspace_name="Finance",
         dataset_name="Invoicing",
-        timeout_in_seconds=10*60).refresh()
+        timeout_in_seconds=10*60,
+        number_of_retries=2,
+        local_timezone_name="Europe/Copenhagen").refresh()
 
 # alternatively:
 PowerBi(client,
         workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
         dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
-        timeout_in_seconds=10*60).refresh()
+        timeout_in_seconds=10*60,
+        number_of_retries=2,
+        local_timezone_name="Europe/Copenhagen").refresh()
 ```
 
 ```

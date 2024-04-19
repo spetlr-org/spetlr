@@ -118,8 +118,8 @@ The number of minutes can be specified in the optional
 "max_minutes_after_last_refresh" parameter (default is 12 hours).
 
 You can also specify the optional "local_timezone_name" parameter to show
-the last refresh time of the PowerBI dataset in a local timezone.
-It is only used for printing timestamps. Default timezone is UTC.
+the last refresh time of the PowerBI dataset in a local time zone.
+It is only used for printing timestamps. The default time zone is UTC.
 
 All parameters can only be specified in the constructor. 
 
@@ -162,7 +162,10 @@ if the refresh succeeded.
 
 If you want to refresh only selected tables in the dataset, you can
 specify the optional "table_names" parameter with a list of table names.
-If the list is not empty, only the selected tables will be refreshed. 
+If the list is not empty, only the selected tables will be refreshed.
+(Note: It is not possible to list available tables programmatically
+using the PowerBI API, like you can do with workspaces and datasets.
+You have to check the table names visually in PowerBI.)
 
 All parameters can only be specified in the constructor. 
 
@@ -198,13 +201,13 @@ parameter (default is 15 minutes).
 If the refresh fails or a time-out occurs, the method casts an exception.
 
 The wait time between calls to the PowerBI API is synchronized with the
-execution time of the previous dataset refresh, making sure as few requests
-to the PowerBI API would be made as possible, while ensuring the method
-would finish as soon as possible.
+average execution time of previous dataset refreshes via API (only calls
+refreshing all tables), making sure as few requests to the PowerBI API would
+be made as possible, while ensuring the method finishes as soon as possible.
 
 If you want to refresh only selected tables in the dataset, you can
 specify the optional "table_names" parameter with a list of table names.
-If the list is not empty, only the selected tables will be refreshed
+If the list is not empty, only selected tables will be refreshed
 (and the previous refresh time will be ignored).
 
 Additionally, you can set the optional "number_of_retries" parameter to
@@ -213,9 +216,9 @@ Default is 0 (no retries). E.g. 1 means two attempts in total.
 It is used only when the "timeout_in_seconds" parameter allows it,
 so you need to set the "timeout_in_seconds" parameter high enough.
 
-You can also specify the optional "local_timezone_name" parameter to show
-the last refresh time of the PowerBI dataset in a local timezone.
-It is only used for printing timestamps. Default timezone is UTC.
+You can also specify the optional "local_timezone_name" parameter to
+show the last refresh time of the PowerBI dataset in a local time zone.
+It is only used for printing timestamps. The default time zone is UTC. 
 
 All parameters can only be specified in the constructor. 
 
@@ -247,6 +250,55 @@ Waiting 60 seconds...
 Waiting 15 seconds...
 Refresh completed successfully at 2024-02-02 09:02 (local time).
 True
+```
+
+## Step 7: Show and get the refresh history of a given dataset
+
+The show_history() and get_history() methods can be used to show and get
+the refresh history of a given dataset. The show_history() method displays
+a Pandas data frame with the refresh history, and the get_history() method
+returns the actual data frame converted to a Spark data frame. 
+
+According to MSDN, "there are always between 20–60 available refresh history
+entries for each dataset, depending on the number of refreshes in the last 3 days.
+The most recent 60 are kept if they are all less than 3 days old. Entries
+more than 3 days old are deleted when there are more than 20 entries."
+
+You can also specify the optional "local_timezone_name" parameter to convert
+refresh times in the data frame to a local timezone. Depending on the parameter,
+the names of the time columns in the data frame will have the suffix
+"Utc" or "Local".
+
+All above parameters can only be specified in the constructor. 
+
+```python
+# example show and get refresh history
+from spetlr.power_bi.PowerBi import PowerBi 
+
+client = MyPowerBiClient()
+PowerBi(client,
+        workspace_name="Finance",
+        dataset_name="Invoicing",
+        local_timezone_name="Europe/Copenhagen").show_history()
+
+PowerBi(client,
+        workspace_name="Finance",
+        dataset_name="Invoicing",
+        local_timezone_name="Europe/Copenhagen").show_history()
+
+# alternatively:
+df = PowerBi(client,
+        workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+        dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+        local_timezone_name="Europe/Copenhagen").get_history()
+
+df = PowerBi(client,
+        workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+        dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+        local_timezone_name="Europe/Copenhagen").get_history()
+
+df.display()
+
 ```
 
 # Testing

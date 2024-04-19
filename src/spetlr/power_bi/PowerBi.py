@@ -5,11 +5,12 @@ from typing import Dict, List, Union
 import msal
 import pandas as pd
 import requests
-from dateutil import parser
+from pyspark.sql import DataFrame
 from pytz import timezone, utc
 
 from spetlr.exceptions import SpetlrException
 from spetlr.power_bi.PowerBiClient import PowerBiClient
+from spetlr.spark import Spark
 
 
 class PowerBi:
@@ -95,6 +96,10 @@ class PowerBi:
         self.local_timezone_name = (
             local_timezone_name if local_timezone_name is not None else "UTC"
         )
+        self.is_utc = self.local_timezone_name.upper() == "UTC"
+        self.time_column_suffix = "Utc" if self.is_utc else "Local"
+        self.time_description_suffix = " (UTC)" if self.is_utc else " (local time)"
+
         self.ignore_errors = ignore_errors
         self.api_header = None
         self.expire_time = 0
@@ -266,6 +271,113 @@ class PowerBi:
 
         return True
 
+    def _get_refresh_history(
+        self, newest_only: bool = False
+    ) -> Union[pd.DataFrame, None]:
+        """
+        Return the PowerBI dataset refresh history.
+
+        :param bool newest_only : Limit the result to only the latest history row.
+        :return: data frame with the refresh history if succeeded or None if failed (when ignore_errors==True)
+        :rtype: Pandas data frame
+        :raises SpetlrException: if failed and ignore_errors==False
+        """
+
+        if not self._connect():
+            return None
+
+        self.last_status = None
+        self.last_exception = None
+        self.last_refresh_utc = None
+
+        api_url = (
+            f"{self.powerbi_url}groups/{self.workspace_id}"
+            f"/datasets/{self.dataset_id}/refreshes"
+        )
+        if newest_only:
+            # Note: we fetch only the latest refresh record, i.e. top=1
+            api_url = api_url + "?$top=1"
+
+        api_call = requests.get(url=api_url, headers=self.api_header)
+        if api_call.status_code == 200:
+            json = api_call.json()
+            df = pd.DataFrame(
+                json["value"],
+                columns=[
+                    "id",
+                    "refreshType",
+                    "status",
+                    "startTime",
+                    "endTime",
+                    "serviceExceptionJson",
+                    "requestId",
+                    "refreshAttempts",
+                ],
+            )
+
+            self.schema = (
+                "Id long, RefreshType string, Status string, Seconds long, "
+                f"StartTime{self.time_column_suffix} timestamp, EndTime{self.time_column_suffix} timestamp, "
+                "Error string, RequestId string, RefreshAttempts string"
+            )
+
+            if df.empty:
+                return pd.DataFrame(
+                    {
+                        "Id": pd.Series(dtype="int64"),
+                        "RefreshType": pd.Series(dtype="object"),
+                        "Status": pd.Series(dtype="object"),
+                        "Seconds": pd.Series(dtype="int64"),
+                        ("StartTime" + self.time_column_suffix): pd.Series(
+                            dtype="datetime64[ns]"
+                        ),
+                        ("EndTime" + self.time_column_suffix): pd.Series(
+                            dtype="datetime64[ns]"
+                        ),
+                        "Error": pd.Series(dtype="object"),
+                        "RequestId": pd.Series(dtype="object"),
+                        "RefreshAttempts": pd.Series(dtype="object"),
+                    }
+                )
+
+            df.set_index("id")
+            df["startTime"] = pd.to_datetime(df["startTime"])
+            df["endTime"] = pd.to_datetime(df["endTime"])
+            df.insert(
+                3,
+                "seconds",
+                (df["endTime"] - df["startTime"])
+                .astype("timedelta64[s]")
+                .astype("int64"),
+            )
+            zone = timezone(self.local_timezone_name)
+            df["startTime"] = df["startTime"].dt.tz_convert(zone).dt.tz_localize(None)
+            df["endTime"] = df["endTime"].dt.tz_convert(zone).dt.tz_localize(None)
+            df.rename(
+                columns={
+                    "id": "Id",
+                    "refreshType": "RefreshType",
+                    "status": "Status",
+                    "seconds": "Seconds",
+                    "startTime": ("StartTime" + self.time_column_suffix),
+                    "endTime": ("EndTime" + self.time_column_suffix),
+                    "serviceExceptionJson": "Error",
+                    "requestId": "RequestId",
+                    "refreshAttempts": "RefreshAttempts",
+                },
+                inplace=True,
+            )
+            return df
+
+        elif api_call.status_code == 404:
+            self._raise_error(
+                "The specified dataset or workspace cannot be found, "
+                "or the dataset doesn't have a user with the required permissions!"
+            )
+        else:
+            self._raise_api_error("Failed to fetch refresh history!", api_call)
+        return None
+
     def _get_last_refresh(self) -> bool:
         """
         Gets the latest record in the PowerBI dataset refresh history.
@@ -275,62 +387,32 @@ class PowerBi:
         :raises SpetlrException: if failed and ignore_errors==False
         """
 
-        if not self._connect():
+        df = self._get_refresh_history()
+        if df is None:
             return False
 
-        self.last_status = None
-        self.last_exception = None
-        self.last_refresh_utc = None
+        if not df.empty:
+            self.last_status = df.Status.iloc[0]
+            self.last_exception = df.Error.iloc[0]
+            # claculate the average duration of all previous API refresh calls without any tables specified
+            mean = df.loc[
+                (df["RefreshType"] == "ViaApi") & (df["Status"] == "Completed"),
+                df.Seconds.name,
+            ].mean()
+            if pd.isna(mean) or self.table_names:
+                self.last_duration_in_seconds = 0
+            else:
+                self.last_duration_in_seconds = int(mean)
+            zone = timezone(self.local_timezone_name)
+            if self.last_status == "Completed":
+                if self.is_utc:
+                    self.last_refresh_utc = utc.localize(df.EndTimeUtc.iloc[0])
+                else:
+                    self.last_refresh_utc = zone.localize(
+                        df.EndTimeLocal.iloc[0]
+                    ).astimezone(utc)
 
-        # Note: we fetch only the latest refresh record, i.e. top=1
-        api_url = (
-            f"{self.powerbi_url}groups/{self.workspace_id}"
-            f"/datasets/{self.dataset_id}/refreshes?$top=1"
-        )
-        api_call = requests.get(url=api_url, headers=self.api_header)
-        if api_call.status_code == 200:
-            json = api_call.json()
-            df = pd.DataFrame(
-                json["value"],
-                columns=[
-                    "requestId",
-                    "id",
-                    "refreshType",
-                    "startTime",
-                    "endTime",
-                    "status",
-                    "serviceExceptionJson",
-                ],
-            )
-            if not df.empty:
-                df.set_index("id")
-                self.last_status = df.status[0]
-                self.last_exception = df.serviceExceptionJson[0]
-                start_time = df.startTime[0]
-                end_time = df.endTime[0]
-                if (
-                    self.last_status == "Completed"
-                    and end_time is not None
-                    and len(end_time) > 0
-                ):
-                    self.last_refresh_utc = parser.parse(end_time).replace(tzinfo=utc)
-                    if self.table_names:
-                        self.last_duration_in_seconds = 0
-                    elif start_time is not None and len(start_time) > 0:
-                        self.last_duration_in_seconds = int(
-                            (
-                                parser.parse(end_time) - parser.parse(start_time)
-                            ).total_seconds()
-                        )
-            return True
-        elif api_call.status_code == 404:
-            self._raise_error(
-                "The specified dataset or workspace cannot be found, "
-                "or the dataset doesn't have a user with the required permissions!"
-            )
-        else:
-            self._raise_api_error("Failed to fetch refresh history!", api_call)
-        return False
+        return True
 
     def _verify_last_refresh(self) -> bool:
         """
@@ -343,18 +425,14 @@ class PowerBi:
         """
 
         if self.last_status is None:
-            self._raise_error("Refresh is still in progress or never triggered!")
+            print("No refresh was triggered yet.")
         elif self.last_status == "Completed":
             if self.last_refresh_utc is None:
                 self._raise_error("Completed at unknown refresh time!")
             else:
                 last_refresh_str = self.last_refresh_utc.astimezone(
                     timezone(self.local_timezone_name)
-                ).strftime("%Y-%m-%d %H:%M") + (
-                    " (UTC)"
-                    if self.local_timezone_name.lower() == "utc"
-                    else " (local time)"
-                )
+                ).strftime("%Y-%m-%d %H:%M") + (self.time_description_suffix)
                 min_refresh_time_utc = datetime.now(utc) - timedelta(
                     minutes=self.max_minutes_after_last_refresh
                 )
@@ -525,3 +603,36 @@ class PowerBi:
                 break
 
         return self._verify_last_refresh()
+
+    def show_history(self) -> None:
+        """
+        Displays the refresh history of a PowerBI dataset.
+
+        :return: data frame with the refresh history if succeeded or None if failed (when ignore_errors==True)
+        :rtype: Pandas data frame
+        :raises SpetlrException: if failed and ignore_errors==False
+        """
+
+        df = self._get_refresh_history()
+        if df is None:
+            return None
+        if df.empty:
+            print("The refresh history list is empty.")
+        df.display()
+
+    def get_history(self) -> Union[DataFrame, None]:
+        """
+        Returns the refresh history of a PowerBI dataset in a Spark data frame.
+
+        :return: data frame with the refresh history if succeeded or None if failed (when ignore_errors==True)
+        :rtype: Spark data frame
+        :raises SpetlrException: if failed and ignore_errors==False
+        """
+
+        df = self._get_refresh_history()
+        if df is None:
+            return None
+        if df.empty:
+            return Spark.get().createDataFrame(df, self.schema)
+        else:
+            return Spark.get().createDataFrame(df)

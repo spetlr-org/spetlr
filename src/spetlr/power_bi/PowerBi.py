@@ -278,7 +278,8 @@ class PowerBi:
         Return the PowerBI dataset refresh history.
 
         :param bool newest_only : Limit the result to only the latest history row.
-        :return: data frame with the refresh history if succeeded or None if failed (when ignore_errors==True)
+        :return: data frame with the refresh history if succeeded or None if failed
+        (when ignore_errors==True)
         :rtype: Pandas data frame
         :raises SpetlrException: if failed and ignore_errors==False
         """
@@ -317,7 +318,8 @@ class PowerBi:
 
             self.schema = (
                 "Id long, RefreshType string, Status string, Seconds long, "
-                f"StartTime{self.time_column_suffix} timestamp, EndTime{self.time_column_suffix} timestamp, "
+                f"StartTime{self.time_column_suffix} timestamp, "
+                f"EndTime{self.time_column_suffix} timestamp, "
                 "Error string, RequestId string, RefreshAttempts string"
             )
 
@@ -394,7 +396,8 @@ class PowerBi:
         if not df.empty:
             self.last_status = df.Status.iloc[0]
             self.last_exception = df.Error.iloc[0]
-            # claculate the average duration of all previous API refresh calls without any tables specified
+            # claculate the average duration of all previous API refresh calls
+            # without any tables specified
             mean = df.loc[
                 (df["RefreshType"] == "ViaApi") & (df["Status"] == "Completed"),
                 df.Seconds.name,
@@ -608,7 +611,8 @@ class PowerBi:
         """
         Displays the refresh history of a PowerBI dataset.
 
-        :return: data frame with the refresh history if succeeded or None if failed (when ignore_errors==True)
+        :return: data frame with the refresh history if succeeded or None if failed
+        (when ignore_errors==True)
         :rtype: Pandas data frame
         :raises SpetlrException: if failed and ignore_errors==False
         """
@@ -624,7 +628,8 @@ class PowerBi:
         """
         Returns the refresh history of a PowerBI dataset in a Spark data frame.
 
-        :return: data frame with the refresh history if succeeded or None if failed (when ignore_errors==True)
+        :return: data frame with the refresh history if succeeded or None if failed
+        (when ignore_errors==True)
         :rtype: Spark data frame
         :raises SpetlrException: if failed and ignore_errors==False
         """

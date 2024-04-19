@@ -321,8 +321,8 @@ class TestPowerBi(unittest.TestCase):
                     "refreshType": "OnDemand",
                     "status": "Completed",
                     "startTime": "2024-02-26T10:00:00Z",
-                    "endTime": "2024-02-26T10:05:00Z",  # winter time: 1 hour difference from UTC
-                    "serviceExceptionJson": None,
+                    "endTime": "2024-02-26T10:05:00Z",  # winter time: 1 hour
+                    "serviceExceptionJson": None,  # difference from UTC
                     "requestId": "74d25c0b-0473-4dd9-96ff-3ca737b072a7",
                     "refreshAttempts": None,
                 },
@@ -330,8 +330,8 @@ class TestPowerBi(unittest.TestCase):
                     "id": "2",
                     "refreshType": "ViaEnhancedApi",
                     "status": "Completed",
-                    "startTime": "2024-03-31T00:00:00Z",  # summer time: change from 1 hour to 2 hours difference !
-                    "endTime": "2024-03-31T02:00:00Z",
+                    "startTime": "2024-03-31T00:00:00Z",  # summer time: change from 1
+                    "endTime": "2024-03-31T02:00:00Z",  # hour to 2 hours difference
                     "serviceExceptionJson": None,
                     "requestId": "aec28227-f7af-4c2d-a4e6-fcb01cd570ec",
                     "refreshAttempts": None,
@@ -356,7 +356,8 @@ class TestPowerBi(unittest.TestCase):
                 "Seconds": [
                     300,
                     7200,
-                ],  # despite the daylight saving change it correctly shows 7200 seconds !
+                ],  # despite the daylight saving change it
+                # correctly shows 7200 seconds !
                 "StartTimeLocal": [
                     datetime(2024, 2, 26, 11, 0),
                     datetime(2024, 3, 31, 1, 0),

@@ -381,7 +381,10 @@ class PowerBi:
         :raises SpetlrException: if failed and ignore_errors==False
         """
 
-        api_url = f"{self.powerbi_url}groups/{workspace_id}/datasets/{dataset_id}/refreshes/{request_id}"
+        api_url = (
+            f"{self.powerbi_url}groups/{workspace_id}"
+            f"/datasets/{dataset_id}/refreshes/{request_id}"
+        )
         schema = [
             ("table", "TableName", "string"),
             ("partition", "PartitionName", "string"),

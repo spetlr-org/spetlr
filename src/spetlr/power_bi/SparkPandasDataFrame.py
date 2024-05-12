@@ -25,7 +25,7 @@ class SparkPandasDataFrame:
     def __init__(
         self,
         json: Union[Dict, List],
-        schema: List[tuple[Union[str, Callable[[pd.DataFrame], Any]], str, str]],
+        schema: List[tuple[Union[str, Callable[[Any], Any]], str, str]],
         *,
         indexing_columns: Union[int, List[int], str, List[str], None] = None,
         sorting_columns: Union[int, List[int], str, List[str], None] = None,
@@ -192,7 +192,7 @@ class SparkPandasDataFrame:
         time = time.astimezone(timezone(local_timezone_name))
         return time.replace(tzinfo=None)
 
-    def get_pandas_df(self) -> Union[pd.DataFrame, None]:
+    def get_pandas_df(self) -> Union[Any, None]:
         """
         Returns the data frame as a Pandas data frame.
 

@@ -1,6 +1,6 @@
 import time
 from datetime import datetime, timedelta
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 import msal
 import pandas as pd
@@ -609,7 +609,7 @@ class PowerBi:
         self,
         *,
         skip_read_only: bool = False,
-    ) -> Union[List[tuple[str, str]], None]:
+    ) -> Union[List[Tuple[str, str]], None]:
         """
         Connects or reconnects to the PowerBI API and returns a list of
         workspace id's and names.

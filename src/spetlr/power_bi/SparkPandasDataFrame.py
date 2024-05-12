@@ -4,7 +4,8 @@ from typing import Callable, Dict, List, Union
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse
-from pandas.core.generic import NDFrameT
+from pandas.core.frame import DataFrame as PandasDataFrame
+from pandas.core.generic import NDFrameT as PandasColumn
 from pyspark.sql import DataFrame
 from pytz import timezone, utc
 
@@ -26,7 +27,9 @@ class SparkPandasDataFrame:
     def __init__(
         self,
         json: Union[Dict, List],
-        schema: List[tuple[Union[str, Callable[[pd.DataFrame], NDFrameT]], str, str]],
+        schema: List[
+            tuple[Union[str, Callable[[PandasDataFrame], PandasColumn]], str, str]
+        ],
         *,
         indexing_columns: Union[int, List[int], str, List[str], None] = None,
         sorting_columns: Union[int, List[int], str, List[str], None] = None,
@@ -193,7 +196,7 @@ class SparkPandasDataFrame:
         time = time.astimezone(timezone(local_timezone_name))
         return time.replace(tzinfo=None)
 
-    def get_pandas_df(self) -> Union[pd.DataFrame, None]:
+    def get_pandas_df(self) -> Union[PandasDataFrame, None]:
         """
         Returns the data frame as a Pandas data frame.
 

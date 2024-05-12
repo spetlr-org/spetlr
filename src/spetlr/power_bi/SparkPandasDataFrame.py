@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import Any, Dict, List, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse
+from pandas.core.generic import NDFrameT
 from pyspark.sql import DataFrame
 from pytz import timezone, utc
 
@@ -25,7 +26,7 @@ class SparkPandasDataFrame:
     def __init__(
         self,
         json: Union[Dict, List],
-        schema: List[Any],
+        schema: List[Tuple[Union[str, Callable[[pd.DataFrame], NDFrameT]], str, str]],
         *,
         indexing_columns: Union[int, List[int], str, List[str], None] = None,
         sorting_columns: Union[int, List[int], str, List[str], None] = None,
@@ -224,7 +225,7 @@ class SparkPandasDataFrame:
         message: str,
         when_empty: str,
         *,
-        filter_columns: Union[List[tuple[str, str]], None] = None,
+        filter_columns: Union[List[Tuple[str, str]], None] = None,
     ) -> None:
         """
         Displays the Pandas data frame.
@@ -281,8 +282,8 @@ class SparkPandasDataFrame:
     def append(
         self,
         source,
-        prefix_columns: List[tuple[str, str, str]],
-        suffix_columns: List[tuple[str, str, str]],
+        prefix_columns: List[Tuple[str, str, str]],
+        suffix_columns: List[Tuple[str, str, str]],
     ):
         """
         Appends another instance of this class to this data frame, which will result

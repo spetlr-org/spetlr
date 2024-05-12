@@ -25,9 +25,7 @@ class SparkPandasDataFrame:
     def __init__(
         self,
         json: Union[Dict, List],
-        schema: List[
-            tuple[Union[str, Callable[[pd.DataFrame], Any]], str, str]
-        ],
+        schema: List[tuple[Union[str, Callable[[pd.DataFrame], Any]], str, str]],
         *,
         indexing_columns: Union[int, List[int], str, List[str], None] = None,
         sorting_columns: Union[int, List[int], str, List[str], None] = None,

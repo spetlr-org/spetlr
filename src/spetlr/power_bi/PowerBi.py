@@ -504,7 +504,7 @@ class PowerBi:
                 return False
             df = workspaces.get_pandas_df()
             if self.workspace_id is not None:
-                if self.workspace_id not in df["WorkspaceId"].values:
+                if self.workspace_id not in df.WorkspaceId.values:
                     self._raise_error(
                         f"Workspace id '{self.workspace_id}' cannot be found!"
                     )
@@ -520,7 +520,7 @@ class PowerBi:
                     ],
                 )
                 return False
-            rows = df.loc[df["WorkspaceName"] == self.workspace_name, "WorkspaceId"]
+            rows = df.loc[df.WorkspaceName == self.workspace_name, "WorkspaceId"]
             if rows.empty:
                 self._raise_error(
                     f"Workspace name '{self.workspace_name}' cannot be found!"
@@ -549,7 +549,7 @@ class PowerBi:
             if df.empty and not self._verify_workspace(force_verify=True):
                 return False
             if self.dataset_id is not None:
-                if self.dataset_id not in df["DatasetId"].values:
+                if self.dataset_id not in df.DatasetId.values:
                     self._raise_error(
                         f"Dataset id '{self.dataset_id}' cannot be found!"
                     )
@@ -565,7 +565,7 @@ class PowerBi:
                     ],
                 )
                 return False
-            rows = df.loc[df["DatasetName"] == self.dataset_name, "DatasetId"]
+            rows = df.loc[df.DatasetName == self.dataset_name, "DatasetId"]
             if rows.empty:
                 self._raise_error(
                     f"Dataset name '{self.dataset_name}' cannot be found, "
@@ -638,9 +638,9 @@ class PowerBi:
             if workspaces is None:
                 return None
             workspace_list = [
-                (df["WorkspaceId"], df["WorkspaceName"])
+                (df.WorkspaceId, df.WorkspaceName)
                 for _, df in workspaces.get_pandas_df().iterrows()
-                if not (skip_read_only and df["IsReadOnly"])
+                if not (skip_read_only and df.IsReadOnly)
             ]
         return workspace_list
 
@@ -707,17 +707,17 @@ class PowerBi:
             if datasets is None:
                 return None
             for dataset_id, dataset_name in (
-                (df["DatasetId"], df["DatasetName"])
+                (df.DatasetId, df.DatasetName)
                 for _, df in datasets.get_pandas_df().iterrows()
-                if not (skip_not_refreshable and not df["IsRefreshable"])
+                if not (skip_not_refreshable and not df.IsRefreshable)
                 and not (
                     skip_effective_identity
                     and (
-                        df["IsEffectiveIdentityRequired"]
-                        or df["IsEffectiveIdentityRolesRequired"]
+                        df.IsEffectiveIdentityRequired
+                        or df.IsEffectiveIdentityRolesRequired
                     )
                 )
-                and (df["ConfiguredBy"].lower() if df["ConfiguredBy"] else None)
+                and (df.ConfiguredBy.lower() if df.ConfiguredBy else None)
                 not in self.exclude_creators
             ):
                 data = function(workspace_id, dataset_id, True)
@@ -760,14 +760,14 @@ class PowerBi:
         result = None
         for workspace_id, workspace_name, dataset_id, dataset_name, request_id in (
             (
-                self.workspace_id if self.workspace_id else df["WorkspaceId"],
-                self.workspace_name if self.workspace_id else df["WorkspaceName"],
-                self.dataset_id if self.dataset_id else df["DatasetId"],
-                self.dataset_name if self.dataset_id else df["DatasetName"],
-                df["RequestId"],
+                self.workspace_id if self.workspace_id else df.WorkspaceId,
+                self.workspace_name if self.workspace_id else df.WorkspaceName,
+                self.dataset_id if self.dataset_id else df.DatasetId,
+                self.dataset_name if self.dataset_id else df.DatasetName,
+                df.RequestId,
             )
             for _, df in history.get_pandas_df().iterrows()
-            if df["RefreshType"] == "ViaEnhancedApi" and df["Status"] == "Completed"
+            if df.RefreshType == "ViaEnhancedApi" and df.Status == "Completed"
         ):
             data = self._get_refresh_history_details(
                 workspace_id, dataset_id, request_id, True
@@ -814,14 +814,22 @@ class PowerBi:
             return False
         df = history.get_pandas_df()
         if not df.empty:
-            skip = finished_only and df.Status.iloc[0] == "Unknown" and df.shape[0] > 1
-            first = 1 if skip else 0
+            first = 0
+            while (
+                df.RefreshType.iloc[first] == "ViaEnhancedApi"
+                and df.shape[0] > first + 1
+                and (
+                    self.table_names is None
+                    or (finished_only and first == 0 and df.Status.iloc[0] == "Unknown")
+                )
+            ):
+                first += 1
             self.last_status = df.Status.iloc[first]
             self.last_exception = df.Error.iloc[first]
             # calculate the average duration of all previous API refresh calls
             # when there were no table names specified
             mean = df.loc[
-                (df["RefreshType"] == "ViaApi") & (df["Status"] == "Completed"),
+                (df.RefreshType == "ViaApi") & (df.Status == "Completed"),
                 df.Seconds.name,
             ].mean()
             if pd.isna(mean) or self.table_names:

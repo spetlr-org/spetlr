@@ -710,12 +710,56 @@ class TestPowerBi(unittest.TestCase):
         mock_response.json.return_value = {
             "value": [
                 {
+                    "requestId": "2",
+                    "id": "2",
+                    "refreshType": "ViaEnhancedApi",  # skip an enhanced refresh
+                    "startTime": "2024-02-27T17:00:00Z",
+                    "endTime": None,
+                    "status": "Unknown",
+                    "serviceExceptionJson": None,
+                },
+                {
+                    "requestId": "1",
+                    "id": "1",
+                    "refreshType": "ViaApi",
+                    "startTime": "2024-02-26T10:00:00Z",
+                    "endTime": "2024-02-26T10:05:00Z",
+                    "status": "Completed",
+                    "serviceExceptionJson": None,
+                },
+            ]
+        }
+        mock_get.return_value = mock_response
+
+        sut = PowerBi(PowerBiClient(), workspace_id="test", dataset_id="test")
+        sut.powerbi_url = "test/"
+        sut._connect = lambda: True
+
+        # Act
+        result = sut._get_last_refresh(finished_only=False)
+
+        # Assert
+        self.assertTrue(result)
+        self.assertEqual("Completed", sut.last_status)
+        self.assertIsNone(sut.last_exception)
+        self.assertEqual("2024-02-26 10:05:00+00:00", str(sut.last_refresh_utc))
+        # average of ViaApi only
+        self.assertEqual(5 * 60, sut.last_duration_in_seconds)
+
+    @patch("requests.get")
+    def test_get_last_refresh_finished_only_with_success(self, mock_get):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "value": [
+                {
                     "requestId": "5",
                     "id": "4",
-                    "refreshType": "ViaApi",
+                    "refreshType": "ViaEnhancedApi",  # skip an enhanced refresh
                     "startTime": "2024-02-27T17:00:00Z",
                     "endTime": "2024-02-27T17:05:00Z",
-                    "status": "Unknown",  # skip because refresh is in progress
+                    "status": "Unknown",
                     "serviceExceptionJson": None,
                 },
                 {
@@ -761,6 +805,7 @@ class TestPowerBi(unittest.TestCase):
         sut = PowerBi(PowerBiClient(), workspace_id="test", dataset_id="test")
         sut.powerbi_url = "test/"
         sut._connect = lambda: True
+        expected_duration = int(7.5 * 60)  # average duration from all ViaApi
 
         # Act
         result = sut._get_last_refresh(finished_only=True)
@@ -771,7 +816,79 @@ class TestPowerBi(unittest.TestCase):
         self.assertIsNone(sut.last_exception)
         self.assertEqual("2024-02-26 10:05:00+00:00", str(sut.last_refresh_utc))
         # average of ViaApi only
-        self.assertEqual(int(7.5 * 60), sut.last_duration_in_seconds)
+        self.assertEqual(expected_duration, sut.last_duration_in_seconds)
+
+    @patch("requests.get")
+    def test_get_last_refresh_finished_only_normal_with_success(self, mock_get):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "value": [
+                {
+                    "requestId": "5",
+                    "id": "4",
+                    "refreshType": "ViaEnhancedApi",  # skip an enhanced refresh
+                    "startTime": "2024-02-27T17:00:00Z",
+                    "endTime": "2024-02-27T17:05:00Z",
+                    "status": "Unknown",
+                    "serviceExceptionJson": None,
+                },
+                {
+                    "requestId": "4",
+                    "id": "4",
+                    "refreshType": "ViaEnhancedApi",  # skip an enhanced refresh
+                    "startTime": "2024-02-27T16:00:00Z",
+                    "endTime": "2024-02-27T16:05:00Z",
+                    "status": "Completed",
+                    "serviceExceptionJson": None,
+                },
+                {
+                    "requestId": "3",
+                    "id": "3",
+                    "refreshType": "ViaEnhancedApi",  # skip an enhanced refresh
+                    "startTime": "2024-02-27T15:00:00Z",
+                    "endTime": "2024-02-27T15:05:00Z",
+                    "status": "Completed",
+                    "serviceExceptionJson": None,
+                },
+                {
+                    "requestId": "2",
+                    "id": "2",
+                    "refreshType": "ViaEnhancedApi",  # skip an enhanced refresh
+                    "startTime": "2024-02-27T14:00:00Z",
+                    "endTime": "2024-02-27T14:09:00Z",
+                    "status": "Completed",
+                    "serviceExceptionJson": None,
+                },
+                {
+                    "requestId": "1",
+                    "id": "1",
+                    "refreshType": "ViaEnhancedApi",  # the last is ok
+                    "startTime": "2024-02-27T10:00:00Z",
+                    "endTime": "2024-02-27T10:11:00Z",
+                    "status": "Completed",
+                    "serviceExceptionJson": None,
+                },
+            ]
+        }
+        mock_get.return_value = mock_response
+
+        sut = PowerBi(PowerBiClient(), workspace_id="test", dataset_id="test")
+        sut.powerbi_url = "test/"
+        sut._connect = lambda: True
+
+        # Act
+        result = sut._get_last_refresh(finished_only=True)
+        expected_duration = 0  # average duration from all ViaApi
+
+        # Assert
+        self.assertTrue(result)
+        self.assertEqual("Completed", sut.last_status)
+        self.assertIsNone(sut.last_exception)
+        self.assertEqual("2024-02-27 10:11:00+00:00", str(sut.last_refresh_utc))
+        # average of ViaApi only
+        self.assertEqual(expected_duration, sut.last_duration_in_seconds)
 
     @patch("requests.get")
     @patch("requests.post")
@@ -782,9 +899,18 @@ class TestPowerBi(unittest.TestCase):
         mock_get_response.json.return_value = {
             "value": [
                 {
+                    "requestId": "3",
+                    "id": "3",
+                    "refreshType": "ViaEnhancedApi",
+                    "startTime": "2024-02-27T17:00:00Z",
+                    "endTime": "2024-02-27T17:05:00Z",
+                    "status": "Unknown",  # skip as an enhanced refresh is in progress
+                    "serviceExceptionJson": None,
+                },
+                {
                     "requestId": "2",
                     "id": "2",
-                    "refreshType": "ViaApi",
+                    "refreshType": "ViaEnhancedApi",
                     "startTime": "2024-02-26T10:00:00Z",
                     "endTime": "2024-02-26T10:05:00Z",
                     "status": "Completed",
@@ -846,7 +972,7 @@ class TestPowerBi(unittest.TestCase):
         sut._connect = lambda: True
 
         # Act
-        result = sut._get_last_refresh()
+        result = sut._get_last_refresh(finished_only=True)
 
         # Assert
         self.assertTrue(result)

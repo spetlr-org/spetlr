@@ -6,9 +6,9 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 from pytz import utc
 
-from spetlr.exceptions import SpetlrException
 from spetlr.power_bi.PowerBi import PowerBi
 from spetlr.power_bi.PowerBiClient import PowerBiClient
+from spetlr.power_bi.PowerBiException import PowerBiException
 
 
 class TestPowerBi(unittest.TestCase):
@@ -44,7 +44,7 @@ class TestPowerBi(unittest.TestCase):
         sut.powerbi_url = "test/"
 
         # Act
-        with self.assertRaises(SpetlrException) as context:
+        with self.assertRaises(PowerBiException) as context:
             sut._verify_workspace()
 
         # Assert
@@ -92,7 +92,7 @@ class TestPowerBi(unittest.TestCase):
         sut.powerbi_url = "test/"
 
         # Act
-        with self.assertRaises(SpetlrException) as context:
+        with self.assertRaises(PowerBiException) as context:
             sut._verify_dataset()
 
         # Assert
@@ -193,7 +193,7 @@ class TestPowerBi(unittest.TestCase):
         sut._get_access_token = lambda: True
 
         # Act
-        with self.assertRaises(SpetlrException) as context:
+        with self.assertRaises(PowerBiException) as context:
             sut._combine_dataframes(sut._get_refresh_history)
 
         # Assert
@@ -287,7 +287,7 @@ class TestPowerBi(unittest.TestCase):
         sut._get_access_token = lambda: True
 
         # Act
-        with self.assertRaises(SpetlrException) as context:
+        with self.assertRaises(PowerBiException) as context:
             sut._combine_dataframes(sut._get_partition_tables)
 
         # Assert
@@ -384,7 +384,7 @@ class TestPowerBi(unittest.TestCase):
                     and "5da990e9-089e-472c-a7fa-4fc3dd096d01" in url
                 ):
                     mock_response.json.return_value = get_crm_datasets
-                if mock_response.json.return_value or mock_response.status_code != 200:
+                if mock_response.json.return_value:
                     return mock_response
             raise ValueError("Unknown URL! " + url)
 
@@ -1161,7 +1161,7 @@ class TestPowerBi(unittest.TestCase):
         sut._connect = lambda: True
 
         # Act
-        with self.assertRaises(SpetlrException) as context:
+        with self.assertRaises(PowerBiException) as context:
             sut._get_last_refresh()
 
         # Assert
@@ -1204,7 +1204,7 @@ class TestPowerBi(unittest.TestCase):
         sut.last_refresh_utc = datetime.now(utc) - timedelta(minutes=10)
 
         # Act
-        with self.assertRaises(SpetlrException) as context:
+        with self.assertRaises(PowerBiException) as context:
             sut._verify_last_refresh()
 
         # Assert
@@ -1340,7 +1340,7 @@ class TestPowerBi(unittest.TestCase):
         sut.powerbi_url = "test/"
 
         # Act
-        with self.assertRaises(SpetlrException) as context:
+        with self.assertRaises(PowerBiException) as context:
             sut._trigger_new_refresh()
 
         # Assert
@@ -1461,7 +1461,7 @@ class TestPowerBi(unittest.TestCase):
         sut._get_last_refresh = get_last_refresh
 
         # Act
-        with self.assertRaises(SpetlrException) as context:
+        with self.assertRaises(PowerBiException) as context:
             sut.refresh()
 
         # Assert
@@ -1542,7 +1542,7 @@ class TestPowerBi(unittest.TestCase):
         sut._get_last_refresh = get_last_refresh
 
         # Act
-        with self.assertRaises(SpetlrException) as context:
+        with self.assertRaises(PowerBiException) as context:
             sut.refresh()
 
         # Assert

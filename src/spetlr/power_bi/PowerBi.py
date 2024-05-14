@@ -8,8 +8,8 @@ import requests
 from pyspark.sql import DataFrame
 from pytz import utc
 
-from spetlr.exceptions import SpetlrException
 from spetlr.power_bi.PowerBiClient import PowerBiClient
+from spetlr.power_bi.PowerBiException import PowerBiException
 from spetlr.power_bi.SparkPandasDataFrame import SparkPandasDataFrame
 
 
@@ -73,7 +73,7 @@ class PowerBi:
             by the specified creators (list of e-mails).
             This is to prevent the "Skipping unauthorized" message.
         :param bool ignore_errors: True to print errors in the output
-            or False (default) to cast a SpetlrException.
+            or False (default) to cast a PowerBiException.
         """
 
         if workspace_id is not None and workspace_name is not None:
@@ -131,7 +131,7 @@ class PowerBi:
         if self.ignore_errors:
             print(message)
         else:
-            raise SpetlrException(message)
+            raise PowerBiException(message)
 
     def _raise_base_api_error(
         self,
@@ -190,7 +190,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         if self.expire_time != 0:
@@ -237,7 +237,7 @@ class PowerBi:
         :return: data frame with workspaces if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: SparkPandas data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         api_call = requests.get(
@@ -273,7 +273,7 @@ class PowerBi:
         :return: data frame with datasets if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: SparkPandas data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         api_call = requests.get(
@@ -323,7 +323,7 @@ class PowerBi:
         :return: data frame with the refresh history if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: SparkPandas data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         api_url = (
@@ -378,7 +378,7 @@ class PowerBi:
         :return: data frame with the refresh history details if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: SparkPandas data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         api_url = (
@@ -424,7 +424,7 @@ class PowerBi:
         :return: data frame with the partition info if succeeded or None if failed
         (when ignore_errors==True)
         :rtype: Pandas data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         api_url = (
@@ -495,7 +495,7 @@ class PowerBi:
         :param bool force_verify: True if the workspace_id should be verified as well
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         if self.workspace_id is None or force_verify:
@@ -538,7 +538,7 @@ class PowerBi:
         :param bool force_verify: True if the dataset_id should be verified as well
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         if self.dataset_id is None or force_verify:
@@ -593,7 +593,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         if not self._get_access_token():
@@ -616,7 +616,7 @@ class PowerBi:
 
         :param bool skip_read_only: True to exclude read-only workspaces.
         :rtype: SparkPandas data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         if not self._get_access_token():
@@ -652,7 +652,7 @@ class PowerBi:
         :return: data frame with PowerBI datasets if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: SparkPandas data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         workspace_list = self._connect_and_get_workspaces()
@@ -693,7 +693,7 @@ class PowerBi:
         :return: requested data frame if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: SparkPandas data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         workspace_list = self._connect_and_get_workspaces(skip_read_only=skip_read_only)
@@ -749,7 +749,7 @@ class PowerBi:
         :return: data frame with refresh history details if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: SparkPandas data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         history = self._combine_dataframes(
@@ -801,7 +801,7 @@ class PowerBi:
             where refresh is in progress or the refresh type doesn't match
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         self.last_status = None
@@ -876,7 +876,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         if self.last_status is None:
@@ -973,7 +973,7 @@ class PowerBi:
         :param bool with_wait: True if we need to wait for the refresh to finish.
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         if self.last_status is None or self.last_status in ["Completed", "Failed"]:
@@ -1055,7 +1055,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         return self._get_last_refresh(deep_check=True) and self._verify_last_refresh()
@@ -1066,7 +1066,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         return self._get_last_refresh() and self._trigger_new_refresh(with_wait=False)
@@ -1077,7 +1077,7 @@ class PowerBi:
 
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         retries = self.number_of_retries
@@ -1119,7 +1119,7 @@ class PowerBi:
         Displays the refresh history of a PowerBI dataset.
 
         :rtype: None
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         history = self._combine_dataframes(
@@ -1135,7 +1135,7 @@ class PowerBi:
         :return: the data frame with the refresh history if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: Spark data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         history = self._combine_dataframes(
@@ -1148,7 +1148,7 @@ class PowerBi:
         Displays refresh history details of a PowerBI dataset.
 
         :rtype: None
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         details = self._combine_refresh_history_details()
@@ -1162,7 +1162,7 @@ class PowerBi:
         :return: the data frame with the refresh history details if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: Spark data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         history = self._combine_refresh_history_details()
@@ -1173,7 +1173,7 @@ class PowerBi:
         Displays the tables of a PowerBI dataset.
 
         :rtype: None
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         tables = self._combine_dataframes(
@@ -1189,7 +1189,7 @@ class PowerBi:
         :return: the data frame with the partition tables if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: Spark data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         tables = self._combine_dataframes(
@@ -1202,7 +1202,7 @@ class PowerBi:
         Displays the available workspaces.
 
         :rtype: None
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         if self._get_access_token():
@@ -1217,7 +1217,7 @@ class PowerBi:
         :return: the data frame with the workspaces if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: Spark data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         if self._get_access_token():
@@ -1230,7 +1230,7 @@ class PowerBi:
         Displays the available datasets.
 
         :rtype: None
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         datasets = self._combine_datasets()
@@ -1244,7 +1244,7 @@ class PowerBi:
         :return: the data frame with the datasets if succeeded,
             or None if failed (when ignore_errors==True)
         :rtype: Spark data frame
-        :raises SpetlrException: if failed and ignore_errors==False
+        :raises PowerBiException: if failed and ignore_errors==False
         """
 
         datasets = self._combine_datasets()

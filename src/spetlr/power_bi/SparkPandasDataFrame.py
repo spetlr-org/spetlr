@@ -8,7 +8,7 @@ from pandas.core.generic import NDFrameT
 from pyspark.sql import DataFrame
 from pytz import timezone, utc
 
-from spetlr.exceptions import SpetlrException
+from spetlr.power_bi.PowerBiException import PowerBiException
 from spetlr.spark import Spark
 
 
@@ -54,9 +54,7 @@ class SparkPandasDataFrame:
             Otherwise they will have a suffix "Local".
         """
 
-        self.local_timezone_name = (
-            local_timezone_name if local_timezone_name is not None else "UTC"
-        )
+        self.local_timezone_name = local_timezone_name or "UTC"
         self.is_utc = self.local_timezone_name.upper() == "UTC"
         self.time_column_suffix = "Utc" if self.is_utc else "Local"
         self.schema = schema
@@ -127,7 +125,7 @@ class SparkPandasDataFrame:
             or source column name otherwise.
         :return: the requested column
         :rtype: str
-        :raises SpetlrException: if the column cannot be found
+        :raises PowerBiException: if the column cannot be found
         """
 
         result = []
@@ -151,7 +149,7 @@ class SparkPandasDataFrame:
         if not result or (
             isinstance(identifiers, list) and len(result) != len(identifiers)
         ):
-            raise SpetlrException(f"{identifiers} column(s) not found in the schema")
+            raise PowerBiException(f"{identifiers} column(s) not found in the schema")
         return result if len(result) > 1 else result[0]
 
     @staticmethod

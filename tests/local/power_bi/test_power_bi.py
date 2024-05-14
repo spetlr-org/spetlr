@@ -736,18 +736,19 @@ class TestPowerBi(unittest.TestCase):
         sut._connect = lambda: True
 
         # Act
-        result = sut._get_last_refresh(finished_only=False)
+        result = sut._get_last_refresh(deep_check=True)
 
         # Assert
         self.assertTrue(result)
         self.assertEqual("Completed", sut.last_status)
+        self.assertFalse(sut.is_enhanced)
         self.assertIsNone(sut.last_exception)
         self.assertEqual("2024-02-26 10:05:00+00:00", str(sut.last_refresh_utc))
         # average of ViaApi only
         self.assertEqual(5 * 60, sut.last_duration_in_seconds)
 
     @patch("requests.get")
-    def test_get_last_refresh_finished_only_with_success(self, mock_get):
+    def test_get_last_refresh_deep_check_with_success(self, mock_get):
         # Arrange
         mock_response = Mock()
         mock_response.status_code = 200
@@ -808,18 +809,19 @@ class TestPowerBi(unittest.TestCase):
         expected_duration = int(7.5 * 60)  # average duration from all ViaApi
 
         # Act
-        result = sut._get_last_refresh(finished_only=True)
+        result = sut._get_last_refresh(deep_check=True)
 
         # Assert
         self.assertTrue(result)
         self.assertEqual("Completed", sut.last_status)
+        self.assertFalse(sut.is_enhanced)
         self.assertIsNone(sut.last_exception)
         self.assertEqual("2024-02-26 10:05:00+00:00", str(sut.last_refresh_utc))
         # average of ViaApi only
         self.assertEqual(expected_duration, sut.last_duration_in_seconds)
 
     @patch("requests.get")
-    def test_get_last_refresh_finished_only_normal_with_success(self, mock_get):
+    def test_get_last_refresh_deep_check_normal_with_success(self, mock_get):
         # Arrange
         mock_response = Mock()
         mock_response.status_code = 200
@@ -879,12 +881,13 @@ class TestPowerBi(unittest.TestCase):
         sut._connect = lambda: True
 
         # Act
-        result = sut._get_last_refresh(finished_only=True)
+        result = sut._get_last_refresh(deep_check=True)
         expected_duration = 0  # average duration from all ViaApi
 
         # Assert
         self.assertTrue(result)
         self.assertEqual("Completed", sut.last_status)
+        self.assertTrue(sut.is_enhanced)
         self.assertIsNone(sut.last_exception)
         self.assertEqual("2024-02-27 10:11:00+00:00", str(sut.last_refresh_utc))
         # average of ViaApi only
@@ -972,11 +975,12 @@ class TestPowerBi(unittest.TestCase):
         sut._connect = lambda: True
 
         # Act
-        result = sut._get_last_refresh(finished_only=True)
+        result = sut._get_last_refresh(deep_check=True)
 
         # Assert
         self.assertTrue(result)
         self.assertEqual("Completed", sut.last_status)
+        self.assertTrue(sut.is_enhanced)
         self.assertEqual("Invoices", sut.table_name)
         self.assertIsNone(sut.last_exception)
         self.assertEqual("2024-02-26 09:50:00+00:00", str(sut.last_refresh_utc))
@@ -1060,6 +1064,7 @@ class TestPowerBi(unittest.TestCase):
         # Assert
         self.assertTrue(result)
         self.assertEqual("Failed", sut.last_status)
+        self.assertFalse(sut.is_enhanced)
         self.assertEqual("Customers", sut.table_name)
         self.assertEqual("Refresh error", sut.last_exception)
         self.assertIsNone(sut.last_refresh_utc)
@@ -1114,6 +1119,7 @@ class TestPowerBi(unittest.TestCase):
         # Assert
         self.assertTrue(result)
         self.assertEqual("Completed", sut.last_status)
+        self.assertFalse(sut.is_enhanced)
         self.assertIsNone(sut.table_name)
         self.assertIsNone(sut.last_exception)
         self.assertEqual("2024-02-26 10:05:00+00:00", str(sut.last_refresh_utc))
@@ -1139,6 +1145,7 @@ class TestPowerBi(unittest.TestCase):
         # Assert
         self.assertTrue(result)
         self.assertIsNone(sut.last_exception)
+        self.assertFalse(sut.is_enhanced)
         self.assertIsNone(sut.last_status)  # must be cleared!
         self.assertEqual(5, sut.last_duration_in_seconds)  # must be kept unchanged!
 
@@ -1311,7 +1318,7 @@ class TestPowerBi(unittest.TestCase):
         sut.powerbi_url = "test/"
 
         # Act
-        result = sut._trigger_new_refresh(True)
+        result = sut._trigger_new_refresh()
 
         # Assert
         self.assertTrue(result)
@@ -1334,7 +1341,7 @@ class TestPowerBi(unittest.TestCase):
 
         # Act
         with self.assertRaises(SpetlrException) as context:
-            sut._trigger_new_refresh(True)
+            sut._trigger_new_refresh()
 
         # Assert
         self.assertIn("Failed to trigger a refresh", str(context.exception))
@@ -1377,3 +1384,166 @@ class TestPowerBi(unittest.TestCase):
 
         # Assert
         self.assertEqual(expected_result, result)
+
+    @patch("requests.post")
+    def test_refresh_no_restart_no_tables_success(self, mock_post):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 401
+        mock_response.text = "error"
+        mock_post.return_value = mock_response
+
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+            timeout_in_seconds=1,
+            number_of_retries=0,
+        )
+        sut.powerbi_url = "test/"
+        counter = 0
+
+        def get_last_refresh():
+            nonlocal sut, counter
+            sut.table_name = None
+            sut.last_refresh_str = None
+            sut.is_enhanced = False
+            counter += 1
+            if counter == 1:
+                sut.last_status = "Unknown"
+            elif counter == 2:
+                sut.last_status = "Completed"
+                sut.last_refresh_utc = datetime(2024, 5, 14, 9, 17, tzinfo=utc)
+            else:
+                raise ValueError("Called too many times")
+            return True
+
+        sut._get_last_refresh = get_last_refresh
+
+        # Act
+        sut.refresh()
+
+        # Assert
+        # No exception!
+
+    @patch("requests.post")
+    def test_refresh_restart_no_tables_failure(self, mock_post):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 202
+        mock_post.return_value = mock_response
+
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+            timeout_in_seconds=1,
+            number_of_retries=0,
+        )
+        sut.powerbi_url = "test/"
+        counter = 0
+
+        def get_last_refresh():
+            nonlocal sut, counter
+            sut.table_name = None
+            sut.last_refresh_str = None
+            sut.is_enhanced = True
+            counter += 1
+            if counter == 1:
+                sut.last_status = "Unknown"
+            elif counter == 2:
+                sut.last_status = "Completed"
+                sut.last_refresh_utc = datetime(2024, 5, 14, 9, 17, tzinfo=utc)
+            else:
+                raise ValueError("Called too many times")
+            return True
+
+        sut._get_last_refresh = get_last_refresh
+
+        # Act
+        with self.assertRaises(SpetlrException) as context:
+            sut.refresh()
+
+        # Assert
+        self.assertIn("still in progress", str(context.exception))
+
+    @patch("requests.post")
+    def test_refresh_no_restart_with_tables_success(self, mock_post):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 401
+        mock_response.text = "error"
+        mock_post.return_value = mock_response
+
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+            table_names=["Invoices", "Customers"],
+            timeout_in_seconds=1,
+            number_of_retries=0,
+        )
+        sut.powerbi_url = "test/"
+        counter = 0
+
+        def get_last_refresh():
+            nonlocal sut, counter
+            sut.table_name = None
+            sut.last_refresh_str = None
+            counter += 1
+            if counter == 1:
+                sut.last_status = "Unknown"
+                sut.is_enhanced = False
+            else:
+                raise ValueError("Called too many times")
+            return True
+
+        sut._get_last_refresh = get_last_refresh
+
+        # Act
+        sut.refresh()
+
+        # Assert
+        # No exception!
+
+    @patch("requests.post")
+    def test_refresh_restart_with_tables_failure(self, mock_post):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 202
+        mock_post.return_value = mock_response
+
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+            table_names=["Invoices", "Customers"],
+            timeout_in_seconds=1,
+            number_of_retries=0,
+        )
+        sut.powerbi_url = "test/"
+        counter = 0
+
+        def get_last_refresh():
+            nonlocal sut, counter
+            sut.table_name = None
+            sut.last_refresh_str = None
+            sut.is_enhanced = True
+            counter += 1
+            if counter == 1:
+                sut.last_status = "Unknown"
+            elif counter == 2:
+                sut.last_status = "Completed"
+                sut.last_refresh_utc = datetime(2024, 5, 14, 9, 17, tzinfo=utc)
+            else:
+                raise ValueError("Called too many times")
+            return True
+
+        sut._get_last_refresh = get_last_refresh
+
+        # Act
+        with self.assertRaises(SpetlrException) as context:
+            sut.refresh()
+
+        # Assert
+        self.assertIn("still in progress", str(context.exception))

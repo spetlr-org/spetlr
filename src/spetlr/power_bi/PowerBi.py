@@ -793,11 +793,12 @@ class PowerBi:
 
         return result
 
-    def _get_last_refresh(self, *, finished_only: bool = False) -> bool:
+    def _get_last_refresh(self, *, deep_check: bool = False) -> bool:
         """
         Gets the latest record in the PowerBI dataset refresh history.
 
-        :param bool finished_only: Ignore history row where refresh is in progress
+        :param bool deep_check: Used only with check() - ignore history rows
+            where refresh is in progress or the refresh type doesn't match
         :return: True if succeeded or False if failed (when ignore_errors==True)
         :rtype: bool
         :raises SpetlrException: if failed and ignore_errors==False
@@ -805,6 +806,7 @@ class PowerBi:
 
         self.last_status = None
         self.last_exception = None
+        self.is_enhanced = False
         self.last_refresh_utc = None
         self.table_name = None
         if not self._connect():
@@ -815,17 +817,18 @@ class PowerBi:
         df = history.get_pandas_df()
         if not df.empty:
             first = 0
-            while (
+            while deep_check and (
                 df.RefreshType.iloc[first] == "ViaEnhancedApi"
                 and df.shape[0] > first + 1
                 and (
                     self.table_names is None
-                    or (finished_only and first == 0 and df.Status.iloc[0] == "Unknown")
+                    or (first == 0 and df.Status.iloc[0] == "Unknown")
                 )
             ):
                 first += 1
             self.last_status = df.Status.iloc[first]
             self.last_exception = df.Error.iloc[first]
+            self.is_enhanced = df.RefreshType.iloc[first] == "ViaEnhancedApi"
             # calculate the average duration of all previous API refresh calls
             # when there were no table names specified
             mean = df.loc[
@@ -963,7 +966,7 @@ class PowerBi:
                 )
         return result if result else None
 
-    def _trigger_new_refresh(self, with_wait: bool) -> bool:
+    def _trigger_new_refresh(self, *, with_wait: bool = True) -> bool:
         """
         Starts a refresh of the PowerBI dataset.
 
@@ -998,8 +1001,13 @@ class PowerBi:
                     dataset_id=self.dataset_id,
                 )
         elif self.last_status == "Unknown":
-            print("Refresh is already in progress!")
-            return True
+            if self.is_enhanced or not self.table_names:
+                if with_wait:
+                    print("Refresh is in progress, waiting until completed.")
+                else:
+                    self._raise_error("Refresh is already in progress!")
+                return True
+            print("Refresh of the whole dataset is in progress. Nothing to do.")
         elif self.last_status == "Disabled":
             self._raise_error("Refresh is disabled!")
         else:
@@ -1050,9 +1058,7 @@ class PowerBi:
         :raises SpetlrException: if failed and ignore_errors==False
         """
 
-        return (
-            self._get_last_refresh(finished_only=True) and self._verify_last_refresh()
-        )
+        return self._get_last_refresh(deep_check=True) and self._verify_last_refresh()
 
     def start_refresh(self) -> bool:
         """
@@ -1076,8 +1082,9 @@ class PowerBi:
 
         retries = self.number_of_retries
         start_time = time.time()
-        if not (self._get_last_refresh() and self._trigger_new_refresh(with_wait=True)):
+        if not (self._get_last_refresh() and self._trigger_new_refresh()):
             return False
+        restart = self.is_enhanced
 
         while True:
             elapsed_seconds = int(time.time() - start_time)
@@ -1091,9 +1098,14 @@ class PowerBi:
             if not self._get_last_refresh():
                 return False
 
-            if self.last_status == "Failed" and retries > 0:
-                retries = retries - 1
-                if not self._trigger_new_refresh(with_wait=True):
+            if (self.last_status == "Failed" and retries > 0) or (
+                self.last_status == "Completed" and restart
+            ):
+                if not restart:
+                    retries = retries - 1
+                restart = False
+                self.last_status = "Unknown"
+                if not self._trigger_new_refresh():
                     return False
                 continue
 

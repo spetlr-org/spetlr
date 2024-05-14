@@ -1,51 +1,66 @@
 
 # PowerBi and PowerBiClient classes
 
-The `PowerBi` and `PowerBiClient` classes contain logic for refreshing PowerBI
-datasets, and for checking if the last refresh of an entire dataset or its
+The `PowerBi` and `PowerBiClient` classes contain logic for refreshing
+PowerBI datasets, and for checking if the last refresh of a dataset or its
 selected tables completed successfully. The logic can also be used to show
 refresh histories of datasets, and to list dataset tables with their recent
 refresh times. The same data can also be returned as a Spark data frame.
 
 For easier PowerBI credential handling (service principal or AD user),
 the first parameter to the `PowerBi` constructor must be a `PowerBiClient`
-class object. 
+class object.
 
 ## PowerBI Permissions
 
-To allow access to the PowerBI API, you need to enable the setting
-"Service principals can use Fabric APIs" in the Admin Portal in Fabric
-(see the screen-shot). There, you also need to specify the user group that
-should have access to the API.
+The service principal or AD user or one of its user groups need to be
+assigned to each PowerBI workspace you want to access (see screen-shot).
+
+![Power BI admin settings](./manage_access.png)
+
+To use the PowerBI API you need to enable the option
+"Service principals can use Fabric APIs", found under
+"Developer settings" in the Admin portal in Fabric (see screen-shot).
+There, you can also specify the user group that can use the API.
 
 ![Power BI admin settings](./admin_settings.png)
 
-Apart from this, each PowerBI dataset should have a user or service principal
-attached, that is part of this user group.
+The service principal or AD user mentioned earlier should be part
+of this group, or the group itself needs to be assigned to the workspace
+(unless you enable the API option for the entire organization).
 
-Additionally, to access individual tables and their refresh times in PowerBI,
-the class must be able to execute DAX queries. This requires additional
-permissions. The "Dataset Execute Queries REST API" option, found under
-"Integration settings" in the Admin Portal, must also be enabled.
+Additionally, to access individual tables and their refresh times in
+PowerBI, the class must be able to execute DAX queries. This requires
+additional permission. The "Semantic Model Execute Queries REST API"
+option, found under "Integration settings" in the Admin portal in Fabric
+(see screen-shot), must also be enabled.
 
-The same user or service principal must have dataset read and build
-permissions in each individual dataset:
+![Power BI admin settings](./admin_settings2.png)
 
-![Power BI admin settings](./user_permissions.png)
+The same user group, service principal or user must have dataset
+read and build permissions to individual datasets (see screen-shot).
+
+![Power BI admin settings](./grant_access.png)
 
 
 ## Links
 
 [Register an App and give the needed permissions. A very good how-to-guide can be found here.](https://www.sqlshack.com/how-to-access-power-bi-rest-apis-programmatically/)
+
 [How to Refresh a Power BI Dataset with Python.](https://pbi-guy.com/2022/01/07/refresh-a-power-bi-dataset-with-python/)
 
 ### API documentation:
 
 [Get Workspaces](https://learn.microsoft.com/en-us/rest/api/power-bi/groups/get-groups)
+
 [Get Datasets](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/get-datasets-in-group)
+
 [Trigger A Dataset Refresh](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/refresh-dataset-in-group)
+
 [Get Refresh History](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/get-refresh-history-in-group)
+
 [Get Refresh History Details](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/get-refresh-execution-details-in-group)
+
 [Execute DAX Queries](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/execute-queries-in-group)
 
 # Usage of PowerBi and PowerBiClient classes

@@ -1413,7 +1413,7 @@ class TestPowerBi(unittest.TestCase):
                 sut.last_status = "Unknown"
             elif counter == 2:
                 sut.last_status = "Completed"
-                sut.last_refresh_utc = datetime(2024, 5, 14, 9, 17, tzinfo=utc)
+                sut.last_refresh_utc = datetime.now(utc)
             else:
                 raise ValueError("Called too many times")
             return True

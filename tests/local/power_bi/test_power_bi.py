@@ -6,6 +6,7 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 from pytz import utc
 
+from spetlr.exceptions import SpetlrException
 from spetlr.power_bi.PowerBi import PowerBi
 from spetlr.power_bi.PowerBiClient import PowerBiClient
 from spetlr.power_bi.PowerBiException import PowerBiException
@@ -287,7 +288,8 @@ class TestPowerBi(unittest.TestCase):
         sut._get_access_token = lambda: True
 
         # Act
-        with self.assertRaises(PowerBiException) as context:
+        # Also test if PowerBiException inherits from SpetlrException!
+        with self.assertRaises(SpetlrException) as context:
             sut._combine_dataframes(sut._get_partition_tables)
 
         # Assert

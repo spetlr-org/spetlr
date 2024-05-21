@@ -6,6 +6,6 @@ isort
 flake8
 dbx
 spetlr-tools
-timezonefinder==6.0.2
+timezonefinder
 pycountry
 freezegun

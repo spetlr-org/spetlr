@@ -1,6 +1,6 @@
 import time
 from datetime import datetime, timedelta
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple
 
 import msal
 import pandas as pd
@@ -230,7 +230,7 @@ class PowerBi:
         }
         return True
 
-    def _get_workspaces(self) -> Union[SparkPandasDataFrame, None]:
+    def _get_workspaces(self) -> Optional[SparkPandasDataFrame]:
         """
         Returns the list of available PowerBI workspaces.
 
@@ -265,7 +265,7 @@ class PowerBi:
         self._raise_base_api_error("Failed to fetch workspaces!", api_call)
         return None
 
-    def _get_datasets(self, workspace_id: str) -> Union[SparkPandasDataFrame, None]:
+    def _get_datasets(self, workspace_id: str) -> Optional[SparkPandasDataFrame]:
         """
         Returns the list of available PowerBI datasets.
 
@@ -313,7 +313,7 @@ class PowerBi:
         workspace_id: str,
         dataset_id: str,
         ignore_unauthorized: bool = False,
-    ) -> Union[SparkPandasDataFrame, None]:
+    ) -> Optional[SparkPandasDataFrame]:
         """
         Returns the PowerBI dataset refresh history for the specified dataset.
 
@@ -367,7 +367,7 @@ class PowerBi:
         dataset_id: str,
         request_id: str,
         ignore_unauthorized: bool = False,
-    ) -> Union[SparkPandasDataFrame, None]:
+    ) -> Optional[SparkPandasDataFrame]:
         """
         Returns the PowerBI dataset refresh history details for the specified refresh.
 
@@ -413,7 +413,7 @@ class PowerBi:
         workspace_id: str,
         dataset_id: str,
         ignore_unauthorized: bool = False,
-    ) -> Union[SparkPandasDataFrame, None]:
+    ) -> Optional[SparkPandasDataFrame]:
         """
         Returns the PowerBI dataset partition info with table names
         and their refresh times.
@@ -609,7 +609,7 @@ class PowerBi:
         self,
         *,
         skip_read_only: bool = False,
-    ) -> Union[List[Tuple[str, str]], None]:
+    ) -> Optional[List[Tuple[str, str]]]:
         """
         Connects or reconnects to the PowerBI API and returns a list of
         workspace id's and names.
@@ -644,7 +644,7 @@ class PowerBi:
             ]
         return workspace_list
 
-    def _combine_datasets(self) -> Union[SparkPandasDataFrame, None]:
+    def _combine_datasets(self) -> Optional[SparkPandasDataFrame]:
         """
         Returns a list of PowerBI datasets for a single workspace or
         combined lists for datasets from all workspaces.
@@ -673,12 +673,12 @@ class PowerBi:
 
     def _combine_dataframes(
         self,
-        function: Callable[[str, str, bool], Union[SparkPandasDataFrame, None]],
+        function: Callable[[str, str, bool], Optional[SparkPandasDataFrame]],
         *,
         skip_read_only: bool = False,
         skip_not_refreshable: bool = False,
         skip_effective_identity: bool = False,
-    ) -> Union[SparkPandasDataFrame, None]:
+    ) -> Optional[SparkPandasDataFrame]:
         """
         Returns a single data frame loaded from PowerBI, or the same
         combined data frame fetched from all workspaces and datasets.
@@ -859,10 +859,11 @@ class PowerBi:
                         else:
                             df = tables.get_pandas_df()
                             df = df[df.TableName.isin(self.table_names)]
-                            column = "RefreshTime" + tables.time_column_suffix
-                            idx = df[column].idxmin()
-                            self.table_name = df.TableName.loc[idx]
-                            refresh_time = df[column].loc[idx]
+                            if not df.empty:
+                                column = "RefreshTime" + tables.time_column_suffix
+                                idx = df[column].idxmin()
+                                self.table_name = df.TableName.loc[idx]
+                                refresh_time = df[column].loc[idx]
 
                 self.last_refresh_utc = history.get_utc_time(refresh_time)
                 self.last_refresh_str = history.get_local_time_str(refresh_time)
@@ -935,7 +936,7 @@ class PowerBi:
 
     def _get_refresh_argument_json(
         self, with_wait: bool
-    ) -> Union[Dict[str, object], None]:
+    ) -> Optional[Dict[str, object]]:
         """
         Returns the HTTP body of the PowerBI refresh API call
         containing table names to refresh or other parameters if necessary.
@@ -991,6 +992,7 @@ class PowerBi:
             )
             if api_call.status_code == 202:
                 print("A new refresh has been successfully triggered.")
+                self.last_status = "Unknown"
                 return True
             else:
                 self._raise_api_error(
@@ -1082,9 +1084,11 @@ class PowerBi:
 
         retries = self.number_of_retries
         start_time = time.time()
-        if not (self._get_last_refresh() and self._trigger_new_refresh()):
+        if not self._get_last_refresh():
             return False
-        restart = self.is_enhanced
+        restart = self.last_status == "Unknown" and self.is_enhanced
+        if not self._trigger_new_refresh():
+            return False
 
         while True:
             elapsed_seconds = int(time.time() - start_time)
@@ -1104,7 +1108,6 @@ class PowerBi:
                 if not restart:
                     retries = retries - 1
                 restart = False
-                self.last_status = "Unknown"
                 if not self._trigger_new_refresh():
                     return False
                 continue
@@ -1128,7 +1131,7 @@ class PowerBi:
         if history is not None:
             history.show("Refresh history:", "The refresh history is empty.")
 
-    def get_history(self) -> Union[DataFrame, None]:
+    def get_history(self) -> Optional[DataFrame]:
         """
         Returns the refresh history of a PowerBI dataset in a Spark data frame.
 
@@ -1155,7 +1158,7 @@ class PowerBi:
         if details is not None:
             details.show("Refresh history details:", "The refresh history is empty.")
 
-    def get_history_details(self) -> Union[DataFrame, None]:
+    def get_history_details(self) -> Optional[DataFrame]:
         """
         Returns refresh history details of a PowerBI dataset in a Spark data frame.
 
@@ -1182,7 +1185,7 @@ class PowerBi:
         if tables is not None:
             tables.show("Dataset tables:", "No dataset tables found.")
 
-    def get_tables(self) -> Union[DataFrame, None]:
+    def get_tables(self) -> Optional[DataFrame]:
         """
         Returns the tables of a PowerBI dataset as a Spark data frame.
 
@@ -1210,7 +1213,7 @@ class PowerBi:
             if workspaces is not None:
                 workspaces.show("Workspaces:", "No workspaces found.")
 
-    def get_workspaces(self) -> Union[DataFrame, None]:
+    def get_workspaces(self) -> Optional[DataFrame]:
         """
         Returns the available workspaces as a Spark data frame.
 
@@ -1237,7 +1240,7 @@ class PowerBi:
         if datasets is not None:
             datasets.show("Datasets:", "No datasets found.")
 
-    def get_datasets(self) -> Union[DataFrame, None]:
+    def get_datasets(self) -> Optional[DataFrame]:
         """
         Returns the available datasets as a Spark data frame.
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -28,8 +28,8 @@ class SparkPandasDataFrame:
         json: Union[Dict, List],
         schema: List[Tuple[Union[str, Callable[[pd.DataFrame], NDFrameT]], str, str]],
         *,
-        indexing_columns: Union[int, List[int], str, List[str], None] = None,
-        sorting_columns: Union[int, List[int], str, List[str], None] = None,
+        indexing_columns: Optional[Union[int, List[int], str, List[str]]] = None,
+        sorting_columns: Optional[Union[int, List[int], str, List[str]]] = None,
         ascending: bool = True,
         local_timezone_name: str = None,
     ):
@@ -153,7 +153,7 @@ class SparkPandasDataFrame:
         return result if len(result) > 1 else result[0]
 
     @staticmethod
-    def _parse_time(text: str) -> Union[datetime, None]:
+    def _parse_time(text: str) -> Optional[datetime]:
         """
         Parses an ISO 8601 time text and converts it to datetime.
         The result is a timezone-unaware UTC datetime regardless of input.
@@ -174,8 +174,8 @@ class SparkPandasDataFrame:
 
     @staticmethod
     def _localize_time(
-        time: Union[datetime, None], local_timezone_name: str
-    ) -> Union[datetime, None]:
+        time: Optional[datetime], local_timezone_name: str
+    ) -> Optional[datetime]:
         """
         Converts a timezone-unaware UTC datetime to a timezone-unaware local datetime.
 
@@ -191,7 +191,7 @@ class SparkPandasDataFrame:
         time = time.astimezone(timezone(local_timezone_name))
         return time.replace(tzinfo=None)
 
-    def get_pandas_df(self) -> Union[pd.DataFrame, None]:
+    def get_pandas_df(self) -> Optional[pd.DataFrame]:
         """
         Returns the data frame as a Pandas data frame.
 
@@ -201,7 +201,7 @@ class SparkPandasDataFrame:
 
         return self.df
 
-    def get_spark_df(self) -> Union[DataFrame, None]:
+    def get_spark_df(self) -> Optional[DataFrame]:
         """
         Returns the data frame as a Spark data frame.
 
@@ -223,7 +223,7 @@ class SparkPandasDataFrame:
         message: str,
         when_empty: str,
         *,
-        filter_columns: Union[List[Tuple[str, str]], None] = None,
+        filter_columns: Optional[List[Tuple[str, str]]] = None,
     ) -> None:
         """
         Displays the Pandas data frame.
@@ -246,7 +246,7 @@ class SparkPandasDataFrame:
                 df = df[[column[1] for column in filter_columns]]
             df.display()
 
-    def get_local_time_str(self, time: datetime) -> Union[str, None]:
+    def get_local_time_str(self, time: datetime) -> Optional[str]:
         """
         Returns the specified time as a local timestamp converted to text.
 
@@ -260,7 +260,7 @@ class SparkPandasDataFrame:
             return time.strftime("%Y-%m-%d %H:%M") + time_description_suffix
         return None
 
-    def get_utc_time(self, time: datetime) -> Union[datetime, None]:
+    def get_utc_time(self, time: datetime) -> Optional[datetime]:
         """
         Returns the specified time as an UTC timestamp.
 

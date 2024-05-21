@@ -5,8 +5,9 @@ The `PowerBi` and `PowerBiClient` classes contain logic for refreshing
 PowerBI datasets or their selected tables, and for checking if the last
 refresh of a dataset or its selected tables completed successfully.
 The logic can also be used to show refresh histories of datasets,
-and to list dataset tables with their recent refresh times. The same data
-can also be returned as a Spark data frame.
+and to list dataset tables with their recent refresh times.
+The data can also be returned as a Spark data frame and used to
+implement more advanced logic.
 
 The classes use Pandas internally, so Spark is not required.
 
@@ -45,7 +46,7 @@ permissions to workspaces or individual datasets. You can do this either
 on the workspace level or the dataset level. On the workspace level, when
 clicking on "Manage access" as shown in the beginning, you can assign
 a role to the user or user group. To assign Build permission to
-the entire workspace to the given user or group, choose
+on entire workspace to the given user or group, choose
 the "Contributor", "Member", or "Admin" role (see screen-shot).
 "Viewer" role doesn't have Build permission!
 

@@ -2,10 +2,13 @@
 # PowerBi and PowerBiClient classes
 
 The `PowerBi` and `PowerBiClient` classes contain logic for refreshing
-PowerBI datasets, and for checking if the last refresh of a dataset or its
-selected tables completed successfully. The logic can also be used to show
-refresh histories of datasets, and to list dataset tables with their recent
-refresh times. The same data can also be returned as a Spark data frame.
+PowerBI datasets or their selected tables, and for checking if the last
+refresh of a dataset or its selected tables completed successfully.
+The logic can also be used to show refresh histories of datasets,
+and to list dataset tables with their recent refresh times. The same data
+can also be returned as a Spark data frame.
+
+The classes use Pandas internally, so Spark is not required.
 
 For easier PowerBI credential handling (service principal or AD user),
 the first parameter to the `PowerBi` constructor must be a `PowerBiClient`
@@ -14,7 +17,7 @@ class object.
 ## PowerBI Permissions
 
 The service principal or AD user or one of its user groups need to be
-assigned to each PowerBI workspace you want to access (see screen-shot).
+assigned to each PowerBI workspace you want to access to (see screen-shot).
 
 ![Power BI admin settings](./manage_access.png)
 
@@ -37,11 +40,24 @@ option, found under "Integration settings" in the Admin portal in Fabric
 
 ![Power BI admin settings](./admin_settings2.png)
 
-The same user group, service principal or user must have dataset
-read and build permissions to individual datasets (see screen-shot).
+The same user group, service principal or user must have Read and Build
+permissions to workspaces or individual datasets. You can do this either
+on the workspace level or the dataset level. On the workspace level, when
+clicking on "Manage access" as shown in the beginning, you can assign
+a role to the user or user group. To assign Build permission to
+the entire workspace to the given user or group, choose
+the "Contributor", "Member", or "Admin" role (see screen-shot).
+"Viewer" role doesn't have Build permission!
+
+![Power BI admin settings](./user_roles.png)
+
+You can do the same on the dataset level as well (see screen-shot).
 
 ![Power BI admin settings](./grant_access.png)
 
+To start a refresh, the user must either have the "Contributor" role
+on the workspace level, or the permission "Allow recipients to modify
+this dataset" must be set on the dataset level (see screen-shot above).
 
 ## Links
 
@@ -185,8 +201,8 @@ in the optional "max_minutes_after_last_refresh" parameter
 If you want to check only selected tables in the dataset, you can
 specify the optional "table_names" parameter with a list of table names.
 If the list is not empty, only the selected tables will be checked,
-and the table that was refreshed first will be used for checking. 
-To only show the list of tables, specify an empty array:
+and the table that was refreshed earliest will be used as a reference. 
+To show the list of available tables, specify an empty array:
   table_names=[]
 
 You can also specify the optional "local_timezone_name" parameter to show
@@ -235,7 +251,7 @@ call the check() method after waiting some sufficiently long time
 If you want to refresh only selected tables in the dataset, you can
 specify the optional "table_names" parameter with a list of table names.
 If the list is not empty, only the selected tables will be refreshed.
-To only show the list of tables, specify an empty array:
+To show the list of available tables, specify an empty array:
   table_names=[]
 
 If you set the optional "mail_on_failure" or "mail_on_completion"
@@ -292,7 +308,7 @@ If you want to refresh only selected tables in the dataset, you can
 specify the optional "table_names" parameter with a list of table names.
 If the list is not empty, only selected tables will be refreshed
 (and the previous refresh time will be ignored).
-To only show the list of tables, specify an empty array:
+To show the list of available tables, specify an empty array:
   table_names=[]
 
 Additionally, you can set the optional "number_of_retries" parameter to

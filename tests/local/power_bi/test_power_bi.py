@@ -1391,7 +1391,7 @@ class TestPowerBi(unittest.TestCase):
     def test_refresh_no_restart_no_tables_success(self, mock_post):
         # Arrange
         mock_response = Mock()
-        mock_response.status_code = 401
+        mock_response.status_code = 501  # not called, so the error is irrelevant!
         mock_response.text = "error"
         mock_post.return_value = mock_response
 
@@ -1423,16 +1423,16 @@ class TestPowerBi(unittest.TestCase):
         sut._get_last_refresh = get_last_refresh
 
         # Act
-        sut.refresh()
+        sut.refresh()  # No exception!
 
         # Assert
-        # No exception!
+        self.assertFalse(mock_post.called)
 
     @patch("requests.post")
-    def test_refresh_restart_no_tables_failure(self, mock_post):
+    def test_refresh_restart_no_tables_timeout(self, mock_post):
         # Arrange
         mock_response = Mock()
-        mock_response.status_code = 202
+        mock_response.status_code = 202  # called only when restart triggered!
         mock_post.return_value = mock_response
 
         sut = PowerBi(
@@ -1454,7 +1454,7 @@ class TestPowerBi(unittest.TestCase):
             if counter == 1:
                 sut.last_status = "Unknown"
             elif counter == 2:
-                sut.last_status = "Completed"
+                sut.last_status = "Completed"  # one restart, then timeout!
                 sut.last_refresh_utc = datetime(2024, 5, 14, 9, 17, tzinfo=utc)
             else:
                 raise ValueError("Called too many times")
@@ -1467,13 +1467,14 @@ class TestPowerBi(unittest.TestCase):
             sut.refresh()
 
         # Assert
+        self.assertEqual(1, mock_post.call_count)
         self.assertIn("still in progress", str(context.exception))
 
     @patch("requests.post")
     def test_refresh_no_restart_with_tables_success(self, mock_post):
         # Arrange
         mock_response = Mock()
-        mock_response.status_code = 401
+        mock_response.status_code = 401  # not called, so the error is irrelevant!
         mock_response.text = "error"
         mock_post.return_value = mock_response
 
@@ -1503,16 +1504,16 @@ class TestPowerBi(unittest.TestCase):
         sut._get_last_refresh = get_last_refresh
 
         # Act
-        sut.refresh()
+        sut.refresh()  # No exception!
 
         # Assert
-        # No exception!
+        self.assertFalse(mock_post.called)
 
     @patch("requests.post")
-    def test_refresh_restart_with_tables_failure(self, mock_post):
+    def test_refresh_restart_with_tables_timeout(self, mock_post):
         # Arrange
         mock_response = Mock()
-        mock_response.status_code = 202
+        mock_response.status_code = 202  # called only whe restart triggered!
         mock_post.return_value = mock_response
 
         sut = PowerBi(
@@ -1535,7 +1536,7 @@ class TestPowerBi(unittest.TestCase):
             if counter == 1:
                 sut.last_status = "Unknown"
             elif counter == 2:
-                sut.last_status = "Completed"
+                sut.last_status = "Completed"  # one restart, then timeout!
                 sut.last_refresh_utc = datetime(2024, 5, 14, 9, 17, tzinfo=utc)
             else:
                 raise ValueError("Called too many times")
@@ -1548,4 +1549,89 @@ class TestPowerBi(unittest.TestCase):
             sut.refresh()
 
         # Assert
+        self.assertEqual(1, mock_post.call_count)
         self.assertIn("still in progress", str(context.exception))
+
+    @patch("requests.post")
+    def test_refresh_with_retry_timeout(self, mock_post):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 202  # called twice, in the beginning and on retry!
+        mock_post.return_value = mock_response
+
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+            timeout_in_seconds=1,
+            number_of_retries=1,
+        )
+        sut.powerbi_url = "test/"
+        counter = 0
+
+        def get_last_refresh():
+            nonlocal sut, counter
+            sut.table_name = None
+            sut.last_refresh_str = None
+            sut.is_enhanced = True
+            counter += 1
+            if counter == 1:
+                sut.last_status = "Completed"  # refresh triggered
+                sut.last_refresh_utc = datetime(2024, 5, 14, 9, 17, tzinfo=utc)
+            elif counter == 2:
+                sut.last_status = "Failed"  # refresh triggered again, but then timeout!
+            else:
+                raise ValueError("Called too many times")
+            return True
+
+        sut._get_last_refresh = get_last_refresh
+
+        # Act
+        with self.assertRaises(PowerBiException) as context:
+            sut.refresh()
+
+        # Assert
+        self.assertEqual(2, mock_post.call_count)
+        self.assertIn("still in progress", str(context.exception))
+
+    @patch("requests.post")
+    def test_refresh_not_retry_failure(self, mock_post):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 202  # called only in the beginning!
+        mock_post.return_value = mock_response
+
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+            timeout_in_seconds=1,
+            number_of_retries=0,
+        )
+        sut.powerbi_url = "test/"
+        counter = 0
+
+        def get_last_refresh():
+            nonlocal sut, counter
+            sut.table_name = None
+            sut.last_refresh_str = None
+            sut.is_enhanced = True
+            counter += 1
+            if counter == 1:
+                sut.last_status = "Completed"
+                sut.last_refresh_utc = datetime(2024, 5, 14, 9, 17, tzinfo=utc)
+            elif counter == 2:
+                sut.last_status = "Failed"  # the reason of the exception!
+            else:
+                raise ValueError("Called too many times")
+            return True
+
+        sut._get_last_refresh = get_last_refresh
+
+        # Act
+        with self.assertRaises(PowerBiException) as context:
+            sut.refresh()
+
+        # Assert
+        self.assertEqual(1, mock_post.call_count)
+        self.assertIn("Last refresh failed", str(context.exception))

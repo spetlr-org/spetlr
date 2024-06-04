@@ -9,6 +9,8 @@ class CachedLoaderParameters:
         cache_table_name: str,
         key_cols: List[str],
         cache_id_cols: List[str] = None,
+        *,
+        do_nothing_if_more_rows_than: int = None,
     ):
         """
         Args:
@@ -16,6 +18,9 @@ class CachedLoaderParameters:
             key_cols: the set of columns that form the primary key for a row
             cache_id_cols: These columns, added by the write operation, will be saved
                 in the cache to identify e.g. the written batch.
+            do_nothing_if_more_rows_than: if the input data set contains more rows than
+               the specified number of rows, nothing will be written or deleted.
+               Instead, the method too_many_rows() will be called.
 
         The table cache_table_name must exist and must have the following schema:
         (
@@ -36,3 +41,4 @@ class CachedLoaderParameters:
         self.rowHash = "rowHash"
         self.loadedTime = "loadedTime"
         self.deletedTime = "deletedTime"
+        self.do_nothing_if_more_rows_than = do_nothing_if_more_rows_than

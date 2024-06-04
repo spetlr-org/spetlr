@@ -4,11 +4,10 @@ from typing import List, Optional
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 
+from .CachedLoaderParameters import CachedLoaderParameters
+from ..functions import get_unique_tempview_name
 from spetlr.etl import Loader
 from spetlr.spark import Spark
-
-from ..functions import get_unique_tempview_name
-from .CachedLoaderParameters import CachedLoaderParameters
 
 
 class CachedLoader(Loader):
@@ -20,7 +19,9 @@ class CachedLoader(Loader):
     The cache table needs to exist and have the correct schema matching
     the configured parameters, see the CachedLoaderParameters class.
 
-    Remember to override self.write_operation and/or self.delete_operation
+    Remember to override self.write_operation and/or self.delete_operation.
+    If the parameter "do_nothing_if_more_rows_than" was specified,
+       you also need to override self.too_many_rows.
     Any variable rows need to be added in this function.
     """
 
@@ -53,8 +54,13 @@ class CachedLoader(Loader):
         # validate overloading
         write_not_overloaded = "write_operation" not in self.__class__.__dict__
         delete_not_overloaded = "delete_operation" not in self.__class__.__dict__
+        too_many_rows_not_overloaded = "too_many_rows" not in self.__class__.__dict__
         if write_not_overloaded or delete_not_overloaded:
-            raise AssertionError("write_operation and delete_operation required")
+            raise AssertionError(
+                "write_operation and delete_operation methods required"
+            )
+        if too_many_rows_not_overloaded and p.do_nothing_if_more_rows_than is not None:
+            raise AssertionError("too_many_rows method required")
 
         if self.__class__ is CachedLoader:
             raise AssertionError("You should inherit from this class")
@@ -64,6 +70,10 @@ class CachedLoader(Loader):
         raise NotImplementedError()
 
     def delete_operation(self, df: DataFrame) -> Optional[DataFrame]:
+        """Abstract Method to be overridden in child."""
+        raise NotImplementedError()
+
+    def too_many_rows(self) -> None:
         """Abstract Method to be overridden in child."""
         raise NotImplementedError()
 
@@ -81,6 +91,11 @@ class CachedLoader(Loader):
         cache = self._extract_cache()
 
         result = self._discard_non_new_rows_against_cache(df, cache)
+
+        if self.params.do_nothing_if_more_rows_than is not None:
+            if result.to_be_written.count() > self.params.do_nothing_if_more_rows_than:
+                self.too_many_rows()
+                return
 
         # write branch
         df_written = self.write_operation(result.to_be_written)

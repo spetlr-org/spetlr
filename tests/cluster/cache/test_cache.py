@@ -141,7 +141,9 @@ class CachedLoaderTests(unittest.TestCase):
             USING DELTA
             COMMENT "Caching Test"
             LOCATION "{CachedTest_path}"
-        """.format(**tc.get_all_details())
+        """.format(
+                **tc.get_all_details()
+            )
         )
 
         spark.sql(
@@ -155,7 +157,9 @@ class CachedLoaderTests(unittest.TestCase):
             USING DELTA
             COMMENT "Caching target"
             LOCATION "{CachedTestTarget_path}"
-        """.format(**tc.get_all_details())
+        """.format(
+                **tc.get_all_details()
+            )
         )
 
         cls.params = CachedLoaderParameters(

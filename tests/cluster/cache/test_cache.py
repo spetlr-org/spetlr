@@ -226,6 +226,9 @@ class CachedLoaderTests(unittest.TestCase):
         self.assertFalse(self.sut.too_many_rows_was_called)
 
     def test_02_checks_for_too_many_rows(self):
+        self.sut.written = None
+        self.sut.deleted = None
+
         cache_dh = DeltaHandle.from_tc("CachedTest")
         # prime the cache
         df_old_cache = Spark.get().createDataFrame(

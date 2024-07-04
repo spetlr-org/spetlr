@@ -6,7 +6,7 @@
   },
   {
     "maven": {
-      "coordinates": "com.azure.cosmos.spark:azure-cosmos-spark_3-3_2-12:4.25.1"
+      "coordinates": "com.azure.cosmos.spark:azure-cosmos-spark_3-4_2-12:4.25.1"
     }
   }
 ]

@@ -280,7 +280,7 @@ class DeltaHandle(TableHandle):
         if self._location:
             df = reader.load(self._location)
         else:
-            df = reader.table(self._table_name)
+            df = reader.table(self._name)
 
         return df
 

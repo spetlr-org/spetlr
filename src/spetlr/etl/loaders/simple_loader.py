@@ -27,14 +27,17 @@ class SimpleLoader(Loader):
         self.overwritePartitions = overwritePartitions
 
     def save(self, df: DataFrame) -> None:
+        args = dict(
+            overwriteSchema=self.overwriteSchema,
+            mergeSchema=self.mergeSchema,
+            overwritePartitions=self.overwritePartitions,
+        )
+        # remove those arguments that are None. Those are not passed to handle
+        args = {k: v for k, v in args.items() if v is not None}
+
         if self.mode == "overwrite":
-            self.handle.overwrite(
-                df,
-                overwriteSchema=self.overwriteSchema,
-                mergeSchema=self.mergeSchema,
-                overwritePartitions=self.overwritePartitions,
-            )
+            self.handle.overwrite(df, **args)
         elif self.mode == "upsert":
             self.handle.upsert(df, self.join_cols)
         else:
-            self.handle.append(df, mergeSchema=self.mergeSchema)
+            self.handle.append(df, **args)

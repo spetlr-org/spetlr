@@ -16,6 +16,7 @@ class SimpleLoader(Loader):
         dataset_input_keys: List[str] = None,
         mergeSchema: bool = None,
         overwriteSchema: bool = None,
+        overwritePartitions: bool = None,
     ):
         super().__init__(dataset_input_keys=dataset_input_keys)
         self.mode = mode.lower()
@@ -23,11 +24,15 @@ class SimpleLoader(Loader):
         self.join_cols = join_cols
         self.overwriteSchema = overwriteSchema
         self.mergeSchema = mergeSchema
+        self.overwritePartitions = overwritePartitions
 
     def save(self, df: DataFrame) -> None:
         if self.mode == "overwrite":
             self.handle.overwrite(
-                df, overwriteSchema=self.overwriteSchema, mergeSchema=self.mergeSchema
+                df,
+                overwriteSchema=self.overwriteSchema,
+                mergeSchema=self.mergeSchema,
+                overwritePartitions=self.overwritePartitions,
             )
         elif self.mode == "upsert":
             self.handle.upsert(df, self.join_cols)

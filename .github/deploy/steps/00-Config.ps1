@@ -49,7 +49,7 @@ $cosmosName = $permanentResourceName
 
 # Use eastus because of free azure subscription
 # note, we no longer use a free subscription
-$location = "westeurope"
+$location = "northeurope"
 
 $resourceTags = @{
   "Owner"      = "Auto Deployed"

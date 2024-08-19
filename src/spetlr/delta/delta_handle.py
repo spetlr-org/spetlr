@@ -128,6 +128,8 @@ class DeltaHandle(TableHandle):
         mode: str,
         mergeSchema: bool = None,
         overwriteSchema: bool = None,
+        *,
+        overwritePartitions: bool = None,
     ) -> None:
         assert mode in {"append", "overwrite"}
 
@@ -140,16 +142,28 @@ class DeltaHandle(TableHandle):
                 "overwriteSchema", "true" if overwriteSchema else "false"
             )
 
+        if overwritePartitions:
+            writer = writer.option("partitionOverwriteMode", "dynamic")
+
         if self._location:
             return writer.save(self._location)
 
         return writer.saveAsTable(self._name)
 
     def overwrite(
-        self, df: DataFrame, mergeSchema: bool = None, overwriteSchema: bool = None
+        self,
+        df: DataFrame,
+        mergeSchema: bool = None,
+        overwriteSchema: bool = None,
+        *,
+        overwritePartitions: bool = None,
     ) -> None:
         return self.write_or_append(
-            df, "overwrite", mergeSchema=mergeSchema, overwriteSchema=overwriteSchema
+            df,
+            "overwrite",
+            mergeSchema=mergeSchema,
+            overwriteSchema=overwriteSchema,
+            overwritePartitions=overwritePartitions,
         )
 
     def append(self, df: DataFrame, mergeSchema: bool = None) -> None:

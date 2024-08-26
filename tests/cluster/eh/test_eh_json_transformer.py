@@ -30,7 +30,9 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
                         "id": 1234,
                         "name": "John",
                     }
-                ).encode("utf-8"),  # Body
+                ).encode(
+                    "utf-8"
+                ),  # Body
                 dt_utc(2021, 10, 31, 0, 0, 0),  # pdate
                 dt_utc(2021, 10, 31, 0, 0, 0),  # EnqueuedTimestamp
             ),

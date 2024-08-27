@@ -35,7 +35,7 @@ resource rsdatabricks 'Microsoft.Databricks/workspaces@2022-04-01-preview' = {
 
 resource staccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   name: dataLakeName
-  location: 'northeurope'
+  location: 'swedencentral'
   tags: resourceTags
   sku: {
     name: 'Standard_LRS'
@@ -61,12 +61,14 @@ resource staccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   resource blobservice 'blobServices@2021-09-01' = {
     name: 'default'
 
-    resource containersVar 'containers@2021-02-01' = [for container in dataLakeContainers: {
-      name: '${container.name}'
-      properties: {
-        publicAccess: 'None'
+    resource containersVar 'containers@2021-02-01' = [
+      for container in dataLakeContainers: {
+        name: '${container.name}'
+        properties: {
+          publicAccess: 'None'
+        }
       }
-    }]
+    ]
   }
 }
 
@@ -84,29 +86,31 @@ resource eventhubs 'Microsoft.EventHub/namespaces@2021-11-01' = {
     name: 'Standard'
   }
 
-  resource ehs 'eventhubs@2021-11-01' = [for eh in eventHubConfig: {
-    name: eh.name
-    properties: {
-      messageRetentionInDays: 7
-      partitionCount: 4
-      captureDescription: {
-        enabled: true
-        intervalInSeconds: 60
-        sizeLimitInBytes: 314572800
-        destination: {
-          name: 'EventHubArchive.AzureBlockBlob'
-          properties: {
-            dataLakeAccountName: dataLakeName
-            blobContainer: eh.captureLocation
-            archiveNameFormat: captureFormat
-            storageAccountResourceId: staccount.id
+  resource ehs 'eventhubs@2021-11-01' = [
+    for eh in eventHubConfig: {
+      name: eh.name
+      properties: {
+        messageRetentionInDays: 7
+        partitionCount: 4
+        captureDescription: {
+          enabled: true
+          intervalInSeconds: 60
+          sizeLimitInBytes: 314572800
+          destination: {
+            name: 'EventHubArchive.AzureBlockBlob'
+            properties: {
+              dataLakeAccountName: dataLakeName
+              blobContainer: eh.captureLocation
+              archiveNameFormat: captureFormat
+              storageAccountResourceId: staccount.id
+            }
           }
+          skipEmptyArchives: false
+          encoding: 'Avro'
         }
-        skipEmptyArchives: false
-        encoding: 'Avro'
       }
     }
-  }]
+  ]
 }
 
 //#############################################################################################
@@ -115,7 +119,7 @@ resource eventhubs 'Microsoft.EventHub/namespaces@2021-11-01' = {
 
 resource sqlserver 'Microsoft.Sql/servers@2022-02-01-preview' = {
   name: databaseServerName
-  location: 'northeurope'
+  location: 'swedencentral'
   tags: resourceTags
   identity: {
     type: 'SystemAssigned'
@@ -157,7 +161,7 @@ resource sqlserver 'Microsoft.Sql/servers@2022-02-01-preview' = {
 resource sqlDb 'Microsoft.Sql/servers/databases@2022-02-01-preview' = {
   name: deliveryDatabase
   parent: sqlserver
-  location: 'northeurope'
+  location: 'swedencentral'
   tags: resourceTags
   sku: {
     name: 'GP_S_Gen5'

@@ -49,7 +49,7 @@ $cosmosName = $permanentResourceName
 
 # Use eastus because of free azure subscription
 # note, we no longer use a free subscription
-$location = "northeurope"
+$location = "swedencentral"
 
 $resourceTags = @{
   "Owner"      = "Auto Deployed"
@@ -75,11 +75,10 @@ $eventHubConfig = (, @(
 $eventHubConfigJson = ($eventHubConfig | ConvertTo-Json -Depth 4 -Compress)
 #$eventHubConfigJson = $eventHubConfigJson -replace '"', '\"'
 
-if (!$IsLinux)
-{
-    $dataLakeContainersJson = $dataLakeContainersJson -replace '"', '\"'
-    $resourceTagsJson = $resourceTagsJson -replace '"', '\"'
-    $eventHubConfigJson = $eventHubConfigJson -replace '"', '\"'
+if (!$IsLinux) {
+  $dataLakeContainersJson = $dataLakeContainersJson -replace '"', '\"'
+  $resourceTagsJson = $resourceTagsJson -replace '"', '\"'
+  $eventHubConfigJson = $eventHubConfigJson -replace '"', '\"'
 }
 
 $sqlAdminSpnName = $cicdSpnName

@@ -18,7 +18,6 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
   location: location
   tags: tags
   properties: {
-
     sku: {
       family: 'A'
       name: 'standard'
@@ -33,11 +32,11 @@ resource kw 'Microsoft.KeyVault/vaults@2022-07-01' = {
             'list'
             'get'
             'set'
-          ] }
+          ]
+        }
         tenantId: tenant().tenantId
       }
     ]
-
   }
 }
 
@@ -52,14 +51,16 @@ resource csdb 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
   properties: {
     databaseAccountOfferType: 'Standard'
     enableFreeTier: true
-    locations: [ {
+    locations: [
+      {
         failoverPriority: 0
         isZoneRedundant: false
-        locationName: 'northeurope'
-      } ]
+        locationName: 'swedencentral'
+      }
+    ]
     //capabilities: [ {
     //    name: 'EnableServerless'
-     // } ]
+    // } ]
   }
 }
 
@@ -125,7 +126,10 @@ resource metastoreDatabricksWorkspace 'Microsoft.Databricks/workspaces@2022-04-0
   name: metastoreDatabricksName
   location: location
   properties: {
-    managedResourceGroupId: subscriptionResourceId('Microsoft.Resources/resourceGroups', '${permanentResourceGroup}Cluster')
+    managedResourceGroupId: subscriptionResourceId(
+      'Microsoft.Resources/resourceGroups',
+      '${permanentResourceGroup}Cluster'
+    )
   }
   tags: tags
 }

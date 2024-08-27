@@ -3,6 +3,16 @@
 ###############################################################################################
 Write-Host "Initialize Databricks Configuration" -ForegroundColor Green
 
+Write-Host "  Collect resourceId and workspace URL" -ForegroundColor DarkYellow
+$resourceId = az resource show `
+  --resource-group $resourceGroupName `
+  --name $databricksName `
+  --resource-type "Microsoft.Databricks/workspaces" `
+  --query id `
+  --out tsv
+
+Throw-WhenError -output $resourceId
+
 Write-Host "Get Databricks workspace URL" -ForegroundColor DarkYellow
 $workspaceUrl = az resource show `
   --resource-group $resourceGroupName `
@@ -23,7 +33,10 @@ $bearerToken = Get-OAuthToken `
 
 Write-Host "Set SPN as the workspace admin" -ForegroundColor DarkYellow
 Set-DatabricksSpnAdminUser `
+  -tenantId $tenantId `
   -clientId $dbSpn.clientId `
+  -clientSecret $dbSpn.secretText `
+  -resourceId $resourceId `
   -workspaceUrl $workspaceUrl `
   -bearerToken $bearerToken
 

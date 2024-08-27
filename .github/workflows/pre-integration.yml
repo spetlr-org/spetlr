@@ -19,8 +19,8 @@ jobs:
       - uses: actions/setup-java@v2
         # this workflow needs java so that it can run a local instance of spark
         with:
-          java-version: '8'
-          distribution: 'temurin'
+          java-version: "8"
+          distribution: "temurin"
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -38,10 +38,8 @@ jobs:
       - name: Run Tests
         run: python -m pytest tests/local
 
-
-
   integration_test:
-#    needs: unit_test # integration can be run in parallel with unit-tests
+    #    needs: unit_test # integration can be run in parallel with unit-tests
     runs-on: ubuntu-latest
     environment: azure
     concurrency: azure-integration
@@ -66,7 +64,7 @@ jobs:
             -p ${{ secrets.SPN_CLIENT_SECRET }} `
             --tenant ${{ secrets.SPN_TENANT_ID }} `
             --output none
-            
+
       - name: Create Deployment
         shell: pwsh
         run: |
@@ -78,33 +76,53 @@ jobs:
         shell: pwsh
         run: Start-Sleep -s 30
 
+      # - name: Launch integration tests 10.4
+      #   shell: pwsh
+      #   run: |
+      #     .github/submit/submit_test_job.ps1  `
+      #       -sparkVersion "10.4.x-scala2.12" `
+      #       -testJobDetails job104.json `
+      #       -sparkLibs sparklibs104.json
+
+      # - name: Launch integration tests 11.3
+      #   shell: pwsh
+      #   run: |
+      #     .github/submit/submit_test_job.ps1  `
+      #       -sparkVersion "11.3.x-scala2.12" `
+      #       -testJobDetails job113.json `
+      #       -sparkLibs sparklibs113.json
+
+      - name: Setup Databricks CLI
+        shell: bash
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          databricks -v
+
       - name: Launch integration tests 10.4
         shell: pwsh
         run: |
           .github/submit/submit_test_job.ps1  `
-            -sparkVersion "10.4.x-scala2.12" `
-            -testJobDetails job104.json `
+            -cluster_env cluster_env_104.json `
             -sparkLibs sparklibs104.json
 
       - name: Launch integration tests 11.3
         shell: pwsh
         run: |
           .github/submit/submit_test_job.ps1  `
-            -sparkVersion "11.3.x-scala2.12" `
-            -testJobDetails job113.json `
+            -cluster_env cluster_env_113.json `
             -sparkLibs sparklibs113.json
 
       - name: Wait 2 min for things to settle
         shell: pwsh
         run: Start-Sleep -s 120
 
-      - name: Fetch integration tests 10.4
-        shell: pwsh
-        run: .github/submit/fetch_test_job.ps1 -testJobDetails job104.json
+      # - name: Fetch integration tests 10.4
+      #   shell: pwsh
+      #   run: .github/submit/fetch_test_job.ps1 -testJobDetails job104.json
 
-      - name: Fetch integration tests 11.3
-        shell: pwsh
-        run: .github/submit/fetch_test_job.ps1 -testJobDetails job113.json
+      # - name: Fetch integration tests 11.3
+      #   shell: pwsh
+      #   run: .github/submit/fetch_test_job.ps1 -testJobDetails job113.json
 
       - name: Delete Deployment
         if: always() # this step runs even if the pipeline is manually cancelled

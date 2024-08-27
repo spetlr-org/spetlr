@@ -16,7 +16,7 @@ Throw-WhenError -output $workspaceUrl
 Write-Host "Workspace URL is: $workspaceUrl" -ForegroundColor DarkYellow
 
 Write-Host "Get Bearer token for dbSpn" -ForegroundColor DarkYellow
-$accessToken = Get-OAuthToken `
+$bearerToken = Get-OAuthToken `
   -tenantId $tenantId `
   -clientId $dbSpn.clientId `
   -clientSecret $dbSpn.secretText
@@ -25,12 +25,12 @@ Write-Host "Set SPN as the workspace admin" -ForegroundColor DarkYellow
 Set-DatabricksSpnAdminUser `
   -clientId $dbSpn.clientId `
   -workspaceUrl $workspaceUrl `
-  -bearerToken $accessToken
+  -bearerToken $bearerToken
 
 Write-Host "Convert Bearer token to Databricks personal access token" -ForegroundColor DarkYellow
 $databricksAccessToken = ConvertTo-DatabricksPersonalAccessToken `
   -workspaceUrl $workspaceUrl `
-  -bearerToken $accessToken
+  -bearerToken $bearerToken
 
 Write-Host "Generate .databrickscfg" -ForegroundColor DarkYellow
 Set-Content ~/.databrickscfg "[DEFAULT]"

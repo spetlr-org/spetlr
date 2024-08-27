@@ -97,7 +97,7 @@ function Set-DatabricksSpnAdminUser {
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
     [string]
-    $accessToken,
+    $bearerToken,
 
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
@@ -108,7 +108,7 @@ function Set-DatabricksSpnAdminUser {
   # Prepare the API endpoint and headers
   $databricksApiUrl = "$workspaceUrl/api/2.0/preview/scim/v2/ServicePrincipals/$clientId"
   $headers = @{
-    "Authorization" = "Bearer $accessToken"
+    "Authorization" = "Bearer $bearerToken"
     "Content-Type"  = "application/scim+json"
   }
 

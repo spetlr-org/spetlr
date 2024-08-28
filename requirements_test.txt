@@ -1,3 +1,4 @@
-spetlr-tools
+spetlr-tools >=0.1.66
 pycountry
 freezegun
+pyclean

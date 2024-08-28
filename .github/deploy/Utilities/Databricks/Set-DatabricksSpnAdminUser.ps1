@@ -25,13 +25,13 @@ function Set-DatabricksSpnAdminUser {
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
     [string]
-    $resourceId,
-
-    [Parameter(Mandatory = $true)]
-    [ValidateNotNullOrEmpty()]
-    [string]
-    $bearerToken
+    $resourceId
   )
+
+  $bearerToken = Get-OAuthToken `
+    -tenantId $tenantId `
+    -clientId $clientId `
+    -clientSecret $clientSecret
 
   $managementToken = Get-OAuthToken `
     -tenantId $tenantId `
@@ -79,4 +79,5 @@ function Set-DatabricksSpnAdminUser {
       }
     }
   } While ($Stoploop -eq $false)
+  return $bearerToken
 }

@@ -45,8 +45,6 @@ function ConvertTo-DatabricksPersonalAccessToken {
   
   # return $pat.token_value
 
-  Write-Host $workspaceUrl
-
   $databricksResponse = Invoke-RestMethod -Method Post -Uri "$workspaceUrl/api/2.0/token/create" `
     -Headers @{
     Authorization  = "Bearer $bearerToken"

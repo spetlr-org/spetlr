@@ -25,20 +25,13 @@ $workspaceUrl = "https://$workspaceUrl"
 Throw-WhenError -output $workspaceUrl
 Write-Host "Workspace URL is: $workspaceUrl" -ForegroundColor DarkYellow
 
-Write-Host "Get Bearer token for dbSpn" -ForegroundColor DarkYellow
-$bearerToken = Get-OAuthToken `
-  -tenantId $tenantId `
-  -clientId $dbSpn.clientId `
-  -clientSecret $dbSpn.secretText
-
-Write-Host "Set SPN as the workspace admin" -ForegroundColor DarkYellow
-Set-DatabricksSpnAdminUser `
+Write-Host "  Add the SPN to the Databricks Workspace as an admin user and get access token" -ForegroundColor DarkYellow
+$bearerToken = Set-DatabricksSpnAdminUser `
   -tenantId $tenantId `
   -clientId $dbSpn.clientId `
   -clientSecret $dbSpn.secretText `
-  -resourceId $resourceId `
   -workspaceUrl $workspaceUrl `
-  -bearerToken $bearerToken
+  -resourceId $resourceId
 
 Write-Host "Convert Bearer token to Databricks personal access token" -ForegroundColor DarkYellow
 $databricksAccessToken = ConvertTo-DatabricksPersonalAccessToken `

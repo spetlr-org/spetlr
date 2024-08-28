@@ -26,7 +26,7 @@ Throw-WhenError -output $workspaceUrl
 Write-Host "Workspace URL is: $workspaceUrl" -ForegroundColor DarkYellow
 
 Write-Host "  Add the SPN to the Databricks Workspace as an admin user and get access token" -ForegroundColor DarkYellow
-$bearerToken = Set-DatabricksSpnAdminUser `
+$accessToken = Set-DatabricksSpnAdminUser `
   -tenantId $tenantId `
   -clientId $dbSpn.clientId `
   -clientSecret $dbSpn.secretText `
@@ -36,7 +36,7 @@ $bearerToken = Set-DatabricksSpnAdminUser `
 Write-Host "Convert Bearer token to Databricks personal access token" -ForegroundColor DarkYellow
 $databricksAccessToken = ConvertTo-DatabricksPersonalAccessToken `
   -workspaceUrl $workspaceUrl `
-  -bearerToken $bearerToken
+  -bearerToken $accessToken
 
 Write-Host "Generate .databrickscfg" -ForegroundColor DarkYellow
 Set-Content ~/.databrickscfg "[DEFAULT]"
@@ -44,8 +44,8 @@ Add-Content ~/.databrickscfg "host = $workspaceUrl"
 Add-Content ~/.databrickscfg "token = $databricksAccessToken"
 Add-Content ~/.databrickscfg ""
 
-# [Environment]::SetEnvironmentVariable('DATABRICKS_AAD_TOKEN', $databricksAccessToken)
+[Environment]::SetEnvironmentVariable('DATABRICKS_AAD_TOKEN', $databricksAccessToken)
 
-# Write-Host "  Connect to Databricks" -ForegroundColor DarkYellow
-# $output = databricks configure --host $workspaceUrl --aad-token
-# Throw-WhenError -output $output
+Write-Host "  Connect to Databricks" -ForegroundColor DarkYellow
+$output = databricks configure --host $workspaceUrl --aad-token
+Throw-WhenError -output $output

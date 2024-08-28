@@ -25,8 +25,8 @@ Push-Location -Path $repoRoot
 Write-Host "Now Submitting"
 
 spetlr-test-job submit `
-  --tests test/ `
-  --tasks-from test/cluster/ `
+  --tests tests/ `
+  --tasks-from tests/cluster/ `
   --cluster-file $repoRoot/.github/submit/$cluster_env `
   --requirements-file requirements_test.txt `
   --sparklibs-file $repoRoot/.github/submit/$sparklibs `

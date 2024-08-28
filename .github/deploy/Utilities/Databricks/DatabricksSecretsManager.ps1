@@ -15,7 +15,7 @@ class DatabricksSecretsManager {
 
     foreach ($name in $this.secrets.keys) {
 
-      databricks secrets put --json "{
+      databricks secrets put-secret --json "{
         "scope": $db_secrets_scope,
         "key": $name,
         "string_value": $this.secrets[$name].value   

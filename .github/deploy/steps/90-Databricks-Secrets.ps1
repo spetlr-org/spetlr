@@ -1,4 +1,4 @@
-Write-Host "  Connect to Databricks" -ForegroundColor DarkYellow
+Write-Host " Creating secret scope and secrets" -ForegroundColor DarkYellow
 # [Environment]::SetEnvironmentVariable('DATABRICKS_AAD_TOKEN', $token)
 # $output = databricks configure --host "https://$workspaceUrl" --token $token
 # Throw-WhenError -output $output

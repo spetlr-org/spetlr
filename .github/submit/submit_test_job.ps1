@@ -28,7 +28,7 @@ spetlr-test-job submit `
   --tests test/ `
   --tasks-from test/cluster/ `
   --cluster-file $repoRoot/.github/submit/$cluster_env `
-  --requirements-file requirements-test.txt `
+  --requirements-file requirements_test.txt `
   --sparklibs-file $repoRoot/.github/submit/$sparklibs `
   --out-json test.json `
   --upload-to "workspace"

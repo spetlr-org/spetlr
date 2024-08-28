@@ -46,5 +46,5 @@ Add-Content ~/.databrickscfg ""
 [Environment]::SetEnvironmentVariable('DATABRICKS_AAD_TOKEN', $token)
 
 Write-Host "  Connect to Databricks" -ForegroundColor DarkYellow
-$output = databricks configure --host $workspaceUrl --aad-token
+$output = databricks configure --host "https://$workspaceUrl" --token $token
 Throw-WhenError -output $output

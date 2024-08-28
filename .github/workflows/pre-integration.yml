@@ -78,9 +78,9 @@ jobs:
             -pipelineClientId ${{ secrets.SPN_CLIENT_ID }} `
             -uniqueRunId "${{ github.run_id }}${{ github.run_attempt }}"
 
-      - name: Wait 30 secs for things to settle
-        shell: pwsh
-        run: Start-Sleep -s 30
+      # - name: Wait 30 secs for things to settle
+      #   shell: pwsh
+      #   run: Start-Sleep -s 30
 
       # - name: Launch integration tests 10.4
       #   shell: pwsh
@@ -98,12 +98,12 @@ jobs:
       #       -testJobDetails job113.json `
       #       -sparkLibs sparklibs113.json
 
-      - name: Launch integration tests 10.4
-        shell: pwsh
-        run: |
-          .github/submit/submit_test_job.ps1  `
-            -cluster_env cluster_env_104.json `
-            -sparkLibs sparklibs104.json
+      # - name: Launch integration tests 10.4
+      #   shell: pwsh
+      #   run: |
+      #     .github/submit/submit_test_job.ps1  `
+      #       -cluster_env cluster_env_104.json `
+      #       -sparkLibs sparklibs104.json
 
       - name: Launch integration tests 11.3
         shell: pwsh

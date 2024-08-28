@@ -16,12 +16,12 @@ function ConvertTo-DatabricksPersonalAccessToken {
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
     [int]
-    $lifetimeSeconds = 3600
+    $lifetimeSeconds = 3600,
 
-    # [Parameter(Mandatory = $false)]
-    # [AllowEmptyString()]
-    # [string]
-    # $tokenComment = "SPN Token"
+    [Parameter(Mandatory = $false)]
+    [AllowEmptyString()]
+    [string]
+    $tokenComment = "SPN Token"
   )
 
   # if([String]::IsNullOrWhiteSpace($tokenComment)){$tokenComment="SPN Token"}
@@ -52,7 +52,7 @@ function ConvertTo-DatabricksPersonalAccessToken {
   } `
     -Body (@{
       lifetimeSeconds = $lifetimeSeconds
-      comment         = "Databricks Access Token"
+      comment         = $tokenComment
     } | ConvertTo-Json)
 
   Throw-WhenError -output $databricksResponse

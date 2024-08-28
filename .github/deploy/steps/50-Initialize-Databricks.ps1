@@ -32,6 +32,9 @@ $accessToken = Set-DatabricksSpnAdminUser `
   -workspaceUrl $workspaceUrl `
   -resourceId $resourceId
 
+Write-Host " Wait 10 seconds for the Databricks admin to settle" -ForegroundColor DarkYellow
+Start-Sleep -Seconds 10  
+
 Write-Host "Convert Bearer token to Databricks personal access token" -ForegroundColor DarkYellow
 $token = ConvertTo-DatabricksPersonalAccessToken `
   -workspaceUrl $workspaceUrl `

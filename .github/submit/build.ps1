@@ -4,7 +4,7 @@ $srcDir = "$PSScriptRoot/../.."
 Push-Location -Path $srcDir
 
 python -m pip install --upgrade pip
-pip install -r requirements-test.txt
+pip install -r requirements_test.txt
 
 # we want a really clean build (even locally)
 if (Test-Path -Path dist) {

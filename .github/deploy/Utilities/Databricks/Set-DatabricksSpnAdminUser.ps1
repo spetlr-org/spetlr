@@ -55,7 +55,7 @@ function Set-DatabricksSpnAdminUser {
   do {
     try {
       $response = Invoke-WebRequest `
-        -Uri "$workspaceUrl/api/2.0/clusters/list-node-types" `
+        -Uri "https://$workspaceUrl/api/2.0/clusters/list-node-types" `
         -Method 'GET' `
         -Headers $headers
 

@@ -21,7 +21,6 @@ $workspaceUrl = az resource show `
   --query properties.workspaceUrl `
   --out tsv
 
-$workspaceUrl = "https://$workspaceUrl"
 Throw-WhenError -output $workspaceUrl
 Write-Host "Workspace URL is: $workspaceUrl" -ForegroundColor DarkYellow
 
@@ -34,18 +33,18 @@ $accessToken = Set-DatabricksSpnAdminUser `
   -resourceId $resourceId
 
 Write-Host "Convert Bearer token to Databricks personal access token" -ForegroundColor DarkYellow
-$databricksAccessToken = ConvertTo-DatabricksPersonalAccessToken `
+$token = ConvertTo-DatabricksPersonalAccessToken `
   -workspaceUrl $workspaceUrl `
   -bearerToken $accessToken
 
 Write-Host "Generate .databrickscfg" -ForegroundColor DarkYellow
 Set-Content ~/.databrickscfg "[DEFAULT]"
-Add-Content ~/.databrickscfg "host = $workspaceUrl"
-Add-Content ~/.databrickscfg "token = $databricksAccessToken"
+Add-Content ~/.databrickscfg "host = https://$workspaceUrl"
+Add-Content ~/.databrickscfg "token = $token"
 Add-Content ~/.databrickscfg ""
 
-# [Environment]::SetEnvironmentVariable('DATABRICKS_AAD_TOKEN', $databricksAccessToken)
+[Environment]::SetEnvironmentVariable('DATABRICKS_AAD_TOKEN', $token)
 
-# Write-Host "  Connect to Databricks" -ForegroundColor DarkYellow
-# $output = databricks configure --host $workspaceUrl --aad-token
-# Throw-WhenError -output $output
+Write-Host "  Connect to Databricks" -ForegroundColor DarkYellow
+$output = databricks configure --host $workspaceUrl --aad-token
+Throw-WhenError -output $output

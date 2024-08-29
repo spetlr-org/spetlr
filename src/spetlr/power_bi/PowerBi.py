@@ -26,6 +26,7 @@ class PowerBi:
         max_minutes_after_last_refresh: int = 12 * 60,
         timeout_in_seconds: int = 15 * 60,
         number_of_retries: int = 0,
+        max_parallelism: int = None,
         mail_on_failure: bool = False,
         mail_on_completion: bool = False,
         exclude_creators: List[str] = None,
@@ -60,6 +61,10 @@ class PowerBi:
             errors when calling refresh() and start_refresh().
             Default is 0 (no retries). (E.g. 1 means two attempts in total.)
             Used only when the timeout_in_seconds parameter allows it!
+        :param int max_parallelism: Specifies the maximum number of threads
+            that can run processing commands in parallel during a refresh
+            in PowerBI. Default is None, which corresponds to 10 threads.
+            Used only with the refresh() and start_refresh() methods!
         :param str local_timezone_name: The timezone to use when parsing
             timestamp columns. The default timezone is UTC.
             If the timezone is UTC, all timestamp columns will have a suffix "Utc".
@@ -94,6 +99,10 @@ class PowerBi:
                 "The 'number_of_retries' parameter "
                 "must be greater than or equal zero!"
             )
+        if max_parallelism is not None and max_parallelism < 0:
+            raise ValueError(
+                "The 'max_parallelism' parameter must be greater than or equal zero!"
+            )
 
         if (mail_on_failure or mail_on_completion) and table_names is not None:
             raise ValueError(
@@ -110,6 +119,7 @@ class PowerBi:
         self.max_minutes_after_last_refresh = max_minutes_after_last_refresh
         self.timeout_in_seconds = timeout_in_seconds
         self.number_of_retries = number_of_retries
+        self.max_parallelism = max_parallelism
         self.mail_on_failure = mail_on_failure
         self.mail_on_completion = mail_on_completion
         self.exclude_creators = (
@@ -965,6 +975,9 @@ class PowerBi:
                     "The 'number_of_retries' parameter is ignored in "
                     "start_refresh() if 'table_names' is not specified!"
                 )
+        if self.max_parallelism is not None:
+            result["maxParallelism"] = self.max_parallelism
+
         return result if result else None
 
     def _trigger_new_refresh(self, *, with_wait: bool = True) -> bool:

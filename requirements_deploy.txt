@@ -1,9 +1,9 @@
-setuptools
-wheel
+setuptools == 38.1.2
+wheel == 0.43.0
+packaging == 24.0
 twine
-packaging
 pyclean
-pytest
+pytest == 8.2.1
 black
 isort
 flake8

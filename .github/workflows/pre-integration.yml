@@ -38,24 +38,25 @@ jobs:
       - name: Run Tests
         run: python -m pytest tests/local
 
-  build_integration_tests:
+  deploy_integration_tests:
     #    needs: unit_test # integration can be run in parallel with unit-tests
     runs-on: ubuntu-latest
     environment: azure
     concurrency: azure-integration
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-      # - name: Install dependencies
-      #   run: |
-      #     python -m pip install --upgrade pip
-      #     pip install setuptools wheel twine packaging
-      - name: Build Spetlr Library
-        shell: pwsh
-        run: .github/submit/build.ps1
+
+      - name: Setup Databricks CLI
+        shell: bash
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          databricks -v
+
       - name: Log in to azure
         shell: pwsh
         run: |
@@ -65,12 +66,6 @@ jobs:
             --tenant ${{ secrets.SPN_TENANT_ID }} `
             --output none
 
-      - name: Setup Databricks CLI
-        shell: bash
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
-          databricks -v
-
       - name: Create Deployment
         shell: pwsh
         run: |
@@ -79,17 +74,25 @@ jobs:
             -uniqueRunId "${{ github.run_id }}${{ github.run_attempt }}"
 
   launch_integration_tests:
-    needs: build_integration_tests
+    needs: deploy_integration_tests
+    environment: azure
+    concurrency: azure-integration
     strategy:
       matrix:
         test_version: [13_3, 14_3, 15_4]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
+      - name: Build Spetlr Library
+        shell: pwsh
+        run: .github/submit/build.ps1
+
       - name: Launch integration tests with Spark version ${{ matrix.test_version }}
         shell: pwsh
         run: |
@@ -97,23 +100,15 @@ jobs:
             -cluster_env cluster_env_${{ matrix.test_version }}.json `
             -sparkLibs sparklibs${{ matrix.test_version }}.json
 
-      # - name: Fetch integration tests 10.4
-      #   shell: pwsh
-      #   run: .github/submit/fetch_test_job.ps1 -testJobDetails job104.json
+  # delete_deployment:
+  #   if: always() # this step runs even if the pipeline is manually cancelled
+  #   shell: pwsh
+  #   run: |
+  #     az login --service-principal `
+  #       -u ${{ secrets.SPN_CLIENT_ID }} `
+  #       -p ${{ secrets.SPN_CLIENT_SECRET }} `
+  #       --tenant ${{ secrets.SPN_TENANT_ID }} `
+  #       --output none
 
-      # - name: Fetch integration tests 11.3
-      #   shell: pwsh
-      #   run: .github/submit/fetch_test_job.ps1 -testJobDetails job113.json
-
-      # - name: Delete Deployment
-      #   if: always() # this step runs even if the pipeline is manually cancelled
-      #   shell: pwsh
-      #   run: |
-      #     az login --service-principal `
-      #       -u ${{ secrets.SPN_CLIENT_ID }} `
-      #       -p ${{ secrets.SPN_CLIENT_SECRET }} `
-      #       --tenant ${{ secrets.SPN_TENANT_ID }} `
-      #       --output none
-
-      #     .github/deploy/destroy.ps1 `
-      #       -uniqueRunId "${{ github.run_id }}${{ github.run_attempt }}"
+  #     .github/deploy/destroy.ps1 `
+  #       -uniqueRunId "${{ github.run_id }}${{ github.run_attempt }}"

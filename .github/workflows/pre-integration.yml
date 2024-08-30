@@ -112,6 +112,20 @@ jobs:
       #       -cluster_env cluster_env_113.json `
       #       -sparkLibs sparklibs113.json
 
+      - name: Launch integration tests 13.3
+        shell: pwsh
+        run: |
+          .github/submit/submit_test_job.ps1  `
+            -cluster_env cluster_env_133.json `
+            -sparkLibs sparklibs133.json
+
+      - name: Launch integration tests 14.3
+        shell: pwsh
+        run: |
+          .github/submit/submit_test_job.ps1  `
+            -cluster_env cluster_env_143.json `
+            -sparkLibs sparklibs143.json
+
       - name: Launch integration tests 15.4
         shell: pwsh
         run: |

@@ -97,7 +97,7 @@ class DeliverySqlServerTests(unittest.TestCase):
         )
 
         expected_odbc_url = (
-            "DRIVER={ODBC Driver 17 for SQL Server};"
+            "DRIVER={ODBC Driver 18 for SQL Server};"
             f"SERVER={server};"
             f"DATABASE={database};"
             f"PORT=1433;"
@@ -129,7 +129,7 @@ class DeliverySqlServerTests(unittest.TestCase):
         )
 
         expected_odbc_url = (
-            "DRIVER={ODBC Driver 17 for SQL Server};"
+            "DRIVER={ODBC Driver 18 for SQL Server};"
             f"SERVER={server};"
             f"DATABASE={database};"
             f"PORT=1433;"

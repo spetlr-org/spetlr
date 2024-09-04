@@ -1,20 +1,14 @@
 param (
-  # # to submit parallel runs, you must specify this parameter
-  # [Parameter(Mandatory = $false)]
-  # [ValidateNotNullOrEmpty()]
-  # [string]
-  # $testJobDetails = "test_job_details.json",
-
-  # in the pipeline we wish to test with multiple versions.
-  [Parameter(Mandatory = $false)]
+  # in the pipeline we wish to test with multiple versions if we need.
+  [Parameter(Mandatory = $true)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $cluster_env = "cluster_env_91.json",
+  $cluster_env,
 
-  [Parameter(Mandatory = $false)]
+  [Parameter(Mandatory = $true)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $sparkLibs = "sparklibs91.json"
+  $sparkLibs
 )
 
 $repoRoot = (git rev-parse --show-toplevel)

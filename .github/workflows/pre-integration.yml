@@ -45,13 +45,16 @@ jobs:
     concurrency: azure-integration
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
       - name: Build Spetlr Library
         shell: pwsh
         run: .github/submit/build.ps1
+
       - name: Log in to azure
         shell: pwsh
         run: |
@@ -60,10 +63,6 @@ jobs:
             -p ${{ secrets.SPN_CLIENT_SECRET }} `
             --tenant ${{ secrets.SPN_TENANT_ID }} `
             --output none
-
-      - name: Build test library
-        shell: pwsh
-        run: .github/submit/build.ps1
 
       - name: Setup Databricks CLI
         shell: bash
@@ -78,7 +77,7 @@ jobs:
             -pipelineClientId ${{ secrets.SPN_CLIENT_ID }} `
             -uniqueRunId "${{ github.run_id }}${{ github.run_attempt }}"
 
-      - name: Launch integration tests DBR 14.3
+      - name: Launch integration tests with DBR 14.3
         shell: pwsh
         run: |
           Start-Job { .github/submit/submit_test_job.ps1  `

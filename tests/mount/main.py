@@ -25,7 +25,3 @@ for mount in dbutils.fs.mounts():
 # COMMAND ----------
 
 dbutils.fs.mount(source=source, mount_point=mount_point, extra_configs=configs)
-
-# COMMAND ----------
-
-dbutils.fs.refreshMounts()

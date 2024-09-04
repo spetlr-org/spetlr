@@ -12,7 +12,7 @@ import hashlib
 #   server.save_table(df, "TableId")
 from typing import Optional, Union
 
-from azure.cosmos import CosmosClient, DatabaseProxy
+from azure.cosmos import CosmosClient, DatabaseProxy, PartitionKey
 from pyspark.sql import DataFrame
 from pyspark.sql.types import DataType
 
@@ -70,13 +70,14 @@ class CosmosDb(CosmosBaseServer):
         return self._db_client
 
     def execute_sql(self, sql: str):
-        # Examples:
-        #
-        # sql = f"CREATE DATABASE IF NOT EXISTS cosmosCatalog.{database_name};"
-        #
-        # sql = f"CREATE TABLE IF NOT EXISTS cosmosCatalog.{database_name}.{table_name}"
-        #       " using cosmos.oltp "
-        #       "TBLPROPERTIES(partitionKeyPath = '/id', manualThroughput = '1100')"
+        """
+        Note that this method is not compatible with UC-enabled clusters.
+        Examples:
+        sql = f"CREATE DATABASE IF NOT EXISTS cosmosCatalog.{database_name};"
+        sql = f"CREATE TABLE IF NOT EXISTS cosmosCatalog.{database_name}.{table_name}"
+            " using cosmos.oltp "
+            "TBLPROPERTIES(partitionKeyPath = '/id', manualThroughput = '1100')"
+        """
         spark = Spark.get()
         spark.conf.set(
             f"spark.sql.catalog.{self.catalog_name}",
@@ -130,6 +131,38 @@ class CosmosDb(CosmosBaseServer):
     ):
         table_name = Configurator().table_name(table_id)
         self.write_table_by_name(df_source, table_name, rows_per_partition)
+
+    def create_database(self) -> DatabaseProxy:
+        """
+        This method will create the database that is passed to the class init, if it
+        does not exist. Also, whether it exists or not, it will create and return the
+        cosmos database object that can be used to create containers under that
+        database.
+        """
+        return self.client.create_database_if_not_exists(id=self.database)
+
+    def create_table(
+        self, table_name: str, partition_key: str, offer_throughput: int
+    ) -> None:
+        """
+        This method will create a container(table) in the database that is passed to the
+        class init. Note that, if the database does not exist, it will be created by
+        this method
+        """
+        database = self.create_database()
+
+        # Configure the table
+        container_properties = {
+            "id": table_name,
+            "partition_key": PartitionKey(path=partition_key),
+        }
+
+        # Create the table
+        database.create_container_if_not_exists(
+            id=container_properties["id"],
+            partition_key=container_properties["partition_key"],
+            offer_throughput=offer_throughput,
+        )
 
     def delete_item(
         self, table_id: str, id: Union[int, str], pk: Union[int, str] = None

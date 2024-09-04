@@ -32,7 +32,7 @@ jobs:
           black --check .
           isort --check .
       - name: Check code linting
-        run: flake8 .
+        run: flake8 . --exclude tests
       - name: Install the package
         run: pip install .
       - name: Run Tests

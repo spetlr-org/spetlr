@@ -80,9 +80,9 @@ jobs:
       - name: Launch integration tests with DBR 14.3
         shell: pwsh
         run: |
-          Start-Job { .github/submit/submit_test_job.ps1  `
+          .github/submit/submit_test_job.ps1  `
             -cluster_env cluster_env_14_3.json `
-            -sparkLibs sparklibs14_3.json } | Out-Null
+            -sparkLibs sparklibs14_3.json
 
       - name: Wait 2 min for things to settle
         shell: pwsh

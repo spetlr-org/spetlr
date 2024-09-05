@@ -6,9 +6,8 @@ Visit SPETLR official webpage: [https://spetlr.com/](https://spetlr.com/)
 
 # NEWS
 
-Support for LTS9.1 is ending. [See the issue for discussions.](https://github.com/spetlr-org/spetlr/issues/61)
-
-TransformerNC class will be removed permanently. [Follow the PR.](https://github.com/spetlr-org/spetlr/pull/82)
+Start Supporting LTS14.3. [Follow the PR.](https://github.com/spetlr-org/spetlr/pull/177). Cluster test submissions
+requires this LTS version, but the library (except SQL connection with ODBC) still supports older LTS versions after 9.1.
 
 # Table of Contents
 

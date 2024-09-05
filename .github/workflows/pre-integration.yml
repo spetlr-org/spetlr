@@ -16,7 +16,7 @@ jobs:
           - "3.10"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v4
         # this workflow needs java so that it can run a local instance of spark
         with:
           java-version: "8"
@@ -84,9 +84,9 @@ jobs:
             -cluster_env cluster_env_14_3.json `
             -sparkLibs sparklibs14_3.json
 
-      - name: Wait 1 min for things to settle
+      - name: Wait 2 minutes for reviewing test results
         shell: pwsh
-        run: Start-Sleep -s 60
+        run: Start-Sleep -s 120
 
       - name: Delete Deployment
         if: always() # this step runs even if the pipeline is manually cancelled

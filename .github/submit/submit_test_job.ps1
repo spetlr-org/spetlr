@@ -33,4 +33,3 @@ Write-Host "Now Waiting for test"
 spetlr-test-job fetch --runid-json test.json
 
 Pop-Location
-

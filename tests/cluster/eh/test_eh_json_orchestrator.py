@@ -11,12 +11,14 @@ from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaExtractor import (
 )
 from spetlr.spark import Spark
 
+from tests.mount.mount import mount_storage_account
 
 class JsonEhOrchestratorUnitTests(unittest.TestCase):
     tc: Configurator
 
     @classmethod
     def setUpClass(cls) -> None:
+        mount_storage_account()
         cls.tc = Configurator()
         cls.tc.clear_all_configurations()
         cls.tc.set_debug()

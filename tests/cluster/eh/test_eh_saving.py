@@ -17,11 +17,13 @@ from spetlr.spark import Spark
 from tests.cluster.values import resourceName
 
 from .SpetlrEh import SpetlrEh
+from tests.mount.mount import mount_storage_account
 
 
 class EventHubsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        mount_storage_account()
         Configurator().clear_all_configurations()
 
     def test_01_publish_and_read(self):

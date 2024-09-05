@@ -10,7 +10,7 @@ from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
     EhJsonToDeltaTransformer,
 )
 from spetlr.spark import Spark
-
+from tests.mount.mount import mount_storage_account
 
 class JsonEhTransformerUnitTests(DataframeTestCase):
     tc: Configurator
@@ -43,6 +43,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        mount_storage_account()
         cls.tc = Configurator()
         cls.tc.clear_all_configurations()
         cls.tc.set_debug()

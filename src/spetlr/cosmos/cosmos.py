@@ -70,7 +70,7 @@ class CosmosDb(CosmosBaseServer):
         return self._db_client
 
     def execute_sql(self, sql: str):
-        #TODO: Deprecate this when UC is enabled
+        # TODO: Deprecate this when UC is enabled
         """
         Note that this method is not compatible with UC-enabled clusters.
         Examples:

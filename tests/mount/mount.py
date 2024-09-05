@@ -1,3 +1,6 @@
+from spetlr.functions import init_dbutils
+
+
 def mount_storage_account():
     """
     Mounts Azure storage account to Databricks cluster.
@@ -5,12 +8,14 @@ def mount_storage_account():
     Returns:
     None
     """
-    #TODO: Remove when UC is enabled with volumes pointing to the Azure storage.
+    # TODO: Remove when UC is enabled with volumes pointing to the Azure storage.
 
-    client_id = dbutils.secrets.get(scope="secrets", key="Databricks--ClientId")
-    client_secret = dbutils.secrets.get(scope="secrets", key="Databricks--ClientSecret")
-    tenant_id = dbutils.secrets.get(scope="secrets", key="Databricks--TenantId")
-    resource_name = dbutils.secrets.get(scope="values", key="resourceName")
+    client_id = init_dbutils().secrets.get(scope="secrets", key="Databricks--ClientId")
+    client_secret = init_dbutils().secrets.get(
+        scope="secrets", key="Databricks--ClientSecret"
+    )
+    tenant_id = init_dbutils().secrets.get(scope="secrets", key="Databricks--TenantId")
+    resource_name = init_dbutils().secrets.get(scope="values", key="resourceName")
 
     configs = {
         "fs.azure.account.auth.type": "OAuth",
@@ -23,9 +28,11 @@ def mount_storage_account():
     source = f"abfss://silver@{resource_name}.dfs.core.windows.net/"
     mount_point = f"/mnt/{resource_name}/silver/"
 
-    for mount in dbutils.fs.mounts():
+    for mount in init_dbutils().fs.mounts():
         if mount.mountPoint == mount_point:
-            dbutils.fs.unmount(mount_point)
+            init_dbutils().fs.unmount(mount_point)
             break
 
-    dbutils.fs.mount(source=source, mount_point=mount_point, extra_configs=configs)
+    init_dbutils().fs.mount(
+        source=source, mount_point=mount_point, extra_configs=configs
+    )

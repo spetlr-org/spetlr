@@ -10,14 +10,12 @@ from spetlr.delta import DeltaHandle
 from spetlr.eh import EventHubJsonPublisher
 from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from spetlr.etl import Transformer
-
-# from spetlr.functions import init_dbutils
 from spetlr.orchestrators import EhJsonToDeltaOrchestrator
 from spetlr.spark import Spark
 from tests.cluster.values import resourceName
+from tests.mount.mount import mount_storage_account
 
 from .SpetlrEh import SpetlrEh
-from tests.mount.mount import mount_storage_account
 
 
 class EventHubsTests(unittest.TestCase):

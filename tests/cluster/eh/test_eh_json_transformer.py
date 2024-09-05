@@ -12,6 +12,7 @@ from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
 from spetlr.spark import Spark
 from tests.mount.mount import mount_storage_account
 
+
 class JsonEhTransformerUnitTests(DataframeTestCase):
     tc: Configurator
     capture_eventhub_output_schema = StructType(

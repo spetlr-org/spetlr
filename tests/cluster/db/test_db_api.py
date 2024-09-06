@@ -10,4 +10,4 @@ class ApiTests(unittest.TestCase):
     def test_02_make_a_call(self):
         db = getDbApi()
 
-        self.assertIsNotNone(db.dbfs.get_status("/FileStore"))
+        self.assertIsNotNone(db.workspace.get_status("/Shared"))

@@ -35,15 +35,10 @@ class CosmosTests(unittest.TestCase):
         )
 
     def test_01_create_db(self):
-        self._cm.execute_sql(
-            "CREATE DATABASE IF NOT EXISTS"
-            f" {self._cm.catalog_name}.{self._cm.database};"
-        )
-        self._cm.execute_sql(
-            "CREATE TABLE IF NOT EXISTS"
-            f" {self._cm.catalog_name}.{self._cm.database}.{self._tc.table_name('CmsTbl')}"  # noqa
-            " using cosmos.oltp"
-            " TBLPROPERTIES(partitionKeyPath = '/pk', manualThroughput = '400')"
+        self._cm.create_table(
+            table_name=self._tc.table_name("CmsTbl"),
+            partition_key="/pk",
+            offer_throughput=400,
         )
 
     def test_02_write_table(self):

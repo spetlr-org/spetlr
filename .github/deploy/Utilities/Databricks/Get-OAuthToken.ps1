@@ -1,26 +1,25 @@
 
-function Get-OAuthToken
-{
+function Get-OAuthToken {
   param (
-      [Parameter(Mandatory=$true)]
-      [ValidateNotNullOrEmpty()]
-      [string]
-      $tenantId,
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]
+    $tenantId,
 
-      [Parameter(Mandatory=$true)]
-      [ValidateNotNullOrEmpty()]
-      [string]
-      $clientId,
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]
+    $clientId,
 
-      [Parameter(Mandatory=$true)]
-      [ValidateNotNullOrEmpty()]
-      [string]
-      $clientSecret,
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]
+    $clientSecret,
 
-      [Parameter(Mandatory=$false)]
-      [ValidateNotNullOrEmpty()]
-      [string]
-      $scope = "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d" # AzureDatabricks Resource ID
+    [Parameter(Mandatory = $false)]
+    [ValidateNotNullOrEmpty()]
+    [string]
+    $scope = "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d" # AzureDatabricks Resource ID
   )
 
   $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"

@@ -66,7 +66,7 @@ class EhJsonToDeltaExtractor(Extractor):
 
         # So finally this uses a DELETE FROM in the hope that Spark can optimize this
         # to efficiently remove the partition
-        Spark.get().sql(f"DELETE FROM {tbl_name} WHERE {' AND '.join(conditions) }")
+        Spark.get().sql(f"DELETE FROM {tbl_name} WHERE {' AND '.join(conditions)}")
 
     def _read_ymd_ymdh_partitioned(self) -> DataFrame:
         """get the highest partition, piece by piece,

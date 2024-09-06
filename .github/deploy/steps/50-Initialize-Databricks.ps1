@@ -13,6 +13,7 @@ $resourceId = az resource show `
 
 Throw-WhenError -output $resourceId
 
+Write-Host "Get Databricks workspace URL" -ForegroundColor DarkYellow
 $workspaceUrl = az resource show `
   --resource-group $resourceGroupName `
   --name $databricksName `
@@ -21,14 +22,9 @@ $workspaceUrl = az resource show `
   --out tsv
 
 Throw-WhenError -output $workspaceUrl
+Write-Host "Workspace URL is: $workspaceUrl" -ForegroundColor DarkYellow
 
-Write-Host "   workspaceUrl is: $($workspaceUrl)"
-
-Write-Host "  Install Databricks CLI" -ForegroundColor DarkYellow
-pip install --upgrade pip --quiet
-pip install --upgrade databricks-cli --quiet
-
-Write-Host "  Add the SPN to the Databricks Workspace as an admin user" -ForegroundColor DarkYellow
+Write-Host "  Add the SPN to the Databricks Workspace as an admin user and get access token" -ForegroundColor DarkYellow
 $accessToken = Set-DatabricksSpnAdminUser `
   -tenantId $tenantId `
   -clientId $dbSpn.clientId `
@@ -36,25 +32,16 @@ $accessToken = Set-DatabricksSpnAdminUser `
   -workspaceUrl $workspaceUrl `
   -resourceId $resourceId
 
-Throw-WhenError -output $accessToken
+Write-Host " Wait 10 seconds for the Databricks admin to settle" -ForegroundColor DarkYellow
+Start-Sleep -Seconds 10  
 
-Write-Host "  Generate SPN personal access token" -ForegroundColor DarkYellow
+Write-Host "Convert Bearer token to Databricks personal access token" -ForegroundColor DarkYellow
 $token = ConvertTo-DatabricksPersonalAccessToken `
   -workspaceUrl $workspaceUrl `
-  -bearerToken $accessToken `
-  -tokenComment "$tokenComment"
+  -bearerToken $accessToken
 
-Throw-WhenError -output $token
-
-Write-Host "  Generate .databrickscfg" -ForegroundColor DarkYellow
+Write-Host "Generate .databrickscfg" -ForegroundColor DarkYellow
 Set-Content ~/.databrickscfg "[DEFAULT]"
 Add-Content ~/.databrickscfg "host = https://$workspaceUrl"
 Add-Content ~/.databrickscfg "token = $token"
 Add-Content ~/.databrickscfg ""
-
-[Environment]::SetEnvironmentVariable('DATABRICKS_AAD_TOKEN', $token)
-
-Write-Host "  Connect to Databricks" -ForegroundColor DarkYellow
-$workspaceUrlHttps = "https://" + $workspaceUrl
-$output = databricks configure --host $workspaceUrlHttps --aad-token
-Throw-WhenError -output $output

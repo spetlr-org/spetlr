@@ -267,6 +267,11 @@ The "number_of_retries" parameter only works with enhanced API requests
 be ignored otherwise.
 Default is 0 (no retries). E.g. 1 means two attempts in total.
 
+Additionally, you can set the optional "max_parallelism" parameter to
+set the maximum number of threads that can run processing commands
+in parallel during the refresh in PowerBI. Default is None, which 
+corresponds to 10 threads (according to Microsoft).
+
 All parameters can only be specified in the constructor. 
 
 
@@ -321,6 +326,11 @@ The "number_of_retries" parameter is handled in a loop in this class,
 and unlike in the start_refresh() method, it will work both with normal
 refreshes (i.e. when "table_names" is not specified) and with enhanced
 refreshes (i.e. when "table_names" is specified).
+
+Additionally, you can set the optional "max_parallelism" parameter to
+set the maximum number of threads that can run processing commands
+in parallel during the refresh in PowerBI. Default is None, which 
+corresponds to 10 threads (according to Microsoft).
 
 You can also specify the optional "local_timezone_name" parameter to
 show the last refresh time of the PowerBI dataset in a local time zone.
@@ -421,12 +431,12 @@ OnDemand | The refresh was triggered interactively through the Power BI portal.
 OnDemandTraining | The refresh was triggered interactively through the Power BI portal with automatic aggregations training.
 Scheduled | The refresh was triggered by a dataset refresh schedule setting.
 ViaApi | The refresh was triggered by an API call, e.g. by using this class without the "table_names" parameter specified.
-ViaEnhancedApi | The refresh was triggered by an enhanced API call, e.g. by using this class with the "table_names" parameter specified.
+ViaEnhancedApi | The refresh was triggered by an enhanced API call, e.g. by using this class with the "table_names" or "max_parallelism" parameter specified.
 ViaXmlaEndpoint | The refresh was triggered through Power BI public XMLA endpoint.
 
 Only "ViaApi" and "ViaEnhancedApi" refreshes can be triggered by this class.
 "ViaApi" are refreshes without the "table_names" parameter specified,
-and "ViaEnhancedApi" are refreshes with the "table_names" parameter specified.
+and "ViaEnhancedApi" are refreshes with the "table_names" or "max_parallelism" parameter specified.
 
 To see what tables were specified with each completed refresh marked as
 "ViaEnhancedApi", you can use the show_history_details() and get_history_details()

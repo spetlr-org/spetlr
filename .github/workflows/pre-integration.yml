@@ -20,11 +20,11 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
       # this workflow needs java so that it can run a local instance of spark
         with:
           java-version: "11"
-          distribution: "temurin"
+          distribution: "oracle"
       - name: Install test requirements
         run: pip install -r requirements_dev.txt
       - name: Check code formatting

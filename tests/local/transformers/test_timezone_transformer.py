@@ -1,8 +1,12 @@
+import sys
+
 from pyspark.sql import types as T
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.etl.transformers import TimeZoneTransformer
 from spetlr.spark import Spark
+
+python_path = sys.executable
 
 
 class TimeZoneTransformerTest(DataframeTestCase):
@@ -15,6 +19,11 @@ class TimeZoneTransformerTest(DataframeTestCase):
         )
 
         input_data = [(51.519487, -0.083069), (55.6761, 12.5683)]
+        (
+            Spark.config("spark.pyspark.python", python_path).config(
+                "spark.pyspark.driver.python", python_path
+            )
+        )
 
         input_df = Spark.get().createDataFrame(data=input_data, schema=input_schema)
 

@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-java@v4
         # this workflow needs java so that it can run a local instance of spark
         with:
-          java-version: "8"
+          java-version: "11"
           distribution: "temurin"
       - name: Setup Python
         uses: actions/setup-python@v4

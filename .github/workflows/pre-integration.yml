@@ -20,30 +20,21 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
-
       - uses: actions/setup-java@v4
       # this workflow needs java so that it can run a local instance of spark
         with:
           java-version: "11"
           distribution: "temurin"
-
       - name: Install test requirements
         run: pip install -r requirements_dev.txt
-
       - name: Check code formatting
         run: |
           black --check .
           isort --check .
-
       - name: Check code linting
         run: flake8 . --exclude tests
-
       - name: Install the package
         run: pip install .
-
-      - name: Additional links for local spark
-        run: |
-          ln -s /usr/bin/python /usr/bin/python3
       - name: Run Tests
         run: python -m pytest tests/local
 

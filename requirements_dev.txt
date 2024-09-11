@@ -4,7 +4,6 @@ pytest
 black
 isort
 flake8
-dbx
 spetlr-tools
 timezonefinder
 pycountry

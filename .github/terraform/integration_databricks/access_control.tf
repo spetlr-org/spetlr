@@ -28,32 +28,28 @@ resource "databricks_mws_permission_assignment" "add_metastore_admin_group_to_wo
     databricks_metastore_assignment.db_metastore_assign_workspace
   ]
 }
-resource "time_sleep" "wait_for_admin_group" {
-  create_duration = "15s"
-  depends_on      = [
-    databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace
-    ]
-}
 
 # Access control for Extrenal location --------------------------------------------------------------------
 
 ## Create storage credential and grant privileges
 resource "databricks_storage_credential" "ex_storage_cred" {
-  provider = databricks.workspace
-  name     = module.config.integration.resource_name
+  provider       = databricks.workspace
+  name           = module.config.integration.resource_name
   azure_managed_identity {
     access_connector_id = data.azurerm_databricks_access_connector.ext_access_connector.id
   }
-  comment    = "Datrabricks external storage credentials"
-  depends_on = [
+  force_destroy  = true
+  force_update   = true
+  isolation_mode = true
+  comment        = "Datrabricks external storage credentials"
+  depends_on     = [
     databricks_metastore_assignment.db_metastore_assign_workspace,
     databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-    time_sleep.wait_for_admin_group
   ]
 }
 
 resource "time_sleep" "wait_for_ex_storage_cred" {
-  create_duration = "15s"
+  create_duration = "5s"
   depends_on      = [
     databricks_storage_credential.ex_storage_cred
     ]
@@ -73,7 +69,7 @@ resource "databricks_grants" "ex_creds" {
 }
 
 resource "time_sleep" "wait_for_ex_creds" {
-  create_duration = "15s"
+  create_duration = "5s"
   depends_on      = [
     databricks_grants.ex_creds
     ]
@@ -91,6 +87,8 @@ resource "databricks_external_location" "catalog" {
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id
+  force_destroy   = true
+  force_update    = true
   comment         = "Databricks external location for catalog data"
   depends_on = [
     databricks_grants.ex_creds,
@@ -122,6 +120,8 @@ resource "databricks_external_location" "capture" {
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id
+  force_destroy   = true
+  force_update    = true
   comment         = "Databricks external location for capture data"
   depends_on = [
     databricks_grants.ex_creds,
@@ -153,6 +153,8 @@ resource "databricks_external_location" "init" {
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id
+  force_destroy   = true
+  force_update    = true
   comment         = "Databricks external location for init data"
   depends_on = [
     databricks_grants.ex_creds,

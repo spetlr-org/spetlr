@@ -45,6 +45,13 @@ resource "databricks_storage_credential" "ex_storage_cred" {
   ]
 }
 
+resource "time_sleep" "wait_for_ex_storage_cred" {
+  create_duration = "10s"
+  depends_on      = [
+    databricks_storage_credential.ex_storage_cred
+    ]
+}
+
 resource "databricks_grants" "ex_creds" {
   provider           = databricks.workspace
   storage_credential = databricks_storage_credential.ex_storage_cred.id
@@ -53,8 +60,16 @@ resource "databricks_grants" "ex_creds" {
     privileges = ["ALL_PRIVILEGES"]
   }
   depends_on = [
-    databricks_storage_credential.ex_storage_cred
+    databricks_storage_credential.ex_storage_cred,
+    time_sleep.wait_for_ex_storage_cred
   ]
+}
+
+resource "time_sleep" "wait_for_ex_creds" {
+  create_duration = "10s"
+  depends_on      = [
+    databricks_grants.ex_creds
+    ]
 }
 
 ## Create extrenal location and grant privilages for catalog data storage ---------------
@@ -71,7 +86,8 @@ resource "databricks_external_location" "catalog" {
   credential_name = databricks_storage_credential.ex_storage_cred.id
   comment         = "Databricks external location for catalog data"
   depends_on = [
-    databricks_grants.ex_creds
+    databricks_grants.ex_creds,
+    time_sleep.wait_for_ex_creds
   ]
 }
 
@@ -101,7 +117,8 @@ resource "databricks_external_location" "capture" {
   credential_name = databricks_storage_credential.ex_storage_cred.id
   comment         = "Databricks external location for capture data"
   depends_on = [
-    databricks_grants.ex_creds
+    databricks_grants.ex_creds,
+    time_sleep.wait_for_ex_creds
   ]
 }
 
@@ -131,7 +148,8 @@ resource "databricks_external_location" "init" {
   credential_name = databricks_storage_credential.ex_storage_cred.id
   comment         = "Databricks external location for init data"
   depends_on = [
-    databricks_grants.ex_creds
+    databricks_grants.ex_creds,
+    time_sleep.wait_for_ex_creds
   ]
 }
 

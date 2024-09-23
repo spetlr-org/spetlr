@@ -1,36 +1,36 @@
-name: Post-Integration
+# name: Post-Integration
 
-on:
-  # workflow_dispatch allows experimental releases to test.pypi
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-      - '!stable'
-      - '!release'
+# on:
+#   # workflow_dispatch allows experimental releases to test.pypi
+#   workflow_dispatch:
+#   push:
+#     branches:
+#       - main
+#       - '!stable'
+#       - '!release'
 
-jobs:
-  test_release:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
-    steps:
-      - uses: actions/checkout@master
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.8"
-      - name: Manipulate version
-        run: |
-          pip install packaging
-          python ./.github/build_tools/manipulate_version.py
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-      - name: Build
-        run: python setup.py sdist bdist_wheel
-      - name: Publish distribution 📦 to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository_url: https://test.pypi.org/legacy/
+# jobs:
+#   test_release:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+#     steps:
+#       - uses: actions/checkout@master
+#       - name: Set up Python
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: "3.8"
+#       - name: Manipulate version
+#         run: |
+#           pip install packaging
+#           python ./.github/build_tools/manipulate_version.py
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install setuptools wheel twine
+#       - name: Build
+#         run: python setup.py sdist bdist_wheel
+#       - name: Publish distribution 📦 to TestPyPI
+#         uses: pypa/gh-action-pypi-publish@release/v1
+#         with:
+#           repository_url: https://test.pypi.org/legacy/

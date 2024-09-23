@@ -29,7 +29,7 @@ resource "databricks_mws_permission_assignment" "add_metastore_admin_group_to_wo
   ]
 }
 resource "time_sleep" "wait_for_admin_group" {
-  create_duration = "10s"
+  create_duration = "15s"
   depends_on      = [
     databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace
     ]
@@ -53,7 +53,7 @@ resource "databricks_storage_credential" "ex_storage_cred" {
 }
 
 resource "time_sleep" "wait_for_ex_storage_cred" {
-  create_duration = "10s"
+  create_duration = "15s"
   depends_on      = [
     databricks_storage_credential.ex_storage_cred
     ]
@@ -73,7 +73,7 @@ resource "databricks_grants" "ex_creds" {
 }
 
 resource "time_sleep" "wait_for_ex_creds" {
-  create_duration = "10s"
+  create_duration = "15s"
   depends_on      = [
     databricks_grants.ex_creds
     ]

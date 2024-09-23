@@ -13,7 +13,6 @@ from spetlr.etl import Transformer
 from spetlr.orchestrators import EhJsonToDeltaOrchestrator
 from spetlr.spark import Spark
 from tests.cluster.values import resourceName
-from tests.mount.mount import mount_storage_account
 
 from .SpetlrEh import SpetlrEh
 
@@ -21,7 +20,6 @@ from .SpetlrEh import SpetlrEh
 class EventHubsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        mount_storage_account()
         Configurator().clear_all_configurations()
 
     def test_01_publish_and_read(self):

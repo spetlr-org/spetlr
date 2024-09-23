@@ -1,3 +1,6 @@
+from spetlr.etl.transformers.add_timestamp_transformer import (  # noqa: F401
+    AddTimestampTransformer,
+)
 from spetlr.etl.transformers.clean_column_names_transformer import (  # noqa: F401
     CleanColumnNamesTransformer,
 )

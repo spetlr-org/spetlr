@@ -590,3 +590,31 @@ df_transformed.show()
 +-------+---+---------+
 +-------+---+---------+
 ```
+
+## AddTimeStampTransformer
+
+This transformer adds a timestamp for when the row was ingested. It does so by creating a new column in which it takes the current timestamp.
+
+``` python 
+from spetlr.etl.transformers import AddTimeStampTransformer
+
+df_input.show()
+
+|Name |
++-----+
+|Arne |
++-----+
+|Per  |
++-----+
+
+df_transformed = AddTimeStampTransformer(col_name="Timestamp").process(df_input)
+
+df_transformed.show() 
+
+|Name |Timestamp           |
++-----+--------------------+
+|Arne |2024-01-01 12:01:01 |
++-----+--------------------+
+|Per  |2024-01-01 12:01:01 |
++-----+--------------------+
+```

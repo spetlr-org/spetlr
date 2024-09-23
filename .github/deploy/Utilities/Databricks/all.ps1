@@ -1,0 +1,1 @@
+. "$PSScriptRoot\DatabricksSecretsManager.ps1"

@@ -1,0 +1,16 @@
+SchemaTestDb:
+  name: "SchemaTest{ID}"
+  path: "/tmp/SchemaTest{ID}.db/"
+
+SchemaTestTable1:
+  name: "{SchemaTestDb}.schematbl1"
+  path: "{SchemaTestDb_path}/schematbl1"
+  format: "delta"
+  schema: "python_test_schema2"
+
+SchemaTestTable2:
+  name: "{SchemaTestDb}.schematbl2"
+  path: "{SchemaTestDb_path}/schematbl2"
+  schema:
+    sql: |
+      a INTEGER, b STRING

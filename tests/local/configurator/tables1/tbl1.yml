@@ -1,0 +1,19 @@
+
+MyFirst:
+  name: first{ID}
+  path: /{MNT}/my/first{ID}
+
+MyAlias:
+  alias: MyFirst
+
+MyForked:
+  release:
+    alias: MyFirst
+  debug:
+    name: another
+    path: /my/temp/path
+
+
+MyRecursing:
+  name: recursing{ID}
+  path: /{MNT}/tables/{MyRecursing_name}

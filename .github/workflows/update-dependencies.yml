@@ -1,0 +1,31 @@
+# name: Monthly Upgrade Requirements
+
+# on:
+#   schedule:
+#     - cron: '0 0 1 * *' # Runs at 00:00 on the 1st of every month
+
+# jobs:
+#   upgrade-requirements:
+#     runs-on: windows-latest 
+
+#     steps:
+#     - uses: actions/checkout@v4 
+
+#     - name: Install dev requirements
+#       run: pip install -r requirements_dev.txt
+#       shell: pwsh
+    
+#     - name: Run PowerShell Script
+#       run: |
+#         .\upgrade_requirements.ps1
+#       shell: pwsh
+
+#     - name: Create Pull Request
+#       uses: peter-evans/create-pull-request@v6
+#       with:
+#         token: ${{ secrets.GITHUB_TOKEN }}
+#         commit-message: "Update dependencies"
+#         title: "Monthly Dependency Update"
+#         body: "This is an auto-generated PR with dependency updates."
+#         branch: update-dependencies
+#         delete-branch: true

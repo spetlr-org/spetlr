@@ -1,0 +1,11 @@
+
+MyPlainLiteral: Bar
+
+MyCompositeLiteral: Foo{MyPlainLiteral}
+
+MyComposite:
+  name: otto{MyPlainLiteral}
+  schema:
+    sql: |
+      a int,
+      b decimal(12,2)

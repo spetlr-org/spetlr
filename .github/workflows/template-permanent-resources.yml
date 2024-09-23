@@ -1,0 +1,53 @@
+name: "Template - Permanent Resources"
+
+on:
+  workflow_call:
+    inputs:
+      environmentName:
+        required: true
+        type: string
+
+jobs:
+  Permanent-Resources-Terraform-Deployment:
+    environment: ${{inputs.environmentName}}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository to the GitHub Actions runner
+      - uses: actions/checkout@v4
+      - name: Log in to azure
+        shell: pwsh
+        run: |
+          az login --service-principal `
+            -u ${{ secrets.SPN_CLIENT_ID }} `
+            -p ${{ secrets.SPN_CLIENT_SECRET }} `
+            --tenant ${{ secrets.SPN_TENANT_ID }}
+
+      - name: Setup Permanent Resources Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Permanent Resources Terraform Init
+        run: terraform -chdir="./.github/terraform/permanent_resources" init 
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
+          ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
+          TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
+
+      - name: Permanent Resources Terraform Apply
+        run: terraform -chdir="./.github/terraform/permanent_resources" apply -auto-approve
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
+          ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
+          TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
+
+      - name: Azure logout
+        shell: pwsh
+        run: az logout

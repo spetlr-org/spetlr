@@ -1,0 +1,21 @@
+# this file configures ruff, if the spetlr project gets a pyproject.toml,
+# then the following configuration can be moved to that file
+
+line-length = 88
+indent-width = 4
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "cr-lf"
+
+[lint]
+extend-select = [
+    "I",   # isort
+    "BLE",
+]
+# see rule list here: https://docs.astral.sh/ruff/rules/
+
+[lint.isort]
+known-local-folder = ["spetlr", "tests"]
+relative-imports-order = "closest-to-furthest"

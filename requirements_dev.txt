@@ -1,0 +1,10 @@
+pyspark
+packaging
+pytest
+black
+isort
+flake8
+spetlr-tools
+timezonefinder
+pycountry
+freezegun

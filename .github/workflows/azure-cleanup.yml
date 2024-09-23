@@ -1,0 +1,32 @@
+# # if a deployment goes wrong for any reason, this pipeline can
+# # destroy the entire resource group to prevent accumulation of cost.
+# # This pipeline is provided for convenience only and should not normally
+# # be needed since the integration_test pipeline destroys the setup even when
+# # the pipeline is cancelled.
+
+# name: Azure-Cleanup
+
+# on:
+#   workflow_dispatch:
+
+# jobs:
+#   cleanup:
+#     runs-on: ubuntu-latest
+#     concurrency:
+#       group: azure-integration
+#       cancel-in-progress: true
+
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Log in to azure
+#         shell: pwsh
+#         run: |
+#           az login --service-principal `
+#             -u ${{ secrets.SPN_CLIENT_ID }} `
+#             -p ${{ secrets.SPN_CLIENT_SECRET }} `
+#             --tenant ${{ secrets.SPN_TENANT_ID }} `
+#             --output none
+#       - name: Delete Deployment
+#         shell: pwsh
+#         run: |
+#           .github/deploy/destroy.ps1

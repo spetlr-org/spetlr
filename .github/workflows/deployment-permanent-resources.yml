@@ -8,7 +8,6 @@ on:
       - ".github/terraform/metastore/**"
       - ".github/terraform/permanent_resources/**"
   workflow_dispatch:
-  pull_request: # This is for triggering the workflow on pull request and can be removed in the final version
 
 jobs:
   deploy_permanent_resources:

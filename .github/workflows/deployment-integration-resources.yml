@@ -47,25 +47,25 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
           TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
 
-      - name: Dtabricks Integration Terraform Init
-        run: terraform -chdir="./.github/terraform/integration_databricks" init 
-        env:
-          ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
-          ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
-          TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
+      # - name: Dtabricks Integration Terraform Init
+      #   run: terraform -chdir="./.github/terraform/integration_databricks" init 
+      #   env:
+      #     ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
+      #     ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
+      #     ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
+      #     ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
+      #     ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
+      #     TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
 
-      - name: Dtabricks Integration Terraform Apply
-        run: terraform -chdir="./.github/terraform/integration_databricks" apply -auto-approve
-        env:
-          ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
-          ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
-          TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
+      # - name: Dtabricks Integration Terraform Apply
+      #   run: terraform -chdir="./.github/terraform/integration_databricks" apply -auto-approve
+      #   env:
+      #     ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
+      #     ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
+      #     ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
+      #     ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
+      #     ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
+      #     TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
 
       - name: Azure logout
         shell: pwsh

@@ -1,8 +1,8 @@
 param (
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)] # This should be true in final version
     [ValidateNotNullOrEmpty()]
     [string]
-    $uniqueRunId
+    $uniqueRunId="" # default should be removed in final version
 )
 
 ###############################################################################################

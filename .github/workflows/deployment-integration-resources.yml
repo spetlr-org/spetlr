@@ -67,6 +67,35 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
           TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Build Spetlr Library
+        shell: pwsh
+        run: .github/submit/build.ps1
+
+      - name: Setup Databricks CLI
+        shell: bash
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          databricks -v
+      
+      - name: Connect to Databricks
+        shell: pwsh
+        run: |
+          .github/submit/connect_DB_api.ps1 `
+            -uniqueRunId "" 
+
+
+      - name: Launch integration tests with DBR 14.3
+        shell: pwsh
+        run: |
+          .github/submit/submit_test_job.ps1  `
+            -cluster_env cluster_env_14_3.json `
+            -sparkLibs sparklibs14_3.json
+
       - name: Azure logout
         shell: pwsh
         run: az logout

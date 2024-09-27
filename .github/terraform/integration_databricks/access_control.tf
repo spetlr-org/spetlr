@@ -29,6 +29,13 @@ resource "databricks_mws_permission_assignment" "add_metastore_admin_group_to_wo
   ]
 }
 
+resource "time_sleep" "wait_for_groups_sync" {
+  create_duration = "7s"
+  depends_on      = [
+    databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
+    ]
+}
+
 # Access control for Extrenal location --------------------------------------------------------------------
 
 ## Create storage credential and grant privileges
@@ -45,11 +52,12 @@ resource "databricks_storage_credential" "ex_storage_cred" {
   depends_on     = [
     databricks_metastore_assignment.db_metastore_assign_workspace,
     databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
+    time_sleep.wait_for_groups_sync
   ]
 }
 
 resource "time_sleep" "wait_for_ex_storage_cred" {
-  create_duration = "5s"
+  create_duration = "7s"
   depends_on      = [
     databricks_storage_credential.ex_storage_cred
     ]
@@ -69,7 +77,7 @@ resource "databricks_grants" "ex_creds" {
 }
 
 resource "time_sleep" "wait_for_ex_creds" {
-  create_duration = "5s"
+  create_duration = "7s"
   depends_on      = [
     databricks_grants.ex_creds
     ]

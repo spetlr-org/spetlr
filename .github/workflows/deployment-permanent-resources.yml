@@ -7,6 +7,11 @@ on:
     paths:
       - ".github/terraform/metastore/**"
       - ".github/terraform/permanent_resources/**"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
   workflow_dispatch:
 
 jobs:

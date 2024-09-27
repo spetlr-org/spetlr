@@ -9,6 +9,7 @@ resource "databricks_secret_scope" "keyvault_backed_scope" {
     resource_id = data.azurerm_key_vault.key_vault.id
     dns_name    = data.azurerm_key_vault.key_vault.vault_uri
   }
+  depends_on = [databricks_service_principal_role.captain]
 }
 
 # Secret scope and secrets for project genrated values -------------------------

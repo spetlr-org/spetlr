@@ -14,7 +14,7 @@ terraform {
     storage_account_name = "spetlrtfstate"
     container_name       = "tfstate"
     key                  = "integration_resources.tfstate"
-  }
+  }  # This is temporary
 }
 
 provider "azurerm" {

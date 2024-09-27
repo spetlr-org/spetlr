@@ -113,6 +113,7 @@ resource "azurerm_eventhub" "eh" {
     enabled  = true
     encoding = "Avro"
     skip_empty_archives = true
+    interval_in_seconds = 60
     destination {
       name                = "EventHubArchive.AzureBlockBlob"
       archive_name_format = "{Namespace}/{EventHub}/y={Year}/m={Month}/d={Day}/{Year}_{Month}_{Day}_{Hour}_{Minute}_{Second}_{PartitionId}"

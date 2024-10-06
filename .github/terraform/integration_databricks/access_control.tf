@@ -5,7 +5,8 @@
 
 ## Assign the workspace to the created Metastore
 resource "databricks_metastore_assignment" "db_metastore_assign_workspace" {
-  provider      = databricks
+  provider      = databricks.account
+
   metastore_id  = data.databricks_metastore.db_metastore.id
   workspace_id  = data.azurerm_databricks_workspace.db_workspace.workspace_id
   depends_on    = [
@@ -18,7 +19,8 @@ resource "databricks_metastore_assignment" "db_metastore_assign_workspace" {
 
 ## Add metastore admin group to the workspace as the workspace admin
 resource "databricks_mws_permission_assignment" "add_metastore_admin_group_to_workspace" {
-  provider      = databricks
+  provider      = databricks.account
+
   workspace_id  = data.azurerm_databricks_workspace.db_workspace.workspace_id
   principal_id  = data.databricks_group.db_metastore_admin_group.id
   permissions   = ["ADMIN"]
@@ -106,6 +108,7 @@ resource "databricks_external_location" "catalog" {
 
 resource "databricks_grants" "catalog" {
   provider          = databricks.workspace
+
   external_location = databricks_external_location.catalog.id
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
@@ -119,6 +122,7 @@ resource "databricks_grants" "catalog" {
 ## Create extrenal location and grant privilages for capture data storage ---------------
 resource "databricks_external_location" "capture" {
   provider        = databricks.workspace
+
   name            = module.config.integration.capture_container_name
   url             = join(
     "",
@@ -139,6 +143,7 @@ resource "databricks_external_location" "capture" {
 
 resource "databricks_grants" "capture" {
   provider          = databricks.workspace
+
   external_location = databricks_external_location.capture.id
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
@@ -152,6 +157,7 @@ resource "databricks_grants" "capture" {
 ## Create extrenal location and grant privilages for init data storage ---------------
 resource "databricks_external_location" "init" {
   provider        = databricks.workspace
+
   name            = module.config.integration.init_container_name
   url             = join(
     "",
@@ -172,6 +178,7 @@ resource "databricks_external_location" "init" {
 
 resource "databricks_grants" "init" {
   provider          = databricks.workspace
+
   external_location = databricks_external_location.init.id
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
@@ -187,6 +194,7 @@ resource "databricks_grants" "init" {
 ## Grant privilages for catalog
 resource "databricks_grants" "catalog_data" {
   provider     = databricks.workspace
+
   catalog      = databricks_catalog.catalog.name
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
@@ -201,6 +209,7 @@ resource "databricks_grants" "catalog_data" {
 ## Grant privilages for capture
 resource "databricks_grants" "catalog_capture" {
   provider     = databricks.workspace
+
   catalog      = databricks_catalog.capture.name
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
@@ -215,6 +224,7 @@ resource "databricks_grants" "catalog_capture" {
 ## Grant privilages for init
 resource "databricks_grants" "catalog_init" {
   provider     = databricks.workspace
+
   catalog      = databricks_catalog.init.name
   grant {
     principal  = module.config.permanent.metastore_admin_group_name

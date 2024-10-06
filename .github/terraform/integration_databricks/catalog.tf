@@ -4,6 +4,7 @@
 # Create catalog for catalog data ---------------------------------------------------------------------------------
 resource "databricks_catalog" "catalog" {
   provider       = databricks.workspace
+
   name           = module.config.integration.catalog_container_name
   comment        = "Catalog to encapsulate all catalog data schema"
   isolation_mode = "ISOLATED"
@@ -19,6 +20,7 @@ resource "databricks_catalog" "catalog" {
 # Create catalog for capture data, schema, volume -----------------------------------------------------------------
 resource "databricks_catalog" "capture" {
   provider       = databricks.workspace
+
   name           = module.config.integration.capture_container_name
   comment        = "Catalog to encapsulate all capture data schema"
   isolation_mode = "ISOLATED"
@@ -33,6 +35,7 @@ resource "databricks_catalog" "capture" {
 
 resource "databricks_schema" "capture" {
   provider     = databricks.workspace
+
   catalog_name = databricks_catalog.capture.name
   name         = "${module.config.integration.capture_container_name}_schema"
   comment      = "this schema is for the capture volume"
@@ -50,6 +53,7 @@ resource "databricks_schema" "capture" {
 
 resource "databricks_volume" "capture" {
   provider         = databricks.workspace
+
   name             = module.config.integration.eventhub_name
   catalog_name     = databricks_catalog.capture.name
   schema_name      = databricks_schema.capture.name
@@ -65,6 +69,7 @@ resource "databricks_volume" "capture" {
 # Create catalog, schema, volume for init data --------------------------------------------------------------------
 resource "databricks_catalog" "init" {
   provider       = databricks.workspace
+
   name           = module.config.integration.init_container_name
   comment        = "Catalog to encapsulate all init data schema"
   isolation_mode = "ISOLATED"
@@ -79,6 +84,7 @@ resource "databricks_catalog" "init" {
 
 resource "databricks_schema" "init" {
   provider     = databricks.workspace
+
   catalog_name = databricks_catalog.init.name
   name         = "${module.config.integration.init_container_name}_schema"
   comment      = "this schema is for the init volume"
@@ -96,6 +102,7 @@ resource "databricks_schema" "init" {
 
 resource "databricks_volume" "init" {
   provider         = databricks.workspace
+
   name             = module.config.integration.init_drivers_folder
   catalog_name     = databricks_catalog.init.name
   schema_name      = databricks_schema.init.name

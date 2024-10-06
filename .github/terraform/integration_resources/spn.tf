@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "2.52.0"
+    }
+  }
+}
 ## This module is for creating and managing needed service principals ##
 
 # Provision Azure SPN for captain spn, and setting its role ---------------------
@@ -13,8 +21,8 @@ resource "azuread_service_principal" "captain" {
   owners                       = [data.azuread_service_principal.cicd_spn.object_id]
 }
 
-resource "azuread_service_principal_password" "captain" {
-  service_principal_id = azuread_service_principal.captain.object_id
+resource "azuread_application_password" "captain" {
+  application_id = azuread_application.captain.id
 }
 
 resource "azurerm_role_assignment" "captain" {
@@ -31,5 +39,5 @@ resource "azurerm_role_assignment" "cicd_spn" {
   depends_on = [
     azurerm_databricks_access_connector.ext_access_connector,
     azurerm_storage_account.storage_account
-    ]
+  ]
 }

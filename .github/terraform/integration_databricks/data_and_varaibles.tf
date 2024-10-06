@@ -17,35 +17,35 @@ data "azurerm_key_vault" "key_vault" {
 }
 
 data "azurerm_key_vault_secret" "workspace_url" {
-  name                = module.config.integration.kv_secret_db_ws_url
-  key_vault_id        = data.azurerm_key_vault.key_vault.id
+  name         = module.config.integration.kv_secret_db_ws_url
+  key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
 data "azurerm_key_vault_secret" "captain_spn_id" {
-  name                = module.config.integration.captain.kv_secret_id
-  key_vault_id        = data.azurerm_key_vault.key_vault.id
+  name         = module.config.integration.captain.kv_secret_id
+  key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
 data "azurerm_key_vault_secret" "captain_spn_password" {
-  name                = module.config.integration.captain.kv_secret_pass
-  key_vault_id        = data.azurerm_key_vault.key_vault.id
+  name         = module.config.integration.captain.kv_secret_pass
+  key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
 data "azurerm_key_vault_secret" "captain_spn_tenant" {
-  name                = module.config.integration.captain.kv_secret_tenant
-  key_vault_id        = data.azurerm_key_vault.key_vault.id
+  name         = module.config.integration.captain.kv_secret_tenant
+  key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
 data "databricks_group" "db_metastore_admin_group" {
-  provider     = databricks.account
-  
+  provider = databricks.account
+
   display_name = module.config.permanent.metastore_admin_group_name
 }
 
 data "databricks_metastore" "db_metastore" {
   provider = databricks.account
 
-  name     = module.config.permanent.metastore_name
+  name = module.config.permanent.metastore_name
 }
 
 data "azurerm_databricks_workspace" "db_workspace" {
@@ -57,5 +57,5 @@ data "azurerm_databricks_workspace" "db_workspace" {
 variable "db_account_id" {
   type        = string
   description = "The databricks Account Id for Spetlr subscription."
-  default = "939f40ff-6952-42dc-9aca-3830070d18d3" # remove this
+  default     = "939f40ff-6952-42dc-9aca-3830070d18d3" # remove this
 }

@@ -4,7 +4,7 @@
 resource "databricks_secret_scope" "keyvault_backed_scope" {
   provider = databricks.workspace
 
-  name     = "secrets"
+  name = "secrets"
 
   keyvault_metadata {
     resource_id = data.azurerm_key_vault.key_vault.id
@@ -17,11 +17,11 @@ resource "databricks_secret_scope" "keyvault_backed_scope" {
 resource "databricks_secret_scope" "values" {
   provider = databricks.workspace
 
-  name     = "values"
+  name = "values"
 }
 
 resource "databricks_secret" "resource_name" {
-  provider     = databricks.workspace
+  provider = databricks.workspace
 
   key          = "resourceName"
   string_value = module.config.integration.resource_name

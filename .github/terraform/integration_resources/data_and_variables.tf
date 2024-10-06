@@ -10,7 +10,7 @@ data "azuread_service_principal" "cicd_spn" {
   display_name = module.config.permanent.cicd_spn_name
 }
 
-data azurerm_resource_group "permanent" {
+data "azurerm_resource_group" "permanent" {
   name = module.config.permanent.rg_name
 }
 

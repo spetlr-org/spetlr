@@ -2,8 +2,8 @@
 
 # Provision resource group -----------------------------------------------------
 resource "azurerm_resource_group" "rg" {
-  name      = module.config.integration.rg_name
-  location  = module.config.location
+  name     = module.config.integration.rg_name
+  location = module.config.location
   tags = {
     creator = module.config.tags.creator
     system  = module.config.tags.system
@@ -50,12 +50,12 @@ resource "azurerm_storage_container" "init" {
 
 # Provision keyvault and setting access policies -------------------------------
 resource "azurerm_key_vault" "key_vault" {
-  name                       = module.config.integration.resource_name
-  location                   = azurerm_resource_group.rg.location
-  resource_group_name        = azurerm_resource_group.rg.name
-  tenant_id                  = data.azurerm_client_config.current.tenant_id
-  sku_name                   = "standard"
-  purge_protection_enabled   = false
+  name                     = module.config.integration.resource_name
+  location                 = azurerm_resource_group.rg.location
+  resource_group_name      = azurerm_resource_group.rg.name
+  tenant_id                = data.azurerm_client_config.current.tenant_id
+  sku_name                 = "standard"
+  purge_protection_enabled = false
   tags = {
     creator = module.config.tags.creator
     system  = module.config.tags.system
@@ -65,9 +65,9 @@ resource "azurerm_key_vault" "key_vault" {
 }
 
 resource "azurerm_key_vault_access_policy" "spn_access" {
-  key_vault_id       = azurerm_key_vault.key_vault.id
-  tenant_id          = data.azurerm_client_config.current.tenant_id
-  object_id          = data.azuread_service_principal.cicd_spn.object_id
+  key_vault_id = azurerm_key_vault.key_vault.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azuread_service_principal.cicd_spn.object_id
 
   secret_permissions = [
     "Get",
@@ -81,9 +81,9 @@ resource "azurerm_key_vault_access_policy" "spn_access" {
 }
 
 resource "azurerm_key_vault_access_policy" "captain_access" {
-  key_vault_id       = azurerm_key_vault.key_vault.id
-  tenant_id          = data.azurerm_client_config.current.tenant_id
-  object_id          = azuread_service_principal.captain.object_id
+  key_vault_id = azurerm_key_vault.key_vault.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = azuread_service_principal.captain.object_id
 
   secret_permissions = [
     "Get",
@@ -95,10 +95,10 @@ resource "azurerm_key_vault_access_policy" "captain_access" {
 
 # Provision eventhub and its setting ------------------------------------------
 resource "azurerm_eventhub_namespace" "eh" {
-  location            = module.config.location
-  name                = module.config.integration.resource_name
-  resource_group_name = azurerm_resource_group.rg.name
-  sku                 = "Standard"
+  location             = module.config.location
+  name                 = module.config.integration.resource_name
+  resource_group_name  = azurerm_resource_group.rg.name
+  sku                  = "Standard"
   auto_inflate_enabled = false
 }
 
@@ -110,8 +110,8 @@ resource "azurerm_eventhub" "eh" {
   resource_group_name = azurerm_resource_group.rg.name
 
   capture_description {
-    enabled  = true
-    encoding = "Avro"
+    enabled             = true
+    encoding            = "Avro"
     skip_empty_archives = true
     interval_in_seconds = 60
     destination {
@@ -121,7 +121,7 @@ resource "azurerm_eventhub" "eh" {
       storage_account_id  = azurerm_storage_account.storage_account.id
     }
   }
-  depends_on = [ 
+  depends_on = [
     azurerm_role_assignment.cicd_spn,
     azurerm_storage_container.capture,
     azurerm_eventhub_namespace.eh
@@ -150,8 +150,8 @@ resource "azurerm_mssql_server" "sql" {
 
   azuread_administrator {
     azuread_authentication_only = true
-    login_username = module.config.integration.captain.display_name
-    object_id      = azuread_service_principal.captain.object_id
+    login_username              = module.config.integration.captain.display_name
+    object_id                   = azuread_service_principal.captain.object_id
   }
 
   # TODO: maybe missing firewall rules
@@ -181,14 +181,14 @@ resource "azurerm_databricks_access_connector" "ext_access_connector" {
 resource "azurerm_role_assignment" "ext_storage_role" {
   scope                = azurerm_storage_account.storage_account.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = join(
+  principal_id = join(
     "",
     [azurerm_databricks_access_connector.ext_access_connector.identity[0].principal_id]
   )
   depends_on = [
     azurerm_databricks_access_connector.ext_access_connector,
     azurerm_storage_account.storage_account
-    ]
+  ]
 }
 
 resource "azurerm_role_assignment" "account_contributor" {
@@ -207,14 +207,14 @@ resource "azurerm_log_analytics_workspace" "logs" {
 
 # Provision databricks service ------------------------------------------------
 resource "azurerm_databricks_workspace" "db_workspace" {
-  name                        = module.config.integration.resource_name
-  resource_group_name         = azurerm_resource_group.rg.name
-  location                    = azurerm_resource_group.rg.location
-  sku                         = "premium"
+  name                = module.config.integration.resource_name
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  sku                 = "premium"
   tags = {
     creator = module.config.tags.creator
     system  = module.config.tags.system
     service = module.config.tags.service
   }
-  depends_on                  = [azurerm_resource_group.rg]
+  depends_on = [azurerm_resource_group.rg]
 }

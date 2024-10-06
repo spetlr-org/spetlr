@@ -13,7 +13,7 @@ terraform {
     resource_group_name  = "Terraform-State-Stoarge"
     storage_account_name = "spetlrtfstate"
     container_name       = "tfstate"
-    key                  = "integration_resources_${var.uniqueRunId}.tfstate"
+    key                  = "integration_resources.tfstate"
   } # This is temporary
 }
 

@@ -5,11 +5,11 @@
 
 ## Assign the workspace to the created Metastore
 resource "databricks_metastore_assignment" "db_metastore_assign_workspace" {
-  provider      = databricks.account
+  provider = databricks.account
 
-  metastore_id  = data.databricks_metastore.db_metastore.id
-  workspace_id  = data.azurerm_databricks_workspace.db_workspace.workspace_id
-  depends_on    = [
+  metastore_id = data.databricks_metastore.db_metastore.id
+  workspace_id = data.azurerm_databricks_workspace.db_workspace.workspace_id
+  depends_on = [
     data.databricks_metastore.db_metastore,
     data.azurerm_databricks_workspace.db_workspace
   ]
@@ -19,12 +19,12 @@ resource "databricks_metastore_assignment" "db_metastore_assign_workspace" {
 
 ## Add metastore admin group to the workspace as the workspace admin
 resource "databricks_mws_permission_assignment" "add_metastore_admin_group_to_workspace" {
-  provider      = databricks.account
+  provider = databricks.account
 
-  workspace_id  = data.azurerm_databricks_workspace.db_workspace.workspace_id
-  principal_id  = data.databricks_group.db_metastore_admin_group.id
-  permissions   = ["ADMIN"]
-  depends_on    = [
+  workspace_id = data.azurerm_databricks_workspace.db_workspace.workspace_id
+  principal_id = data.databricks_group.db_metastore_admin_group.id
+  permissions  = ["ADMIN"]
+  depends_on = [
     data.azurerm_databricks_workspace.db_workspace,
     data.databricks_group.db_metastore_admin_group,
     databricks_metastore_assignment.db_metastore_assign_workspace
@@ -33,25 +33,25 @@ resource "databricks_mws_permission_assignment" "add_metastore_admin_group_to_wo
 
 resource "time_sleep" "wait_for_groups_sync" {
   create_duration = "7s"
-  depends_on      = [
+  depends_on = [
     databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-    ]
+  ]
 }
 
 # Access control for Extrenal location --------------------------------------------------------------------
 
 ## Create storage credential and grant privileges
 resource "databricks_storage_credential" "ex_storage_cred" {
-  provider       = databricks.workspace
-  name           = module.config.integration.resource_name
+  provider = databricks.workspace
+  name     = module.config.integration.resource_name
   azure_managed_identity {
     access_connector_id = data.azurerm_databricks_access_connector.ext_access_connector.id
   }
   force_destroy  = true
   force_update   = true
-  isolation_mode = "ISOLATION_MODE_ISOLATED" 
+  isolation_mode = "ISOLATION_MODE_ISOLATED"
   comment        = "Datrabricks external storage credentials"
-  depends_on     = [
+  depends_on = [
     databricks_metastore_assignment.db_metastore_assign_workspace,
     databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
     time_sleep.wait_for_groups_sync
@@ -60,9 +60,9 @@ resource "databricks_storage_credential" "ex_storage_cred" {
 
 resource "time_sleep" "wait_for_ex_storage_cred" {
   create_duration = "7s"
-  depends_on      = [
+  depends_on = [
     databricks_storage_credential.ex_storage_cred
-    ]
+  ]
 }
 
 resource "databricks_grants" "ex_creds" {
@@ -80,16 +80,16 @@ resource "databricks_grants" "ex_creds" {
 
 resource "time_sleep" "wait_for_ex_creds" {
   create_duration = "7s"
-  depends_on      = [
+  depends_on = [
     databricks_grants.ex_creds
-    ]
+  ]
 }
 
 ## Create extrenal location and grant privilages for catalog data storage ---------------
 resource "databricks_external_location" "catalog" {
-  provider        = databricks.workspace
-  name            = module.config.integration.catalog_container_name
-  url             = join(
+  provider = databricks.workspace
+  name     = module.config.integration.catalog_container_name
+  url = join(
     "",
     [
       "abfss://${module.config.integration.catalog_container_name}",
@@ -107,24 +107,24 @@ resource "databricks_external_location" "catalog" {
 }
 
 resource "databricks_grants" "catalog" {
-  provider          = databricks.workspace
+  provider = databricks.workspace
 
   external_location = databricks_external_location.catalog.id
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
     privileges = ["ALL_PRIVILEGES"]
   }
-  depends_on   = [
+  depends_on = [
     databricks_external_location.catalog
-    ]
+  ]
 }
 
 ## Create extrenal location and grant privilages for capture data storage ---------------
 resource "databricks_external_location" "capture" {
-  provider        = databricks.workspace
+  provider = databricks.workspace
 
-  name            = module.config.integration.capture_container_name
-  url             = join(
+  name = module.config.integration.capture_container_name
+  url = join(
     "",
     [
       "abfss://${module.config.integration.capture_container_name}",
@@ -142,24 +142,24 @@ resource "databricks_external_location" "capture" {
 }
 
 resource "databricks_grants" "capture" {
-  provider          = databricks.workspace
+  provider = databricks.workspace
 
   external_location = databricks_external_location.capture.id
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
     privileges = ["ALL_PRIVILEGES"]
   }
-  depends_on   = [
+  depends_on = [
     databricks_external_location.capture
-    ]
+  ]
 }
 
 ## Create extrenal location and grant privilages for init data storage ---------------
 resource "databricks_external_location" "init" {
-  provider        = databricks.workspace
+  provider = databricks.workspace
 
-  name            = module.config.integration.init_container_name
-  url             = join(
+  name = module.config.integration.init_container_name
+  url = join(
     "",
     [
       "abfss://${module.config.integration.init_container_name}",
@@ -177,25 +177,25 @@ resource "databricks_external_location" "init" {
 }
 
 resource "databricks_grants" "init" {
-  provider          = databricks.workspace
+  provider = databricks.workspace
 
   external_location = databricks_external_location.init.id
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
     privileges = ["ALL_PRIVILEGES"]
   }
-  depends_on   = [
+  depends_on = [
     databricks_external_location.init
-    ]
+  ]
 }
 
 # Access control for catalogs -------------------------------------------------------------------------
 
 ## Grant privilages for catalog
 resource "databricks_grants" "catalog_data" {
-  provider     = databricks.workspace
+  provider = databricks.workspace
 
-  catalog      = databricks_catalog.catalog.name
+  catalog = databricks_catalog.catalog.name
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
     privileges = ["ALL_PRIVILEGES"]
@@ -203,14 +203,14 @@ resource "databricks_grants" "catalog_data" {
   depends_on = [
     databricks_catalog.catalog,
     databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-    ]
+  ]
 }
 
 ## Grant privilages for capture
 resource "databricks_grants" "catalog_capture" {
-  provider     = databricks.workspace
+  provider = databricks.workspace
 
-  catalog      = databricks_catalog.capture.name
+  catalog = databricks_catalog.capture.name
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
     privileges = ["ALL_PRIVILEGES"]
@@ -218,14 +218,14 @@ resource "databricks_grants" "catalog_capture" {
   depends_on = [
     databricks_catalog.capture,
     databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-    ]
+  ]
 }
 
 ## Grant privilages for init
 resource "databricks_grants" "catalog_init" {
-  provider     = databricks.workspace
+  provider = databricks.workspace
 
-  catalog      = databricks_catalog.init.name
+  catalog = databricks_catalog.init.name
   grant {
     principal  = module.config.permanent.metastore_admin_group_name
     privileges = ["ALL_PRIVILEGES"]
@@ -233,5 +233,5 @@ resource "databricks_grants" "catalog_init" {
   depends_on = [
     databricks_catalog.init,
     databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-    ]
+  ]
 }

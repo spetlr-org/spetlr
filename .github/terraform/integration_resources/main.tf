@@ -13,7 +13,7 @@ terraform {
     resource_group_name  = "Terraform-State-Stoarge"
     storage_account_name = "spetlrtfstate"
     container_name       = "tfstate"
-    key                  = "integration_resources.tfstate"
+    key                  = "integration_resources_${var.uniqueRunId}.tfstate"
   } # This is temporary
 }
 
@@ -26,6 +26,9 @@ provider "azurerm" {
   }
 }
 
+variable "uniqueRunId" {}
+
 module "config" {
-  source = "../modules/config"
+  source      = "../modules/config"
+  uniqueRunId = var.uniqueRunId
 }

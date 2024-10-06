@@ -16,7 +16,7 @@ terraform {
     resource_group_name  = "Terraform-State-Stoarge"
     storage_account_name = "spetlrtfstate"
     container_name       = "tfstate"
-    key                  = "integration_databricks.tfstate"
+    key                  = "integration_databricks_${var.uniqueRunId}.tfstate"
   } # This is temporary
 }
 
@@ -42,6 +42,10 @@ provider "databricks" {
   azure_tenant_id     = data.azurerm_key_vault_secret.captain_spn_tenant.value
 }
 
+
+variable "uniqueRunId" {}
+
 module "config" {
-  source = "../modules/config"
+  source      = "../modules/config"
+  uniqueRunId = var.uniqueRunId
 }

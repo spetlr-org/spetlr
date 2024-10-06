@@ -1,11 +1,4 @@
-terraform {
-  required_providers {
-    azuread = {
-      source  = "hashicorp/azuread"
-      version = "2.52.0"
-    }
-  }
-}
+
 ## This module is for creating and managing needed service principals ##
 
 # Provision Azure SPN for captain spn, and setting its role ---------------------

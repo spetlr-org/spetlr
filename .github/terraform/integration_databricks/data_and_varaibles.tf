@@ -37,12 +37,14 @@ data "azurerm_key_vault_secret" "captain_spn_tenant" {
 }
 
 data "databricks_group" "db_metastore_admin_group" {
-  provider     = databricks
+  provider     = databricks.account
+  
   display_name = module.config.permanent.metastore_admin_group_name
 }
 
 data "databricks_metastore" "db_metastore" {
-  provider = databricks
+  provider = databricks.account
+
   name     = module.config.permanent.metastore_name
 }
 

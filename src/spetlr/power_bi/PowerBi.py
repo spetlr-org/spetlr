@@ -27,6 +27,10 @@ class PowerBi:
         timeout_in_seconds: int = 15 * 60,
         number_of_retries: int = 0,
         max_parallelism: int = None,
+        apply_refresh_policy: bool = None,
+        dataset_refresh_type: str = None,
+        dataset_commit_mode: str = None,
+        incremental_effective_date: str = None,
         mail_on_failure: bool = False,
         mail_on_completion: bool = False,
         exclude_creators: List[str] = None,
@@ -65,6 +69,18 @@ class PowerBi:
             that can run processing commands in parallel during a refresh
             in PowerBI. Default is None, which corresponds to 10 threads.
             Used only with the refresh() and start_refresh() methods!
+        :param bool apply_refresh_policy: Determine if the refresh policy is applied
+            or not (True or False). Default is None.
+        :param str dataset_refresh_type: The type of processing to perform
+            when refreshing the dataset
+            ("Automatic", "Calculate", "ClearValues", "DataOnly", "Defragment", "Full").
+            Default is None.
+        :param str dataset_commit_mode: Determines if dataset objects will be
+            committed in batches or only when complete
+            ("PartialBatch", "Transactional"). Default is None.
+        :param str incremental_effective_date: Effective date for incremental load.
+            If an incremental refresh policy is applied, the effectiveDate parameter
+            overrides the current date. Default is None.
         :param str local_timezone_name: The timezone to use when parsing
             timestamp columns. The default timezone is UTC.
             If the timezone is UTC, all timestamp columns will have a suffix "Utc".
@@ -122,6 +138,10 @@ class PowerBi:
         self.max_parallelism = max_parallelism
         self.mail_on_failure = mail_on_failure
         self.mail_on_completion = mail_on_completion
+        self.apply_refresh_policy = apply_refresh_policy
+        self.dataset_refresh_type = dataset_refresh_type
+        self.dataset_commit_mode = dataset_commit_mode
+        self.incremental_effective_date = incremental_effective_date
         self.exclude_creators = (
             [(creator.lower() if creator else None) for creator in exclude_creators]
             if exclude_creators
@@ -977,6 +997,14 @@ class PowerBi:
                 )
         if self.max_parallelism is not None:
             result["maxParallelism"] = self.max_parallelism
+        if self.apply_refresh_policy is not None:
+            result["applyRefreshPolicy"] = str(self.apply_refresh_policy).lower()
+        if self.dataset_refresh_type is not None:
+            result["type"] = self.dataset_refresh_type
+        if self.dataset_commit_mode is not None:
+            result["commitMode"] = self.dataset_commit_mode
+        if self.incremental_effective_date is not None:
+            result["effectiveDate"] = self.incremental_effective_date
 
         return result if result else None
 

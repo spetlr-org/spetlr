@@ -267,10 +267,25 @@ The "number_of_retries" parameter only works with enhanced API requests
 be ignored otherwise.
 Default is 0 (no retries). E.g. 1 means two attempts in total.
 
-Additionally, you can set the optional "max_parallelism" parameter to
-set the maximum number of threads that can run processing commands
-in parallel during the refresh in PowerBI. Default is None, which 
-corresponds to 10 threads (according to Microsoft).
+Additionally, you can set the following optional parameters in
+the constructor to control the refresh process in PowerBI:
+- "max_parallelism" (int): Set the maximum number of threads that can
+run processing commands in parallel during the refresh in PowerBI.
+Default is None, which (according to Microsoft) corresponds to 10 threads.
+- "apply_refresh_policy" (bool): Determine if the refresh policy is applied
+or not (True or False). Default is None.
+- "dataset_refresh_type" (str): The type of processing to perform when
+refreshing the dataset ("Automatic", "Calculate", "ClearValues", "DataOnly",
+"Defragment", "Full"). Default is None.
+- "dataset_commit_mode" (str): Determines if dataset objects will be
+committed in batches or only when complete ("PartialBatch", "Transactional").
+Default is None.
+- incremental_effective_date (str): Effective date for incremental load.
+If an incremental refresh policy is applied, the effectiveDate parameter
+overrides the current date. Default is None.
+
+Description of values in the above parameters can be found here:
+[Details](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/refresh-dataset-in-group)
 
 All parameters can only be specified in the constructor. 
 
@@ -327,10 +342,25 @@ and unlike in the start_refresh() method, it will work both with normal
 refreshes (i.e. when "table_names" is not specified) and with enhanced
 refreshes (i.e. when "table_names" is specified).
 
-Additionally, you can set the optional "max_parallelism" parameter to
-set the maximum number of threads that can run processing commands
-in parallel during the refresh in PowerBI. Default is None, which 
-corresponds to 10 threads (according to Microsoft).
+Additionally, you can set the following optional parameters in
+the constructor to control the refresh process in PowerBI:
+- "max_parallelism" (int): Set the maximum number of threads that can
+run processing commands in parallel during the refresh in PowerBI.
+Default is None, which (according to Microsoft) corresponds to 10 threads.
+- "apply_refresh_policy" (bool): Determine if the refresh policy is applied
+or not (True or False). Default is None.
+- "dataset_refresh_type" (str): The type of processing to perform when
+refreshing the dataset ("Automatic", "Calculate", "ClearValues", "DataOnly",
+"Defragment", "Full"). Default is None.
+- "dataset_commit_mode" (str): Determines if dataset objects will be
+committed in batches or only when complete ("PartialBatch", "Transactional").
+Default is None.
+- incremental_effective_date (str): Effective date for incremental load.
+If an incremental refresh policy is applied, the effectiveDate parameter
+overrides the current date. Default is None.
+
+Description of values in the above parameters can be found here:
+[Details](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/refresh-dataset-in-group)
 
 You can also specify the optional "local_timezone_name" parameter to
 show the last refresh time of the PowerBI dataset in a local time zone.

@@ -8,16 +8,16 @@ terraform {
       source = "databricks/databricks"
     }
   }
-  # backend "local" {
-  #   path = "integration_databricks.tfstate"
-  # }
-  backend "azurerm" {
-    use_azuread_auth     = true
-    resource_group_name  = "Terraform-State-Stoarge"
-    storage_account_name = "spetlrtfstate"
-    container_name       = "tfstate"
-    key                  = "integration_databricks.tfstate"
-  } # This is temporary
+  backend "local" {
+    path = "integration_databricks.tfstate"
+  }
+  # backend "azurerm" {
+  #   use_azuread_auth     = true
+  #   resource_group_name  = "Terraform-State-Stoarge"
+  #   storage_account_name = "spetlrtfstate"
+  #   container_name       = "tfstate"
+  #   key                  = "integration_databricks.tfstate"
+  # } # This is temporary
 }
 
 provider "azurerm" {

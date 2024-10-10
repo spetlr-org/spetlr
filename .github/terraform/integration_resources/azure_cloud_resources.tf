@@ -5,9 +5,12 @@ resource "azurerm_resource_group" "rg" {
   name     = module.config.integration.rg_name
   location = module.config.location
   tags = {
-    creator = module.config.tags.creator
-    system  = module.config.tags.system
-    service = module.config.tags.service
+    creator                   = module.config.tags.creator
+    system                    = module.config.tags.system
+    service                   = module.config.tags.service
+    TemporaryTestingResources = "TemporaryTestingResources"
+    uniqueRunId               = var.uniqueRunId
+    associatedCaptain         = module.config.integration.captain.display_name
   }
 }
 

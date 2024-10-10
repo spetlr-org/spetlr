@@ -124,6 +124,18 @@ jobs:
 #          TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
 #          TF_VAR_uniqueRunId: ${{ github.run_id }}${{ github.run_attempt }}
 
+      - name: Destroy Azure resources
+        if: always()
+        shell: pwsh
+        run: |
+          az login --service-principal `
+            -u ${{ secrets.SPN_CLIENT_ID }} `
+            -p ${{ secrets.SPN_CLIENT_SECRET }} `
+            --tenant ${{ secrets.SPN_TENANT_ID }}
+
+          ./.github/deploy/cleanup-integration.ps1
+
       - name: Azure logout
+        if: always()
         shell: pwsh
         run: az logout

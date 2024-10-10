@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/terraform/metastore/**"
       - ".github/terraform/permanent_resources/**"
+      - ".github/workflows/deployment-permanent-resources.yml"
   workflow_dispatch:
 
 jobs:
@@ -50,7 +51,7 @@ jobs:
           TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
 
       - name: Permanent Resources Terraform Init
-        run: terraform -chdir="./.github/terraform/permanent_resources" init 
+        run: terraform -chdir="./.github/terraform/permanent_resources" init
         env:
           ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
           ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}

@@ -6,6 +6,10 @@ resource "azuread_application" "captain" {
   display_name = module.config.integration.captain.display_name
   notes        = module.config.integration.rg_name
   owners       = [data.azuread_service_principal.cicd_spn.object_id]
+  tags = {
+    TemporaryTestingResources = "TemporaryTestingResources"
+    uniqueRunId               = var.uniqueRunId
+  }
 }
 
 resource "azuread_service_principal" "captain" {

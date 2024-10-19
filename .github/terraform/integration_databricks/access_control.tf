@@ -61,13 +61,6 @@ resource "databricks_storage_credential" "ex_storage_cred" {
   ]
 }
 
-# resource "time_sleep" "wait_for_ex_storage_cred" {
-#   create_duration = "7s"
-#   depends_on = [
-#     databricks_storage_credential.ex_storage_cred
-#   ]
-# }
-
 resource "databricks_grants" "ex_creds" {
   provider           = databricks.workspace
   storage_credential = databricks_storage_credential.ex_storage_cred.id
@@ -77,13 +70,6 @@ resource "databricks_grants" "ex_creds" {
   }
   depends_on = [
     databricks_storage_credential.ex_storage_cred
-  ]
-}
-
-resource "time_sleep" "wait_for_ex_creds" {
-  create_duration = "7s"
-  depends_on = [
-    databricks_grants.ex_creds
   ]
 }
 
@@ -139,8 +125,7 @@ resource "databricks_external_location" "capture" {
   # force_update    = true
   comment = "Databricks external location for capture data"
   depends_on = [
-    databricks_grants.ex_creds,
-    time_sleep.wait_for_ex_creds
+    databricks_grants.ex_creds
   ]
 }
 
@@ -174,8 +159,7 @@ resource "databricks_external_location" "init" {
   # force_update    = true
   comment = "Databricks external location for init data"
   depends_on = [
-    databricks_grants.ex_creds,
-    time_sleep.wait_for_ex_creds
+    databricks_grants.ex_creds
   ]
 }
 

@@ -90,9 +90,7 @@ resource "azurerm_key_vault_access_policy" "captain_access" {
 
   secret_permissions = [
     "Get",
-    "Set",
     "List",
-    "Delete",
   ]
 }
 
@@ -125,7 +123,6 @@ resource "azurerm_eventhub" "eh" {
     }
   }
   depends_on = [
-    azurerm_role_assignment.cicd_spn,
     azurerm_storage_container.capture,
     azurerm_eventhub_namespace.eh
   ]

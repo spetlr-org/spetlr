@@ -2,8 +2,8 @@
 
 # Provision resource group -----------------------------------------------------
 resource "azurerm_resource_group" "rg" {
-  name      = module.config.permanent.rg_name
-  location  = module.config.location
+  name     = module.config.permanent.rg_name
+  location = module.config.location
   tags = {
     creator = module.config.tags.creator
     system  = module.config.tags.system
@@ -18,7 +18,7 @@ resource "azurerm_cosmosdb_account" "cosmos_db" {
   location            = module.config.location
   offer_type          = "Standard"
   free_tier_enabled   = true
-  
+
 
   consistency_policy {
     consistency_level = "Eventual"
@@ -32,5 +32,5 @@ resource "azurerm_cosmosdb_account" "cosmos_db" {
     system  = module.config.tags.system
     service = module.config.tags.service
   }
-  depends_on          = [azurerm_resource_group.rg]
+  depends_on = [azurerm_resource_group.rg]
 }

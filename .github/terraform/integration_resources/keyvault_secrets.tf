@@ -105,15 +105,4 @@ resource "azurerm_key_vault_secret" "log_ws_key2" {
     azurerm_key_vault_access_policy.spn_access
   ]
 }
-#
-# # Create a secret for the created databricks workspace url ---------------------
-# resource "azurerm_key_vault_secret" "db_ws_url" {
-#   name         = module.config.integration.kv_secret_db_ws_url
-#   value        = "https://${azurerm_databricks_workspace.db_workspace.workspace_url}/"
-#   key_vault_id = azurerm_key_vault.key_vault.id
-#   depends_on = [
-#     azurerm_key_vault.key_vault,
-#     azurerm_databricks_workspace.db_workspace,
-#     azurerm_key_vault_access_policy.spn_access
-#   ]
-# }
+

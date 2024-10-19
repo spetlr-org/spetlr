@@ -18,19 +18,14 @@ resource "azuread_application_password" "captain" {
   application_id = azuread_application.captain.id
 }
 
-resource "azurerm_role_assignment" "captain" {
-  scope                = data.azurerm_subscription.primary.id
-  role_definition_name = "Contributor"
-  principal_id         = azuread_service_principal.captain.object_id
-}
 
-# Set the cicd spn storage account role needed for eventhub capture blob  -------
-resource "azurerm_role_assignment" "cicd_spn" {
-  scope                = azurerm_storage_account.storage_account.id
-  role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = data.azuread_service_principal.cicd_spn.object_id
-  depends_on = [
-    azurerm_databricks_access_connector.ext_access_connector,
-    azurerm_storage_account.storage_account
-  ]
-}
+# # Set the cicd spn storage account role needed for eventhub capture blob  -------
+# resource "azurerm_role_assignment" "cicd_spn" {
+#   scope                = azurerm_storage_account.storage_account.id
+#   role_definition_name = "Storage Blob Data Contributor"
+#   principal_id         = data.azuread_service_principal.cicd_spn.object_id
+#   depends_on = [
+#     azurerm_databricks_access_connector.ext_access_connector,
+#     azurerm_storage_account.storage_account
+#   ]
+# }

@@ -48,8 +48,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
           TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
-          # The 'a' was added to avoid collisions when I changed to another pipeline.
-          TF_VAR_uniqueRunId: a${{ github.run_id }}${{ github.run_attempt }}
+          TF_VAR_uniqueRunId: ${{ github.run_id }}${{ github.run_attempt }}
         run: |
           terraform -chdir="./.github/terraform/integration_resources" init
           terraform -chdir="./.github/terraform/integration_resources" apply -auto-approve
@@ -62,7 +61,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
           TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
-          TF_VAR_uniqueRunId: a${{ github.run_id }}${{ github.run_attempt }}
+          TF_VAR_uniqueRunId: ${{ github.run_id }}${{ github.run_attempt }}
         run: |
           terraform -chdir="./.github/terraform/integration_databricks" init
           terraform -chdir="./.github/terraform/integration_databricks" apply -auto-approve

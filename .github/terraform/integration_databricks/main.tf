@@ -11,13 +11,6 @@ terraform {
   backend "local" {
     path = "integration_databricks.tfstate"
   }
-  # backend "azurerm" {
-  #   use_azuread_auth     = true
-  #   resource_group_name  = "Terraform-State-Stoarge"
-  #   storage_account_name = "spetlrtfstate"
-  #   container_name       = "tfstate"
-  #   key                  = "integration_databricks.tfstate"
-  # } # This is temporary
 }
 
 provider "azurerm" {
@@ -37,9 +30,6 @@ provider "databricks" {
 provider "databricks" {
   alias = "workspace"
   host  = data.azurerm_databricks_workspace.db_workspace.workspace_url
-  # azure_client_id     = data.azurerm_key_vault_secret.captain_spn_id.value
-  # azure_client_secret = data.azurerm_key_vault_secret.captain_spn_password.value
-  # azure_tenant_id     = data.azurerm_key_vault_secret.captain_spn_tenant.value
 }
 
 

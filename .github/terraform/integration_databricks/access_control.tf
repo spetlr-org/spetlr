@@ -47,10 +47,10 @@ resource "databricks_storage_credential" "ex_storage_cred" {
   azure_managed_identity {
     access_connector_id = data.azurerm_databricks_access_connector.ext_access_connector.id
   }
-  force_destroy  = true
-  force_update   = true
-  isolation_mode = "ISOLATION_MODE_ISOLATED"
-  comment        = "Datrabricks external storage credentials"
+  #  force_destroy  = true
+  #  force_update   = true
+  #  isolation_mode = "ISOLATION_MODE_ISOLATED"
+  comment = "Datrabricks external storage credentials"
   depends_on = [
     databricks_metastore_assignment.db_metastore_assign_workspace,
     databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,

@@ -1,14 +1,14 @@
 name: "Deploy Metastore and Permanent Resources"
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/terraform/metastore/**"
-      - ".github/terraform/permanent_resources/**"
-      - ".github/workflows/deployment-permanent-resources.yml"
   workflow_dispatch:
+#  push:
+#    branches:
+#      - main
+#    paths:
+#      - ".github/terraform/metastore/**"
+#      - ".github/terraform/permanent_resources/**"
+#      - ".github/workflows/deployment-permanent-resources.yml"
 
 jobs:
   deploy_permanent_resources:

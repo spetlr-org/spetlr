@@ -21,7 +21,7 @@ resource "databricks_schema" "volumes" {
   provider = databricks.workspace
 
   catalog_name = databricks_catalog.catalog.name
-  name         = "Volumes"
+  name         = "volumes"
   comment      = "this schema is for all volumes"
   properties = {
     kind = "various"

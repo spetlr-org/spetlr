@@ -7,8 +7,11 @@
 resource "databricks_metastore_assignment" "db_metastore_assign_workspace" {
   provider = databricks.account
 
-  metastore_id = data.databricks_metastore.db_metastore.id
-  workspace_id = data.azurerm_databricks_workspace.db_workspace.workspace_id
+  metastore_id         = data.databricks_metastore.db_metastore.id
+  workspace_id         = data.azurerm_databricks_workspace.db_workspace.workspace_id
+  default_catalog_name = module.config.integration.resource_name
+
+
   depends_on = [
     data.databricks_metastore.db_metastore,
     data.azurerm_databricks_workspace.db_workspace
@@ -58,12 +61,12 @@ resource "databricks_storage_credential" "ex_storage_cred" {
   ]
 }
 
-resource "time_sleep" "wait_for_ex_storage_cred" {
-  create_duration = "7s"
-  depends_on = [
-    databricks_storage_credential.ex_storage_cred
-  ]
-}
+# resource "time_sleep" "wait_for_ex_storage_cred" {
+#   create_duration = "7s"
+#   depends_on = [
+#     databricks_storage_credential.ex_storage_cred
+#   ]
+# }
 
 resource "databricks_grants" "ex_creds" {
   provider           = databricks.workspace
@@ -73,8 +76,7 @@ resource "databricks_grants" "ex_creds" {
     privileges = ["ALL_PRIVILEGES"]
   }
   depends_on = [
-    databricks_storage_credential.ex_storage_cred,
-    time_sleep.wait_for_ex_storage_cred
+    databricks_storage_credential.ex_storage_cred
   ]
 }
 
@@ -88,7 +90,7 @@ resource "time_sleep" "wait_for_ex_creds" {
 ## Create extrenal location and grant privilages for catalog data storage ---------------
 resource "databricks_external_location" "catalog" {
   provider = databricks.workspace
-  name     = module.config.integration.catalog_container_name
+  name     = "${module.config.integration.catalog_container_name}${var.uniqueRunId}"
   url = join(
     "",
     [
@@ -97,12 +99,13 @@ resource "databricks_external_location" "catalog" {
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id
-  force_destroy   = true
-  force_update    = true
-  comment         = "Databricks external location for catalog data"
+  # force_destroy   = true
+  # force_update    = true
+  comment = "Databricks external location for catalog data"
   depends_on = [
-    databricks_grants.ex_creds,
-    time_sleep.wait_for_ex_creds
+    databricks_grants.ex_creds
+    # ,
+    #   time_sleep.wait_for_ex_creds
   ]
 }
 
@@ -123,7 +126,7 @@ resource "databricks_grants" "catalog" {
 resource "databricks_external_location" "capture" {
   provider = databricks.workspace
 
-  name = module.config.integration.capture_container_name
+  name = "${module.config.integration.capture_container_name}${var.uniqueRunId}"
   url = join(
     "",
     [
@@ -132,9 +135,9 @@ resource "databricks_external_location" "capture" {
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id
-  force_destroy   = true
-  force_update    = true
-  comment         = "Databricks external location for capture data"
+  # force_destroy   = true
+  # force_update    = true
+  comment = "Databricks external location for capture data"
   depends_on = [
     databricks_grants.ex_creds,
     time_sleep.wait_for_ex_creds
@@ -158,7 +161,7 @@ resource "databricks_grants" "capture" {
 resource "databricks_external_location" "init" {
   provider = databricks.workspace
 
-  name = module.config.integration.init_container_name
+  name = "${module.config.integration.init_container_name}${var.uniqueRunId}"
   url = join(
     "",
     [
@@ -167,9 +170,9 @@ resource "databricks_external_location" "init" {
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id
-  force_destroy   = true
-  force_update    = true
-  comment         = "Databricks external location for init data"
+  # force_destroy   = true
+  # force_update    = true
+  comment = "Databricks external location for init data"
   depends_on = [
     databricks_grants.ex_creds,
     time_sleep.wait_for_ex_creds
@@ -197,6 +200,7 @@ resource "databricks_grants" "catalog_data" {
 
   catalog = databricks_catalog.catalog.name
   grant {
+    ## TODO: May also have to grant catptain usage for catalog
     principal  = module.config.permanent.metastore_admin_group_name
     privileges = ["ALL_PRIVILEGES"]
   }
@@ -206,32 +210,3 @@ resource "databricks_grants" "catalog_data" {
   ]
 }
 
-## Grant privilages for capture
-resource "databricks_grants" "catalog_capture" {
-  provider = databricks.workspace
-
-  catalog = databricks_catalog.capture.name
-  grant {
-    principal  = module.config.permanent.metastore_admin_group_name
-    privileges = ["ALL_PRIVILEGES"]
-  }
-  depends_on = [
-    databricks_catalog.capture,
-    databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-  ]
-}
-
-## Grant privilages for init
-resource "databricks_grants" "catalog_init" {
-  provider = databricks.workspace
-
-  catalog = databricks_catalog.init.name
-  grant {
-    principal  = module.config.permanent.metastore_admin_group_name
-    privileges = ["ALL_PRIVILEGES"]
-  }
-  depends_on = [
-    databricks_catalog.init,
-    databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-  ]
-}

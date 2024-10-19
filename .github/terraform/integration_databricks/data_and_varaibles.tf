@@ -16,11 +16,6 @@ data "azurerm_key_vault" "key_vault" {
   resource_group_name = module.config.integration.rg_name
 }
 
-data "azurerm_key_vault_secret" "workspace_url" {
-  name         = module.config.integration.kv_secret_db_ws_url
-  key_vault_id = data.azurerm_key_vault.key_vault.id
-}
-
 data "azurerm_key_vault_secret" "captain_spn_id" {
   name         = module.config.integration.captain.kv_secret_id
   key_vault_id = data.azurerm_key_vault.key_vault.id

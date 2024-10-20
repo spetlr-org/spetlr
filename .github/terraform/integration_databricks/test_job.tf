@@ -8,7 +8,7 @@ data "databricks_node_type" "smallest" {
 
 locals {
   git_root = data.external.git.result.root
-  lib_file = fileset("${local.git_root}/dist/", "*.whl")[0]
+  lib_file = one(fileset("${local.git_root}/dist/", "*.whl"))
 }
 
 resource "azurerm_storage_blob" "wheel" {

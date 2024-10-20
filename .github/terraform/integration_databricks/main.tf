@@ -30,6 +30,10 @@ provider "databricks" {
 }
 
 
+variable "db_account_id" {
+  description = "The databricks Account Id"
+}
+
 variable "uniqueRunId" {}
 
 module "config" {

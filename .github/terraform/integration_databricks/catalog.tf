@@ -10,7 +10,7 @@ resource "databricks_catalog" "catalog" {
   isolation_mode = "ISOLATED"
   # force_destroy  = true
   storage_root = databricks_external_location.catalog.url
-  owner        = data.databricks_group.db_metastore_admin_group.display_name
+  owner        = databricks_group.catalog_users.display_name
   depends_on = [
     databricks_external_location.catalog,
     data.databricks_group.db_metastore_admin_group

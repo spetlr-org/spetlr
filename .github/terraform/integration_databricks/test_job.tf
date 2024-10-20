@@ -59,10 +59,10 @@ resource "databricks_job" "integration" {
         "spark.databricks.delta.preview.enabled" : "true",
         "spark.databricks.io.cache.enabled" : "true"
       }
-      azure_attributes = {
-        "availability" : "ON_DEMAND_AZURE",
-        "first_on_demand" : 1,
-        "spot_bid_max_price" : -1
+      azure_attributes {
+        availability       = "ON_DEMAND_AZURE"
+        first_on_demand    = 1
+        spot_bid_max_price = -1
       }
       custom_tags = {
         "ResourceClass" : "SingleNode"

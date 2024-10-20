@@ -22,7 +22,7 @@ resource "databricks_secret_scope" "values" {
 
   name = "values"
   depends_on = [
-    databricks_metastore_assignment.db_metastore_assign_workspace
+    time_sleep.wait_for_groups_sync
   ]
 }
 

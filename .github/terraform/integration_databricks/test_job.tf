@@ -47,6 +47,10 @@ resource "databricks_job" "integration" {
   name        = "Integration and Unit Test Job"
   description = "This job executes the unit-tests defined in the spetlr repo."
 
+  depends_on = [
+    databricks_volume.init
+  ]
+
   job_cluster {
     job_cluster_key = "cluster1"
     new_cluster {

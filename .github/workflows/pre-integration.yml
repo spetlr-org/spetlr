@@ -9,11 +9,48 @@ on:
       - reopened
 
 jobs:
-  deploy_integration_resources:
-    environment: "azure"
+   unit_test:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+       - name: Setup Python
+         uses: actions/setup-python@v4
+         with:
+           python-version: "3.10" # Goes with DBR 14.3
+
+       - uses: actions/setup-java@v4
+       # this workflow needs java so that it can run a local instance of spark
+         with:
+           java-version: "11"
+           distribution: "temurin"
+       - name: Install the package
+         run: pip install .
+       - name: Install test requirements
+         run: pip install -r requirements_dev.txt
+       - name: Check code formatting
+         run: |
+           black --check .
+           isort --check .
+       - name: Check code linting
+         run: flake8 . --exclude tests
+       - name: Run Tests
+         run: python -m pytest tests/local
+
+integration_test:
+    environment: azure
+    concurrency: azure-integration
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10" # Goes with DBR 14.3
+
+      - name: Build Spetlr Library
+        shell: pwsh
+        run: .github/deploy/build.ps1
 
       - name: Log in to azure
         shell: pwsh
@@ -64,58 +101,22 @@ jobs:
           terraform -chdir="./.github/terraform/integration_databricks" init
           terraform -chdir="./.github/terraform/integration_databricks" apply -auto-approve
 
-#      - name: Setup Python
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: "3.10"
-#
-#      - name: Build Spetlr Library
-#        shell: pwsh
-#        run: .github/submit/build.ps1
-#
-#      - name: Setup Databricks CLI
-#        shell: bash
-#        run: |
-#          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
-#          databricks -v
-#
+
+# TODO: At this point we need to use the CLI to launch and wait for completion of the test job.
+
 #      - name: Connect to Databricks
 #        shell: pwsh
-#        run: |
-#          .github/submit/connect_DB_api.ps1
+#        run: .github/deploy/connect_DB_api.ps1
+#
 #
 #
 #      - name: Launch integration tests with DBR 14.3
 #        shell: pwsh
-#        run: |
-#          .github/submit/submit_test_job.ps1  `
-#            -cluster_env cluster_env_14_3.json `
-#            -sparkLibs sparklibs14_3.json
-
-
-# Don't destroy resources.
+#        run: .github/deploy/launch_test_job.ps1
+##          .github/submit/submit_test_job.ps1  `
+##            -cluster_env cluster_env_14_3.json `
+##            -sparkLibs sparklibs14_3.json
 #
-#      - name: Databricks Integration Terraform Destroy
-#        run: terraform -chdir="./.github/terraform/integration_databricks" apply -destroy -auto-approve
-#        env:
-#          ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
-#          ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
-#          ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
-#          ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
-#          ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
-#          TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
-#          TF_VAR_uniqueRunId: ${{ github.run_id }}${{ github.run_attempt }}
-#
-#      - name: Integration Resources Terraform Destroy
-#        run: terraform -chdir="./.github/terraform/integration_resources" apply -destroy -auto-approve
-#        env:
-#          ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
-#          ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
-#          ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
-#          ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
-#          ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
-#          TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
-#          TF_VAR_uniqueRunId: ${{ github.run_id }}${{ github.run_attempt }}
 
       - name: Destroy Azure resources
         if: always()
@@ -134,56 +135,9 @@ jobs:
         run: az logout
 
 
-# on:
-#   pull_request:
-#     types:
-#       - opened
-#       - synchronize
-#       - reopened
 
 # jobs:
-#   unit_test:
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         python_version:
-#           - "3.10"
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: Setup Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: ${{ matrix.python_version }}
-#       - uses: actions/setup-java@v4
-#       # this workflow needs java so that it can run a local instance of spark
-#         with:
-#           java-version: "11"
-#           distribution: "temurin"
-#       - name: Install the package
-#         run: pip install .
-#       - name: Install test requirements
-#         run: pip install -r requirements_dev.txt
-#       - name: Check code formatting
-#         run: |
-#           black --check .
-#           isort --check .
-#       - name: Check code linting
-#         run: flake8 . --exclude tests
-#       - name: Run Tests
-#         run: python -m pytest tests/local
 
-#   integration_test:
-#     #    needs: unit_test # integration can be run in parallel with unit-tests
-#     runs-on: ubuntu-latest
-#     environment: azure
-#     concurrency: azure-integration
-#     steps:
-#       - uses: actions/checkout@v4
-
-#       - name: Setup Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: "3.10"
 
 #       - name: Build Spetlr Library
 #         shell: pwsh

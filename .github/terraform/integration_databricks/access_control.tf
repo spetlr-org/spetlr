@@ -18,6 +18,14 @@ resource "databricks_metastore_assignment" "db_metastore_assign_workspace" {
   ]
 }
 
+
+
+data "databricks_group" "db_metastore_admin_group" {
+  provider = databricks.account
+
+  display_name = module.config.permanent.metastore_admin_group_name
+}
+
 # Access control for users, groups and principals ---------------------------------------------------------
 
 ## Add metastore admin group to the workspace as the workspace admin
@@ -140,12 +148,12 @@ resource "databricks_grants" "capture" {
 resource "databricks_external_location" "init" {
   provider = databricks.workspace
 
-  name = "${module.config.integration.init_container_name}${var.uniqueRunId}"
+  name = "${data.azurerm_storage_container.init.name}${var.uniqueRunId}"
   url = join(
     "",
     [
-      "abfss://${module.config.integration.init_container_name}",
-      "@${module.config.integration.resource_name}.dfs.core.windows.net/"
+      "abfss://${data.azurerm_storage_container.init.name}",
+      "@${data.azurerm_storage_container.init.storage_account_name}.dfs.core.windows.net/"
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id

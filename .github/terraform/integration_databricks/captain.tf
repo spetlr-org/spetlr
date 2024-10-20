@@ -1,6 +1,3 @@
-## This module is for managing the databricks account like metastore, groups, users, SPNs, ... ##
-
-# Manage metastore admin groups, SPNs and members ----------------------------------------------
 resource "databricks_service_principal" "captain" {
   provider = databricks.account
 
@@ -10,27 +7,6 @@ resource "databricks_service_principal" "captain" {
     data.azuread_service_principal.captain
   ]
 }
-
-resource "databricks_group" "catalog_users" {
-  provider     = databricks.account
-  display_name = "${module.config.integration.resource_name} users"
-}
-
-resource "databricks_group_member" "captain" {
-  provider = databricks.account
-
-  group_id  = databricks_group.catalog_users.id
-  member_id = databricks_service_principal.captain.id
-}
-
-resource "databricks_group_member" "metastore" {
-  provider = databricks.account
-
-  group_id  = databricks_group.catalog_users.id
-  member_id = data.databricks_group.db_metastore_admin_group.id
-}
-
-
 
 resource "databricks_service_principal_secret" "captain_secret" {
   provider = databricks.account

@@ -9,10 +9,9 @@ terraform {
     path = "integration_resources.tfstate"
   }
 }
-variable "subscription_id" {}
+
 provider "azurerm" {
   features {}
-  subscription_id = var.subscription_id
 }
 
 variable "uniqueRunId" {}

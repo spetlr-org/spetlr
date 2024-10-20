@@ -16,6 +16,7 @@ terraform {
 provider "azurerm" {
   features {}
 }
+
 provider "databricks" {
   alias      = "account"
   host       = "https://accounts.azuredatabricks.net"

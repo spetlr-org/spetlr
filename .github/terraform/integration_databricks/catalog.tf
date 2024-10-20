@@ -1,6 +1,11 @@
 ## This module is to create the unity catalog 3-levels namespace components (catalog.schema.volume) ##
 ## Data componenets like tables and views will not be created here. as they will be handled during ETL ##
 
+data "azurerm_storage_container" "init" {
+  name                 = module.config.integration.init_container_name
+  storage_account_name = module.config.integration.resource_name
+}
+
 # Create catalog for catalog data ---------------------------------------------------------------------------------
 resource "databricks_catalog" "catalog" {
   provider = databricks.workspace
@@ -51,7 +56,7 @@ resource "databricks_volume" "capture" {
 resource "databricks_volume" "init" {
   provider = databricks.workspace
 
-  name             = module.config.integration.init_drivers_folder
+  name             = data.azurerm_storage_container.init.name
   catalog_name     = databricks_catalog.catalog.name
   schema_name      = databricks_schema.volumes.name
   volume_type      = "EXTERNAL"
@@ -61,4 +66,8 @@ resource "databricks_volume" "init" {
   depends_on = [
     databricks_schema.volumes,
   ]
+}
+
+locals {
+  init_vol_path = "/Volumes/${databricks_catalog.catalog.name}/volumes/${databricks_volume.init.name}"
 }

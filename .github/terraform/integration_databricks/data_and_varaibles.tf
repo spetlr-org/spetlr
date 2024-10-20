@@ -48,9 +48,3 @@ data "azurerm_databricks_workspace" "db_workspace" {
   resource_group_name = module.config.integration.rg_name
 }
 
-
-variable "db_account_id" {
-  type        = string
-  description = "The databricks Account Id for Spetlr subscription."
-  default     = "939f40ff-6952-42dc-9aca-3830070d18d3" # remove this
-}

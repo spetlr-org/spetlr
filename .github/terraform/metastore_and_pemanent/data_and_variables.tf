@@ -3,6 +3,5 @@ data "databricks_service_principal" "cicd_spn" {
 }
 
 variable "db_account_id" {
-  type        = string
-  description = "The databricks Account Id for Spetlr subscription."
+  description = "The databricks Account Id."
 }

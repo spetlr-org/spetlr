@@ -22,7 +22,7 @@ resource "databricks_catalog" "catalog" {
   ]
 }
 
-resource "databricks_catalog_workspace_binding" "bind_ws" {
+resource "databricks_workspace_binding" "bind_ws" {
   provider       = databricks.workspace
   securable_name = databricks_catalog.catalog.name
   workspace_id   = data.azurerm_databricks_workspace.db_workspace.workspace_id
@@ -41,7 +41,7 @@ resource "databricks_schema" "volumes" {
   owner = databricks_group.catalog_users.display_name
   depends_on = [
     databricks_catalog.catalog,
-    databricks_grants.capture
+    databricks_grants.catalog
   ]
 }
 

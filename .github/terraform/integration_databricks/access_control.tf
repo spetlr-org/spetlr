@@ -81,7 +81,8 @@ resource "databricks_storage_credential" "ex_storage_cred" {
 }
 
 resource "databricks_grants" "ex_creds" {
-  provider           = databricks.workspace
+  provider = databricks.workspace
+
   storage_credential = databricks_storage_credential.ex_storage_cred.id
   grant {
     principal  = databricks_group.catalog_users.display_name
@@ -92,7 +93,8 @@ resource "databricks_grants" "ex_creds" {
 ## Create extrenal location and grant privilages for catalog data storage ---------------
 resource "databricks_external_location" "catalog" {
   provider = databricks.workspace
-  name     = "${module.config.integration.catalog_container_name}${var.uniqueRunId}"
+
+  name = "${module.config.integration.catalog_container_name}${var.uniqueRunId}"
   url = join(
     "",
     [

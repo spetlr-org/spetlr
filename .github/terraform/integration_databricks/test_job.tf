@@ -44,6 +44,8 @@ resource "azurerm_storage_blob" "test_main" {
 
 
 resource "databricks_job" "integration" {
+  provider = databricks.workspace
+
   name        = "Integration and Unit Test Job"
   description = "This job executes the unit-tests defined in the spetlr repo."
 
@@ -111,6 +113,8 @@ resource "databricks_job" "integration" {
 }
 
 resource "databricks_permissions" "job_manage" {
+  provider = databricks.workspace
+
   job_id = databricks_job.integration.id
   access_control {
     permission_level       = "CAN_MANAGE_RUN"

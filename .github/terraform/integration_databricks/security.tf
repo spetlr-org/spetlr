@@ -5,7 +5,8 @@ data "databricks_service_principal" "cicd_spn" {
 }
 
 resource "databricks_group" "catalog_users" {
-  provider     = databricks.account
+  provider = databricks.account
+
   display_name = "${module.config.integration.resource_name} users"
 }
 

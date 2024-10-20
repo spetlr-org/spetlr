@@ -36,12 +36,14 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
           TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
+          TF_VAR_subscription_id: ${{ secrets.SPN_SUBSCRIPTION_ID }}
         run: |
           terraform -chdir="./.github/terraform/metastore_and_pemanent" init
           terraform -chdir="./.github/terraform/metastore_and_pemanent" apply -auto-approve
 
       - name: Integration Resources Terraform
         env:
+          TF_VAR_subscription_id: ${{ secrets.SPN_SUBSCRIPTION_ID }}
           TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
           TF_VAR_uniqueRunId: ${{ github.run_id }}${{ github.run_attempt }}
         run: |
@@ -50,6 +52,7 @@ jobs:
 
       - name: Databricks Integration Terraform
         env:
+          TF_VAR_subscription_id: ${{ secrets.SPN_SUBSCRIPTION_ID }}
           TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
           TF_VAR_uniqueRunId: ${{ github.run_id }}${{ github.run_attempt }}
         run: |

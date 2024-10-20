@@ -1,5 +1,7 @@
 
 data "databricks_service_principal" "cicd_spn" {
+  provider = databricks.account
+
   application_id = data.azurerm_client_config.current.client_id
 }
 

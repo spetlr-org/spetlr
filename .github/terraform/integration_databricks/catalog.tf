@@ -26,7 +26,7 @@ resource "databricks_schema" "volumes" {
   properties = {
     kind = "various"
   }
-  owner = data.databricks_group.db_metastore_admin_group.display_name
+  owner = databricks_group.catalog_users.display_name
   depends_on = [
     databricks_catalog.catalog,
     databricks_grants.capture
@@ -42,7 +42,7 @@ resource "databricks_volume" "capture" {
   volume_type      = "EXTERNAL"
   storage_location = databricks_external_location.capture.url
   comment          = "External volume to store init driver files"
-  owner            = data.databricks_group.db_metastore_admin_group.display_name
+  owner            = databricks_group.catalog_users.display_name
   depends_on = [
     databricks_schema.volumes,
   ]
@@ -57,7 +57,7 @@ resource "databricks_volume" "init" {
   volume_type      = "EXTERNAL"
   storage_location = databricks_external_location.init.url
   comment          = "External volume to store init driver files"
-  owner            = data.databricks_group.db_metastore_admin_group.display_name
+  owner            = databricks_group.catalog_users.display_name
   depends_on = [
     databricks_schema.volumes,
   ]

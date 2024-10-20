@@ -34,6 +34,18 @@ resource "databricks_mws_permission_assignment" "add_metastore_admin_group_to_wo
   ]
 }
 
+## Add metastore admin group to the workspace as the workspace admin
+resource "databricks_mws_permission_assignment" "add_user_group_to_workspace" {
+  provider = databricks.account
+
+  workspace_id = data.azurerm_databricks_workspace.db_workspace.workspace_id
+  principal_id = databricks_group.catalog_users.id
+  permissions  = ["ADMIN"]
+  depends_on = [
+    databricks_metastore_assignment.db_metastore_assign_workspace
+  ]
+}
+
 resource "time_sleep" "wait_for_groups_sync" {
   create_duration = "7s"
   depends_on = [
@@ -56,8 +68,7 @@ resource "databricks_storage_credential" "ex_storage_cred" {
   comment = "Datrabricks external storage credentials"
   depends_on = [
     databricks_metastore_assignment.db_metastore_assign_workspace,
-    databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-    time_sleep.wait_for_groups_sync
+    databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace
   ]
 }
 
@@ -65,12 +76,9 @@ resource "databricks_grants" "ex_creds" {
   provider           = databricks.workspace
   storage_credential = databricks_storage_credential.ex_storage_cred.id
   grant {
-    principal  = module.config.permanent.metastore_admin_group_name
+    principal  = databricks_group.catalog_users.display_name
     privileges = ["ALL_PRIVILEGES"]
   }
-  depends_on = [
-    databricks_storage_credential.ex_storage_cred
-  ]
 }
 
 ## Create extrenal location and grant privilages for catalog data storage ---------------
@@ -85,14 +93,7 @@ resource "databricks_external_location" "catalog" {
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id
-  # force_destroy   = true
-  # force_update    = true
-  comment = "Databricks external location for catalog data"
-  depends_on = [
-    databricks_grants.ex_creds
-    # ,
-    #   time_sleep.wait_for_ex_creds
-  ]
+  comment         = "Databricks external location for catalog data"
 }
 
 resource "databricks_grants" "catalog" {
@@ -100,12 +101,9 @@ resource "databricks_grants" "catalog" {
 
   external_location = databricks_external_location.catalog.id
   grant {
-    principal  = module.config.permanent.metastore_admin_group_name
+    principal  = databricks_group.catalog_users.display_name
     privileges = ["ALL_PRIVILEGES"]
   }
-  depends_on = [
-    databricks_external_location.catalog
-  ]
 }
 
 ## Create extrenal location and grant privilages for capture data storage ---------------
@@ -121,8 +119,7 @@ resource "databricks_external_location" "capture" {
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id
-  # force_destroy   = true
-  # force_update    = true
+
   comment = "Databricks external location for capture data"
   depends_on = [
     databricks_grants.ex_creds
@@ -134,12 +131,9 @@ resource "databricks_grants" "capture" {
 
   external_location = databricks_external_location.capture.id
   grant {
-    principal  = module.config.permanent.metastore_admin_group_name
+    principal  = databricks_group.catalog_users.display_name
     privileges = ["ALL_PRIVILEGES"]
   }
-  depends_on = [
-    databricks_external_location.capture
-  ]
 }
 
 ## Create extrenal location and grant privilages for init data storage ---------------
@@ -155,9 +149,7 @@ resource "databricks_external_location" "init" {
     ]
   )
   credential_name = databricks_storage_credential.ex_storage_cred.id
-  # force_destroy   = true
-  # force_update    = true
-  comment = "Databricks external location for init data"
+  comment         = "Databricks external location for init data"
   depends_on = [
     databricks_grants.ex_creds
   ]
@@ -168,12 +160,9 @@ resource "databricks_grants" "init" {
 
   external_location = databricks_external_location.init.id
   grant {
-    principal  = module.config.permanent.metastore_admin_group_name
+    principal  = databricks_group.catalog_users.display_name
     privileges = ["ALL_PRIVILEGES"]
   }
-  depends_on = [
-    databricks_external_location.init
-  ]
 }
 
 # Access control for catalogs -------------------------------------------------------------------------
@@ -185,12 +174,11 @@ resource "databricks_grants" "catalog_data" {
   catalog = databricks_catalog.catalog.name
   grant {
     ## TODO: May also have to grant catptain usage for catalog
-    principal  = module.config.permanent.metastore_admin_group_name
+    principal  = databricks_group.catalog_users.display_name
     privileges = ["ALL_PRIVILEGES"]
   }
-  depends_on = [
-    databricks_catalog.catalog,
-    databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-  ]
+  # depends_on = [
+  #   databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
+  # ]
 }
 

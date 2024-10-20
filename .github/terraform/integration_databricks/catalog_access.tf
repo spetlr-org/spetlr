@@ -18,3 +18,18 @@ resource "databricks_group_member" "metastore" {
   member_id = data.databricks_group.db_metastore_admin_group.id
 }
 
+
+resource "databricks_grants" "catalog_permissions" {
+  provider = databricks.workspace
+  catalog  = databricks_catalog.catalog.name
+
+  grant {
+    principal  = data.databricks_group.db_metastore_admin_group.display_name
+    privileges = ["ALL_PRIVILEGES"]
+  }
+
+  grant {
+    principal  = databricks_group.catalog_users.display_name
+    privileges = ["USE_CATALOG", "EXECUTE", "SELECT", "USE_SCHEMA", "READ_VOLUME"]
+  }
+}

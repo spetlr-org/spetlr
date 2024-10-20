@@ -1,18 +1,19 @@
 param (
-    [Parameter(Mandatory = $false)] # This should be true in final version
+    [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
     [string]
-    $uniqueRunId="" # default should be removed in final version
+    $uniqueRunId
 )
 
 ###############################################################################################
 # Get the resource group name and resource name
 ###############################################################################################
-$resourceGroupName  = "githubspetlr${$uniqueRunId}"  # This name is also used in the Terraform section
-$resourceName = "githubspetlr${$uniqueRunId}"  # This name is also used in the Terraform section
+$resourceName = "spetlr${$uniqueRunId}"  # This name is also used in the Terraform section
+$resourceGroupName  = $resourceName  # This name is also used in the Terraform section
 
 Write-Host "Resource group name is $resourceGroupName"
 Write-Host "Resource name is $resourceName"
+
 ###############################################################################################
 # Connect to Databricks
 ###############################################################################################
@@ -28,22 +29,19 @@ $workspaceUrl = "https://$workspaceUrl"
 Write-Host "Workspace URL is: $workspaceUrl" -ForegroundColor DarkYellow
 
 # Write-Host "Get Databricks captain SPN id " -ForegroundColor Green
-# $workspaceSpnId = az keyvault secret show `
-#     --vault-name $resourceName `
-#     --name $kvDbId `
-#     --query value `
-#     --out tsv
+$workspaceSpnId = az keyvault secret show `
+     --vault-name $resourceName `
+     --name "Captain--ClientId" `
+     --query value `
+     --out tsv
 
 # Write-Host "Get Databricks captain SPN secret " -ForegroundColor Green
-# $workspaceSpnToken = az keyvault secret show `
-#     --vault-name $resourceName `
-#     --name $kvDbSecret `
-#     --query value `
-#     --out tsv
+$workspaceSpnToken = az keyvault secret show `
+    --vault-name $resourceName `
+    --name "Captain--DbSecret" `
+    --query value `
+    --out tsv
 
-Write-Host "Generate .databrickscfg" -ForegroundColor DarkYellow
-Set-Content ~/.databrickscfg "[DEFAULT]"
-Add-Content ~/.databrickscfg "host = $workspaceUrl"
-# Add-Content ~/.databrickscfg "client_id = $workspaceSpnId"
-# Add-Content ~/.databrickscfg "client_secret = $workspaceSpnToken"
-Add-Content ~/.databrickscfg ""
+$env:DATABRICKS_HOST = $workspaceUrl
+$env:DATABRICKS_CLIENT_ID = $workspaceSpnId
+$env:DATABRICKS_CLIENT_SECRET = $workspaceSpnToken

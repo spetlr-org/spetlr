@@ -22,6 +22,13 @@ resource "databricks_catalog" "catalog" {
   ]
 }
 
+resource "databricks_catalog_workspace_binding" "bind_ws" {
+  provider       = databricks.workspace
+  securable_name = databricks_catalog.catalog.name
+  workspace_id   = data.azurerm_databricks_workspace.db_workspace.workspace_id
+  binding_type   = "BINDING_TYPE_READ_WRITE"
+}
+
 resource "databricks_schema" "volumes" {
   provider = databricks.workspace
 

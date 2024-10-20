@@ -38,7 +38,7 @@ resource "databricks_secret_acl" "value_usr" {
   provider = databricks.workspace
 
   permission = "READ"
-  principal  = databricks_group.catalog_users
+  principal  = databricks_group.catalog_users.display_name
   scope      = databricks_secret_scope.values.name
 }
 
@@ -46,6 +46,6 @@ resource "databricks_secret_acl" "secrets_usr" {
   provider = databricks.workspace
 
   permission = "READ"
-  principal  = databricks_group.catalog_users
+  principal  = databricks_group.catalog_users.display_name
   scope      = databricks_secret_scope.keyvault_backed_scope.name
 }

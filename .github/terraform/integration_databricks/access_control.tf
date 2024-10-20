@@ -106,7 +106,7 @@ resource "databricks_external_location" "catalog" {
   comment         = "Databricks external location for catalog data"
 }
 
-resource "databricks_grants" "catalog" {
+resource "databricks_grants" "catalog_exl" {
   provider = databricks.workspace
 
   external_location = databricks_external_location.catalog.id

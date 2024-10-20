@@ -181,17 +181,18 @@ resource "databricks_grants" "init" {
 # Access control for catalogs -------------------------------------------------------------------------
 
 ## Grant privilages for catalog
-resource "databricks_grants" "catalog_data" {
+resource "databricks_grants" "catalog" {
   provider = databricks.workspace
 
   catalog = databricks_catalog.catalog.name
   grant {
-    ## TODO: May also have to grant catptain usage for catalog
+    principal  = data.databricks_group.db_metastore_admin_group.display_name
+    privileges = ["ALL_PRIVILEGES"]
+  }
+  grant {
     principal  = databricks_group.catalog_users.display_name
     privileges = ["ALL_PRIVILEGES"]
   }
-  # depends_on = [
-  #   databricks_mws_permission_assignment.add_metastore_admin_group_to_workspace,
-  # ]
+
 }
 

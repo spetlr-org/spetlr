@@ -16,7 +16,7 @@ resource "azurerm_storage_blob" "wheel" {
   storage_account_name   = data.azurerm_storage_container.init.storage_account_name
   storage_container_name = data.azurerm_storage_container.init.name
   type                   = "Block"
-  source                 = local.lib_file
+  source                 = "${local.git_root}/dist/${local.lib_file}"
 }
 
 data "archive_file" "tests" {

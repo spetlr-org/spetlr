@@ -101,22 +101,15 @@ jobs:
           terraform -chdir="./.github/terraform/integration_databricks" init
           terraform -chdir="./.github/terraform/integration_databricks" apply -auto-approve
 
+      - name: Install Databricks CLI
+        shell: bash
+        run: curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
 
-  # TODO: At this point we need to use the CLI to launch and wait for completion of the test job.
+      - name: Execute Test Job
+        shell: pwsh
+        run: .github/deploy/connect_and_run.ps1
 
-  #      - name: Connect to Databricks
-  #        shell: pwsh
-  #        run: .github/deploy/connect_DB_api.ps1
-  #
-  #
-  #
-  #      - name: Launch integration tests with DBR 14.3
-  #        shell: pwsh
-  #        run: .github/deploy/launch_test_job.ps1
-  ##          .github/submit/submit_test_job.ps1  `
-  ##            -cluster_env cluster_env_14_3.json `
-  ##            -sparkLibs sparklibs14_3.json
-  #
+
 
       - name: Destroy Azure resources
         if: always()

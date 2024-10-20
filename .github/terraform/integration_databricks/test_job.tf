@@ -46,7 +46,7 @@ resource "azurerm_storage_blob" "test_main" {
 resource "databricks_job" "integration" {
   provider = databricks.workspace
 
-  name        = "Integration and Unit Test Job"
+  name        = "Test Job"
   description = "This job executes the unit-tests defined in the spetlr repo."
 
   depends_on = [

@@ -107,7 +107,7 @@ jobs:
 
       - name: Execute Test Job
         shell: pwsh
-        run: .github/submit/connect_and_run.ps1
+        run: .github/submit/connect_and_run.ps1 -uniqueRunId "${{ github.run_id }}${{ github.run_attempt }}"
 
       - name: Destroy Azure resources
         if: always()

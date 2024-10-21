@@ -48,7 +48,7 @@ resource "databricks_job" "integration" {
 
   depends_on = [
     databricks_volume.init,
-    databricks_access_control_rule_set.use_captain
+    time_sleep.databricks_access_control_rule_set_use_captain
   ]
 
   job_cluster {

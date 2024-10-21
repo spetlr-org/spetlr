@@ -31,8 +31,19 @@ resource "databricks_access_control_rule_set" "use_captain" {
   name = "accounts/${var.db_account_id}/servicePrincipals/${databricks_service_principal.captain.application_id}/ruleSets/default"
 
   grant_rules {
-    principals = [data.databricks_service_principal.cicd_spn.acl_principal_id]
-    role       = "roles/servicePrincipal.user"
+    principals = [
+      data.databricks_service_principal.cicd_spn.acl_principal_id,
+      data.databricks_group.db_metastore_admin_group.acl_principal_id
+    ]
+    role = "roles/servicePrincipal.user"
+  }
+
+  grant_rules {
+    principals = [
+      data.databricks_service_principal.cicd_spn.acl_principal_id,
+      data.databricks_group.db_metastore_admin_group.acl_principal_id
+    ]
+    role = "roles/servicePrincipal.manager"
   }
 }
 

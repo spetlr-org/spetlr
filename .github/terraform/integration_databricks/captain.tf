@@ -35,3 +35,10 @@ resource "databricks_access_control_rule_set" "use_captain" {
     role       = "roles/servicePrincipal.user"
   }
 }
+
+resource "time_sleep" "databricks_access_control_rule_set_use_captain" {
+  create_duration = "40s"
+  depends_on = [
+    databricks_access_control_rule_set.use_captain,
+  ]
+}

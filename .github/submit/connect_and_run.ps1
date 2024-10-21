@@ -8,7 +8,7 @@ param (
 ###############################################################################################
 # Get the resource group name and resource name
 ###############################################################################################
-$resourceName = "spetlr${$uniqueRunId}"  # This name is also used in the Terraform section
+$resourceName = "spetlr$uniqueRunId"  # This name is also used in the Terraform section
 $resourceGroupName  = $resourceName  # This name is also used in the Terraform section
 
 Write-Host "Resource group name is $resourceGroupName"

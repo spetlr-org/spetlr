@@ -47,7 +47,8 @@ resource "databricks_job" "integration" {
   description = "This job executes the unit-tests defined in the spetlr repo."
 
   depends_on = [
-    databricks_volume.init
+    databricks_volume.init,
+    databricks_access_control_rule_set.use_captain
   ]
 
   job_cluster {

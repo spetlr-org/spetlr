@@ -53,3 +53,21 @@ resource "time_sleep" "databricks_access_control_rule_set_use_captain" {
     databricks_access_control_rule_set.use_captain,
   ]
 }
+
+resource "databricks_permission_assignment" "user" {
+  provider = databricks.workspace
+
+  principal_id = databricks_group.catalog_users.id
+  permissions  = ["USER"]
+}
+
+
+resource "databricks_entitlements" "user" {
+  provider = databricks.workspace
+
+  group_id                   = databricks_group.catalog_users.id
+  allow_cluster_create       = true
+  allow_instance_pool_create = true
+  databricks_sql_access      = true
+  workspace_access           = true
+}

@@ -12,8 +12,6 @@ from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from spetlr.etl import Transformer
 from spetlr.orchestrators import EhJsonToDeltaOrchestrator
 from spetlr.spark import Spark
-from tests.cluster.values import resourceName
-from tests.mount.mount import mount_storage_account
 
 from .SpetlrEh import SpetlrEh
 
@@ -21,7 +19,6 @@ from .SpetlrEh import SpetlrEh
 class EventHubsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        mount_storage_account()
         Configurator().clear_all_configurations()
 
     def test_01_publish_and_read(self):
@@ -37,7 +34,11 @@ class EventHubsTests(unittest.TestCase):
         tc.register(
             "SpetlrEh",
             {
-                "path": f"/mnt/{resourceName()}/silver/{resourceName()}/spetlreh",
+                # This path should aligne with the path defined in
+                # integration_databricks catalog.
+                # We can also consider saving the defined schema and volume
+                # as values in the secret scope and call the here.
+                "path": "/Volumes/capture/capture_schema/spetlreh",
                 "format": "avro",
                 "partitioning": "ymd",
             },

@@ -1,46 +1,56 @@
+"""
+This is the default main file that is pushed to databricks to launch the test task.
+Its tasks are
+- to unpack the test archive,
+- print a sequence of marker characters to identify the start
+  of python executing in the output
+- run the tests using pytest
+This file is not intended to be used directly.
+"""
+
 import argparse
-import contextlib
-import io
 import os
+import shutil
 import sys
-import unittest
+from tempfile import TemporaryDirectory
+
+import pytest
 
 
-def run_all():
+def test_main():
+    """Main function to be called inside the test job task. Do not use directly."""
     parser = argparse.ArgumentParser(description="Run Test Cases.")
-    parser.add_argument(
-        "--basedir", type=str, required=True, help="parent location of test library"
-    )
-    parser.add_argument(
-        "--folder", type=str, required=True, help="which test folder to run"
-    )
+
+    parser.add_argument("--archive")
+
+    # relative path of test folder in test archive
+    parser.add_argument("--folder")
 
     args = parser.parse_args()
+    archive: str = args.archive
+    folder: str = args.folder
 
-    # process the logout path
-    basedir = args.basedir
-    if not str(basedir).startswith("dbfs:/"):
-        print("WARNING: argument basedir must start with dbfs:/")
-    else:
-        basedir = f"/dbfs/{basedir[6:]}"
+    with TemporaryDirectory() as tmpdir:
+        os.chdir(tmpdir)
 
-    os.chdir(basedir)
+        sys.path = [tmpdir] + sys.path
 
-    sys.path = [os.getcwd()] + sys.path
+        # unzip test archive to base folder
+        shutil.copy(archive, "tests.zip")
+        shutil.unpack_archive("tests.zip")
+        os.unlink("tests.zip")
 
-    suite = unittest.TestLoader().discover(args.folder)
-    with io.StringIO() as buf:
-        # run the tests
-        with contextlib.redirect_stdout(buf):
-            res = unittest.TextTestRunner(stream=buf, failfast=True).run(suite)
-        output = buf.getvalue()
-        print(output)
-        with open("results.log", "w") as f:
-            f.write(output)
+        # Ensure Spark is initialized before any tests are run
+        # the import statement is inside the function so that the outer file
+        # can be imported even where pyspark may not be available
+        from spetlr.spark import Spark
 
-        return 0 if res.wasSuccessful() else 1
+        Spark.get()
+
+        retcode = pytest.main(["-x", folder])
+        if retcode.value:
+            raise Exception("Pytest failed")
 
 
 if __name__ == "__main__":
-    if int(run_all()):
-        sys.exit(1)
+    test_main()

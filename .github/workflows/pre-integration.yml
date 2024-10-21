@@ -107,9 +107,7 @@ jobs:
 
       - name: Execute Test Job
         shell: pwsh
-        run: .github/deploy/connect_and_run.ps1
-
-
+        run: .github/submit/connect_and_run.ps1
 
       - name: Destroy Azure resources
         if: always()

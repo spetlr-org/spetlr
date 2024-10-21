@@ -3,9 +3,6 @@ variable "spark_version" {
   default = "14.3.x-scala2.12"
 }
 
-data "databricks_node_type" "smallest" {
-}
-
 locals {
   git_root = data.external.git.result.root
   lib_file = one(fileset("${local.git_root}/dist/", "*.whl"))
@@ -58,7 +55,7 @@ resource "databricks_job" "integration" {
     new_cluster {
       num_workers   = 0
       spark_version = var.spark_version
-      node_type_id  = data.databricks_node_type.smallest.id
+      node_type_id  = "Standard_DS3_v2"
       spark_conf = {
         "spark.databricks.cluster.profile" : "singleNode",
         "spark.master" : "local[*, 4]",

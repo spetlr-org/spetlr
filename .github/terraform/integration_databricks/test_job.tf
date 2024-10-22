@@ -31,14 +31,21 @@ resource "azurerm_storage_blob" "tests" {
   source                 = data.archive_file.tests.output_path
 }
 
-resource "azurerm_storage_blob" "test_main" {
-  name                   = "main.py"
-  storage_account_name   = data.azurerm_storage_container.init.storage_account_name
-  storage_container_name = data.azurerm_storage_container.init.name
-  type                   = "Block"
-  source                 = "${local.git_root}/.github/submit/main.py"
+# resource "azurerm_storage_blob" "test_main" {
+#   name                   = "main.py"
+#   storage_account_name   = data.azurerm_storage_container.init.storage_account_name
+#   storage_container_name = data.azurerm_storage_container.init.name
+#   type                   = "Block"
+#   source                 = "${local.git_root}/.github/submit/main.py"
+# }
+
+data "databricks_current_user" "me" {
 }
 
+resource "databricks_workspace_file" "test_main" {
+  source = "${local.git_root}/.github/submit/main.py"
+  path   = "${data.databricks_current_user.me.home}/main.py"
+}
 
 resource "databricks_job" "integration" {
   provider = databricks.workspace
@@ -85,7 +92,8 @@ resource "databricks_job" "integration" {
     job_cluster_key = "cluster1"
 
     spark_python_task {
-      python_file = "${local.init_vol_path}/${azurerm_storage_blob.test_main.name}"
+      python_file = databricks_workspace_file.test_main.workspace_path
+      # python_file = "${local.init_vol_path}/${azurerm_storage_blob.test_main.name}"
       parameters = [
         "--archive", "${local.init_vol_path}/${azurerm_storage_blob.tests.name}",
         "--folder", "tests/cluster"

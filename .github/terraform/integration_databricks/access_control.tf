@@ -50,7 +50,8 @@ resource "databricks_mws_permission_assignment" "add_user_group_to_workspace" {
   principal_id = databricks_group.catalog_users.id
   permissions  = ["ADMIN"]
   depends_on = [
-    databricks_metastore_assignment.db_metastore_assign_workspace
+    databricks_metastore_assignment.db_metastore_assign_workspace,
+    databricks_access_control_rule_set.use_captain
   ]
 }
 

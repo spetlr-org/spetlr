@@ -37,7 +37,7 @@ resource "databricks_access_control_rule_set" "use_captain" {
 }
 
 resource "time_sleep" "databricks_access_control_rule_set_use_captain" {
-  create_duration = "40s"
+  create_duration = "7s"
   depends_on = [
     databricks_access_control_rule_set.use_captain,
   ]

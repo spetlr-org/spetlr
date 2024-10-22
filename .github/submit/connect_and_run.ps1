@@ -62,13 +62,17 @@ $token = Get-Random
 # running wiht no-wait gives back the run-id
 $run = databricks jobs run-now --no-wait --idempotency-token $token $test_job | ConvertFrom-JSON
 
+$job = databricks jobs get-run $run.run_id | ConvertFrom-JSON
+
+Write-Host $job
+
 # re-using same idempotency-token connects to the same run
 databricks jobs run-now --idempotency-token $token $test_job
 $exitCode = $LASTEXITCODE
 
 # we can now use the run_id to print the output to screen
-databricks jobs get-run-output $run.run_id
-
+$logs = (databricks jobs get-run-output $job.tasks.run_id |  ConvertFrom-JSON).logs
+Write-Host $logs
 
 # Restore the original exit code
 exit $exitCode

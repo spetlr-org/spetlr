@@ -39,12 +39,30 @@ resource "azurerm_storage_blob" "tests" {
 #   source                 = "${local.git_root}/.github/submit/main.py"
 # }
 
-data "databricks_current_user" "me" {
-}
 
 resource "databricks_workspace_file" "test_main" {
+  provider = databricks.workspace
+
   source = "${local.git_root}/.github/submit/main.py"
-  path   = "${data.databricks_current_user.me.home}/main.py"
+  path   = "/Shared/test/main.py"
+
+  depends_on = [databricks_mws_permission_assignment.add_user_group_to_workspace]
+}
+
+resource "databricks_permissions" "test_main" {
+  provider = databricks.workspace
+
+  workspace_file_id = databricks_workspace_file.test_main.object_id
+
+  access_control {
+    group_name       = databricks_group.catalog_users.display_name
+    permission_level = "CAN_READ"
+  }
+
+  access_control {
+    group_name       = databricks_group.catalog_users.display_name
+    permission_level = "CAN_RUN"
+  }
 }
 
 resource "databricks_job" "integration" {

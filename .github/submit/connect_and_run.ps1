@@ -54,7 +54,21 @@ $test_job = (databricks jobs list -o json | ConvertFrom-JSON | Where-Object {$_.
 Write-Host "Found test job with id: $test_job"
 
 ###############################################################################################
-# Run the Test Job
+# Launch the Test Job
 ###############################################################################################
 
-databricks jobs run-now $test_job
+$token = Get-Random
+
+# running wiht no-wait gives back the run-id
+$run = databricks jobs run-now --no-wait --idempotency-token $token $test_job | ConvertFrom-JSON
+
+# re-using same idempotency-token connects to the same run
+databricks jobs run-now --idempotency-token $token $test_job
+$exitCode = $LASTEXITCODE
+
+# we can now use the run_id to print the output to screen
+databricks jobs get-run-output $run.run_id
+
+
+# Restore the original exit code
+exit $exitCode

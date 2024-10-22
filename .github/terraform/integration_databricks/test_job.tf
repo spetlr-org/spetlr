@@ -31,15 +31,6 @@ resource "azurerm_storage_blob" "tests" {
   source                 = data.archive_file.tests.output_path
 }
 
-# resource "azurerm_storage_blob" "test_main" {
-#   name                   = "main.py"
-#   storage_account_name   = data.azurerm_storage_container.init.storage_account_name
-#   storage_container_name = data.azurerm_storage_container.init.name
-#   type                   = "Block"
-#   source                 = "${local.git_root}/.github/submit/main.py"
-# }
-
-
 resource "databricks_workspace_file" "test_main" {
   provider = databricks.workspace
 
@@ -133,6 +124,24 @@ resource "databricks_job" "integration" {
         coordinates = "com.azure.cosmos.spark:azure-cosmos-spark_3-5_2-12:4.34.0"
       }
     }
+
+    # additional test dependencies below
+    library {
+      pypi {
+        package = "spetlr-tools>=0.1.66"
+      }
+    }
+    library {
+      pypi {
+        package = "pytest"
+      }
+    }
+    library {
+      pypi {
+        package = "freezegun"
+      }
+    }
+
   }
 
   run_as {

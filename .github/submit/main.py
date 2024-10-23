@@ -25,11 +25,8 @@ def test_main():
     parser.add_argument("--folder")
 
     args = parser.parse_args()
-    folder: str = args.folder
     archive: str = args.archive
-
-    if archive.startswith("dbfs:"):
-        archive = "/dbfs" + archive[5:]
+    folder: str = args.folder
 
     with TemporaryDirectory() as tmpdir:
         os.chdir(tmpdir)

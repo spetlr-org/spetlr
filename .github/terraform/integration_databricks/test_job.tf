@@ -102,9 +102,8 @@ resource "databricks_job" "integration" {
 
     spark_python_task {
       python_file = databricks_workspace_file.test_main.workspace_path
-      # python_file = "${local.init_vol_path}/${azurerm_storage_blob.test_main.name}"
       parameters = [
-        "--archive", "${local.init_vol_path}/${azurerm_storage_blob.tests.name}",
+        "--archive", "dbfs:${local.init_vol_path}/${azurerm_storage_blob.tests.name}",
         "--folder", "tests/cluster"
       ]
     }

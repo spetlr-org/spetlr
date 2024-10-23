@@ -2,8 +2,6 @@
 This is the default main file that is pushed to databricks to launch the test task.
 Its tasks are
 - to unpack the test archive,
-- print a sequence of marker characters to identify the start
-  of python executing in the output
 - run the tests using pytest
 This file is not intended to be used directly.
 """
@@ -27,8 +25,11 @@ def test_main():
     parser.add_argument("--folder")
 
     args = parser.parse_args()
-    archive: str = args.archive
     folder: str = args.folder
+    archive: str = args.archive
+
+    if archive.startswith("dbfs:"):
+        archive = "/dbfs" + archive[5:]
 
     with TemporaryDirectory() as tmpdir:
         os.chdir(tmpdir)

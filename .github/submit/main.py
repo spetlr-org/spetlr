@@ -33,10 +33,14 @@ def test_main():
 
         sys.path = [tmpdir] + sys.path
 
+        os.mkdir("tests/")
+        os.chdir("tests/")
+
         # unzip test archive to base folder
         shutil.copy(archive, "tests.zip")
         shutil.unpack_archive("tests.zip")
         os.unlink("tests.zip")
+        os.chdir(tmpdir)
 
         # Ensure Spark is initialized before any tests are run
         # the import statement is inside the function so that the outer file

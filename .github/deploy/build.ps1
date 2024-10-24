@@ -1,7 +1,7 @@
 
-$srcDir = "$PSScriptRoot/../.."
+$repoRoot = (git rev-parse --show-toplevel)
 
-Push-Location -Path $srcDir
+Push-Location -Path $repoRoot
 
 python -m pip install --upgrade pip
 pip install -r requirements_deploy.txt
@@ -12,11 +12,11 @@ if (Test-Path -Path dist) {
 }
 if (Test-Path -Path build) {
     Remove-Item -Force -Recurse build
-} 
+}
 if (Test-Path -Path src\spetlr.egg-info) {
     Remove-Item -Force -Recurse src\spetlr.egg-info
 }
-  
+
 pyclean -v .
 
 python setup.py bdist_wheel

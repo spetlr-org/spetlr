@@ -949,6 +949,8 @@ class PowerBi:
                     return True
         elif self.last_status == "Unknown":
             self._raise_error("Refresh is still in progress!")
+        elif self.last_status == "Canceled":
+            self._raise_error("Refresh has been canceled!")
         elif self.last_status == "Disabled":
             self._raise_error("Refresh is disabled!")
         elif self.last_status == "Failed":
@@ -1018,9 +1020,27 @@ class PowerBi:
         :raises PowerBiException: if failed and ignore_errors==False
         """
 
-        if self.last_status is None or self.last_status in ["Completed", "Failed"]:
+        if self.last_status == "Disabled":
+            self._raise_error("Refresh is disabled!")
+        elif self.last_status == "Unknown":
+            if self.is_enhanced or not self.table_names:
+                if with_wait:
+                    print("Refresh is in progress, waiting until completed.")
+                else:
+                    self._raise_error("Refresh is already in progress!")
+                return True
+            print("Refresh of the whole dataset is in progress. Nothing to do.")
+        else:
             if self.last_status == "Failed":
                 print(f"Warning: Last refresh failed! {self.last_exception}")
+                print()
+            elif self.last_status is not None and self.last_status not in [
+                "Completed",
+                "Canceled",
+            ]:
+                print(
+                    f"Unknown refresh status: {self.last_status}! {self.last_exception}"
+                )
                 print()
 
             post_body = self._get_refresh_argument_json(with_wait)
@@ -1043,20 +1063,7 @@ class PowerBi:
                     workspace_id=self.workspace_id,
                     dataset_id=self.dataset_id,
                 )
-        elif self.last_status == "Unknown":
-            if self.is_enhanced or not self.table_names:
-                if with_wait:
-                    print("Refresh is in progress, waiting until completed.")
-                else:
-                    self._raise_error("Refresh is already in progress!")
-                return True
-            print("Refresh of the whole dataset is in progress. Nothing to do.")
-        elif self.last_status == "Disabled":
-            self._raise_error("Refresh is disabled!")
-        else:
-            self._raise_error(
-                f"Unknown refresh status: {self.last_status}! {self.last_exception}"
-            )
+
         return False
 
     def _get_seconds_to_wait(self, elapsed_seconds: int) -> int:

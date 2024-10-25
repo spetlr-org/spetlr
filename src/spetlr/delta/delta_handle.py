@@ -117,9 +117,7 @@ class DeltaHandle(TableHandle):
             raise DeltaHandleInvalidFormat("Only format delta is supported.")
 
     def read(self) -> DataFrame:
-        """Read table by path if location is given, otherwise from name."""
-        if self._location:
-            return Spark.get().read.format(self._data_format).load(self._location)
+        """Read table is always by name."""
         return Spark.get().table(self._name)
 
     def write_or_append(
@@ -144,9 +142,6 @@ class DeltaHandle(TableHandle):
 
         if overwritePartitions:
             writer = writer.option("partitionOverwriteMode", "dynamic")
-
-        if self._location:
-            return writer.save(self._location)
 
         return writer.saveAsTable(self._name)
 
@@ -264,7 +259,7 @@ class DeltaHandle(TableHandle):
             special_update_set="",
         )
 
-        df._jdf.sparkSession().sql(merge_sql_statement)
+        Spark.get().sparkSession().sql(merge_sql_statement)
 
         print("Incremental Base - incremental load with merge")
 
@@ -286,17 +281,12 @@ class DeltaHandle(TableHandle):
         Spark.get().sql(sql_str)
 
     def read_stream(self) -> DataFrame:
-        reader = (
+        return (
             Spark.get()
             .readStream.format(self._data_format)
             .options(**self._options_dict)
+            .table(self._name)
         )
-        if self._location:
-            df = reader.load(self._location)
-        else:
-            df = reader.table(self._name)
-
-        return df
 
     def set_options_dict(self, options: Dict[str, str]):
         self._options_dict = options

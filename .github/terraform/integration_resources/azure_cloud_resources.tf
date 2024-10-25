@@ -212,9 +212,10 @@ resource "azurerm_databricks_workspace" "db_workspace" {
   location            = azurerm_resource_group.rg.location
   sku                 = "premium"
   tags = {
-    creator = module.config.tags.creator
-    system  = module.config.tags.system
-    service = module.config.tags.service
+    creator       = module.config.tags.creator
+    system        = module.config.tags.system
+    service       = module.config.tags.service
+    resource_name = module.config.integration.resource_name
   }
   depends_on = [azurerm_resource_group.rg]
 }

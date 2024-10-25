@@ -2,6 +2,7 @@ import time
 import unittest
 from datetime import datetime, timedelta, timezone
 
+from databricks.sdk import WorkspaceClient
 from pyspark.sql import DataFrame
 from spetlrtools.time import dt_utc
 
@@ -31,14 +32,17 @@ class EventHubsTests(unittest.TestCase):
         time.sleep(100)  # just wait the EH captures once a minute anyway.
 
         tc = Configurator()
+        w = WorkspaceClient()
+        catalog = w.settings.default_namespace.get().namespace.value
+        cap_path = (
+            f"/Volumes/{catalog}/volumes/capture/fake_namespace/fake_eventhub/",
+        )
         tc.register(
             "SpetlrEh",
             {
-                # This path should aligne with the path defined in
+                # This path should align with the path defined in
                 # integration_databricks catalog.
-                # We can also consider saving the defined schema and volume
-                # as values in the secret scope and call the here.
-                "path": "/Volumes/capture/capture_schema/spetlreh",
+                "path": cap_path,
                 "format": "avro",
                 "partitioning": "ymd",
             },

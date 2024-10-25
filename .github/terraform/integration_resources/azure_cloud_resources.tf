@@ -117,7 +117,7 @@ resource "azurerm_eventhub" "eh" {
     interval_in_seconds = 60
     destination {
       name                = "EventHubArchive.AzureBlockBlob"
-      archive_name_format = "{Namespace}/{EventHub}/y={Year}/m={Month}/d={Day}/{Year}_{Month}_{Day}_{Hour}_{Minute}_{Second}_{PartitionId}"
+      archive_name_format = "fake_namespace/fake_eventhub/y={Year}/m={Month}/d={Day}/{Year}_{Month}_{Day}_{Hour}_{Minute}_{Second}_{PartitionId}"
       blob_container_name = azurerm_storage_container.capture.name
       storage_account_id  = azurerm_storage_account.storage_account.id
     }

@@ -163,20 +163,16 @@ class MergeDfIntoTargetTest(DataframeTestCase):
 
     @classmethod
     def create_test_table(self, table_name="testTarget", db_name="test"):
-        location = f"/tmp/{db_name}/{table_name}"
         sql_argument = f"""CREATE TABLE IF NOT EXISTS {db_name}.{table_name}(
                       Id STRING,
                       Brand STRING,
                       Model STRING
-                      )
-                      USING DELTA
-                      LOCATION '{location}'"""
+                      )"""
         Spark.get().sql(sql_argument)
 
     @classmethod
     def create_database(self, db_name="test") -> None:
-        location = f"/tmp/{db_name}/"
-        sql_argument = f"CREATE DATABASE IF NOT EXISTS {db_name} LOCATION '{location}'"
+        sql_argument = f"CREATE DATABASE IF NOT EXISTS {db_name}"
         Spark.get().sql(sql_argument)
 
     def create_data(self) -> DataFrame:

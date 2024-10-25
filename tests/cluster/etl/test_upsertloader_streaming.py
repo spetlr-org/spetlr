@@ -120,7 +120,6 @@ class UpsertLoaderTestsDeltaStream(DataframeTestCase):
             id int,
             name string
             )
-            LOCATION '{Configurator().get(tableid,"path")}'
             """
         )
 

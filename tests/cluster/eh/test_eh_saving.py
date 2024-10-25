@@ -12,7 +12,7 @@ from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from spetlr.etl import Transformer
 from spetlr.orchestrators import EhJsonToDeltaOrchestrator
 from spetlr.spark import Spark
-from src.spetlr.utils import AzureTags
+from spetlr.utils import AzureTags
 
 from .SpetlrEh import SpetlrEh
 

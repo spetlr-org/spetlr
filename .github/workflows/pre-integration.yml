@@ -107,7 +107,21 @@ jobs:
 
       - name: Execute Test Job
         shell: pwsh
-        run: .github/submit/connect_and_run.ps1 -uniqueRunId "${{ github.run_id }}${{ github.run_attempt }}"
+        run: |
+          . .github/submit/connect.ps1 -uniqueRunId "${{ github.run_id }}${{ github.run_attempt }}"
+
+          pip install spetlr-tools
+
+          spetlr-test-job submit `
+                  --tests tests/ `
+                  --cluster-file .github/submit/cluster.json `
+                  --requirements-file requirements_test.txt `
+                  --sparklibs-file .github/submit/sparklibs.json `
+                  --out-json test.json `
+                  --pytest-args="--durations=0" `
+                  --task tests/cluster
+
+          spetlr-test-job fetch --runid-json test.json
 
       - name: Destroy Azure resources
         if: always()

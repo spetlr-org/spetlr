@@ -3,7 +3,7 @@ from spetlr.exceptions import OnlyUseInSpetlrDebugMode
 from spetlr.spark import Spark
 
 
-def CleanupTestDatabases():
+def CleanupTestDatabases(catalog: str = None):
     """
     This function can be applied for removing test databases
     in the Databricks Environment.
@@ -13,11 +13,16 @@ def CleanupTestDatabases():
     if not c.is_debug():
         raise OnlyUseInSpetlrDebugMode()
 
-    id_extension = c.get("ID")
+    ID = c.get("ID")
 
-    dbs = Spark.get().sql("SHOW DATABASES").collect()
-    for (db,) in dbs:
-        if db.endswith(id_extension):
-            print(f"Now deleting database {db}")
-            Spark.get().sql(f"DROP DATABASE {db} CASCADE")
+    if catalog is None:
+        sql = f"SHOW DATABASES LIKE '*{ID}'"
+    else:
+        sql = f"SHOW DATABASES IN {catalog} LIKE '*{ID}'"
+
+    for (db,) in Spark.get().sql(sql).collect():
+        if catalog:
+            db = f"{catalog}.{db}"
+        print(f"Now deleting database {db}")
+        Spark.get().sql(f"DROP DATABASE {db} CASCADE")
     print("Database cleanup done.")

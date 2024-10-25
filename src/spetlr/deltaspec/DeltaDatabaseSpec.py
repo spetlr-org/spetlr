@@ -1,4 +1,5 @@
 import json
+import warnings
 from dataclasses import asdict, dataclass
 from typing import Dict, Optional
 
@@ -14,6 +15,7 @@ from spetlr.spark import Spark
 # TODO: for writing remove checks on comment equality
 
 
+@warnings.deprecated("Class untested in current version of spetlr")
 @dataclass
 class DeltaDatabaseSpec:
     name: str

@@ -3,4 +3,3 @@ CREATE DATABASE IF NOT EXISTS {SparkTestDb};
 CREATE TABLE IF NOT EXISTS {SparkTestTable1}(
 a int
 )
-

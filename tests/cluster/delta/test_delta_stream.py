@@ -13,7 +13,6 @@ from spetlr.spark import Spark
 from spetlr.testutils.stop_test_streams import stop_test_streams
 
 
-@unittest.skip("TODO: Test uses mount points")
 class DeltaStreamTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -36,19 +35,17 @@ class DeltaStreamTests(unittest.TestCase):
             "MyTbl",
             {
                 "name": "TestDb{ID}.TestTbl",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl",
+                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl",
                 "query_name": "testquerytbl{ID}",
             },
         )
 
-        mirror_cp_path = "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tblmirror"
+        mirror_cp_path = "/tmp/stream{ID}/_checkpoint_path_tblmirror"
         tc.register(
             "MyTblMirror",
             {
                 "name": "TestDb{ID}.TestTblMirror",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtblmirror",
                 "format": "delta",
                 "checkpoint_path": mirror_cp_path,
                 "await_termination": True,
@@ -61,8 +58,7 @@ class DeltaStreamTests(unittest.TestCase):
             {
                 "name": "TestDb{ID}.TestTbl2",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
-                "_checkpoint_path_tbl2",
+                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl2",
                 "query_name": "testquerytbl2{ID}",
             },
         )
@@ -70,10 +66,8 @@ class DeltaStreamTests(unittest.TestCase):
         tc.register(
             "MyTbl3",
             {
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl3",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
-                "_checkpoint_path_tbl3",
+                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl3",
                 "await_termination": True,
                 "query_name": "testquerytbl3{ID}",
             },
@@ -83,10 +77,8 @@ class DeltaStreamTests(unittest.TestCase):
             "MyTbl4",
             {
                 "name": "TestDb{ID}.TestTbl4",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl4",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
-                "_checkpoint_path_tbl4",
+                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl4",
                 "query_name": "testquerytbl4{ID}",
             },
         )
@@ -95,10 +87,8 @@ class DeltaStreamTests(unittest.TestCase):
             "MyTbl5",
             {
                 "name": "TestDb{ID}.TestTbl5",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl5",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}"
-                "/_checkpoint_path_tbl5",
+                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl5",
                 "query_name": "testquerytbl5{ID}",
             },
         )
@@ -235,8 +225,8 @@ class DeltaStreamTests(unittest.TestCase):
         )
         o.execute()
 
-        # wait 60 sec for the stream to start
-        time.sleep(60)
+        # wait 10 sec for the stream to start
+        time.sleep(10)
 
         stop_test_streams()
 

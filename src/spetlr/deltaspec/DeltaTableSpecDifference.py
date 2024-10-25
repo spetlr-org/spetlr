@@ -1,6 +1,7 @@
 import copy
 import dataclasses
 import json
+import warnings
 from dataclasses import _MISSING_TYPE, asdict, dataclass
 from typing import Dict, List, Optional
 
@@ -12,6 +13,7 @@ from spetlr.deltaspec.helpers import TableName
 from spetlr.schema_manager import SchemaManager
 
 
+@warnings.deprecated("Class untested in current version of spetlr")
 @dataclass
 class DeltaTableSpecDifference:
     """This class contains two DeltaTableSpec, base and target.

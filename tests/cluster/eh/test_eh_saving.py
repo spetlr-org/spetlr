@@ -34,9 +34,7 @@ class EventHubsTests(unittest.TestCase):
         tc = Configurator()
         w = WorkspaceClient()
         catalog = w.settings.default_namespace.get().namespace.value
-        cap_path = (
-            f"/Volumes/{catalog}/volumes/capture/fake_namespace/fake_eventhub/",
-        )
+        cap_path = (f"/Volumes/{catalog}/volumes/capture/{catalog}/spetlreh/",)
         tc.register(
             "SpetlrEh",
             {

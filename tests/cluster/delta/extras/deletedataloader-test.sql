@@ -1,6 +1,5 @@
 CREATE DATABASE IF NOT EXISTS {DeleteDataLoaderDb}
-COMMENT "Contains Incremental Base test data"
-LOCATION "{DeleteDataLoaderDb_path}";
+COMMENT "Contains Incremental Base test data";
 
 CREATE TABLE IF NOT EXISTS {DeleteDataLoaderDummy}
 (
@@ -11,4 +10,3 @@ CREATE TABLE IF NOT EXISTS {DeleteDataLoaderDummy}
 )
 USING DELTA
 COMMENT "Contains DeleteDataLoader Base test data"
-LOCATION "{DeleteDataLoaderDummy_path}"

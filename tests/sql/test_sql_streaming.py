@@ -12,10 +12,7 @@ from spetlr.testutils.stop_test_streams import stop_test_streams
 from tests.cluster.sql.DeliverySqlServer import DeliverySqlServer
 
 
-@unittest.skipUnless(
-    Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4,
-    f"Spetlr Streaming not available for Spark version {Spark.version()}",
-)
+@unittest.skip("TODO: Test uses mount points")
 class SqlServerStreamingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

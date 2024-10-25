@@ -13,10 +13,7 @@ from spetlr.spark import Spark
 from spetlr.testutils.stop_test_streams import stop_test_streams
 
 
-@unittest.skipUnless(
-    Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4,
-    f"Spetlr Streaming not available for Spark version {Spark.version()}",
-)
+@unittest.skip("TODO: Test uses mount points")
 class DeltaStreamTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -264,7 +261,6 @@ class DeltaStreamTests(unittest.TestCase):
                             (
                             id int,
                             name string
-                            )
-                            LOCATION '{Configurator().get("MyTblMirror","path")}'
+                            )'
                         """
         )

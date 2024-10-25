@@ -113,17 +113,11 @@ class CachedLoaderTests(unittest.TestCase):
         tc.register("TestDb", dict(name="test{ID}", path="/tmp/test{ID}.db"))
         tc.register(
             "CachedTest",
-            dict(
-                name="test{ID}.cachedloader_cache",
-                path="/tmp/test{ID}.db/cachedloader_cache",
-            ),
+            dict(name="test{ID}.cachedloader_cache"),
         )
         tc.register(
             "CachedTestTarget",
-            dict(
-                name="test{ID}.cachedloader_target",
-                path="/tmp/test{ID}.db/cachedloader_target",
-            ),
+            dict(name="test{ID}.cachedloader_target"),
         )
         DbHandle.from_tc("TestDb").create()
         spark = Spark.get()
@@ -140,7 +134,6 @@ class CachedLoaderTests(unittest.TestCase):
             )
             USING DELTA
             COMMENT "Caching Test"
-            LOCATION "{CachedTest_path}"
         """.format(
                 **tc.get_all_details()
             )
@@ -156,7 +149,6 @@ class CachedLoaderTests(unittest.TestCase):
             )
             USING DELTA
             COMMENT "Caching target"
-            LOCATION "{CachedTestTarget_path}"
         """.format(
                 **tc.get_all_details()
             )

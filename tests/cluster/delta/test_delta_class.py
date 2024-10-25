@@ -1,3 +1,5 @@
+import unittest
+
 from pyspark.sql.utils import AnalysisException
 from spetlrtools.testing import DataframeTestCase
 
@@ -13,6 +15,7 @@ from spetlr.spark import Spark
 from .extras.schemas import test_schema
 
 
+@unittest.skip("TODO: Test uses mount points")
 class DeltaTests(DataframeTestCase):
     @classmethod
     def setUpClass(cls) -> None:

@@ -1,5 +1,6 @@
 import copy
 import json
+import warnings
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional, Union
 
@@ -17,6 +18,7 @@ _DEFAULT_minWriterVersion = 5
 _DEFAULT_blankedPropertyKeys = ["delta.columnMapping.maxColumnId"]
 
 
+@warnings.deprecated("Class untested in current version of spetlr")
 @dataclass
 class DeltaTableSpecBase:
     """This class represents a full specification for a delta table."""

@@ -3,6 +3,7 @@ import importlib.resources
 import re
 import time
 import uuid
+import warnings
 from types import ModuleType
 from typing import List, Union
 
@@ -17,6 +18,7 @@ from spetlr.sql.SqlServerBaseOptions import SqlServerBaseOptions
 from spetlr.utils import GetMergeStatement
 
 
+@warnings.deprecated("Class untested in current version of spetlr")
 class SqlServer(SqlBaseServer):
     def __init__(
         self,

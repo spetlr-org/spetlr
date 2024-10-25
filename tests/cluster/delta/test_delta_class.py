@@ -1,5 +1,3 @@
-import unittest
-
 from pyspark.sql.utils import AnalysisException
 from spetlrtools.testing import DataframeTestCase
 
@@ -15,7 +13,6 @@ from spetlr.spark import Spark
 from .extras.schemas import test_schema
 
 
-@unittest.skip("TODO: Test uses mount points")
 class DeltaTests(DataframeTestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -29,29 +26,17 @@ class DeltaTests(DataframeTestCase):
 
         tc = Configurator()
 
-        tc.register(
-            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/spetlr/silver/testdb{ID}"}
-        )
+        tc.register("MyDb", {"name": "TestDb{ID}"})
 
         tc.register(
             "MyTbl",
-            {
-                "name": "TestDb{ID}.TestTbl",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl",
-            },
+            {"name": "TestDb{ID}.TestTbl"},
         )
 
         tc.register(
             "MyTbl2",
             {
                 "name": "TestDb{ID}.TestTbl2",
-            },
-        )
-
-        tc.register(
-            "MyTbl3",
-            {
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl3",
             },
         )
 
@@ -73,7 +58,6 @@ class DeltaTests(DataframeTestCase):
             "MyTblWithSchema",
             {
                 "name": "TestDb{ID}.MyTblWithSchema",
-                "path": "/mnt/spetlr/silver/testdb{ID}/mytblwithschema",
                 "schema": "TEST_SCHEMA",
             },
         )
@@ -82,7 +66,6 @@ class DeltaTests(DataframeTestCase):
         DbHandle.from_tc("MyDb")
         DeltaHandle.from_tc("MyTbl")
         DeltaHandle.from_tc("MyTbl2")
-        DeltaHandle.from_tc("MyTbl3")
         DeltaHandle.from_tc("MyTbl4")
         DeltaHandle.from_tc("MyTbl5")
         DeltaHandle.from_tc("MyTblWithSchema")
@@ -149,17 +132,6 @@ class DeltaTests(DataframeTestCase):
         )
         o.load_into(SimpleLoader(DeltaHandle.from_tc("MyTbl"), mode="overwrite"))
         o.execute()
-
-    def test_07_write_path_only(self):
-        # check that we can write to the table with no path
-        df = DeltaHandle.from_tc("MyTbl").read()
-
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-
-        dh3.append(df, mergeSchema=True)
-
-        df = dh3.read()
-        df.show()
 
     def test_08_delete(self):
         dh = DeltaHandle.from_tc("MyTbl")

@@ -1,4 +1,3 @@
-import unittest
 import uuid
 from typing import List, Tuple
 
@@ -12,10 +11,6 @@ from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
 
 
-@unittest.skipUnless(
-    Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4,
-    f"Autoloader not available for Spark version {Spark.version()}",
-)
 class FileHandleTests(DataframeTestCase):
     path_unique_id = uuid.uuid4().hex
 

@@ -2,7 +2,6 @@ import time
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from databricks.sdk import WorkspaceClient
 from pyspark.sql import DataFrame
 from spetlrtools.time import dt_utc
 
@@ -13,6 +12,7 @@ from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from spetlr.etl import Transformer
 from spetlr.orchestrators import EhJsonToDeltaOrchestrator
 from spetlr.spark import Spark
+from src.spetlr.utils import AzureTags
 
 from .SpetlrEh import SpetlrEh
 
@@ -32,15 +32,14 @@ class EventHubsTests(unittest.TestCase):
         time.sleep(100)  # just wait the EH captures once a minute anyway.
 
         tc = Configurator()
-        w = WorkspaceClient()
-        catalog = w.settings.default_namespace.get().namespace.value
-        cap_path = (f"/Volumes/{catalog}/volumes/capture/{catalog}/spetlreh/",)
+        tc.register("ws", AzureTags.resource_name)
+
         tc.register(
             "SpetlrEh",
             {
                 # This path should align with the path defined in
                 # integration_databricks catalog.
-                "path": cap_path,
+                "path": "/Volumes/{ws}/volumes/capture/{ws}/spetlreh/",
                 "format": "avro",
                 "partitioning": "ymd",
             },

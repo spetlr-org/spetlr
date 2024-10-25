@@ -1,3 +1,4 @@
+from .AzureTags import AzureTags
 from .DataframeCreator import DataframeCreator
 from .DeleteMismatchedSchemas import DeleteMismatchedSchemas
 from .DropOldestDuplicates import DropOldestDuplicates
@@ -14,4 +15,5 @@ __all__ = [
     DropOldestDuplicates,
     SelectAndCastColumns,
     DeleteMismatchedSchemas,
+    AzureTags,
 ]

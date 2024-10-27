@@ -2,7 +2,7 @@ from pyspark.sql import DataFrame
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr.configurator import Configurator
-from spetlr.delta import DeltaHandle
+from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.etl.extractors.check_schema_extractor import CheckSchemaExtractor
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.exceptions import SchemasNotEqualException
@@ -30,6 +30,9 @@ class TestCheckSchemaExtractor(DataframeTestCase):
         c.clear_all_configurations()
         c.add_resource_path(extras)
         c.set_debug()
+
+        db = DbHandle.from_tc("TestDB")
+        db.create()
 
         # Create handles
         cls.test_base_schema_handle = DeltaHandle.from_tc("CheckBaseSchemaTable")

@@ -94,17 +94,19 @@ class DeltaTests(DataframeTestCase):
 
         dh.append(df, mergeSchema=True)
 
-    def test_03_create(self):
-        db = DbHandle.from_tc("MyDb")
-        db.drop_cascade()
-        db.create()
-
-        dh = DeltaHandle.from_tc("MyTbl")
-        dh.create_hive_table()
-
-        # test hive access:
-        df = dh.read()
-        self.assertTrue(6, df.count())
+    # # This test asserted that the data persisted for an external table
+    # # Now that tables are managed, this no longer works
+    # def test_03_create(self):
+    #     db = DbHandle.from_tc("MyDb")
+    #     db.drop_cascade()
+    #     db.create()
+    #
+    #     dh = DeltaHandle.from_tc("MyTbl")
+    #     dh.create_hive_table()
+    #
+    #     # test hive access:
+    #     df = dh.read()
+    #     self.assertTrue(6, df.count())
 
     def test_04_read(self):
         df = DeltaHandle.from_tc("MyTbl").read()

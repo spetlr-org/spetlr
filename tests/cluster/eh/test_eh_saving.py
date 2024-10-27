@@ -32,7 +32,7 @@ class EventHubsTests(unittest.TestCase):
         time.sleep(100)  # just wait the EH captures once a minute anyway.
 
         tc = Configurator()
-        tc.register("ws", AzureTags.resource_name)
+        tc.register("ws", AzureTags().resource_name)
 
         tc.register(
             "SpetlrEh",

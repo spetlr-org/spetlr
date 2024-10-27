@@ -232,6 +232,6 @@ class DeltaStreamTests(unittest.TestCase):
                             (
                             id int,
                             name string
-                            )'
+                            )
                         """
         )

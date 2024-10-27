@@ -27,9 +27,7 @@ class DeltaStreamTests(unittest.TestCase):
 
     def test_01_configure(self):
         tc = Configurator()
-        tc.register(
-            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/spetlr/silver/testdb{ID}"}
-        )
+        tc.register("MyDb", {"name": "TestDb{ID}"})
 
         tc.register(
             "MyTbl",
@@ -64,16 +62,6 @@ class DeltaStreamTests(unittest.TestCase):
         )
 
         tc.register(
-            "MyTbl3",
-            {
-                "format": "delta",
-                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl3",
-                "await_termination": True,
-                "query_name": "testquerytbl3{ID}",
-            },
-        )
-
-        tc.register(
             "MyTbl4",
             {
                 "name": "TestDb{ID}.TestTbl4",
@@ -98,7 +86,6 @@ class DeltaStreamTests(unittest.TestCase):
         DeltaHandle.from_tc("MyTbl")
         DeltaHandle.from_tc("MyTblMirror")
         DeltaHandle.from_tc("MyTbl2")
-        DeltaHandle.from_tc("MyTbl3")
         DeltaHandle.from_tc("MyTbl4")
         DeltaHandle.from_tc("MyTbl5")
 
@@ -154,24 +141,22 @@ class DeltaStreamTests(unittest.TestCase):
         # check that we can write to the table with no "name" property
         dh1 = DeltaHandle.from_tc("MyTbl")
 
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-
-        # dsh3.append(ah, mergeSchema=True)
+        dh2 = DeltaHandle.from_tc("MyTbl2")
 
         o = Orchestrator()
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                loader=SimpleLoader(dh3, mode="append"),
+                loader=SimpleLoader(dh2, mode="append"),
                 await_termination=True,
-                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
-                query_name=Configurator().get("MyTbl3", "query_name"),
+                checkpoint_path=Configurator().get("MyTbl2", "checkpoint_path"),
+                query_name=Configurator().get("MyTbl2", "query_name"),
             ),
         )
         o.execute()
 
-        # Read data from mytbl3
-        result = dh3.read()
+        # Read data from mytbl2
+        result = dh2.read()
         self.assertEqual(2, result.count())
 
     def test_09_trigger_once(self):
@@ -179,19 +164,17 @@ class DeltaStreamTests(unittest.TestCase):
         # check that we can write to the table with no "name" property
         dh1 = DeltaHandle.from_tc("MyTbl")
 
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-
-        # dsh3.append(ah, mergeSchema=True)
+        dh2 = DeltaHandle.from_tc("MyTbl2")
 
         o = Orchestrator()
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                loader=SimpleLoader(dh3, mode="append"),
+                loader=SimpleLoader(dh2, mode="append"),
                 await_termination=False,
-                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
+                checkpoint_path=Configurator().get("MyTbl2", "checkpoint_path"),
                 trigger_type="once",
-                query_name=Configurator().get("MyTbl3", "query_name"),
+                query_name=Configurator().get("MyTbl2", "query_name"),
             ),
         )
         o.execute()
@@ -206,21 +189,19 @@ class DeltaStreamTests(unittest.TestCase):
         # check that we can write to the table with no "name" property
         dh1 = DeltaHandle.from_tc("MyTbl")
 
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-
-        # dsh3.append(ah, mergeSchema=True)
+        dh2 = DeltaHandle.from_tc("MyTbl2")
 
         o = Orchestrator()
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                loader=SimpleLoader(dh3, mode="append"),
+                loader=SimpleLoader(dh2, mode="append"),
                 options_dict={},
                 await_termination=False,
-                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
+                checkpoint_path=Configurator().get("MyTbl2", "checkpoint_path"),
                 trigger_type="processingtime",
                 trigger_time_seconds=5,
-                query_name=Configurator().get("MyTbl3", "query_name"),
+                query_name=Configurator().get("MyTbl2", "query_name"),
             ),
         )
         o.execute()

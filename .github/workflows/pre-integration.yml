@@ -118,7 +118,7 @@ jobs:
                   --requirements-file requirements_test.txt `
                   --sparklibs-file .github/submit/sparklibs.json `
                   --out-json test.json `
-                  --pytest-args="--durations=0" `
+                  --pytest-args="-vv" `
                   --task tests/cluster
 
           spetlr-test-job fetch --runid-json test.json

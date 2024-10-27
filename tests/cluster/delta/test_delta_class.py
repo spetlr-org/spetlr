@@ -63,12 +63,14 @@ class DeltaTests(DataframeTestCase):
         )
 
         # test instantiation without error
-        DbHandle.from_tc("MyDb")
+        db = DbHandle.from_tc("MyDb")
         DeltaHandle.from_tc("MyTbl")
         DeltaHandle.from_tc("MyTbl2")
         DeltaHandle.from_tc("MyTbl4")
         DeltaHandle.from_tc("MyTbl5")
         DeltaHandle.from_tc("MyTblWithSchema")
+
+        db.create()
 
     def test_02_write(self):
         dh = DeltaHandle.from_tc("MyTbl")

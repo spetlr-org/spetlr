@@ -4,5 +4,5 @@ data "databricks_catalogs" "all" {
 }
 
 output "catalogs" {
-  value = toset([for each in data.databricks_catalogs.all.ids : each if regex("spetlr[0-9]+", each)])
+  value = data.databricks_catalogs.all.ids
 }

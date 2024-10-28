@@ -14,17 +14,24 @@ jobs:
       cancel-in-progress: true
 
     steps:
-      - uses: actions/checkout@v2
+
       - name: Log in to azure
         shell: pwsh
         run: |
           az login --service-principal `
             -u ${{ secrets.SPN_CLIENT_ID }} `
             -p ${{ secrets.SPN_CLIENT_SECRET }} `
-            --tenant ${{ secrets.SPN_TENANT_ID }} `
-            --output none
-            
-      - name: Delete Deployment
+            --tenant ${{ secrets.SPN_TENANT_ID }}
+
+      - name: Install Databricks CLI
+        shell: bash
+        run: curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+
+      - uses: actions/checkout@v4
+
+      - name: Work in databricks
         shell: pwsh
         run: |
-          .github/deploy/destroy-spns.ps1
+          $account = "${{ secrets.DATABRICKS_ACCOUNT_ID }}"
+          databricks auth login --host "https://accounts.azuredatabricks.net" --account-id $account
+          databricks account service-principals list

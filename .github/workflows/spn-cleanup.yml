@@ -13,6 +13,14 @@ jobs:
     concurrency: azure-integration
 
     steps:
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Install Databricks CLI
+        shell: bash
+        run: curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
 
       - name: Log in to azure
         shell: pwsh
@@ -22,15 +30,47 @@ jobs:
             -p ${{ secrets.SPN_CLIENT_SECRET }} `
             --tenant ${{ secrets.SPN_TENANT_ID }}
 
-      - name: Install Databricks CLI
-        shell: bash
-        run: curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
-
       - uses: actions/checkout@v4
 
-      - name: Work in databricks
-        shell: pwsh
+      - name: Databricks Metastore Terraform
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
+          ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
+          TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
         run: |
-          $account = "${{ secrets.DATABRICKS_ACCOUNT_ID }}"
-          databricks auth login --host "https://accounts.azuredatabricks.net" --account-id $account
-          databricks account service-principals list
+          cd .github/terraform/cleanup
+          terraform init
+          terraform apply -auto-approve
+#          terraform output -raw catalogs
+
+#
+#      - name: Work in databricks
+#        shell: pwsh
+#        run: |
+#          $account = "${{ secrets.DATABRICKS_ACCOUNT_ID }}"
+#          databricks auth login --host "https://accounts.azuredatabricks.net" --account-id $account
+#          databricks account service-principals list
+
+      - name: Destroy
+        if: always()
+        shell: pwsh
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
+          ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.SPN_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.SPN_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.SPN_SUBSCRIPTION_ID }}
+          TF_VAR_db_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
+        run: |
+          cd .github/terraform/cleanup
+          terraform init
+          terraform apply -destroy -auto-approve
+#          terraform output -raw catalogs
+
+      - name: Azure logout
+        if: always()
+        shell: pwsh
+        run: az logout

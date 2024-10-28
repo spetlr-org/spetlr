@@ -32,7 +32,7 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Databricks Metastore Terraform
+      - name: Terraform deployment for cleanup
         env:
           ARM_ACCESS_KEY: ${{ secrets.BACKEND_STORAGE_ACCESS_KEY }}
           ARM_CLIENT_ID: ${{ secrets.SPN_CLIENT_ID }}

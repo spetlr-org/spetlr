@@ -1,5 +1,5 @@
 
-# This pipeline can be runned if the SPNs needs to be destroyed
+# This pipeline can be run if the SPNs needs to be destroyed
 # In this way, it is easier to clean up the SPNs, instead of manually removing them in the portal
 name: Spn-Cleanup
 
@@ -9,9 +9,8 @@ on:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
-    concurrency:
-      group: azure-integration
-      cancel-in-progress: true
+    environment: azure
+    concurrency: azure-integration
 
     steps:
 

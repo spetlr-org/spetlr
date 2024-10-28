@@ -10,12 +10,8 @@ terraform {
       version = ">= 3.7.0"
     }
   }
-  backend "azurerm" {
-    use_azuread_auth     = true
-    resource_group_name  = "Terraform-State-Stoarge"
-    storage_account_name = "spetlrtfstate"
-    container_name       = "tfstate"
-    key                  = "metastore.tfstate"
+  backend "local" {
+    path = "cleanup.tfstate"
   }
 }
 

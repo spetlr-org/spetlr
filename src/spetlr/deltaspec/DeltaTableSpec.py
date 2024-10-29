@@ -2,7 +2,7 @@ import pyspark.sql.types
 from pyspark.sql import DataFrame
 from pyspark.sql.utils import AnalysisException
 
-from spetlr import Configurator
+from spetlr.configurator import Configurator
 from spetlr.configurator.sql.parse_sql import parse_single_sql_statement
 from spetlr.delta import DeltaHandle
 from spetlr.deltaspec.DeltaTableSpecBase import (
@@ -15,6 +15,7 @@ from spetlr.deltaspec.exceptions import (
     NoTableAtTarget,
     TableSpecNotReadable,
 )
+from spetlr.schema_manager import SchemaManager
 from spetlr.schema_manager.spark_schema import get_schema
 from spetlr.spark import Spark
 from spetlr.sqlrepr.sql_types import repr_sql_types
@@ -67,7 +68,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
         c = Configurator()
         # schema is required
         item = c._get_item(id)
-        schema = get_schema(item["schema"]["sql"])
+        schema = SchemaManager().get_schema(id)
         init_args = dict(
             name=item.get("name", None),
             location=item.get("path", None),

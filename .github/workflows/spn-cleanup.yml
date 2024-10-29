@@ -44,7 +44,12 @@ jobs:
           cd .github/terraform/cleanup
           terraform init
           terraform apply -auto-approve
-#          terraform output -raw catalogs
+
+          $env:DATABRICKS_HOST = terraform output -raw workspace_url
+          $env:DATABRICKS_CLIENT_ID = terraform output -raw spn_id
+          $env:DATABRICKS_CLIENT_SECRET = terraform output -raw spn_token
+
+          databricks catalogs list
 
 #
 #      - name: Work in databricks

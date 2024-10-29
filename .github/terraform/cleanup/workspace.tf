@@ -7,3 +7,6 @@ resource "databricks_metastore_assignment" "db_metastore_assign_workspace" {
   workspace_id = data.azurerm_databricks_workspace.admin.workspace_id
 }
 
+output "workspace_url" {
+  value = data.azurerm_databricks_workspace.admin.workspace_url
+}

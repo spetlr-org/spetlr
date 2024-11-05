@@ -29,7 +29,7 @@ class DeltaHandleInvalidFormat(DeltaHandleException):
 class DeltaHandle(TableHandle):
     def __init__(
         self,
-        name: str,
+        name: str = None,
         location: str = None,
         schema: T.StructType = None,
         data_format: str = "delta",
@@ -39,7 +39,7 @@ class DeltaHandle(TableHandle):
         max_bytes_per_trigger: int = None,
     ):
         """
-        name: The name of the Delta table.
+        name: The name of the Delta table, can be omitted if location is given.
         location (optional): The file-system path to the Delta table files.
         data_format (optional): Always delta-format. Todo: Remove in future PR.
         options_dict (optional): All other string options for pyspark.
@@ -50,6 +50,11 @@ class DeltaHandle(TableHandle):
         max_bytes_per_trigger (optional): How much data gets
                                 processed in each micro-batch.
         """
+        if name is None:
+            if location is None:
+                raise ValueError("`name`  or `location` must be given")
+            name = f"delta.`{location}`"
+
         self._name = name
         self._location = location
         self._schema = schema

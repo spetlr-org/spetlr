@@ -26,29 +26,17 @@ class DeltaTests(DataframeTestCase):
 
         tc = Configurator()
 
-        tc.register(
-            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/spetlr/silver/testdb{ID}"}
-        )
+        tc.register("MyDb", {"name": "TestDb{ID}"})
 
         tc.register(
             "MyTbl",
-            {
-                "name": "TestDb{ID}.TestTbl",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl",
-            },
+            {"name": "TestDb{ID}.TestTbl"},
         )
 
         tc.register(
             "MyTbl2",
             {
                 "name": "TestDb{ID}.TestTbl2",
-            },
-        )
-
-        tc.register(
-            "MyTbl3",
-            {
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl3",
             },
         )
 
@@ -70,19 +58,19 @@ class DeltaTests(DataframeTestCase):
             "MyTblWithSchema",
             {
                 "name": "TestDb{ID}.MyTblWithSchema",
-                "path": "/mnt/spetlr/silver/testdb{ID}/mytblwithschema",
                 "schema": "TEST_SCHEMA",
             },
         )
 
         # test instantiation without error
-        DbHandle.from_tc("MyDb")
+        db = DbHandle.from_tc("MyDb")
         DeltaHandle.from_tc("MyTbl")
         DeltaHandle.from_tc("MyTbl2")
-        DeltaHandle.from_tc("MyTbl3")
         DeltaHandle.from_tc("MyTbl4")
         DeltaHandle.from_tc("MyTbl5")
         DeltaHandle.from_tc("MyTblWithSchema")
+
+        db.create()
 
     def test_02_write(self):
         dh = DeltaHandle.from_tc("MyTbl")
@@ -106,17 +94,19 @@ class DeltaTests(DataframeTestCase):
 
         dh.append(df, mergeSchema=True)
 
-    def test_03_create(self):
-        db = DbHandle.from_tc("MyDb")
-        db.drop_cascade()
-        db.create()
-
-        dh = DeltaHandle.from_tc("MyTbl")
-        dh.create_hive_table()
-
-        # test hive access:
-        df = dh.read()
-        self.assertTrue(6, df.count())
+    # # This test asserted that the data persisted for an external table
+    # # Now that tables are managed, this no longer works
+    # def test_03_create(self):
+    #     db = DbHandle.from_tc("MyDb")
+    #     db.drop_cascade()
+    #     db.create()
+    #
+    #     dh = DeltaHandle.from_tc("MyTbl")
+    #     dh.create_hive_table()
+    #
+    #     # test hive access:
+    #     df = dh.read()
+    #     self.assertTrue(6, df.count())
 
     def test_04_read(self):
         df = DeltaHandle.from_tc("MyTbl").read()
@@ -146,17 +136,6 @@ class DeltaTests(DataframeTestCase):
         )
         o.load_into(SimpleLoader(DeltaHandle.from_tc("MyTbl"), mode="overwrite"))
         o.execute()
-
-    def test_07_write_path_only(self):
-        # check that we can write to the table with no path
-        df = DeltaHandle.from_tc("MyTbl").read()
-
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-
-        dh3.append(df, mergeSchema=True)
-
-        df = dh3.read()
-        df.show()
 
     def test_08_delete(self):
         dh = DeltaHandle.from_tc("MyTbl")

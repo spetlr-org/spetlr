@@ -16,7 +16,7 @@ class CosmosTests(unittest.TestCase):
         dbutils = init_dbutils()
 
         cls._cm = CosmosDb(
-            endpoint=dbutils.secrets.get("values", "Cosmos--Endpoint"),
+            endpoint=dbutils.secrets.get("secrets", "Cosmos--Endpoint"),
             account_key=dbutils.secrets.get("secrets", "Cosmos--AccountKey"),
             database=f"SpetlrCosmosContainer{uuid.uuid4().hex}",
             catalog_name=None,

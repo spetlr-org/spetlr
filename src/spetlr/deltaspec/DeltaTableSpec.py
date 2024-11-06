@@ -1,4 +1,5 @@
 import pyspark.sql.types
+from deprecated import deprecated
 from pyspark.sql import DataFrame
 from pyspark.sql.utils import AnalysisException
 
@@ -20,6 +21,7 @@ from spetlr.spark import Spark
 from spetlr.sqlrepr.sql_types import repr_sql_types
 
 
+@deprecated("Class untested in current version of spetlr")
 class DeltaTableSpec(DeltaTableSpecBase):
     """This class represents a full specification for a delta table."""
 

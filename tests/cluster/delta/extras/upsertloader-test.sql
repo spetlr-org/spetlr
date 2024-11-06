@@ -1,6 +1,5 @@
 CREATE DATABASE IF NOT EXISTS {UpsertLoaderDb}
-COMMENT "Contains Incremental Base test data"
-LOCATION "{UpsertLoaderDb_path}";
+COMMENT "Contains Incremental Base test data";
 
 CREATE TABLE IF NOT EXISTS {UpsertLoaderDummy}
 (
@@ -9,8 +8,7 @@ CREATE TABLE IF NOT EXISTS {UpsertLoaderDummy}
     col3 STRING
 )
 USING DELTA
-COMMENT "Contains UpsertLoader test data"
-LOCATION "{UpsertLoaderDummy_path}";
+COMMENT "Contains UpsertLoader test data";
 
 CREATE TABLE IF NOT EXISTS {UpsertLoaderStreamingSource}
 (
@@ -19,8 +17,7 @@ CREATE TABLE IF NOT EXISTS {UpsertLoaderStreamingSource}
     col3 STRING
 )
 USING DELTA
-COMMENT "Contains streaming UpsertLoader test data"
-LOCATION "{UpsertLoaderStreamingSource_path}";
+COMMENT "Contains streaming UpsertLoader test data";
 
 
 CREATE TABLE IF NOT EXISTS {UpsertLoaderStreamingTarget}
@@ -30,5 +27,4 @@ CREATE TABLE IF NOT EXISTS {UpsertLoaderStreamingTarget}
     col3 STRING
 )
 USING DELTA
-COMMENT "Contains streaming UpsertLoader test data"
-LOCATION "{UpsertLoaderStreamingTarget_path}";
+COMMENT "Contains streaming UpsertLoader test data";

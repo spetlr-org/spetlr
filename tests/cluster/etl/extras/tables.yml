@@ -1,28 +1,22 @@
 TestDB:
   name: TestDB{ID}
-  path: /mnt/silver/TestDB{ID}/
 
 CheckBaseSchemaTable:
   name: "{TestDB_name}.check_base_schema"
   schema: "test_base_schema"
-  path: "{TestDB_path}check_base_schema"
 
 CheckAddedColSchemaTable:
   name: "{TestDB_name}.check_added_col_schema_table"
   schema: "test_added_col_schema"
-  path: "{TestDB_path}check_added_col_schema_table"
 
 CheckColTypeDifferenceSchemaTable:
   name: "{TestDB_name}.check_col_type_difference_schema_table"
   schema: "test_col_type_difference_schema"
-  path: "{TestDB_path}check_col_type_difference_schema_table"
 
 CheckRemovedColSchemaTable:
   name: "{TestDB_name}.check_removed_col_schema_table"
   schema: "test_removed_col_schema"
-  path: "{TestDB_path}check_removed_col_schema_table"
 
 CheckRenamedColSchemaTable:
   name: "{TestDB_name}.check_renamed_col_schema_table5"
   schema: "test_renamed_col_schema"
-  path: "{TestDB_path}check_renamed_col_schema_table5"

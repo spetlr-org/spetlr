@@ -16,10 +16,7 @@ from spetlr.testutils.stop_test_streams import stop_test_streams
 from tests.cluster.values import resourceName
 
 
-@unittest.skipUnless(
-    Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4,
-    f"Autoloader not available for Spark version {Spark.version()}",
-)
+@unittest.skip("TODO: Test uses mount points")
 class FileHandleTests(unittest.TestCase):
     sink_checkpoint_path: str = None
     path_unique_id = uuid.uuid4().hex

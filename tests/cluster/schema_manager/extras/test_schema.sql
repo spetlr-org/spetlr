@@ -6,5 +6,4 @@ CREATE TABLE IF NOT EXISTS {SchemaTestTable1}
     {SchemaTestTable1_schema}
 )
 USING {SchemaTestTable1_format}
-COMMENT "Contains schema testing data"
-LOCATION "{SchemaTestTable1_path}";
+COMMENT "Contains schema testing data";

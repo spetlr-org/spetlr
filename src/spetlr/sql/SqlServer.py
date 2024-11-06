@@ -7,6 +7,7 @@ from types import ModuleType
 from typing import List, Union
 
 import pyodbc
+from deprecated import deprecated
 from pyspark.sql import DataFrame
 
 from spetlr.configurator.configurator import Configurator
@@ -17,6 +18,7 @@ from spetlr.sql.SqlServerBaseOptions import SqlServerBaseOptions
 from spetlr.utils import GetMergeStatement
 
 
+@deprecated("Class untested in current version of spetlr")
 class SqlServer(SqlBaseServer):
     def __init__(
         self,

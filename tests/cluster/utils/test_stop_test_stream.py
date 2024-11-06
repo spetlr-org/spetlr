@@ -1,3 +1,5 @@
+import unittest
+
 from spetlrtools.testing import DataframeTestCase
 
 from spetlr import Configurator
@@ -6,6 +8,7 @@ from spetlr.spark import Spark
 from spetlr.testutils.stop_test_streams import stop_test_streams
 
 
+@unittest.skip("TODO: Test uses mount points")
 class TestStopTestStreamsOnCluster(DataframeTestCase):
     """
     Tests if a test stream is stopped.
@@ -58,9 +61,7 @@ class TestStopTestStreamsOnCluster(DataframeTestCase):
                 (
                 id int,
                 name string
-                )
-                LOCATION '{Configurator().get("MyTbl", "path")}'
-            """
+                )"""
         )
 
         dh_mirror = DeltaHandle.from_tc("MyTblMirror")
@@ -70,9 +71,7 @@ class TestStopTestStreamsOnCluster(DataframeTestCase):
                 (
                 id int,
                 name string
-                )
-                LOCATION '{Configurator().get("MyTblMirror", "path")}'
-            """
+                )"""
         )
         _query_name = Configurator().get("MyTblMirror", "query_name")
 

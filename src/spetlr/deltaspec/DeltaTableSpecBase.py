@@ -3,6 +3,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional, Union
 
+from deprecated import deprecated
 from pyspark.sql.types import StructField, StructType
 
 from spetlr import Configurator
@@ -17,6 +18,7 @@ _DEFAULT_minWriterVersion = 5
 _DEFAULT_blankedPropertyKeys = ["delta.columnMapping.maxColumnId"]
 
 
+@deprecated("Class untested in current version of spetlr")
 @dataclass
 class DeltaTableSpecBase:
     """This class represents a full specification for a delta table."""

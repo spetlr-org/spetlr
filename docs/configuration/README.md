@@ -185,6 +185,7 @@ CREATE TABLE [ IF NOT EXISTS ] table_identifier
     USING data_source
     [ OPTIONS ( key1=val1, key2=val2, ... ) ]
     [ PARTITIONED BY ( col_name1, col_name2, ... ) ]
+    [ CLUSTER BY ( col_name1, col_name2, ... ) ]
     [ CLUSTERED BY ( col_name3, col_name4, ... ) 
         [ SORTED BY ( col_name [ ASC | DESC ], ... ) ] 
         INTO num_buckets BUCKETS ]
@@ -216,6 +217,9 @@ MySpetlrTableReference:
     key1: val1
     key2: val2
   partitioned_by:
+    - col_name1
+    - col_name2
+  cluster_by:
     - col_name1
     - col_name2
   clustered_by:

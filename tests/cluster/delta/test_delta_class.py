@@ -55,6 +55,20 @@ class DeltaTests(DataframeTestCase):
         )
 
         tc.register(
+            "MyTbl6",
+            {
+                "name": "TestDb{ID}.TestTbl6",
+            },
+        )
+
+        tc.register(
+            "MyTbl7",
+            {
+                "name": "TestDb{ID}.TestTbl7",
+            },
+        )
+
+        tc.register(
             "MyTblWithSchema",
             {
                 "name": "TestDb{ID}.MyTblWithSchema",
@@ -68,6 +82,8 @@ class DeltaTests(DataframeTestCase):
         DeltaHandle.from_tc("MyTbl2")
         DeltaHandle.from_tc("MyTbl4")
         DeltaHandle.from_tc("MyTbl5")
+        DeltaHandle.from_tc("MyTbl6")
+        DeltaHandle.from_tc("MyTbl7")
         DeltaHandle.from_tc("MyTblWithSchema")
 
         db.create()
@@ -174,13 +190,43 @@ class DeltaTests(DataframeTestCase):
 
         self.assertEqual(dh2.get_partitioning(), [])
 
-    def test_10_get_schema(self):
+    def test_10_cluster(self):
+        dh = DeltaHandle.from_tc("MyTbl6")
+        Spark.get().sql(
+            f"""
+            CREATE TABLE {dh.get_tablename()}
+            (
+            colA string,
+            colB int,
+            payload string
+            )
+            CLUSTER BY (colB,colA)
+        """
+        )
+
+        self.assertEqual(dh.get_cluster(), ["colB", "colA"])
+
+        dh2 = DeltaHandle.from_tc("MyTbl7")
+        Spark.get().sql(
+            f"""
+            CREATE TABLE {dh2.get_tablename()}
+            (
+            colA string,
+            colB int,
+            payload string
+            )
+        """
+        )
+
+        self.assertEqual(dh2.get_cluster(), [])
+
+    def test_11_get_schema(self):
         # test instantiation without error
         dh = DeltaHandle.from_tc("MyTblWithSchema")
 
         self.assertEqualSchema(test_schema, dh.get_schema())
 
-    def test_11_set_schema(self):
+    def test_12_set_schema(self):
         # test instantiation without error
         dh = DeltaHandle.from_tc("MyTblWithSchema")
 

@@ -131,6 +131,7 @@ class TestConfigurator(unittest.TestCase):
             c.get("MySqlTable", "options"), {"key1": "val1", "key2": "val2"}
         )
         self.assertEqual(c.get("MySqlTable", "partitioned_by"), ["a", "b"])
+        self.assertEqual(c.get("MySqlTable", "cluster_by"), ["a", "b"])
         self.assertEqual(
             c.get("MySqlTable", "clustered_by"),
             dict(

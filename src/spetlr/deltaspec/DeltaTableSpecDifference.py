@@ -105,6 +105,7 @@ class DeltaTableSpecDifference:
         return (
             (self.base.options == self.target.options)
             and (self.base.partitioned_by == self.target.partitioned_by)
+            and (self.base.cluster_by == self.target.cluster_by)
             and (self.base.comment == self.target.comment)
             and (self.base.tblproperties == self.target.tblproperties)
         )

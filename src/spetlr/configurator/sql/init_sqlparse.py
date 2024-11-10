@@ -11,6 +11,7 @@ my_regex = [
     (r"ZORDER\s+BY\b", tokens.Keyword),
     (r"PARTITIONED\s+BY\b", tokens.Keyword),
     (r"SORTED\s+BY\b", tokens.Keyword),
+    (r"CLUSTER\s+BY\b", tokens.Keyword),
     (r"CLUSTERED\s+BY\b", tokens.Keyword),
     (r"WITH\s+DBPROPERTIES\b", tokens.Keyword),
     (r"BLOOMFILTER\s+INDEX\b", tokens.Keyword),

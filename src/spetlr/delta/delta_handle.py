@@ -61,6 +61,7 @@ class DeltaHandle(TableHandle):
         self._data_format = data_format
 
         self._partitioning: Optional[List[str]] = None
+        self._cluster: Optional[List[str]] = None
         self._validate()
 
         if options_dict is None or options_dict == "":
@@ -208,6 +209,25 @@ class DeltaHandle(TableHandle):
                 .collect()[0][0]
             )
         return self._partitioning
+
+    def get_cluster(self):
+        """The result of DESCRIBE DETAIL tablename is like this:
+        +------+--------------------+--------------------+----------------+-------+
+        |format|                  id|                name|clusteringColumns|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
+        | delta|c96a1e94-314b-427...|spark_catalog.tes...|    [colB, colA]|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
+        but this method return the cluster in the form ['mycolA'],
+        if there is no cluster, an empty list is returned.
+        """
+        if self._cluster is None:
+            self._cluster = (
+                Spark.get()
+                .sql(f"DESCRIBE DETAIL {self.get_tablename()}")
+                .select("clusteringColumns")
+                .collect()[0][0]
+            )
+        return self._cluster
 
     def get_tablename(self) -> str:
         return self._name

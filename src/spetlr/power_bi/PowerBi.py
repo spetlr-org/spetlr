@@ -949,7 +949,7 @@ class PowerBi:
                     return True
         elif self.last_status == "Unknown":
             self._raise_error("Refresh is still in progress!")
-        elif self.last_status == "Canceled":
+        elif self.last_status in ["Canceled", "Cancelled"]:
             self._raise_error("Refresh has been canceled!")
         elif self.last_status == "Disabled":
             self._raise_error("Refresh is disabled!")
@@ -1037,6 +1037,7 @@ class PowerBi:
             elif self.last_status is not None and self.last_status not in [
                 "Completed",
                 "Canceled",
+                "Cancelled",
             ]:
                 print(
                     f"Unknown refresh status: {self.last_status}! {self.last_exception}"

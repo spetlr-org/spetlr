@@ -44,6 +44,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
             schema=schema,
             options=details.get("options", {}),
             partitioned_by=details.get("partitioned_by", []),
+            cluster_by=details.get("cluster_by", []),
             tblproperties=details.get("tblproperties", {}),
         )
 
@@ -77,6 +78,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
             schema=schema,
             options=item.get("options", {}),
             partitioned_by=item.get("partitioned_by", []),
+            cluster_by=item.get("cluster_by", []),
             tblproperties=item.get("tblproperties", {}),
         )
 
@@ -110,6 +112,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
             name=details["name"],
             schema=spark.table(in_name).schema,
             partitioned_by=details["partitionColumns"],
+            cluster_by=details["clusteringColumns"],
             tblproperties=tblproperties,
             location=details["location"],
             comment=details["description"],
@@ -130,6 +133,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
                 if self.partitioned_by
                 else ""
             ),
+            (f"cluster_by={repr(self.cluster_by)}" if self.cluster_by else ""),
             (f"tblproperties={repr(self.tblproperties)}" if self.tblproperties else ""),
             (f"comment={repr(self.comment)}" if self.comment else ""),
             (f"location={repr(self.location)}" if self.location else ""),

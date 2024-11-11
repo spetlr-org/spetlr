@@ -12,9 +12,10 @@ from spetlr.spark import Spark
 
 class ChildCacher(CachedLoader):
     to_be_written: DataFrame
-    written: DataFrame
+    written: DataFrame = None
     to_be_deleted: DataFrame
-    deleted: DataFrame
+    deleted: DataFrame = None
+    too_many_rows_was_called: bool = False
 
     def write_operation(self, df: DataFrame):
         self.to_be_written = df
@@ -29,6 +30,10 @@ class ChildCacher(CachedLoader):
         Spark.get().sql(f"DELETE FROM {target_name} WHERE b = 8")
         self.deleted = df.filter(df["b"] == 8)
         return self.deleted
+
+    def too_many_rows(self) -> None:
+        self.too_many_rows_was_called = True
+        return
 
 
 class CachedLoaderTests(unittest.TestCase):
@@ -85,6 +90,20 @@ class CachedLoaderTests(unittest.TestCase):
         ("7", 7, "foo7"),  # duplicate row will only be loaded once
     ]
 
+    too_much_data = [
+        ("11", 1, "foo1"),  # new
+        ("12", 1, "foo2"),  # new
+        ("13", 1, "foo3"),  # new
+        ("14", 1, "foo4"),  # new
+        ("15", 1, "foo5"),  # new
+        ("16", 1, "foo6"),  # new
+        ("17", 1, "foo7"),  # new
+        ("18", 1, "foo8"),  # new
+        ("19", 1, "foo9"),  # new
+        ("20", 1, "foo10"),  # new
+        ("21", 1, "foo11"),  # new
+    ]
+
     @classmethod
     def setUpClass(cls) -> None:
         tc = Configurator()
@@ -94,17 +113,11 @@ class CachedLoaderTests(unittest.TestCase):
         tc.register("TestDb", dict(name="test{ID}", path="/tmp/test{ID}.db"))
         tc.register(
             "CachedTest",
-            dict(
-                name="test{ID}.cachedloader_cache",
-                path="/tmp/test{ID}.db/cachedloader_cache",
-            ),
+            dict(name="test{ID}.cachedloader_cache"),
         )
         tc.register(
             "CachedTestTarget",
-            dict(
-                name="test{ID}.cachedloader_target",
-                path="/tmp/test{ID}.db/cachedloader_target",
-            ),
+            dict(name="test{ID}.cachedloader_target"),
         )
         DbHandle.from_tc("TestDb").create()
         spark = Spark.get()
@@ -121,7 +134,6 @@ class CachedLoaderTests(unittest.TestCase):
             )
             USING DELTA
             COMMENT "Caching Test"
-            LOCATION "{CachedTest_path}"
         """.format(
                 **tc.get_all_details()
             )
@@ -137,7 +149,6 @@ class CachedLoaderTests(unittest.TestCase):
             )
             USING DELTA
             COMMENT "Caching target"
-            LOCATION "{CachedTestTarget_path}"
         """.format(
                 **tc.get_all_details()
             )
@@ -147,6 +158,7 @@ class CachedLoaderTests(unittest.TestCase):
             cache_table_name=tc.table_name("CachedTest"),
             key_cols=["a", "b"],
             cache_id_cols=["myId"],
+            do_nothing_if_more_rows_than=10,
         )
 
         cls.sut = ChildCacher(cls.params)
@@ -203,3 +215,28 @@ class CachedLoaderTests(unittest.TestCase):
         del_cache = cache.filter(cache[self.sut.params.deletedTime].isNotNull())
         (del_id,) = [row.a for row in del_cache.collect()]
         self.assertEqual(del_id, "8")
+        self.assertFalse(self.sut.too_many_rows_was_called)
+
+    def test_02_checks_for_too_many_rows(self):
+        self.sut.written = None
+        self.sut.deleted = None
+
+        cache_dh = DeltaHandle.from_tc("CachedTest")
+        # prime the cache
+        df_old_cache = Spark.get().createDataFrame(
+            self.old_cache, schema=cache_dh.read().schema
+        )
+        cache_dh.overwrite(df_old_cache)
+
+        # prepare the new data with too many rows
+        target_dh = DeltaHandle.from_tc("CachedTestTarget")
+        df_new = Spark.get().createDataFrame(
+            self.too_much_data, schema=target_dh.read().schema
+        )
+
+        # execute the system under test
+        self.sut.save(df_new)
+
+        self.assertTrue(self.sut.too_many_rows_was_called)
+        self.assertIsNone(self.sut.written)
+        self.assertIsNone(self.sut.deleted)

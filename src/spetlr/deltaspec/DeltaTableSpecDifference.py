@@ -4,6 +4,7 @@ import json
 from dataclasses import _MISSING_TYPE, asdict, dataclass
 from typing import Dict, List, Optional
 
+from deprecated import deprecated
 from pyspark.sql.types import StructField, StructType
 
 from spetlr.deltaspec.DeltaTableSpecBase import DeltaTableSpecBase
@@ -12,6 +13,7 @@ from spetlr.deltaspec.helpers import TableName
 from spetlr.schema_manager import SchemaManager
 
 
+@deprecated("Class untested in current version of spetlr")
 @dataclass
 class DeltaTableSpecDifference:
     """This class contains two DeltaTableSpec, base and target.
@@ -103,6 +105,7 @@ class DeltaTableSpecDifference:
         return (
             (self.base.options == self.target.options)
             and (self.base.partitioned_by == self.target.partitioned_by)
+            and (self.base.cluster_by == self.target.cluster_by)
             and (self.base.comment == self.target.comment)
             and (self.base.tblproperties == self.target.tblproperties)
         )

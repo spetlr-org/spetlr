@@ -14,7 +14,7 @@ from spetlr.eh.EventHubCaptureExtractor import EventHubCaptureExtractor
 from spetlr.etl import Transformer
 from spetlr.orchestrators import EhJsonToDeltaOrchestrator
 from spetlr.spark import Spark
-from tests.cluster.values import resourceName
+from spetlr.utils import AzureTags
 
 from .SpetlrEh import SpetlrEh
 
@@ -37,10 +37,14 @@ class EventHubsTests(unittest.TestCase):
         time.sleep(100)  # just wait the EH captures once a minute anyway.
 
         tc = Configurator()
+        tc.register("ws", AzureTags().resource_name)
+
         tc.register(
             "SpetlrEh",
             {
-                "path": f"/mnt/{resourceName()}/silver/{resourceName()}/spetlreh",
+                # This path should align with the path defined in
+                # integration_databricks catalog.
+                "path": "/Volumes/{ws}/volumes/capture/{ws}/spetlreh/",
                 "format": "avro",
                 "partitioning": "ymd",
             },

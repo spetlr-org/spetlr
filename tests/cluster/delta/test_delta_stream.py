@@ -13,10 +13,6 @@ from spetlr.spark import Spark
 from spetlr.testutils.stop_test_streams import stop_test_streams
 
 
-@unittest.skipUnless(
-    Spark.version() >= Spark.DATABRICKS_RUNTIME_10_4,
-    f"Spetlr Streaming not available for Spark version {Spark.version()}",
-)
 class DeltaStreamTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -31,27 +27,23 @@ class DeltaStreamTests(unittest.TestCase):
 
     def test_01_configure(self):
         tc = Configurator()
-        tc.register(
-            "MyDb", {"name": "TestDb{ID}", "path": "/mnt/spetlr/silver/testdb{ID}"}
-        )
+        tc.register("MyDb", {"name": "TestDb{ID}"})
 
         tc.register(
             "MyTbl",
             {
                 "name": "TestDb{ID}.TestTbl",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tbl",
+                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl",
                 "query_name": "testquerytbl{ID}",
             },
         )
 
-        mirror_cp_path = "/mnt/spetlr/silver/testdb{ID}/_checkpoint_path_tblmirror"
+        mirror_cp_path = "/tmp/stream{ID}/_checkpoint_path_tblmirror"
         tc.register(
             "MyTblMirror",
             {
                 "name": "TestDb{ID}.TestTblMirror",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtblmirror",
                 "format": "delta",
                 "checkpoint_path": mirror_cp_path,
                 "await_termination": True,
@@ -64,21 +56,8 @@ class DeltaStreamTests(unittest.TestCase):
             {
                 "name": "TestDb{ID}.TestTbl2",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
-                "_checkpoint_path_tbl2",
+                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl2",
                 "query_name": "testquerytbl2{ID}",
-            },
-        )
-
-        tc.register(
-            "MyTbl3",
-            {
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl3",
-                "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
-                "_checkpoint_path_tbl3",
-                "await_termination": True,
-                "query_name": "testquerytbl3{ID}",
             },
         )
 
@@ -86,10 +65,8 @@ class DeltaStreamTests(unittest.TestCase):
             "MyTbl4",
             {
                 "name": "TestDb{ID}.TestTbl4",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl4",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}/"
-                "_checkpoint_path_tbl4",
+                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl4",
                 "query_name": "testquerytbl4{ID}",
             },
         )
@@ -98,10 +75,8 @@ class DeltaStreamTests(unittest.TestCase):
             "MyTbl5",
             {
                 "name": "TestDb{ID}.TestTbl5",
-                "path": "/mnt/spetlr/silver/testdb{ID}/testtbl5",
                 "format": "delta",
-                "checkpoint_path": "/mnt/spetlr/silver/testdb{ID}"
-                "/_checkpoint_path_tbl5",
+                "checkpoint_path": "/tmp/stream{ID}/_checkpoint_path_tbl5",
                 "query_name": "testquerytbl5{ID}",
             },
         )
@@ -111,7 +86,6 @@ class DeltaStreamTests(unittest.TestCase):
         DeltaHandle.from_tc("MyTbl")
         DeltaHandle.from_tc("MyTblMirror")
         DeltaHandle.from_tc("MyTbl2")
-        DeltaHandle.from_tc("MyTbl3")
         DeltaHandle.from_tc("MyTbl4")
         DeltaHandle.from_tc("MyTbl5")
 
@@ -167,24 +141,22 @@ class DeltaStreamTests(unittest.TestCase):
         # check that we can write to the table with no "name" property
         dh1 = DeltaHandle.from_tc("MyTbl")
 
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-
-        # dsh3.append(ah, mergeSchema=True)
+        dh2 = DeltaHandle.from_tc("MyTbl2")
 
         o = Orchestrator()
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                loader=SimpleLoader(dh3, mode="append"),
+                loader=SimpleLoader(dh2, mode="append"),
                 await_termination=True,
-                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
-                query_name=Configurator().get("MyTbl3", "query_name"),
+                checkpoint_path=Configurator().get("MyTbl2", "checkpoint_path"),
+                query_name=Configurator().get("MyTbl2", "query_name"),
             ),
         )
         o.execute()
 
-        # Read data from mytbl3
-        result = dh3.read()
+        # Read data from mytbl2
+        result = dh2.read()
         self.assertEqual(2, result.count())
 
     def test_09_trigger_once(self):
@@ -192,19 +164,17 @@ class DeltaStreamTests(unittest.TestCase):
         # check that we can write to the table with no "name" property
         dh1 = DeltaHandle.from_tc("MyTbl")
 
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-
-        # dsh3.append(ah, mergeSchema=True)
+        dh2 = DeltaHandle.from_tc("MyTbl2")
 
         o = Orchestrator()
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                loader=SimpleLoader(dh3, mode="append"),
+                loader=SimpleLoader(dh2, mode="append"),
                 await_termination=False,
-                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
+                checkpoint_path=Configurator().get("MyTbl2", "checkpoint_path"),
                 trigger_type="once",
-                query_name=Configurator().get("MyTbl3", "query_name"),
+                query_name=Configurator().get("MyTbl2", "query_name"),
             ),
         )
         o.execute()
@@ -219,27 +189,25 @@ class DeltaStreamTests(unittest.TestCase):
         # check that we can write to the table with no "name" property
         dh1 = DeltaHandle.from_tc("MyTbl")
 
-        dh3 = DeltaHandle.from_tc("MyTbl3")
-
-        # dsh3.append(ah, mergeSchema=True)
+        dh2 = DeltaHandle.from_tc("MyTbl2")
 
         o = Orchestrator()
         o.extract_from(StreamExtractor(dh1, dataset_key="MyTbl"))
         o.load_into(
             StreamLoader(
-                loader=SimpleLoader(dh3, mode="append"),
+                loader=SimpleLoader(dh2, mode="append"),
                 options_dict={},
                 await_termination=False,
-                checkpoint_path=Configurator().get("MyTbl3", "checkpoint_path"),
+                checkpoint_path=Configurator().get("MyTbl2", "checkpoint_path"),
                 trigger_type="processingtime",
                 trigger_time_seconds=5,
-                query_name=Configurator().get("MyTbl3", "query_name"),
+                query_name=Configurator().get("MyTbl2", "query_name"),
             ),
         )
         o.execute()
 
-        # wait 60 sec for the stream to start
-        time.sleep(60)
+        # wait 10 sec for the stream to start
+        time.sleep(10)
 
         stop_test_streams()
 
@@ -265,6 +233,5 @@ class DeltaStreamTests(unittest.TestCase):
                             id int,
                             name string
                             )
-                            LOCATION '{Configurator().get("MyTblMirror","path")}'
                         """
         )

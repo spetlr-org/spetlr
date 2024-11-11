@@ -6,9 +6,10 @@ from spetlr.etl import Transformer
 
 
 class EhJsonToDeltaTransformer(Transformer):
-    def __init__(self, *, target_dh: DeltaHandle):
+    def __init__(self, *, target_dh: DeltaHandle, case_sensitive: bool = True):
         super().__init__()
         self.target_dh = target_dh
+        self.case_sensitive = case_sensitive
 
     def process(self, df: DataFrame) -> DataFrame:
         # use the schema from the target table to decide what to unpack
@@ -48,6 +49,10 @@ class EhJsonToDeltaTransformer(Transformer):
             else:
                 df = df.select(*direct_cols)
         else:
+            json_options = {}
+            if not self.case_sensitive:
+                json_options["readerCaseSensitive"] = "false"
+
             # every column that is in the target delta table and that is not a direct
             # column from the source eventhub DataFrame, is assumed to be a column whose
             # value can be unpacked from the json that is in the eventhub body
@@ -59,7 +64,9 @@ class EhJsonToDeltaTransformer(Transformer):
             body_schema = target_df.select(*body_cols).schema
             df = df.withColumn(
                 "Body",
-                f.from_json(f.decode("Body", "utf-8"), body_schema).alias("Body"),
+                f.from_json(
+                    f.decode("Body", "utf-8"), body_schema, options=json_options
+                ).alias("Body"),
             )
             if _keep_body_as_json:
                 df = df.select("Body.*", *direct_cols, "BodyJson")

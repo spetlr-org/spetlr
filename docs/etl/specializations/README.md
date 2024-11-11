@@ -63,6 +63,18 @@ Therefore, this method needs to return the rows that were actually deleted,
 updates the cache table with them, to mark them as having been deleted.
 returning `None` here skips the rest of the deleting logic.
 
+### `too_many_rows`
+
+The function is called instead of write_operation and delete_operation
+functions if there were too many new or modified rows in the data set.
+To specify the too many rows threshold, set the parameter
+`do_nothing_if_more_rows_than`.
+The function has no parameters and returns nothing.
+The logic can be used to implement full-loads that take longer than
+24 hours to be executed parallel to daily incremental loads
+that must not exceed the threshold. The function can send a warning
+that starting the full-load job is required.
+
 ## Simple Extrator/Loader
 
 Often the step of extracting from, e.g. a delta handle or an eventhub,

@@ -1,52 +1,43 @@
 SparkTestDb:
   name: my_db1{ID}
-  path: /tmp/foo/bar/my_db1{ID}/
 
 SparkTestTable1:
   name: "{SparkTestDb}.tbl1"
-  path: "{SparkTestDb_path}/tbl1"
 
 SparkTestTable11:
   path: "{SparkTestDb_path}/tbl11"
 
 SparkTestDb2:
   name: my_db2{ID}
-  path: /tmp/foo/bar/my_db2{ID}/
 
 SparkTestTable2:
   name: "{SparkTestDb2}.tbl2"
-  path: "{SparkTestDb2_path}/tbl2"
 
 UpsertLoaderDb:
   name: UpsertLoader{ID}
-  path: "/tmp/UpsertLoader{ID}.db/"
 
 UpsertLoaderDummy:
   name: "{UpsertLoaderDb}.Dummy"
   path: "{UpsertLoaderDb_path}/dummy"
   format: "delta"
-  checkpoint_path: /tmp/checkpoints/_upsertcheckpoints
+  checkpoint_path: /tmp/checkpoints{ID}/_upsertcheckpoints
   await_termination: True
 
 UpsertLoaderStreamingSource:
   name: "{UpsertLoaderDb}.StreamingSource"
-  path: "{UpsertLoaderDb_path}/StreamingSource"
   format: "delta"
-  checkpoint_path: "{UpsertLoaderDb_path}/_checkpoints"
+  checkpoint_path: /tmp/checkpoints{ID}/_StreamingSourcecheckpoints
   await_termination: True
 
 UpsertLoaderStreamingTarget:
   name: "{UpsertLoaderDb}.StreamingTarget"
-  path: "{UpsertLoaderDb_path}/StreamingTarget"
   format: "delta"
-  checkpoint_path: "{UpsertLoaderDb_path}/StreamingTarget/_checkpoints"
+  checkpoint_path: "/tmp/checkpoints{ID}/StreamingTarget/_checkpoints"
   await_termination: True
 
 DeleteDataLoaderDb:
   name: DeleteDataLoader{ID}
-  path: "/tmp/DeleteDataLoader{ID}.db/"
 
 DeleteDataLoaderDummy:
   name: "{DeleteDataLoaderDb}.Dummy"
-  path: "{DeleteDataLoaderDb_path}/dummy"
 

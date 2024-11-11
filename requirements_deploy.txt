@@ -1,0 +1,11 @@
+setuptools
+wheel
+packaging
+twine
+pyclean
+pytest
+black
+isort
+flake8
+spetlr-tools>=0.1.66
+pydantic

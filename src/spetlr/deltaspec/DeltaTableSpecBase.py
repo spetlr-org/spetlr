@@ -3,6 +3,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional, Union
 
+from deprecated import deprecated
 from pyspark.sql.types import StructField, StructType
 
 from spetlr import Configurator
@@ -17,6 +18,7 @@ _DEFAULT_minWriterVersion = 5
 _DEFAULT_blankedPropertyKeys = ["delta.columnMapping.maxColumnId"]
 
 
+@deprecated("Class untested in current version of spetlr")
 @dataclass
 class DeltaTableSpecBase:
     """This class represents a full specification for a delta table."""
@@ -25,6 +27,7 @@ class DeltaTableSpecBase:
     schema: StructType
     options: Dict[str, str] = field(default_factory=dict)
     partitioned_by: List[str] = field(default_factory=list)
+    cluster_by: List[str] = field(default_factory=list)
     tblproperties: Dict[str, str] = field(default_factory=dict)
     location: Optional[str] = None
     comment: str = None
@@ -61,6 +64,12 @@ class DeltaTableSpecBase:
             if col not in self.schema.names:
                 raise InvalidSpecificationError(
                     "Supply the partitioning columns in the schema."
+                )
+
+        for col in self.cluster_by:
+            if col not in self.schema.names:
+                raise InvalidSpecificationError(
+                    "Supply the cluster columns in the schema."
                 )
 
         self.location = standard_databricks_location(self.location)
@@ -194,6 +203,9 @@ class DeltaTableSpecBase:
 
         if self.partitioned_by:
             sql += f"PARTITIONED BY ({', '.join(self.partitioned_by)})\n"
+
+        if self.cluster_by:
+            sql += f"CLUSTER BY ({', '.join(self.cluster_by)})\n"
 
         if self.location:
             sql += f"LOCATION {json.dumps(self.location)}\n"

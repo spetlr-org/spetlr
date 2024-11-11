@@ -16,7 +16,7 @@ class CosmosTests(unittest.TestCase):
         dbutils = init_dbutils()
 
         cls._cm = CosmosDb(
-            endpoint=dbutils.secrets.get("values", "Cosmos--Endpoint"),
+            endpoint=dbutils.secrets.get("secrets", "Cosmos--Endpoint"),
             account_key=dbutils.secrets.get("secrets", "Cosmos--AccountKey"),
             database=f"SpetlrCosmosContainer{uuid.uuid4().hex}",
             catalog_name=None,
@@ -35,15 +35,10 @@ class CosmosTests(unittest.TestCase):
         )
 
     def test_01_create_db(self):
-        self._cm.execute_sql(
-            "CREATE DATABASE IF NOT EXISTS"
-            f" {self._cm.catalog_name}.{self._cm.database};"
-        )
-        self._cm.execute_sql(
-            "CREATE TABLE IF NOT EXISTS"
-            f" {self._cm.catalog_name}.{self._cm.database}.{self._tc.table_name('CmsTbl')}"  # noqa
-            " using cosmos.oltp"
-            " TBLPROPERTIES(partitionKeyPath = '/pk', manualThroughput = '400')"
+        self._cm.create_table(
+            table_name=self._tc.table_name("CmsTbl"),
+            partition_key="/pk",
+            offer_throughput=400,
         )
 
     def test_02_write_table(self):

@@ -1,3 +1,4 @@
+import unittest
 from datetime import datetime, timezone
 
 from pyspark.sql.types import (
@@ -20,6 +21,7 @@ from spetlr.spark import Spark
 from spetlr.testutils import stop_test_streams
 
 
+@unittest.skip("TODO: Test uses mount points")
 class TestSCD2Loader(DataframeTestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -482,7 +484,6 @@ class TestSCD2Loader(DataframeTestCase):
                     Col2 string,
                     TimeCol timestamp
                     )
-                    LOCATION '{Configurator().get("MyTblStreamSource", "path")}'
                 """
         )
 
@@ -499,7 +500,6 @@ class TestSCD2Loader(DataframeTestCase):
                     IsCurrent boolean,
                     HashValue string
                     )
-                    LOCATION '{Configurator().get("MyTblStreamSink", "path")}'
                 """
         )
 

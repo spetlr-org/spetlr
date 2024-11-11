@@ -10,7 +10,12 @@ class Upsertable(Protocol):
 
 class Overwritable(Protocol):
     def overwrite(
-        self, df: DataFrame, mergeSchema: bool = None, overwriteSchema: bool = None
+        self,
+        df: DataFrame,
+        mergeSchema: bool = None,
+        overwriteSchema: bool = None,
+        *,
+        overwritePartitions: bool = None,
     ) -> None:
         pass
 

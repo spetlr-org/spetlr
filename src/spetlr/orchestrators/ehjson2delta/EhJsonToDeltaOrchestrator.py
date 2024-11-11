@@ -11,7 +11,13 @@ from spetlr.orchestrators.ehjson2delta.EhJsonToDeltaTransformer import (
 
 
 class EhJsonToDeltaOrchestrator(Orchestrator):
-    def __init__(self, eh: EventHubCaptureExtractor, dh: DeltaHandle):
+    def __init__(
+        self,
+        eh: EventHubCaptureExtractor,
+        dh: DeltaHandle,
+        *,
+        case_sensitive: bool = True,
+    ):
         super().__init__()
         self.eh = eh
         self.dh = dh
@@ -25,7 +31,9 @@ class EhJsonToDeltaOrchestrator(Orchestrator):
         # step 2,
         #  - use the target schema to select what to copy from capture files
         #  - anything that is not in the source df is used to unpack the body json
-        self.transform_with(EhJsonToDeltaTransformer(target_dh=dh))
+        self.transform_with(
+            EhJsonToDeltaTransformer(target_dh=dh, case_sensitive=case_sensitive)
+        )
 
         # the method filter_with can be used to insert any number of transformers here
 

@@ -24,6 +24,7 @@ class StatementBlocks:
     using: str = "DELTA"
     options: Dict[str, str] = None
     partitioned_by: List[str] = None
+    cluster_by: List[str] = None
     clustered_by: ClusteredBy = None
     location: str = None
     comment: str = None
@@ -47,6 +48,9 @@ class StatementBlocks:
                 self.schema = self.schema[1:-1]
             object_details["schema"] = {"sql": self.schema}
             object_details["_raw_sql_schema"] = self.schema
+
+        if self.cluster_by:
+            object_details["cluster_by"] = self.cluster_by
 
         if self.clustered_by:
             object_details["clustered_by"] = {

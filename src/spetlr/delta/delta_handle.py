@@ -29,7 +29,7 @@ class DeltaHandleInvalidFormat(DeltaHandleException):
 class DeltaHandle(TableHandle):
     def __init__(
         self,
-        name: str,
+        name: str = None,
         location: str = None,
         schema: T.StructType = None,
         data_format: str = "delta",
@@ -39,7 +39,7 @@ class DeltaHandle(TableHandle):
         max_bytes_per_trigger: int = None,
     ):
         """
-        name: The name of the Delta table.
+        name: The name of the Delta table, can be omitted if location is given.
         location (optional): The file-system path to the Delta table files.
         data_format (optional): Always delta-format. Todo: Remove in future PR.
         options_dict (optional): All other string options for pyspark.
@@ -50,12 +50,18 @@ class DeltaHandle(TableHandle):
         max_bytes_per_trigger (optional): How much data gets
                                 processed in each micro-batch.
         """
+        if name is None:
+            if location is None:
+                raise ValueError("`name`  or `location` must be given")
+            name = f"delta.`{location}`"
+
         self._name = name
         self._location = location
         self._schema = schema
         self._data_format = data_format
 
         self._partitioning: Optional[List[str]] = None
+        self._cluster: Optional[List[str]] = None
         self._validate()
 
         if options_dict is None or options_dict == "":
@@ -80,13 +86,13 @@ class DeltaHandle(TableHandle):
     def from_tc(cls, id: str) -> "DeltaHandle":
         tc = Configurator()
         return cls(
-            name=tc.table_property(id, "name", ""),
-            location=tc.table_property(id, "path", ""),
+            name=tc.get(id, "name", ""),
+            location=tc.get(id, "path", ""),
             schema=SchemaManager().get_schema(id, None),
-            data_format=tc.table_property(id, "format", "delta"),
-            ignore_changes=tc.table_property(id, "ignore_changes", "True"),
-            stream_start=tc.table_property(id, "stream_start", ""),
-            max_bytes_per_trigger=tc.table_property(id, "max_bytes_per_trigger", ""),
+            data_format=tc.get(id, "format", "delta"),
+            ignore_changes=tc.get(id, "ignore_changes", "True"),
+            stream_start=tc.get(id, "stream_start", ""),
+            max_bytes_per_trigger=tc.get(id, "max_bytes_per_trigger", ""),
         )
 
     def _validate(self):
@@ -117,9 +123,7 @@ class DeltaHandle(TableHandle):
             raise DeltaHandleInvalidFormat("Only format delta is supported.")
 
     def read(self) -> DataFrame:
-        """Read table by path if location is given, otherwise from name."""
-        if self._location:
-            return Spark.get().read.format(self._data_format).load(self._location)
+        """Read table is always by name."""
         return Spark.get().table(self._name)
 
     def write_or_append(
@@ -128,6 +132,8 @@ class DeltaHandle(TableHandle):
         mode: str,
         mergeSchema: bool = None,
         overwriteSchema: bool = None,
+        *,
+        overwritePartitions: bool = None,
     ) -> None:
         assert mode in {"append", "overwrite"}
 
@@ -140,16 +146,25 @@ class DeltaHandle(TableHandle):
                 "overwriteSchema", "true" if overwriteSchema else "false"
             )
 
-        if self._location:
-            return writer.save(self._location)
+        if overwritePartitions:
+            writer = writer.option("partitionOverwriteMode", "dynamic")
 
         return writer.saveAsTable(self._name)
 
     def overwrite(
-        self, df: DataFrame, mergeSchema: bool = None, overwriteSchema: bool = None
+        self,
+        df: DataFrame,
+        mergeSchema: bool = None,
+        overwriteSchema: bool = None,
+        *,
+        overwritePartitions: bool = None,
     ) -> None:
         return self.write_or_append(
-            df, "overwrite", mergeSchema=mergeSchema, overwriteSchema=overwriteSchema
+            df,
+            "overwrite",
+            mergeSchema=mergeSchema,
+            overwriteSchema=overwriteSchema,
+            overwritePartitions=overwritePartitions,
         )
 
     def append(self, df: DataFrame, mergeSchema: bool = None) -> None:
@@ -194,6 +209,25 @@ class DeltaHandle(TableHandle):
                 .collect()[0][0]
             )
         return self._partitioning
+
+    def get_cluster(self):
+        """The result of DESCRIBE DETAIL tablename is like this:
+        +------+--------------------+--------------------+----------------+-------+
+        |format|                  id|                name|clusteringColumns|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
+        | delta|c96a1e94-314b-427...|spark_catalog.tes...|    [colB, colA]|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
+        but this method return the cluster in the form ['mycolA'],
+        if there is no cluster, an empty list is returned.
+        """
+        if self._cluster is None:
+            self._cluster = (
+                Spark.get()
+                .sql(f"DESCRIBE DETAIL {self.get_tablename()}")
+                .select("clusteringColumns")
+                .collect()[0][0]
+            )
+        return self._cluster
 
     def get_tablename(self) -> str:
         return self._name
@@ -250,7 +284,7 @@ class DeltaHandle(TableHandle):
             special_update_set="",
         )
 
-        df._jdf.sparkSession().sql(merge_sql_statement)
+        Spark.get().sql(merge_sql_statement)
 
         print("Incremental Base - incremental load with merge")
 
@@ -272,17 +306,12 @@ class DeltaHandle(TableHandle):
         Spark.get().sql(sql_str)
 
     def read_stream(self) -> DataFrame:
-        reader = (
+        return (
             Spark.get()
             .readStream.format(self._data_format)
             .options(**self._options_dict)
+            .table(self._name)
         )
-        if self._location:
-            df = reader.load(self._location)
-        else:
-            df = reader.table(self._table_name)
-
-        return df
 
     def set_options_dict(self, options: Dict[str, str]):
         self._options_dict = options

@@ -85,6 +85,17 @@ def _extract_table_blocks(stmt: _PeekableTokenList) -> StatementBlocks:
                 )
             continue
 
+        if re.match(r"CLUSTER\s+BY", val):
+            try:
+                blocks.cluster_by = [
+                    token.value for token in _unpack_list_of_single_variables(stmt)
+                ]
+            except SpetlrConfiguratorInvalidSqlException:
+                raise SpetlrConfiguratorInvalidSqlException(
+                    "Please add your cluster columns to the schema."
+                )
+            continue
+
         if re.match(r"CLUSTERED\s+BY", val):
             blocks.clustered_by = ClusteredBy(
                 [token.value for token in _unpack_list_of_single_variables(stmt)]

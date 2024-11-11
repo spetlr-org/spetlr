@@ -123,8 +123,10 @@ class DeltaHandle(TableHandle):
             raise DeltaHandleInvalidFormat("Only format delta is supported.")
 
     def read(self) -> DataFrame:
-        """Read table is always by name."""
-        return Spark.get().table(self._name)
+        """If name is available, always read the table by name."""
+        if not self._location or (self._name and "." in self._name):
+            return Spark.get().table(self._name)
+        return Spark.get().read.format(self._data_format).load(self._location)
 
     def write_or_append(
         self,

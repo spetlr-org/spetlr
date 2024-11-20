@@ -89,6 +89,7 @@ class Spark:
                 return spark
             except ImportError:
                 raise ValueError("databricks.connect not installed") from None
+        return None
 
     @classmethod
     def version(cls) -> Tuple:

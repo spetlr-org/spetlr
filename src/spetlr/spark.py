@@ -8,7 +8,8 @@ Some standard options are pre-set, call configure with value=None to remove them
 # This class uses module level singleton pattern as suggested by method5 of
 # https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 
-
+import os
+import importlib
 from typing import Optional, Tuple
 
 from pyspark.sql import SparkSession
@@ -58,6 +59,9 @@ class Spark:
         """
         if cls._spark is not None:
             return cls._spark
+        cls._spark = cls._get_db_connect()
+        if cls._spark is not None:
+            return cls._spark
         builder = SparkSession.builder
         if cls._master is not None:
             builder = builder.master(cls._master)
@@ -65,6 +69,26 @@ class Spark:
             builder = builder.config(key, value)
         cls._spark = builder.getOrCreate()
         return cls._spark
+
+    @classmethod
+    def _get_db_connect(cls) -> Optional[SparkSession]:
+        """
+        :return:
+        New spark session using databricks.connect if it is installed and enabled
+        """
+        var = "SPETLR_DATABRICKS_CONNECT"
+        if var in os.environ and os.environ[var].lower() == "true":
+            try:
+                dc = importlib.import_module("databricks.connect")
+                spark = dc.DatabricksSession.builder.getOrCreate()
+                for key, value in cls._configurations.items():
+                    if not key.startswith("spark.driver") and not key.startswith(
+                        "spark.executor"
+                    ):
+                        spark.conf.set(key, value)
+                return spark
+            except ImportError:
+                raise ValueError("databricks.connect not installed") from None
 
     @classmethod
     def version(cls) -> Tuple:

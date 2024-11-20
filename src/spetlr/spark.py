@@ -8,8 +8,8 @@ Some standard options are pre-set, call configure with value=None to remove them
 # This class uses module level singleton pattern as suggested by method5 of
 # https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 
-import os
 import importlib
+import os
 from typing import Optional, Tuple
 
 from pyspark.sql import SparkSession

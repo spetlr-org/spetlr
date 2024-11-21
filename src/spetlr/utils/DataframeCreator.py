@@ -45,7 +45,7 @@ class DataframeCreator:
         for column, item in zip(columns, data_row):
             if isinstance(column, str):
                 # we are dealing with a simple column
-                assert column in schema.names
+                assert column in schema.names, f"column '{column}' is missing!"
                 in_data[column] = item
 
             else:
@@ -59,7 +59,9 @@ class DataframeCreator:
                         column_schema, item, column_schema_selection
                     )
                 else:
-                    assert isinstance(column_schema, ArrayType)
+                    assert isinstance(
+                        column_schema, ArrayType
+                    ), f"column type is {type(column_schema)}!"
                     in_data[column_name] = cls._make_row_array(
                         column_schema, item, column_schema_selection
                     )

@@ -1,7 +1,14 @@
 
 # Spark class
 
-The `Spark` class should be utilized to start a Spark session in Spetlr.
+The `Spark` class should be utilized to start a Spark session in Spetlr:
+
+```python 
+from spetlr.spark import Spark
+
+spark = Spark.get()
+```
+
 Sessions are created using the standard `pyspark.sql.SparkSession` class.
 However, it is also possible to switch to Databricks Connect for Python,
 and use the `databricks.connect.DatabricksSession` class instead. This can
@@ -28,7 +35,7 @@ Just set the correct host URL to your Databricks workspace, and change
 the profile name below to your liking. Databricks will let you choose
 a cluster and remember it. 
 
-``` 
+```sh
 $my_profile='profile1',
 $host_url='https://xxxxxxxxxx.azuredatabricks.net'
 
@@ -39,6 +46,6 @@ $host_url='https://xxxxxxxxxx.azuredatabricks.net'
 databricks auth login --configure-cluster --profile $my_profile --host $host_url
 
 databricks auth env --profile $my_profile
-``` 
+```
 
 [Additional info on Databricks Connect can be found here...](https://docs.databricks.com/en/dev-tools/databricks-connect/python/index.html)

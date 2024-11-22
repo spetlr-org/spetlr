@@ -46,7 +46,7 @@ outputs. The special properties of each type are
  - **Transformer** handle a given number of inputs and adds a single result dataframe
  - **Loader** acts as a sink, while passing its input on to the next sink
 
-The **Transformer** can run in two modes, controlled by the flag consume_inputs that is True by default. When True the transformer conumes its inputs and adds the output to the result dataframe. In usecases when there is a need to keep previously extracted (or transformed) dataframes after a transformation step set consume_inputs to False. When working with non conuming transformers it is crucial to set dataset input keys and dataset output keys. This ensures that the transformer and/or loader has explicit information on which dataframe(s) to handle.
+The **Transformer** can run in two modes, controlled by the flag consume_inputs that is True by default. When True the transformer consumes its inputs and adds the output to the result dataframe. In usecases when there is a need to keep previously extracted (or transformed) dataframes after a transformation step, set consume_inputs to False. When working with non consuming transformers it is crucial to set dataset input keys and dataset output keys. This ensures that the transformer and/or loader has explicit information on which dataframe(s) to handle.
 
 The special case of the  **Orchestrator** is that it takes all its steps and executes them
 in sequence on its inputs. Running in the default `execute()` method, the inputs are empty,
@@ -55,6 +55,7 @@ but an orchestrator can also be added as part of another orchestrator with the `
 For the most general case of a many-to-many transformation, implement your step by inheriting
 from the `EtlBase` class.
 
+For simple transformers and loaders, where there is only one dataframe to process and load, it is possible to make the extractor or transformer stop the etl flow. If either the extractor or the transformer returns None as the result, the ETL process is stopped without triggering any errors. 
 
 ## Usage examples:
 

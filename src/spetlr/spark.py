@@ -88,7 +88,12 @@ class Spark:
                         spark.conf.set(key, value)
                 return spark
             except ImportError:
-                raise ValueError("databricks.connect not installed") from None
+                raise ValueError(
+                    "The 'databricks-connect' library is not installed.\n"
+                    "Install the library or set the 'SPETLR_DATABRICKS_CONNECT'\n"
+                    "environment variable to 'False'."
+                ) from None
+
         return None
 
     @classmethod

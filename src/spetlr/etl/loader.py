@@ -29,7 +29,9 @@ class Loader(EtlBase):
     def etl(self, inputs: dataset_group) -> dataset_group:
         if len(self.dataset_input_key_list) > 0:
             if len(self.dataset_input_key_list) == 1:
-                self.save(inputs[self.dataset_input_key_list[0]])
+                df = inputs[self.dataset_input_key_list[0]]
+                if df is not None:
+                    self.save(df)
             else:
                 datasetFilteret = {
                     datasetKey: df
@@ -38,7 +40,9 @@ class Loader(EtlBase):
                 }
                 self.save_many(datasetFilteret)
         elif len(inputs) == 1:
-            self.save(next(iter(inputs.values())))
+            df = next(iter(inputs.values()))
+            if df is not None:
+                self.save(df)
         else:
             self.save_many(inputs)
 

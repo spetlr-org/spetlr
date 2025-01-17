@@ -58,7 +58,9 @@ class Transformer(EtlBase):
 
         # Call process or process_many depending on the input_key count
         if len(dataset_input_keys) == 1:
-            df = self.process(inputs[dataset_input_keys[0]])
+            df = inputs[dataset_input_keys[0]]
+            if df is not None:
+                df = self.process(df)
         else:
             inputs_filtered = {
                 datasetKey: df

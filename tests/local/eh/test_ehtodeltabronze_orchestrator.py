@@ -18,15 +18,16 @@ from spetlr.spark import Spark
 
 class EhToDeltaBronzeOrchestratorTests(DataframeTestCase):
     def test_01_default(self):
+        empty_df = Spark.get().createDataFrame([], schema="Id INTEGER")
         eh_mock = Mock()
         dh_mock = Mock()
 
-        eh_mock.read = Mock(return_value=None)
+        eh_mock.read = Mock(return_value=empty_df)
 
-        with patch.object(EhJsonToDeltaExtractor, "read", return_value=None) as p1:
-            with patch.object(SimpleLoader, "save", return_value=None) as p2:
+        with patch.object(EhJsonToDeltaExtractor, "read", return_value=empty_df) as p1:
+            with patch.object(SimpleLoader, "save", return_value=empty_df) as p2:
                 with patch.object(
-                    EhToDeltaBronzeTransformer, "process", return_value=None
+                    EhToDeltaBronzeTransformer, "process", return_value=empty_df
                 ) as p3:
                     orchestrator = EhToDeltaBronzeOrchestrator(eh=eh_mock, dh=dh_mock)
                     orchestrator.execute()
@@ -55,12 +56,12 @@ class EhToDeltaBronzeOrchestratorTests(DataframeTestCase):
                 )
                 self.filter_with(TestFilter())
 
-        eh_mock.read = Mock(return_value=None)
+        eh_mock.read = Mock(return_value=empty_df)
 
         with patch.object(EhJsonToDeltaExtractor, "read", return_value=empty_df) as p1:
-            with patch.object(SimpleLoader, "save", return_value=None) as p2:
+            with patch.object(SimpleLoader, "save", return_value=empty_df) as p2:
                 with patch.object(
-                    EhToDeltaBronzeTransformer, "process", return_value=None
+                    EhToDeltaBronzeTransformer, "process", return_value=empty_df
                 ) as p3:
                     with patch.object(
                         TestFilter, "process", return_value=empty_df

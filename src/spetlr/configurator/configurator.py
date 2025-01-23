@@ -205,7 +205,9 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
                 # will raise ValueError if there are too few parts,
                 # keys without _ are handled below
 
-                value = self._get_item_property(id_part, property_part, _forbidden_keys)
+                value = self._get_item_property(
+                    id_part, property_part, _forbidden_keys.copy()
+                )
                 # raises ValueError if it does not exist
 
                 replacements[key] = value

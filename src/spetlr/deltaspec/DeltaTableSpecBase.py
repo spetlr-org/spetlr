@@ -58,8 +58,9 @@ class DeltaTableSpecBase:
         # If the table is a managed UC table
         # the location is set to None
         # Since there is no external location per se
-        if "__unitystorage/catalogs" in self.location:
-            self.location = None
+        if self.location is not None:
+            if "__unitystorage/catalogs" in self.location:
+                self.location = None
 
         self.comment = ensureStr(self.comment)
 

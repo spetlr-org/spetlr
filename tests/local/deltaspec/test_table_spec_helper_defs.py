@@ -1,12 +1,13 @@
 import unittest
-from unittest.mock import patch, MagicMock
-from pyspark.sql import Row, DataFrame
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+from unittest.mock import MagicMock, patch
 
+from pyspark.sql import DataFrame, Row
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+
+from spetlr.delta import DeltaHandle
 from spetlr.deltaspec import DeltaTableSpecBase
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
 from spetlr.deltaspec.DeltaTableSpecDifference import DeltaTableSpecDifference
-from spetlr.delta import DeltaHandle
 from spetlr.deltaspec.exceptions import TableSpecNotReadable
 
 
@@ -14,16 +15,21 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
 
     def setUp(self):
         """Setup a sample DeltaTableSpec object."""
-        self.schema = StructType([
-            StructField("id", IntegerType(), True),
-            StructField("name", StringType(), True)
-        ])
+        self.schema = StructType(
+            [
+                StructField("id", IntegerType(), True),
+                StructField("name", StringType(), True),
+            ]
+        )
 
         self.spec = DeltaTableSpec(
             name="test_db.test_table",
             schema=self.schema,
             location="abfss://storage/tables/test_table",
-            tblproperties={"delta.minReaderVersion": "2", "delta.minWriterVersion": "5"}
+            tblproperties={
+                "delta.minReaderVersion": "2",
+                "delta.minWriterVersion": "5",
+            },
         )
 
     def test_copy(self):
@@ -31,15 +37,21 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
         spec_copy = self.spec.copy()
 
         self.assertEqual(self.spec, spec_copy)
-        self.assertIsNot(self.spec, spec_copy)  # Ensure they are different objects in memory
+        self.assertIsNot(
+            self.spec, spec_copy
+        )  # Ensure they are different objects in memory
 
     def test_get_dh(self):
         """Test that get_dh() returns a valid DeltaHandle with expected values."""
         dh = self.spec.get_dh()
 
         self.assertIsInstance(dh, DeltaHandle)
-        self.assertEqual(dh.get_tablename(), self.spec.name)  # Ensuring the name is correct
-        self.assertEqual(dh._location, self.spec.location)  # Ensuring the location matches
+        self.assertEqual(
+            dh.get_tablename(), self.spec.name
+        )  # Ensuring the name is correct
+        self.assertEqual(
+            dh._location, self.spec.location
+        )  # Ensuring the location matches
         self.assertEqual(dh._data_format, "delta")  # Ensuring format is always delta
 
     def test_compare_to(self):
@@ -98,7 +110,7 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
             tblproperties=other_spec.tblproperties,
             location=other_spec.location,
             comment=other_spec.comment,
-            blankedPropertyKeys=['delta.columnMapping.maxColumnId']
+            blankedPropertyKeys=["delta.columnMapping.maxColumnId"],
         )
 
         expected_target = DeltaTableSpecBase(
@@ -110,7 +122,7 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
             tblproperties=self.spec.tblproperties,
             location=self.spec.location,
             comment=self.spec.comment,
-            blankedPropertyKeys=['delta.columnMapping.maxColumnId']
+            blankedPropertyKeys=["delta.columnMapping.maxColumnId"],
         )
 
         # Call the method
@@ -120,7 +132,9 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
         self.assertIsInstance(result, DeltaTableSpecDifference)
 
         # Ensure base and target match expectations
-        self.assertEqual(result.base, expected_base)  # Convert mock return to DeltaTableSpecBase
+        self.assertEqual(
+            result.base, expected_base
+        )  # Convert mock return to DeltaTableSpecBase
         self.assertEqual(result.target, expected_target)
 
         # Ensure from_name() was called with the correct table name
@@ -130,10 +144,12 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
     def test_ensure_df_schema(self, mock_spark_get):
         """Test that ensure_df_schema() raises TableSpecNotReadable if schema mismatch occurs."""
         # Create a mock DataFrame with an incompatible schema
-        mismatched_schema = StructType([
-            StructField("id", IntegerType(), True),
-            StructField("email", StringType(), True)  # Different field name
-        ])
+        mismatched_schema = StructType(
+            [
+                StructField("id", IntegerType(), True),
+                StructField("email", StringType(), True),  # Different field name
+            ]
+        )
 
         mock_df = MagicMock(spec=DataFrame)
         mock_df.schema = mismatched_schema
@@ -157,6 +173,3 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
 
         # Ensure compare_to_name() was called twice (once per case)
         self.assertEqual(mock_compare_to_name.call_count, 2)
-
-
-

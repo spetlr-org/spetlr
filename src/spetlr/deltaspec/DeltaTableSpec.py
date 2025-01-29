@@ -103,7 +103,6 @@ class DeltaTableSpec(DeltaTableSpecBase):
         except AnalysisException as e:
             raise NoTableAtTarget(str(e))
 
-
         if details["format"] != "delta":
             raise InvalidSpecificationError("The table is not of delta format.")
 

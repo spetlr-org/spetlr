@@ -99,8 +99,10 @@ class DeltaTableSpec(DeltaTableSpecBase):
         spark = Spark.get()
         try:
             details = spark.sql(f"DESCRIBE DETAIL {in_name}").collect()[0].asDict()
+
         except AnalysisException as e:
             raise NoTableAtTarget(str(e))
+
         if details["format"] != "delta":
             raise InvalidSpecificationError("The table is not of delta format.")
 

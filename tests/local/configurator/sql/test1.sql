@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS {MySparkDb}.tbl1
 USING DELTA
 OPTIONS (key1='val1', key2="val2")
 PARTITIONED BY ( a, b )
+CLUSTER BY ( a, b )
 CLUSTERED BY ( c,d )
          SORTED BY ( a, b DESC )
         INTO 5 BUCKETS

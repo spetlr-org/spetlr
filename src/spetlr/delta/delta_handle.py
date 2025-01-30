@@ -29,7 +29,7 @@ class DeltaHandleInvalidFormat(DeltaHandleException):
 class DeltaHandle(TableHandle):
     def __init__(
         self,
-        name: str,
+        name: str = None,
         location: str = None,
         schema: T.StructType = None,
         data_format: str = "delta",
@@ -39,7 +39,7 @@ class DeltaHandle(TableHandle):
         max_bytes_per_trigger: int = None,
     ):
         """
-        name: The name of the Delta table.
+        name: The name of the Delta table, can be omitted if location is given.
         location (optional): The file-system path to the Delta table files.
         data_format (optional): Always delta-format. Todo: Remove in future PR.
         options_dict (optional): All other string options for pyspark.
@@ -50,12 +50,18 @@ class DeltaHandle(TableHandle):
         max_bytes_per_trigger (optional): How much data gets
                                 processed in each micro-batch.
         """
+        if name is None:
+            if location is None:
+                raise ValueError("`name`  or `location` must be given")
+            name = f"delta.`{location}`"
+
         self._name = name
         self._location = location
         self._schema = schema
         self._data_format = data_format
 
         self._partitioning: Optional[List[str]] = None
+        self._cluster: Optional[List[str]] = None
         self._validate()
 
         if options_dict is None or options_dict == "":
@@ -117,8 +123,10 @@ class DeltaHandle(TableHandle):
             raise DeltaHandleInvalidFormat("Only format delta is supported.")
 
     def read(self) -> DataFrame:
-        """Read table is always by name."""
-        return Spark.get().table(self._name)
+        """If name is available, always read the table by name."""
+        if not self._location or (self._name and "." in self._name):
+            return Spark.get().table(self._name)
+        return Spark.get().read.format(self._data_format).load(self._location)
 
     def write_or_append(
         self,
@@ -203,6 +211,25 @@ class DeltaHandle(TableHandle):
                 .collect()[0][0]
             )
         return self._partitioning
+
+    def get_cluster(self):
+        """The result of DESCRIBE DETAIL tablename is like this:
+        +------+--------------------+--------------------+----------------+-------+
+        |format|                  id|                name|clusteringColumns|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
+        | delta|c96a1e94-314b-427...|spark_catalog.tes...|    [colB, colA]|  ...  |
+        +------+--------------------+--------------------+----------------+-------+
+        but this method return the cluster in the form ['mycolA'],
+        if there is no cluster, an empty list is returned.
+        """
+        if self._cluster is None:
+            self._cluster = (
+                Spark.get()
+                .sql(f"DESCRIBE DETAIL {self.get_tablename()}")
+                .select("clusteringColumns")
+                .collect()[0][0]
+            )
+        return self._cluster
 
     def get_tablename(self) -> str:
         return self._name

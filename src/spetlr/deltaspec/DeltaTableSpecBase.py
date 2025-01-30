@@ -27,6 +27,7 @@ class DeltaTableSpecBase:
     schema: StructType
     options: Dict[str, str] = field(default_factory=dict)
     partitioned_by: List[str] = field(default_factory=list)
+    cluster_by: List[str] = field(default_factory=list)
     tblproperties: Dict[str, str] = field(default_factory=dict)
     location: Optional[str] = None
     comment: str = None
@@ -54,6 +55,13 @@ class DeltaTableSpecBase:
             # we should treat this like an unspecified location
             self.location = None
 
+        # If the table is a managed UC table
+        # the location is set to None
+        # Since there is no external location per se
+        if self.location is not None:
+            if "__unitystorage/catalogs" in self.location:
+                self.location = None
+
         self.comment = ensureStr(self.comment)
 
         if self.name and "{" not in self.name:
@@ -63,6 +71,12 @@ class DeltaTableSpecBase:
             if col not in self.schema.names:
                 raise InvalidSpecificationError(
                     "Supply the partitioning columns in the schema."
+                )
+
+        for col in self.cluster_by:
+            if col not in self.schema.names:
+                raise InvalidSpecificationError(
+                    "Supply the cluster columns in the schema."
                 )
 
         self.location = standard_databricks_location(self.location)
@@ -196,6 +210,9 @@ class DeltaTableSpecBase:
 
         if self.partitioned_by:
             sql += f"PARTITIONED BY ({', '.join(self.partitioned_by)})\n"
+
+        if self.cluster_by:
+            sql += f"CLUSTER BY ({', '.join(self.cluster_by)})\n"
 
         if self.location:
             sql += f"LOCATION {json.dumps(self.location)}\n"

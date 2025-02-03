@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from pyspark.sql import DataFrame, Row
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
+from spetlr import Configurator
 from spetlr.delta import DeltaHandle
 from spetlr.deltaspec import DeltaTableSpecBase
 from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec
@@ -15,6 +16,7 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
 
     def setUp(self):
         """Setup a sample DeltaTableSpec object."""
+        Configurator().clear_all_configurations()
         self.schema = StructType(
             [
                 StructField("id", IntegerType(), True),

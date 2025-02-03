@@ -4,12 +4,10 @@ from spetlr import Configurator
 
 
 class TestConfigurator(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        Configurator().clear_all_configurations()
 
     def test_01_recursion(self):
         tc = Configurator()
+        tc.clear_all_configurations()
         tc.register("BASE", "foobar")
         tc.register("FIRST", "really {BASE}")
         print(tc.get("FIRST"))

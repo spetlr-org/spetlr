@@ -24,40 +24,72 @@ class SqlExecutor:
         statement_spliter: Optional[List[str]] = _DEFAULT,
         *,
         ignore_empty_folder: bool = False,
+        ignore_lines_regex: Optional[List[str]] = None,
+        ignore_location: bool = False,
     ):
         """Class to pre-treat sql statements and execute them.
-        Replacement sequenced related to the Configurator will be inserted before
+        Replacement sequences related to the Configurator will be inserted before
         execution.
-        Giving not statement_spliter is equivalent to [";", "-- COMMAND ----------"].
-        To disable splitting statements, please supply statement_spliter = None.
+        Providing no `statement_spliter`
+        is equivalent to [";", "-- COMMAND ----------"].
+        To disable splitting statements, supply `statement_spliter = None`.
         Semicolon will be treated correctly when quoted or in comments.
 
-        Default behavior supports spark, which will complain if given
-        no actual sql code or on multiple statements."""
+        Default behavior supports Spark, which will complain if given
+        no actual SQL code or multiple statements.
+        """
 
         self.base_module = base_module
         self.server = server
         if statement_spliter is self._DEFAULT:
-            # the sequence "-- COMMAND ----------" is used in jupyter notebooks
-            # and separates cells.
-            # We treat it as another way to end a statement
+            # The sequence "-- COMMAND ----------" is used in Jupyter notebooks
+            # and separates cells. We treat it as another way to end a statement.
             statement_spliter = [";", "-- COMMAND ----------"]
         self.statement_spliter = statement_spliter
         self.ignore_empty_folder = ignore_empty_folder
 
+        # Initialize regex-based ignore list
+        self.ignore_lines_regex = ignore_lines_regex or []
+
+        # If ignore_location is enabled, add regex pattern for LOCATION
+        if ignore_location:
+            self.ignore_lines_regex.append(r"^LOCATION\b.*")
+
     def _wildcard_string_to_regexp(self, instr: str) -> str:
-        # prepare file pattern:
+        """Converts a wildcard string pattern into a regular expression."""
         if instr.endswith(".sql"):
             instr = instr[:-4]
 
         instr = instr.replace("*", ".*")
 
-        # the string end indicator will prevent us from matching the wrong files
-        #  where a filename is also a prefix to another filename
         if not instr.endswith("$"):
             instr = instr + "$"
 
         return instr
+
+    def _handle_line_regex(self, cleaned_statement: str) -> str:
+        """
+        Remove full lines if they match any regex pattern in `ignore_lines_regex`.
+        It is expected, that the text parsed have no line splitters in it
+        (Unless it is e.g. as comments)
+        """
+
+        if not self.ignore_lines_regex:
+            return cleaned_statement
+        cleaned_lines = []
+        for line in cleaned_statement.splitlines(keepends=True):  # Preserve newlines
+            stripped_for_check = line.lstrip()  # Preserve indentation
+
+            # Check if the line matches any ignore pattern
+            if any(
+                re.match(pattern, stripped_for_check)
+                for pattern in self.ignore_lines_regex
+            ):
+                pass  # Ignore the line
+            else:
+                cleaned_lines.append(line)
+
+        return "".join(cleaned_lines)  # Return cleaned SQL
 
     def get_statements(
         self,
@@ -65,10 +97,7 @@ class SqlExecutor:
         exclude_pattern: str = None,
         replacements: Dict[str, str] = None,
     ):
-        """
-        NB: This sql parser can be challenged in parsing sql statements
-        which do not use semicolon as a query separator only.
-        """
+        """Retrieve SQL statements from files based on patterns."""
         for conts in self._get_raw_contents(
             file_pattern=file_pattern, exclude_pattern=exclude_pattern
         ):
@@ -121,7 +150,11 @@ class SqlExecutor:
                 for statement in parse(sql_code)
             ]
 
-        for full_statement in code_parts:
+        code_parts_handled = []
+        for text in code_parts:
+            code_parts_handled.append(self._handle_line_regex(text))
+
+        for full_statement in code_parts_handled:
             cleaned_statement = (
                 (
                     "".join(
@@ -145,17 +178,12 @@ class SqlExecutor:
         file_pattern: str,
         exclude_pattern: str = None,
     ):
-        """Return the raw file contents to be parsed on to replacement parsing,
-        based on the searched module, filepattern and exclude_pattern.
-        Returns a generator of strings."""
-
-        # prepare arguments:
+        """Retrieve raw SQL file contents based on search patterns."""
         file_pattern = self._wildcard_string_to_regexp(file_pattern)
         if exclude_pattern is not None:
             exclude_pattern = self._wildcard_string_to_regexp(exclude_pattern)
 
         found = False
-        # loop the module contents and find matching files
         for file_name in ir.contents(self.base_module):
             extension = Path(file_name).suffix
             if extension not in [".sql"]:
@@ -183,11 +211,7 @@ class SqlExecutor:
         exclude_pattern: str = None,
         replacements: Optional[Dict[str, str]] = None,
     ):
-        """
-        NB: This sql parser can be challenged in parsing sql statements
-        which do not use semicolon as a query separator only.
-        """
-
+        """Execute SQL statements from files matching the given pattern."""
         executor = self.server or Spark.get()
 
         statement = None
@@ -199,6 +223,6 @@ class SqlExecutor:
 
         if statement is None:
             print(
-                f"WARNING: The sql file pattern {file_pattern} "
+                f"WARNING: The SQL file pattern {file_pattern} "
                 "resulted in zero statements being executed"
             )

@@ -119,3 +119,28 @@ class TestSqlExecutor(unittest.TestCase):
         ]
 
         self.assertEqual(_all, expected)
+
+    def test_13_no_changes_if_no_ignore(self):
+        """
+        This test ensures that all are preserved correctly
+        even if no ignores are defined
+        """
+
+        sqlexe = SqlExecutor(sql)
+        statements = list(sqlexe.get_statements("test_location"))
+
+        expected1 = """
+        CREATE TABLE IF NOT EXISTS some.table
+        (hi int)
+        LOCATION somepath/;"""
+
+        expected2 = """
+
+        CREATE TABLE IF NOT EXISTS some.other
+        (there int)
+        ;
+        """
+
+        self.assertEqual(statements[0], expected1)
+
+        self.assertEqual(statements[1], expected2)

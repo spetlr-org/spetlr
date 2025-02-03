@@ -68,15 +68,41 @@ class SqlExecutor:
 
         return instr
 
+    import re
+
+    def _handle_line_regex(self, cleaned_statement: str) -> str:
+        """
+        Remove full lines if they match any regex pattern in `ignore_lines_regex`.
+        Ensures semicolons are preserved when removing lines.
+        """
+        if not self.ignore_lines_regex:
+            return cleaned_statement
+
+        cleaned_lines = []
+        for line in cleaned_statement.splitlines(
+            keepends=True
+        ):  # Keep original newlines
+            stripped_for_check = line.lstrip()  # Preserve indentation for formatting
+
+            # Check if the line matches any of the given regex patterns
+            if any(
+                re.match(pattern, stripped_for_check)
+                for pattern in self.ignore_lines_regex
+            ):
+                if ";" in line:  # 🔥 If the line has a semicolon, preserve it
+                    cleaned_lines.append(";\n")
+            else:
+                cleaned_lines.append(line)
+
+        return "".join(cleaned_lines)  # Return cleaned SQL as a single string
+
     def _handle_line_starts_with(self, cleaned_statement: str) -> str:
         """
-        Remove full lines if their first word matches
-        any prefix in ignore_lines_starts_with.
-        This preserves other content,
-        ensuring only the correct lines are filtered.
+        Remove full lines if their first word matches any prefix in ignore_lines_starts_with.
+        Ensures semicolons remain when removing lines that contain them.
         """
         if not self.ignore_lines_starts_with:
-            return cleaned_statement
+            return cleaned_statement  # No filtering needed
 
         cleaned_lines = []
         for line in cleaned_statement.splitlines(
@@ -85,13 +111,14 @@ class SqlExecutor:
             stripped_for_check = (
                 line.lstrip()
             )  # Only used for checking, preserves indentation
-            first_word = stripped_for_check.split(" ", 1)[0]  # Extract the first word
+            first_word = stripped_for_check.split(" ", 1)[0]  # Extract first word
 
-            # 🔥 Ensure semicolons are preserved when removing lines
-            if first_word not in self.ignore_lines_starts_with:
-                cleaned_lines.append(line)
-            elif ";" in line:  # 🔥 If `LOCATION somepath/;`, preserve the semicolon
-                cleaned_lines.append(";\n")  # ✅ Only keep the semicolon
+            # 🔥 Preserve semicolons when removing a line
+            if first_word in self.ignore_lines_starts_with:
+                if ";" in line:
+                    cleaned_lines.append(";\n")  # ✅ Keep semicolon on a separate line
+            else:
+                cleaned_lines.append(line)  # ✅ Keep untouched lines
 
         return "".join(cleaned_lines)  # Return as a single cleaned string
 
@@ -117,12 +144,12 @@ class SqlExecutor:
         raw_sql: str,
         replacements: Dict[str, str] = None,
     ):
-        """Break raw SQL into statements,
-        apply substitutions, and remove ignored lines safely."""
+        """Given the raw contents of a SQL file, break it down into statements
+        and execute all substitutions."""
         if replacements is None:
             replacements = {}
 
-        # Apply schema and Configurator replacements
+        # Prepare the full set of replacements
         schema_replacements = {
             f"{k}_schema": v
             for k, v in SchemaManager().get_all_spark_sql_schemas().items()
@@ -135,7 +162,6 @@ class SqlExecutor:
 
         sql_code = raw_sql.format(**replacements)
 
-        # 🔥 First, split into statements before applying filtering
         if self.statement_spliter is None:
             code_parts = [sql_code]
         elif ";" not in self.statement_spliter:
@@ -144,24 +170,21 @@ class SqlExecutor:
                 code_parts = itertools.chain.from_iterable(
                     part.split(sequence) for part in code_parts
                 )
+
         else:
+            # If ";" is included, split the file into SQL statements
+            # Using parse ensures we do not split by escaped or commented occurrences of ";"
+
             for marker in self.statement_spliter:
                 if marker != ";":
                     sql_code = sql_code.replace(marker, ";")
 
-            # 🔥 Use `sqlparse` to safely split statements without removing semicolons
             code_parts = [
                 "".join(token.value for token in statement)
                 for statement in parse(sql_code)
             ]
 
-        cleaned_statements = []
         for full_statement in code_parts:
-            # 🔥 Apply line filtering AFTER splitting to preserve semicolons
-            if self.ignore_lines_starts_with:
-                full_statement = self._handle_line_starts_with(full_statement)
-
-            # Remove comments and trailing semicolons properly
             cleaned_statement = (
                 (
                     "".join(
@@ -173,12 +196,16 @@ class SqlExecutor:
                 )
                 .strip()
                 .strip(";")
-            )
+            )  # Keep original stripping behavior
 
+            # 🔥 Apply `_handle_line_starts_with` if ignore_lines_starts_with is set
+            if self.ignore_lines_starts_with:
+                cleaned_statement = self._handle_line_starts_with(cleaned_statement)
+
+            # Skip the statement unless it actually contains code.
+            # Spark SQL complains if you only give it comments
             if cleaned_statement:
-                cleaned_statements.append(cleaned_statement)
-
-        return cleaned_statements
+                yield full_statement  # 🔥 Keeping `full_statement` as in the original code
 
     def _get_raw_contents(
         self,

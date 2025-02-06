@@ -308,3 +308,24 @@ class TestConfigurator(unittest.TestCase):
         # test exception for missing property
         with self.assertRaises(NoSuchValueException):
             self.assertEqual(c.get("Test", "path"), "somepath")
+
+    def test_19_unregister_key_not_found(self):
+        """
+        Testing that if a keyvalue is None,
+        the key in the dict gets unregistered.
+
+        Also, if the path is not set first
+
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("Test2", dict(name="somename"))
+
+        self.assertEqual(c.get("Test2", "name"), "somename")
+
+        c.register("Test2", dict(path=None))
+
+        self.assertEqual(c.get("Test2", "name"), "somename")
+        # test exception for missing property
+        with self.assertRaises(NoSuchValueException):
+            self.assertEqual(c.get("Test2", "path"), "somepath")

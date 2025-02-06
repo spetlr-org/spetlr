@@ -288,3 +288,23 @@ class TestConfigurator(unittest.TestCase):
         # test exception for missing property
         with self.assertRaises(NoSuchValueException):
             c.get("MyTable", "Missing_Property")
+
+    def test_18_unregister_key(self):
+        """
+        Testing that if a keyvalue is None,
+        the key in the dict gets unregistered
+
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("Test", dict(path="somepath", name="somename"))
+
+        self.assertEqual(c.get("Test", "name"), "somename")
+        self.assertEqual(c.get("Test", "path"), "somepath")
+
+        c.register("Test", dict(path=None))
+
+        self.assertEqual(c.get("Test", "name"), "somename")
+        # test exception for missing property
+        with self.assertRaises(NoSuchValueException):
+            self.assertEqual(c.get("Test", "path"), "somepath")

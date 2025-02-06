@@ -353,6 +353,13 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         ):
             # if both are dicts, update the contents.
             self._raw_resource_details[key].update(value)
+
+            # This is how to clear a key if the keyvalue is None
+            self._raw_resource_details[key] = {
+                k: v
+                for k, v in self._raw_resource_details[key].items()
+                if v is not None
+            }
         else:
             self._raw_resource_details[key] = value
         self.table_details = dict()

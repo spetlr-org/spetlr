@@ -360,6 +360,11 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
                 for k, v in self._raw_resource_details[key].items()
                 if v is not None
             }
+
+            # If the key has no remaining values, remove it completely
+            if not self._raw_resource_details[key]:
+                del self._raw_resource_details[key]
+
         else:
             self._raw_resource_details[key] = value
         self.table_details = dict()

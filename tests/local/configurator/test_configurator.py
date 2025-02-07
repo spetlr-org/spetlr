@@ -365,9 +365,9 @@ class TestConfigurator(unittest.TestCase):
 
         c.register("TestAll", dict(name=None, path=None))
 
-        with self.assertRaises(NoSuchValueException):
+        with self.assertRaises(KeyError):
             c.get("TestAll", "name")
-        with self.assertRaises(NoSuchValueException):
+        with self.assertRaises(KeyError):
             c.get("TestAll", "path")
 
     def test_22_unregister_partial_update(self):
@@ -432,3 +432,41 @@ class TestConfigurator(unittest.TestCase):
         # Ensure TestB is not affected
         self.assertEqual(c.get("TestB", "name"), "tableB")
         self.assertEqual(c.get("TestB", "path"), "/mnt/tableB")
+
+    def test_25_unregister_last_key_removes_entry(self):
+        """
+        Testing that if the last remaining key-value pair is set to None,
+        the entire entry is removed from the dictionary.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("somekey", dict(path="hey"))
+
+        self.assertEqual(c.get("somekey", "path"), "hey")
+
+        c.register("somekey", dict(path=None))
+
+        # Ensure the key is completely removed
+        with self.assertRaises(KeyError):
+            c.get("somekey", "path")
+
+        # Ensure the key is completely removed
+        with self.assertRaises(KeyError):
+            c.get("somekey")
+
+        # Ensure "somekey" itself is removed from raw details
+        self.assertNotIn("somekey", c._raw_resource_details)
+
+    def test_26_register_key_with_no_values(self):
+        """
+        Tests that if one tries to register a key
+        with no values, TypeError is raised
+        """
+
+        c = Configurator()
+        c.clear_all_configurations()
+
+        with self.assertRaises(TypeError) as cm:
+            c.register("somekey")
+
+        self.assertIn("missing 1 required positional argument", str(cm.exception))

@@ -288,3 +288,185 @@ class TestConfigurator(unittest.TestCase):
         # test exception for missing property
         with self.assertRaises(NoSuchValueException):
             c.get("MyTable", "Missing_Property")
+
+    def test_18_unregister_key(self):
+        """
+        Testing that if a keyvalue is None,
+        the key in the dict gets unregistered
+
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("Test", dict(path="somepath", name="somename"))
+
+        self.assertEqual(c.get("Test", "name"), "somename")
+        self.assertEqual(c.get("Test", "path"), "somepath")
+
+        c.register("Test", dict(path=None))
+
+        self.assertEqual(c.get("Test", "name"), "somename")
+        # test exception for missing property
+        with self.assertRaises(NoSuchValueException):
+            self.assertEqual(c.get("Test", "path"), "somepath")
+
+    def test_19_unregister_key_not_found(self):
+        """
+        Testing that if a keyvalue is None,
+        the key in the dict gets unregistered.
+
+        Also, if the path is not set first
+
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("Test2", dict(name="somename"))
+
+        self.assertEqual(c.get("Test2", "name"), "somename")
+
+        c.register("Test2", dict(path=None))
+
+        self.assertEqual(c.get("Test2", "name"), "somename")
+        # test exception for missing property
+        with self.assertRaises(NoSuchValueException):
+            self.assertEqual(c.get("Test2", "path"), "somepath")
+
+    def test_20_unregister_multiple_keys(self):
+        """
+        Testing that multiple key-value pairs set to None are removed
+        from the dictionary.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("TestMulti", dict(name="table1", path="/mnt/table1", format="delta"))
+
+        self.assertEqual(c.get("TestMulti", "name"), "table1")
+        self.assertEqual(c.get("TestMulti", "path"), "/mnt/table1")
+        self.assertEqual(c.get("TestMulti", "format"), "delta")
+
+        c.register("TestMulti", dict(path=None, format=None))
+
+        self.assertEqual(c.get("TestMulti", "name"), "table1")
+        with self.assertRaises(NoSuchValueException):
+            c.get("TestMulti", "path")
+        with self.assertRaises(NoSuchValueException):
+            c.get("TestMulti", "format")
+
+    def test_21_unregister_all_keys(self):
+        """
+        Testing that if all key-value pairs are set to None,
+        the entire entry is removed.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("TestAll", dict(name="table2", path="/mnt/table2"))
+
+        self.assertEqual(c.get("TestAll", "name"), "table2")
+        self.assertEqual(c.get("TestAll", "path"), "/mnt/table2")
+
+        c.register("TestAll", dict(name=None, path=None))
+
+        with self.assertRaises(KeyError):
+            c.get("TestAll", "name")
+        with self.assertRaises(KeyError):
+            c.get("TestAll", "path")
+
+    def test_22_unregister_partial_update(self):
+        """
+        Testing that if only one key is set to None, others remain unchanged.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("TestPartial", dict(name="table3", path="/mnt/table3"))
+
+        self.assertEqual(c.get("TestPartial", "name"), "table3")
+        self.assertEqual(c.get("TestPartial", "path"), "/mnt/table3")
+
+        c.register("TestPartial", dict(path=None))
+
+        self.assertEqual(c.get("TestPartial", "name"), "table3")
+        with self.assertRaises(NoSuchValueException):
+            c.get("TestPartial", "path")
+
+    def test_23_unregister_key_then_readd(self):
+        """
+        Testing that after a key-value pair is removed,
+        it can be added back successfully.
+        """
+
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("TestReAdd", dict(name="table4", path="/mnt/table4"))
+
+        self.assertEqual(c.get("TestReAdd", "name"), "table4")
+        self.assertEqual(c.get("TestReAdd", "path"), "/mnt/table4")
+
+        c.register("TestReAdd", dict(path=None))
+
+        with self.assertRaises(NoSuchValueException):
+            c.get("TestReAdd", "path")
+
+        c.register("TestReAdd", dict(path="/mnt/new_table4"))
+
+        self.assertEqual(c.get("TestReAdd", "path"), "/mnt/new_table4")
+
+    def test_24_unregister_does_not_affect_other_keys(self):
+        """
+        Testing that removing a key from one entry does not
+        affect other unrelated keys in the dictionary.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("TestA", dict(name="tableA", path="/mnt/tableA"))
+        c.register("TestB", dict(name="tableB", path="/mnt/tableB"))
+
+        self.assertEqual(c.get("TestA", "name"), "tableA")
+        self.assertEqual(c.get("TestA", "path"), "/mnt/tableA")
+        self.assertEqual(c.get("TestB", "name"), "tableB")
+        self.assertEqual(c.get("TestB", "path"), "/mnt/tableB")
+
+        c.register("TestA", dict(path=None))
+
+        with self.assertRaises(NoSuchValueException):
+            c.get("TestA", "path")
+
+        # Ensure TestB is not affected
+        self.assertEqual(c.get("TestB", "name"), "tableB")
+        self.assertEqual(c.get("TestB", "path"), "/mnt/tableB")
+
+    def test_25_unregister_last_key_removes_entry(self):
+        """
+        Testing that if the last remaining key-value pair is set to None,
+        the entire entry is removed from the dictionary.
+        """
+        c = Configurator()
+        c.clear_all_configurations()
+        c.register("somekey", dict(path="hey"))
+
+        self.assertEqual(c.get("somekey", "path"), "hey")
+
+        c.register("somekey", dict(path=None))
+
+        # Ensure the key is completely removed
+        with self.assertRaises(KeyError):
+            c.get("somekey", "path")
+
+        # Ensure the key is completely removed
+        with self.assertRaises(KeyError):
+            c.get("somekey")
+
+        # Ensure "somekey" itself is removed from raw details
+        self.assertNotIn("somekey", c._raw_resource_details)
+
+    def test_26_register_key_with_no_values(self):
+        """
+        Tests that if one tries to register a key
+        with no values, TypeError is raised
+        """
+
+        c = Configurator()
+        c.clear_all_configurations()
+
+        with self.assertRaises(TypeError) as cm:
+            c.register("somekey")
+
+        self.assertIn("missing 1 required positional argument", str(cm.exception))

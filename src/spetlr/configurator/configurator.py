@@ -363,7 +363,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
 
             # If the key has no remaining values, remove it completely
             if not self._raw_resource_details[key]:
-                del self._raw_resource_details[key]
+                self._raw_resource_details.pop(key)
 
         else:
             self._raw_resource_details[key] = value

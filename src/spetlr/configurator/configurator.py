@@ -357,7 +357,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
 
     def _get(self, table_id: str, property: str = "", default: Any = _DEFAULT):
         try:
-                return self._get_item_property(table_id, property)
+            return self._get_item_property(table_id, property)
         except NoSuchValueException:
             if default is self._DEFAULT:
                 raise

@@ -248,11 +248,11 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
                         for key, value in update.items():
                             # we now support all bare value types in yaml.
                             # no further checking
-                            self.register(key, value)
+                            self._register(key, value)
 
             # try re-building all details
             if consistency_check:
-                self.verify_consistency()
+                self._verify_consistency()
         except:  # noqa: E722  we re-raise the exception, so bare except is ok.
             # this piece makes it so that the Configurator can still be used
             # if any exception raised by the above code is caught.
@@ -265,10 +265,10 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         self.table_details = dict()
 
         for key, value in _parse_sql_to_config(resource_path).items():
-            self.register(key, value)
+            self._register(key, value)
 
         if consistency_check:
-            self.verify_consistency()
+            self._verify_consistency()
 
     def _key_of(self, attribute: str, value: str) -> str:
 
@@ -322,7 +322,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
 
     def _regenerate_unique_id_and_clear_conf(self):
         self._unique_id = uuid.uuid4().hex
-        self.clear_all_configurations()
+        self._clear_all_configurations()
 
     def _get_all_details(self):
 
@@ -332,20 +332,20 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
             for table_id in self._raw_resource_details.keys():
                 # add the name as the bare key
                 try:
-                    self.table_details[table_id] = self.get(table_id)
+                    self.table_details[table_id] = self._get(table_id)
                     continue  # if it was a bare string, we can stop here
                 except NoSuchValueException:
                     pass
 
                 try:
-                    self.table_details[table_id] = self.get(table_id, "name")
+                    self.table_details[table_id] = self._get(table_id, "name")
                 except NoSuchValueException:
                     pass
 
                 # add every property as a _property part
                 for property_name in set(self._get_item(table_id).keys()):
                     try:
-                        item = self.get(table_id, property_name)
+                        item = self._get(table_id, property_name)
                     except NoSuchValueException:
                         continue
                     # if the dict values are dicts, stop here,
@@ -370,19 +370,19 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
 
     def clear_all_configurations(self):
         with self._lock:
-            self._clear_all_configurations()
+            return self._clear_all_configurations()
 
     def all_keys(self):
         """All keys that appear in the configuration files."""
         with self._lock:
-            self._all_keys()
+            return self._all_keys()
 
     def verify_consistency(self):
         """This method will re-build the table details. This requires that all
         internally recursive references can be resolved."""
 
         with self._lock:
-            self._verify_consistency()
+            return self._verify_consistency()
 
     @deprecated(
         reason="use .get('ENV') to get literal values.",
@@ -399,13 +399,13 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         self, resource_path: Union[str, ModuleType], consistency_check=True
     ) -> None:
         with self._lock:
-            self._add_resource_path(resource_path, consistency_check)
+            return self._add_resource_path(resource_path, consistency_check)
 
     def add_sql_resource_path(
         self, resource_path: Union[str, ModuleType], consistency_check=True
     ) -> None:
         with self._lock:
-            self._add_sql_resource_path(resource_path, consistency_check)
+            return self._add_sql_resource_path(resource_path, consistency_check)
 
     def key_of(self, attribute: str, value: str) -> str:
         """Obtain the key of the first registered item that has a given attribute
@@ -439,12 +439,12 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     def set_debug(self, deprecation_errors=False):
         """Select debug tables. {ID} will be replaced with a guid"""
         with self._lock:
-            self.__reset(debug=True, deprecation_errors=deprecation_errors)
+            return self.__reset(debug=True, deprecation_errors=deprecation_errors)
 
     def set_prod(self):
         """Select production tables. {ID} will be replaced with a empty string"""
         with self._lock:
-            self.__reset(debug=False, deprecation_errors=False)
+            return self.__reset(debug=False, deprecation_errors=False)
 
     def reset(self, *, debug: bool = False, deprecation_errors=False):
         """
@@ -454,7 +454,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         :param kwargs: additional keys to be substituted in names and paths
         """
         with self._lock:
-            self.__reset(debug, deprecation_errors=deprecation_errors)
+            return self.__reset(debug, deprecation_errors=deprecation_errors)
 
     def is_debug(self):
         """
@@ -516,7 +516,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         Return value will be whatever was registered under the given property."""
 
         with self._lock:
-            return self.get(table_id, property, default=default)
+            return self._get(table_id, property, default=default)
 
     def get_all_details(self):
         """

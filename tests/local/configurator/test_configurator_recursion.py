@@ -14,5 +14,6 @@ class TestConfigurator(unittest.TestCase):
         tc.register("FIRST", "really {BASE}")
         print(tc.get("FIRST"))
 
-        tc.register("SECOND", " {BASE} really {FIRST}")
+        tc.register("SECOND", "{BASE}, really {FIRST}")
+        print(tc._raw_resource_details)
         print(tc.get("SECOND"))

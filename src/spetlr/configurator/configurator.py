@@ -390,7 +390,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         """The distinction between extras and normal values was removed.
         This method will always return an empty dict. Extra settings are now
         string items. Retrieve them with .get(id)"""
-        self.deprecated()
+        self._deprecated()
 
         return {}
 
@@ -417,7 +417,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         with self._lock:
             return self._key_of(attribute, value)
 
-    def deprecated(self):
+    def _deprecated(self):
         if self.deprecation_errors:
             raise DeprecationException(
                 "A deprecated feature was used and deprecation_errors was set to True."
@@ -429,7 +429,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     def set_extra(self, **kwargs: str):
         """Use .register(key,value) instead.
         for example call .register('ENV','prod')"""
-        self.deprecated()
+        self._deprecated()
 
         with self._lock:
             for key, value in kwargs.items():
@@ -504,7 +504,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         :param table_id: Table id in the .json or .yaml files.
         :return: str: table path
         """
-        self.deprecated()
+        self._deprecated()
         with self._lock:
             return self._get(table_id, "path")
 
@@ -552,7 +552,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
             if the property is missing.
         :return: str: property value
         """
-        self.deprecated()
+        self._deprecated()
 
         property_value = self.get_all_details().get(
             f"{table_id}_{property_name}", default_value

@@ -51,6 +51,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         self,
         resource_path: Union[str, ModuleType] = None,
     ):
+        self._lock = threading.Lock()
         self._unique_id = uuid.uuid4().hex
         self.deprecation_errors = False
 

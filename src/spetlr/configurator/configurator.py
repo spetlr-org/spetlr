@@ -199,7 +199,9 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
                 # keys without _ are handled below
 
                 value = self._get_item_property(
-                    id_part, property_part, _forbidden_keys.copy()
+                    id_part,
+                    property_part,
+                    _forbidden_keys.copy(),
                 )
                 # raises ValueError if it does not exist
 
@@ -211,14 +213,18 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
             # if we get here, there was no _ in the key. Either the key exists as a bare
             # string value, try that:
             try:
-                replacements[key] = self._get_item_property(key, "", _forbidden_keys)
+                replacements[key] = self._get_item_property(
+                    key, "", _forbidden_keys.copy()
+                )
                 continue
             except NoSuchValueException:
                 pass
 
             # otherwise bare key references are to 'name',
             # which _must_ exist in this case
-            replacements[key] = self._get_item_property(key, "name", _forbidden_keys)
+            replacements[key] = self._get_item_property(
+                key, "name", _forbidden_keys.copy()
+            )
 
         # we have run through the key names of all replacement keys in the string.
         # Any that we could not find were skipped silently above, but that means that

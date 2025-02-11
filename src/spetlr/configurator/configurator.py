@@ -59,8 +59,8 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         if resource_path:
             self.add_resource_path(resource_path)
 
-    #########################################
-    ## Internal methods - use no lock, not thead-safe on their own.
+    # =============================================================
+    # == Internal methods - use no lock, not thead-safe on their own.
 
     def _all_keys(self):
         return list(self._raw_resource_details.keys())
@@ -364,8 +364,8 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
             else:
                 return default
 
-    #########################################
-    ## Interface methods - use lock, can be used in threaded context
+    # ================================================================
+    # == Interface methods - use lock, can be used in threaded context
 
     def clear_all_configurations(self):
         with self._lock:

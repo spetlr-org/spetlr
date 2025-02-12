@@ -11,3 +11,7 @@ class SpetlrConfiguratorInvalidSqlException(SpetlrConfiguratorException):
 
 class SpetlrConfiguratorInvalidSqlCommentsException(SpetlrConfiguratorException):
     pass
+
+
+class DeprecationException(SpetlrException):
+    pass

@@ -1,4 +1,5 @@
 import importlib.resources
+import threading
 import uuid
 from pathlib import Path
 from string import Formatter
@@ -11,6 +12,7 @@ from deprecated import deprecated
 from spetlr.configurator._cli.ConfiguratorCli import ConfiguratorCli
 from spetlr.configurator.sql import _parse_sql_to_config
 from spetlr.exceptions import NoSuchValueException
+from spetlr.exceptions.configurator_exceptions import DeprecationException
 from spetlr.functions import json_hash
 
 # recursive type definition of the details object
@@ -40,6 +42,8 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     _raw_resource_details: TcDetails
     _is_debug: bool
 
+    _lock: threading.Lock
+
     # this dict contains all details for all resources
     table_details: Dict[str, str]
 
@@ -47,45 +51,34 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         self,
         resource_path: Union[str, ModuleType] = None,
     ):
+        self._lock = threading.Lock()
         self._unique_id = uuid.uuid4().hex
+        self.deprecation_errors = False
+
         self.clear_all_configurations()
 
         if resource_path:
             self.add_resource_path(resource_path)
 
-    def all_keys(self):
-        """All keys that appear in the configuration files."""
+    # =============================================================
+    # == Internal methods - use no lock, not thead-safe on their own.
+
+    def _all_keys(self):
         return list(self._raw_resource_details.keys())
 
-    def clear_all_configurations(self):
+    def _clear_all_configurations(self):
         self._raw_resource_details = dict()
         self._is_debug = False
         self.table_details = dict()
         self._set_extras()
 
-    def verify_consistency(self):
-        """This method will re-build the table details. This requires that all
-        internally recursive references can be resolved."""
+    def _verify_consistency(self):
         self.table_details = dict()
-        return self.get_all_details()
-
-    ############################################
-    # the core logic of this class is contained
-    # in the following methods
-    ############################################
+        return self._get_all_details()
 
     def _set_extras(self):
-        self.register("ID", {"release": "", "debug": f"__{self._unique_id}"})
-        self.register("MNT", {"release": "mnt", "debug": "tmp"})
-
-    @deprecated(
-        reason="use .get('ENV') to get literal values.",
-    )
-    def get_extra_details(self) -> Dict[str, str]:
-        """The distinction between extras and normal values was removed.
-        This method will always return an empty dict. Extra settings are now
-        string items. Retrieve them with .get(id)"""
-        return {}
+        self._register("ID", {"release": "", "debug": f"__{self._unique_id}"})
+        self._register("MNT", {"release": "mnt", "debug": "tmp"})
 
     def _get_item(self, table_id: str) -> TcValue:
         """item dictionary where release-debug and alias loops are resolved"""
@@ -206,7 +199,9 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
                 # keys without _ are handled below
 
                 value = self._get_item_property(
-                    id_part, property_part, _forbidden_keys.copy()
+                    id_part,
+                    property_part,
+                    _forbidden_keys.copy(),
                 )
                 # raises ValueError if it does not exist
 
@@ -218,14 +213,18 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
             # if we get here, there was no _ in the key. Either the key exists as a bare
             # string value, try that:
             try:
-                replacements[key] = self._get_item_property(key, "", _forbidden_keys)
+                replacements[key] = self._get_item_property(
+                    key, "", _forbidden_keys.copy()
+                )
                 continue
             except NoSuchValueException:
                 pass
 
             # otherwise bare key references are to 'name',
             # which _must_ exist in this case
-            replacements[key] = self._get_item_property(key, "name", _forbidden_keys)
+            replacements[key] = self._get_item_property(
+                key, "name", _forbidden_keys.copy()
+            )
 
         # we have run through the key names of all replacement keys in the string.
         # Any that we could not find were skipped silently above, but that means that
@@ -233,10 +232,11 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         # exception for any missing key, which will give a meaningful error to the user.
         return raw_string.format(**replacements)
 
-    def add_resource_path(
+    def _add_resource_path(
         self, resource_path: Union[str, ModuleType], consistency_check=True
     ) -> None:
         self.table_details = dict()
+
         backup_details = self._raw_resource_details.copy()
         try:
             for file_name in importlib.resources.contents(resource_path):
@@ -254,35 +254,30 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
                         for key, value in update.items():
                             # we now support all bare value types in yaml.
                             # no further checking
-                            self.register(key, value)
+                            self._register(key, value)
 
             # try re-building all details
             if consistency_check:
-                self.verify_consistency()
+                self._verify_consistency()
         except:  # noqa: E722  we re-raise the exception, so bare except is ok.
             # this piece makes it so that the Configurator can still be used
             # if any exception raised by the above code is caught.
             self._raw_resource_details = backup_details
             raise
 
-    def add_sql_resource_path(
+    def _add_sql_resource_path(
         self, resource_path: Union[str, ModuleType], consistency_check=True
     ) -> None:
         self.table_details = dict()
+
         for key, value in _parse_sql_to_config(resource_path).items():
-            self.register(key, value)
+            self._register(key, value)
 
         if consistency_check:
-            self.verify_consistency()
+            self._verify_consistency()
 
-    def key_of(self, attribute: str, value: str) -> str:
-        """Obtain the key of the first registered item that has a given attribute
-        set to a given value. Uniqueness of the match is the responsibility of
-        the library user.
+    def _key_of(self, attribute: str, value: str) -> str:
 
-        This function is slow as it performs a linear search. It is intended for use in
-        setup code.
-        """
         for key, object in self._raw_resource_details.items():
             try:
                 if object[attribute] == value:
@@ -292,60 +287,13 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         else:
             raise KeyError(f"No key with attribute {attribute}={repr(value)}")
 
-    ############################################
-    # all methods below are interface and convenience methods
-    ############################################
-
-    @deprecated(
-        reason="register literal string values instead.",
-    )
-    def set_extra(self, **kwargs: str):
-        """Use .register(key,value) instead.
-        for example call .register('ENV','prod')"""
-        for key, value in kwargs.items():
-            self.register(key, value)
-
-    def set_debug(self):
-        """Select debug tables. {ID} will be replaced with a guid"""
-        self.reset(debug=True)
-
-    def set_prod(self):
-        """Select production tables. {ID} will be replaced with a empty string"""
-        self.reset(debug=False)
-
-    def __reset(self, debug: bool) -> None:
+    def __reset(self, debug: bool, deprecation_errors=False) -> None:
         self._is_debug = debug
+        self.deprecation_errors = deprecation_errors
         self.table_details = dict()
 
-    def reset(self, *, debug: bool = False):
-        """
-        Resets table names and table SQL. Enables or disables debug mode
-        (used for unit tests and integration tests).
-        :param debug: False -> release tables, True -> debug tables.
-        :param kwargs: additional keys to be substituted in names and paths
-        """
-        self.__reset(debug)
+    def _register(self, key: str, value: TcValue) -> str:
 
-    def is_debug(self):
-        """
-        Return True if table names and table SQL specify debug table,
-        False if release tables
-        """
-        return self._is_debug
-
-    def get_unique_id_length(self):
-        """
-        Return the character length of the UUID identifier inserted into
-        names with the {ID} tag
-        """
-        return len(self._unique_id)
-
-    def register(self, key: str, value: TcValue) -> str:
-        """
-        Register a new item and return its key.
-        If both the new and old items are dictionaries, their contents are merged.
-        Supply value=None to clear a key.
-        """
         if value is None:
             self._raw_resource_details.pop(key, None)
         elif isinstance(value, dict) and isinstance(
@@ -367,19 +315,234 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
 
         else:
             self._raw_resource_details[key] = value
+
         self.table_details = dict()
         return key
+
+    def _define(self, **kwargs) -> str:
+        if not kwargs:
+            raise ValueError("No value passed.")
+
+        key = json_hash(kwargs)
+        return self._register(key, kwargs)
+
+    def _regenerate_unique_id_and_clear_conf(self):
+        self._unique_id = uuid.uuid4().hex
+        self._clear_all_configurations()
+
+    def _get_all_details(self):
+
+        if not self.table_details:
+            self.table_details = dict()
+
+            for table_id in self._raw_resource_details.keys():
+                # add the name as the bare key
+                try:
+                    self.table_details[table_id] = self._get(table_id)
+                    continue  # if it was a bare string, we can stop here
+                except NoSuchValueException:
+                    pass
+
+                try:
+                    self.table_details[table_id] = self._get(table_id, "name")
+                except NoSuchValueException:
+                    pass
+
+                # add every property as a _property part
+                for property_name in set(self._get_item(table_id).keys()):
+                    try:
+                        item = self._get(table_id, property_name)
+                    except NoSuchValueException:
+                        continue
+                    # if the dict values are dicts, stop here,
+                    # not supported for direct substitution
+                    # this will take care of definitions of schema and similar.
+                    if not isinstance(item, dict):
+                        self.table_details[f"{table_id}_{property_name}"] = str(item)
+
+        return self.table_details
+
+    def _get(self, table_id: str, property: str = "", default: Any = _DEFAULT):
+        try:
+            return self._get_item_property(table_id, property)
+        except NoSuchValueException:
+            if default is self._DEFAULT:
+                raise
+            else:
+                return default
+
+    # ================================================================
+    # == Interface methods - use lock, can be used in threaded context
+
+    def clear_all_configurations(self):
+        with self._lock:
+            return self._clear_all_configurations()
+
+    def all_keys(self):
+        """All keys that appear in the configuration files."""
+        with self._lock:
+            return self._all_keys()
+
+    def verify_consistency(self):
+        """This method will re-build the table details. This requires that all
+        internally recursive references can be resolved."""
+
+        with self._lock:
+            return self._verify_consistency()
+
+    @deprecated(
+        reason="use .get('ENV') to get literal values.",
+    )
+    def get_extra_details(self) -> Dict[str, str]:
+        """The distinction between extras and normal values was removed.
+        This method will always return an empty dict. Extra settings are now
+        string items. Retrieve them with .get(id)"""
+        self._deprecated()
+
+        return {}
+
+    def add_resource_path(
+        self, resource_path: Union[str, ModuleType], consistency_check=True
+    ) -> None:
+        with self._lock:
+            return self._add_resource_path(resource_path, consistency_check)
+
+    def add_sql_resource_path(
+        self, resource_path: Union[str, ModuleType], consistency_check=True
+    ) -> None:
+        with self._lock:
+            return self._add_sql_resource_path(resource_path, consistency_check)
+
+    def key_of(self, attribute: str, value: str) -> str:
+        """Obtain the key of the first registered item that has a given attribute
+        set to a given value. Uniqueness of the match is the responsibility of
+        the library user.
+
+        This function is slow as it performs a linear search. It is intended for use in
+        setup code.
+        """
+        with self._lock:
+            return self._key_of(attribute, value)
+
+    def _deprecated(self):
+        if self.deprecation_errors:
+            raise DeprecationException(
+                "A deprecated feature was used and deprecation_errors was set to True."
+            )
+
+    @deprecated(
+        reason="register literal string values instead.",
+    )
+    def set_extra(self, **kwargs: str):
+        """Use .register(key,value) instead.
+        for example call .register('ENV','prod')"""
+        self._deprecated()
+
+        with self._lock:
+            for key, value in kwargs.items():
+                self._register(key, value)
+
+    def set_debug(self, deprecation_errors=False):
+        """Select debug tables. {ID} will be replaced with a guid"""
+        with self._lock:
+            return self.__reset(debug=True, deprecation_errors=deprecation_errors)
+
+    def set_prod(self):
+        """Select production tables. {ID} will be replaced with a empty string"""
+        with self._lock:
+            return self.__reset(debug=False, deprecation_errors=False)
+
+    def reset(self, *, debug: bool = False, deprecation_errors=False):
+        """
+        Resets table names and table SQL. Enables or disables debug mode
+        (used for unit tests and integration tests).
+        :param debug: False -> release tables, True -> debug tables.
+        :param kwargs: additional keys to be substituted in names and paths
+        """
+        with self._lock:
+            return self.__reset(debug, deprecation_errors=deprecation_errors)
+
+    def is_debug(self):
+        """
+        Return True if table names and table SQL specify debug table,
+        False if release tables
+        """
+        return self._is_debug
+
+    def get_unique_id_length(self):
+        """
+        Return the character length of the UUID identifier inserted into
+        names with the {ID} tag
+        """
+        return len(self._unique_id)
+
+    def register(self, key: str, value: TcValue) -> str:
+        """
+        Register a new item and return its key.
+        If both the new and old items are dictionaries, their contents are merged.
+        Supply value=None to clear a key.
+        """
+        with self._lock:
+            return self._register(key, value)
 
     def define(self, **kwargs) -> str:
         """
         Register a new item based on its properties only and return its key.
         The returned key is a hash-like string depending only on the values.
         """
-        if not kwargs:
-            raise ValueError("No value passed.")
+        with self._lock:
+            return self._define(**kwargs)
 
-        key = json_hash(kwargs)
-        return self.register(key, kwargs)
+    def table_name(self, table_id: str):
+        """
+        Return the table name for the specified table id.
+        :param table_id: Table id in the .json or .yaml files.
+        :return: str: table name
+        """
+        with self._lock:
+            return self._get(table_id, "name")
+
+    @deprecated(
+        reason='Use .get(table_id,"path") instead.',
+    )
+    def table_path(self, table_id: str):
+        """
+        Return the table path for the specified table id.
+        :param table_id: Table id in the .json or .yaml files.
+        :return: str: table path
+        """
+        self._deprecated()
+        with self._lock:
+            return self._get(table_id, "path")
+
+    def get(self, table_id: str, property: str = "", default: Any = _DEFAULT):
+        """return the property of the table_id.
+        To get raw strings, specify no property.
+        If default is set, it is returned instead of raising in case of missing keys.
+        Return value will be whatever was registered under the given property."""
+
+        with self._lock:
+            return self._get(table_id, property, default=default)
+
+    def get_all_details(self):
+        """
+        Return a dictionary containing every resource detail fully resolved.
+        e.g. a resource that looks like this:
+        MyTableDetail:
+            name: mytablename
+            path: my/table/path
+        will appear with three keys:
+            - "MyTableDetail"
+            - "MyTableDetail_name"
+            - "MyTableDetail_path"
+        all substitutions will be fully resolved.
+        """
+        with self._lock:
+            return self._get_all_details()
+
+    def regenerate_unique_id_and_clear_conf(self):
+        with self._lock:
+            return self._regenerate_unique_id_and_clear_conf()
 
     @deprecated(
         reason="Use .get(table_id,property_name) instead.",
@@ -396,6 +559,8 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
             if the property is missing.
         :return: str: property value
         """
+        self._deprecated()
+
         property_value = self.get_all_details().get(
             f"{table_id}_{property_name}", default_value
         )
@@ -405,82 +570,3 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
                 f"property '{property_name}' for table identifier '{table_id}' is empty"
             )
         return property_value
-
-    def table_name(self, table_id: str):
-        """
-        Return the table name for the specified table id.
-        :param table_id: Table id in the .json or .yaml files.
-        :return: str: table name
-        """
-        return self.get(table_id, "name")
-
-    @deprecated(
-        reason='Use .get(table_id,"path") instead.',
-    )
-    def table_path(self, table_id: str):
-        """
-        Return the table path for the specified table id.
-        :param table_id: Table id in the .json or .yaml files.
-        :return: str: table path
-        """
-        return self.get(table_id, "path")
-
-    def get(self, table_id: str, property: str = "", default: Any = _DEFAULT):
-        """return the property of the table_id.
-        To get raw strings, specify no property.
-        If default is set, it is returned instead of raising in case of missing keys.
-        Return value will be whatever was registered under the given property."""
-        try:
-            return self._get_item_property(table_id, property)
-        except NoSuchValueException:
-            if default is self._DEFAULT:
-                raise
-            else:
-                return default
-
-    def get_all_details(self):
-        """
-        Return a dictionary containing every resource detail fully resolved.
-        e.g. a resource that looks like this:
-        MyTableDetail:
-            name: mytablename
-            path: my/table/path
-        will appear with three keys:
-            - "MyTableDetail"
-            - "MyTableDetail_name"
-            - "MyTableDetail_path"
-        all substitutions will be fully resolved.
-        """
-        if not self.table_details:
-            self.table_details = dict()
-
-            for table_id in self._raw_resource_details.keys():
-                # add the name as the bare key
-                try:
-                    self.table_details[table_id] = self.get(table_id)
-                    continue  # if it was a bare string, we can stop here
-                except NoSuchValueException:
-                    pass
-
-                try:
-                    self.table_details[table_id] = self.get(table_id, "name")
-                except NoSuchValueException:
-                    pass
-
-                # add every property as a _property part
-                for property_name in set(self._get_item(table_id).keys()):
-                    try:
-                        item = self.get(table_id, property_name)
-                    except NoSuchValueException:
-                        continue
-                    # if the dict values are dicts, stop here,
-                    # not supported for direct substitution
-                    # this will take care of definitions of schema and similar.
-                    if not isinstance(item, dict):
-                        self.table_details[f"{table_id}_{property_name}"] = str(item)
-
-        return self.table_details
-
-    def regenerate_unique_id_and_clear_conf(self):
-        self._unique_id = uuid.uuid4().hex
-        self.clear_all_configurations()

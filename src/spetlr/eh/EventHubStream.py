@@ -2,7 +2,9 @@
 
 from pyspark.sql import DataFrame
 
-from spetlr.spark import Spark
+from spetlr.eh.EventhubStreamConnectionStringEncrypt import (
+    EventhubStreamConnectionStringEncrypt,
+)
 
 
 class EventHubStream:
@@ -12,6 +14,7 @@ class EventHubStream:
         entity_path: str,
         consumer_group: str,
         max_events_per_trigger: int = 1_000_000,
+        SparkConnectorVersion: str = "2.3.22",
     ):
         """
         Initializes an Azure EventHub.
@@ -30,9 +33,9 @@ class EventHubStream:
 
         unencrypted = "{};EntityPath={}".format(connection_str, entity_path)
         # noinspection PyProtectedMember
-        encrypted = Spark.get()._jvm.org.apache.spark.eventhubs.EventHubsUtils.encrypt(
-            unencrypted
-        )
+        encrypted = EventhubStreamConnectionStringEncrypt(
+            SparkConnectorVersion
+        ).encrypt(unencrypted)
         self.max_events_per_trigger = max_events_per_trigger
         self.config = {
             "eventhubs.consumerGroup": consumer_group,

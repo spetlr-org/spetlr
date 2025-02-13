@@ -94,7 +94,9 @@ class CachedLoader(Loader):
         result = self._discard_non_new_rows_against_cache(df, cache)
 
         if self.params.do_nothing_if_more_rows_than is not None:
-            if result.to_be_written.count() > self.params.do_nothing_if_more_rows_than:
+            if (
+                result.to_be_written.count() + result.to_be_deleted.count()
+            ) > self.params.do_nothing_if_more_rows_than:
                 self.too_many_rows()
                 return
 

@@ -101,7 +101,10 @@ class CachedLoader(Loader):
                 return
 
         # write branch
+        pre_write_version = self._perform_provisional_markup(result.to_be_written)
         df_written = self.write_operation(result.to_be_written)
+        self._rollback_provisional_markup(pre_write_version)
+
         if df_written:
             # this line only executes if the line above does not raise an exception.
             df_written_cache_update = self._prepare_written_cache_update(
@@ -110,7 +113,10 @@ class CachedLoader(Loader):
             self._load_cache(df_written_cache_update)
 
         # delete branch
+        pre_delete_versions = self._perform_provisional_markup(result.to_be_deleted)
         df_deleted = self.delete_operation(result.to_be_deleted)
+        self._rollback_provisional_markup(pre_delete_versions)
+
         if df_deleted:
             df_deleted_cache_update = self._prepare_deleted_cache_update(df_deleted)
 
@@ -129,6 +135,7 @@ class CachedLoader(Loader):
             .select("version")
             .take(1)[0][0]
         )
+
         cache = Spark.get().sql(
             f"SELECT * FROM {self.params.cache_table_name} VERSION AS OF {version}"
             f" WHERE {self.params.deletedTime} IS NULL"
@@ -245,3 +252,51 @@ class CachedLoader(Loader):
             )
 
         return result
+
+    def _perform_provisional_markup(self, df: DataFrame) -> int:
+        """The cache table is updated with a provisional update where all
+        *potentially* affected rows have their hash set to zero.
+        If the following operation succeeds, the provisional markup is rolled
+        back and the *actually* affected rows have their correct markup applied.
+        If the operation fails, however, no further corrective action is required
+        to ensure a full re-write of the row in the target system.
+
+        The function returns the version that should be restored if all goes to
+        plan."""
+        spark = Spark().get()
+        p = self.params
+
+        pre_version = (
+            Spark.get()
+            .sql(f"DESCRIBE HISTORY {p.cache_table_name} LIMIT 1")
+            .select("version")
+            .take(1)[0][0]
+        )
+
+        (df.select(*p.key_cols).createOrReplaceTempView("provisionalMarkupKeys"))
+        other_cols = [p.deletedTime] + p.cache_id_cols
+        spark.sql(
+            f"""
+                MERGE INTO {p.cache_table_name} AS c
+                USING provisionalMarkupKeys AS p
+                ON  {' AND '.join(
+                f'(c.{col} = p.{col})' for col in p.key_cols
+            )}
+                WHEN MATCHED THEN
+                    UPDATE SET {p.rowHash} = 0
+                WHEN NOT MATCHED THEN
+                    INSERT ( {', '.join(p.key_cols)},
+                            {p.rowHash}, {p.loadedTime},
+                            {', '.join(other_cols)})
+                    VALUES ( {', '.join(f'p.{c}' for c in p.key_cols)},
+                            0, current_timestamp(),
+                            {', '.join('NULL' for _ in other_cols)})
+            """
+        )
+        return pre_version
+
+    def _rollback_provisional_markup(self, version: int) -> None:
+        Spark.get().sql(
+            f"RESTORE TABLE {self.params.cache_table_name} "
+            f"TO VERSION AS OF {version}"
+        )

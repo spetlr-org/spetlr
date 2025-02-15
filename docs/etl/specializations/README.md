@@ -30,6 +30,44 @@ As a user of this base-class, inherit from it and override the methods
 by your operation are merged back into the cache. You are therefore free
 to apply further filters and limits at this stage.
 
+### Internal operations
+
+The incoming data dataframe is converted to json and then hashed row by row. This is 
+the hash value that is used to establish equality between successive executions of 
+this loader. The loader reads the latest version of the cache table, and compares 
+the hashes inside each matching primary key. If the match is complete, and the row 
+is marked as previously loaded, no further action occurs.
+
+If the row either:
+- is marked as previously deleted, indicated by a non-null `deletedTime`
+- or has hash unequal to the hash value in the cache table,
+- or the primary key does not appear in the cache table,
+
+the row is marked for writing.
+
+If the row only appear in the cache and not in the incoming data, it is marked as to 
+be deleted.
+
+After filtering and preparing these two dataframes, a provisional markup of the cache 
+table is performed: The union of the two dataframe rows have their cache table hash 
+updated to zero. This indicates that from here on, the state of these rows in the 
+target system is unknown. Should the process be interrupted after this point, the 
+rows should probably be re-written.
+
+Next, the two dataframes are passed to the `write_operation` and `delete_operation` 
+methods implemented for the business application and described below. Both return 
+the rows that they chose to actually process.
+
+The cache-loader then rolls back the last change of the cache table (where we set 
+hash values to zero), and instead applies the markup of the actual operations that 
+were performed.
+
+The background for implementing this "provisional markup" - rollback - "final markup" 
+sequence is an operational experience where a multi-hour write operation failed, but 
+not before it had updated millions of lines. The cache table was never updated and 
+was left in an incorrect state. The provisional markup would have allowed the affected 
+rows to be identified based on the last state of the cache table.
+
 ### `write_operation`
 
 The function receives a dataframe with those payload rows that the caching

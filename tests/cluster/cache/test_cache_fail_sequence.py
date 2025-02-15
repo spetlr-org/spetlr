@@ -8,8 +8,10 @@ from spetlr.cache import CachedLoader, CachedLoaderParameters
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.spark import Spark
 
+
 class TestError(Exception):
     pass
+
 
 class ChildCacher(CachedLoader):
     to_be_written: DataFrame
@@ -27,13 +29,15 @@ class ChildCacher(CachedLoader):
         target_name = Configurator().table_name("CachedTestTarget")
 
         df.createOrReplaceTempView("to_be_deleted")
-        Spark.get().sql(f"""
+        Spark.get().sql(
+            f"""
             MERGE INTO {target_name} AS t
             USING to_be_deleted AS d
             ON t.a==d.a
             WHEN MATCHED
             THEN DELETE
-        """)
+        """
+        )
         if self.fail_delete:
             raise TestError("intended fail point")
         return df
@@ -41,7 +45,6 @@ class ChildCacher(CachedLoader):
 
 class CachedLoaderProvisionalMarkupTests(unittest.TestCase):
     params: CachedLoaderParameters
-
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -88,7 +91,9 @@ class CachedLoaderProvisionalMarkupTests(unittest.TestCase):
 
         cls.params = CachedLoaderParameters(
             cache_table_name=tc.table_name("CachedTest"),
-            key_cols=["a",],
+            key_cols=[
+                "a",
+            ],
         )
 
         cls.sut = ChildCacher(cls.params)
@@ -102,7 +107,12 @@ class CachedLoaderProvisionalMarkupTests(unittest.TestCase):
         dh = DeltaHandle.from_tc("CachedTestTarget")
 
         # once, a row was loaded:
-        initial_data = spark.createDataFrame([("id1","payload"),],dh.read().schema)
+        initial_data = spark.createDataFrame(
+            [
+                ("id1", "payload"),
+            ],
+            dh.read().schema,
+        )
         self.sut.save(initial_data)
 
         # and all was good
@@ -125,4 +135,5 @@ class CachedLoaderProvisionalMarkupTests(unittest.TestCase):
         # now we have the correct data in the target system once more
         self.assertEqual(dh.read().count(), 1)
 
-        # Note: This final assert failed until we introduced the provisional markup step in the cached loader.
+        # Note: This final assert failed until we introduced the provisional markup
+        # step in the cached loader.

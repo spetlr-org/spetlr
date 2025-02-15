@@ -1,4 +1,4 @@
-## Commenting out as these tests are not working as expected in UC-enabled clusters.
+# Commenting out as these tests are not working as expected in UC-enabled clusters.
 
 
 # from spetlr.deltaspec.DeltaTableSpec import DeltaTableSpec

@@ -1,4 +1,4 @@
-## Commenting out as these tests are not working as expected in UC-enabled clusters.
+# Commenting out as these tests are not working as expected in UC-enabled clusters.
 
 
 # import unittest
@@ -60,7 +60,8 @@
 #         self.assertFalse(self.target.is_readable())
 
 #         # overwriting is possible and updates to the target schema
-#         df = Spark.get().createDataFrame([(1, "a", 3.14, "b", "c")], self.target.schema)
+#         df = Spark.get().createDataFrame([(1, "a", 3.14, "b", "c")],
+#               self.target.schema)
 #         self.target.make_storage_match(errors_as_warnings=True)
 
 #         self.target.get_dh().overwrite(df, overwriteSchema=True)

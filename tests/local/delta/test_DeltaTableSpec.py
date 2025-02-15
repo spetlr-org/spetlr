@@ -98,15 +98,18 @@
 #                   onlyt string COMMENT "Only in target"
 #                 )"""
 #                 ),
-#                 # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a DROP NOT NULL",
-#                 # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d SET NOT NULL",
+#                 # "ALTER TABLE mydeltatablespectestdb.tbl "
+#                 #  "ALTER COLUMN a DROP NOT NULL",
+#                 # "ALTER TABLE mydeltatablespectestdb.tbl "
+#                 #  "ALTER COLUMN d SET NOT NULL",
 #                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT"
 #                 ' "gains not null"',
 #                 'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT ""',
 #                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a FIRST",
 #                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN b AFTER a",
 #                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN onlyt AFTER d",
-#                 'COMMENT ON TABLE mydeltatablespectestdb.tbl is "Contains useful data"',
+#                 'COMMENT ON TABLE mydeltatablespectestdb.tbl '
+#                 'is "Contains useful data"',
 #             ],
 #         )
 
@@ -131,8 +134,10 @@
 #                   b int
 #                 )"""
 #                 ),
-#                 # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d DROP NOT NULL",
-#                 # "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a SET NOT NULL",
+#                 # "ALTER TABLE mydeltatablespectestdb.tbl "
+#                 # "ALTER COLUMN d DROP NOT NULL",
+#                 # "ALTER TABLE mydeltatablespectestdb.tbl "
+#                 #  "ALTER COLUMN a SET NOT NULL",
 #                 "ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN d COMMENT "
 #                 '"Whatsupp"',
 #                 'ALTER TABLE mydeltatablespectestdb.tbl ALTER COLUMN a COMMENT ""',
@@ -202,7 +207,8 @@
 #         )
 
 #     def test_06_location_change(self):
-#         statements = tables.newlocation.compare_to(tables.oldlocation).alter_statements(
+#         statements = tables.newlocation.compare_to(
+#                   tables.oldlocation).alter_statements(
 #             allow_columns_add=True,
 #             allow_columns_type_change=True,
 #             allow_columns_drop=True,
@@ -287,7 +293,8 @@
 #             diff.alter_statements(allow_columns_drop=True),
 #             [
 #                 "ALTER TABLE mydeltatablespectestdb.direct SET TBLPROPERTIES "
-#                 '("delta.minWriterVersion" = "5", "delta.columnMapping.mode" = "name")',
+#                 '("delta.minWriterVersion" = "5", '
+#                   '"delta.columnMapping.mode" = "name")',
 #                 "ALTER TABLE mydeltatablespectestdb.direct DROP COLUMN (d)",
 #             ],
 #         )

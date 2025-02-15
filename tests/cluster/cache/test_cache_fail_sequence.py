@@ -52,7 +52,7 @@ class CachedLoaderProvisionalMarkupTests(unittest.TestCase):
         tc.clear_all_configurations()
         tc.set_debug()
 
-        tc.register("TestDb", dict(name="test{ID}"))
+        tc.register("TestDb", dict(name="cache_sequence_test{ID}"))
         tc.register(
             "CachedTest",
             dict(name="{TestDb}.cachedloader_cache"),

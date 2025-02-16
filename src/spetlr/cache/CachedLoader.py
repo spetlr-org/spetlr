@@ -101,9 +101,15 @@ class CachedLoader(Loader):
                 return
 
         # write branch
-        pre_write_version = self._perform_provisional_markup(result.to_be_written)
-        df_written = self.write_operation(result.to_be_written)
-        self._rollback_provisional_markup(pre_write_version)
+        if self.params.provisional_markup_step:
+            pre_write_version = self._perform_provisional_markup(result.to_be_written)
+            df_written = self.write_operation(result.to_be_written)
+            # no context manager or try-catch loop is used here. If the operation
+            # fails, we want the provisional markup to remain, ensuring correct data
+            # updates on next run.
+            self._rollback_provisional_markup(pre_write_version)
+        else:
+            df_written = self.write_operation(result.to_be_written)
 
         if df_written:
             # this line only executes if the line above does not raise an exception.
@@ -113,9 +119,15 @@ class CachedLoader(Loader):
             self._load_cache(df_written_cache_update)
 
         # delete branch
-        pre_delete_versions = self._perform_provisional_markup(result.to_be_deleted)
-        df_deleted = self.delete_operation(result.to_be_deleted)
-        self._rollback_provisional_markup(pre_delete_versions)
+        if self.params.provisional_markup_step:
+            pre_delete_versions = self._perform_provisional_markup(result.to_be_deleted)
+            df_deleted = self.delete_operation(result.to_be_deleted)
+            # no context manager or try-catch loop is used here. If the operation
+            # fails, we want the provisional markup to remain, ensuring correct data
+            # updates on next run.
+            self._rollback_provisional_markup(pre_delete_versions)
+        else:
+            df_deleted = self.delete_operation(result.to_be_deleted)
 
         if df_deleted:
             df_deleted_cache_update = self._prepare_deleted_cache_update(df_deleted)

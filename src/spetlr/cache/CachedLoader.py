@@ -4,11 +4,11 @@ from typing import List, Optional
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 
+from spetlr.cache.CachedLoaderParameters import CachedLoaderParameters
 from spetlr.etl import Loader
+from spetlr.exceptions import SpetlrKeyError
+from spetlr.functions import get_unique_tempview_name
 from spetlr.spark import Spark
-
-from ..functions import get_unique_tempview_name
-from .CachedLoaderParameters import CachedLoaderParameters
 
 
 class CachedLoader(Loader):
@@ -85,6 +85,8 @@ class CachedLoader(Loader):
             raise AssertionError(
                 "The key columns must be given in the input dataframe."
             )
+
+        df = self._discard_null_keys(df)
 
         # ensure that no duplicates exist. The keys have to be a unique set.
         df = df.dropDuplicates(self.params.key_cols)
@@ -264,6 +266,14 @@ class CachedLoader(Loader):
             )
 
         return result
+
+    def _discard_null_keys(self, df: DataFrame) -> DataFrame:
+        null_df = df
+        for col in self.params.key_cols:
+            null_df = null_df.filter(f.col(col).isNull())
+        if null_df.count():
+            raise SpetlrKeyError("The incoming dataframe contains null keys")
+        return df
 
     def _perform_provisional_markup(self, df: DataFrame) -> int:
         """The cache table is updated with a provisional update where all

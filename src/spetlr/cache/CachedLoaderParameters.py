@@ -49,4 +49,4 @@ class CachedLoaderParameters:
         self.deletedTime = "deletedTime"
 
         self.do_nothing_if_more_rows_than = do_nothing_if_more_rows_than
-        self.provisional_markup_step = provisional_markup_step or True
+        self.provisional_markup_step = provisional_markup_step

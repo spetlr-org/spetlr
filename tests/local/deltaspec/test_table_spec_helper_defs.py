@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from pyspark.sql import DataFrame, Row
+from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 from spetlr.delta import DeltaHandle
@@ -33,7 +33,8 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
         )
 
     def test_copy(self):
-        """Test that copy() returns an independent object that compares equal to the original."""
+        """Test that copy() returns an independent object
+        that compares equal to the original."""
         spec_copy = self.spec.copy()
 
         self.assertEqual(self.spec, spec_copy)
@@ -142,7 +143,8 @@ class TestDeltaTableSpecMethods(unittest.TestCase):
 
     @patch("spetlr.spark.Spark.get")
     def test_ensure_df_schema(self, mock_spark_get):
-        """Test that ensure_df_schema() raises TableSpecNotReadable if schema mismatch occurs."""
+        """Test that ensure_df_schema()
+        raises TableSpecNotReadable if schema mismatch occurs."""
         # Create a mock DataFrame with an incompatible schema
         mismatched_schema = StructType(
             [

@@ -11,6 +11,7 @@ class CachedLoaderParameters:
         cache_id_cols: List[str] = None,
         *,
         do_nothing_if_more_rows_than: int = None,
+        provisional_markup_step: bool = True
     ):
         """
         Args:
@@ -21,6 +22,11 @@ class CachedLoaderParameters:
             do_nothing_if_more_rows_than: if the input data set contains more rows than
                the specified number of rows, nothing will be written or deleted.
                Instead, the method too_many_rows() will be called.
+            provisional_markup_step: if true (default) a provisional cache update
+               is applied before the write or delete operation is performed, and
+               rolled back afterward before applying the actual cache update.
+               While this protects against data corruption, it is also slower and can
+               be turned off.
 
         The table cache_table_name must exist and must have the following schema:
         (
@@ -41,4 +47,6 @@ class CachedLoaderParameters:
         self.rowHash = "rowHash"
         self.loadedTime = "loadedTime"
         self.deletedTime = "deletedTime"
+
         self.do_nothing_if_more_rows_than = do_nothing_if_more_rows_than
+        self.provisional_markup_step = provisional_markup_step

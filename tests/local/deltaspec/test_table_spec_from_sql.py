@@ -77,7 +77,8 @@ class TestDeltaTableSpecFromSQL(unittest.TestCase):
         self.assertEqual(spec.tblproperties, expected_tblproperties)
 
     def test_from_sql_invalid_format(self):
-        """Test DeltaTableSpec.from_sql with non-delta format (should raise InvalidSpecificationError)."""
+        """Test DeltaTableSpec.from_sql with non-delta format
+        (should raise InvalidSpecificationError)."""
 
         sql = """
         CREATE TABLE test_db.test_table (
@@ -116,7 +117,8 @@ class TestDeltaTableSpecFromSQL(unittest.TestCase):
                 "options": {},
                 "partitioned_by": [],
                 "cluster_by": [],
-                "tblproperties": {},  # No tblproperties provided, so defaults should be applied
+                "tblproperties": {},  # No tblproperties provided,
+                # so defaults should be applied
             }
 
             # Use a real StructType instead of a string

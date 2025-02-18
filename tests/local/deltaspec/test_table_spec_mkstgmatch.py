@@ -15,24 +15,32 @@ class TestDeltaTableSpecMakeStorageMatch(unittest.TestCase):
     This test suite covers the following scenarios:
 
     1. **test_make_storage_match_no_changes**
-       - Ensures that `make_storage_match()` does nothing if the table already matches the specification.
+       - Ensures that `make_storage_match()`
+         does nothing if the table already matches the specification.
 
     2. **test_make_storage_match_add_column**
-       - Verifies that `make_storage_match()` correctly executes an `ALTER TABLE ... ADD COLUMN` statement when needed.
+       - Verifies that `make_storage_match()` correctly
+         executes an `ALTER TABLE ... ADD COLUMN` statement when needed.
 
     3. **test_make_storage_match_drop_column**
-       - Checks that `make_storage_match()` executes an `ALTER TABLE ... DROP COLUMN` statement when columns should be removed.
+       - Checks that `make_storage_match()` executes an
+         `ALTER TABLE ... DROP COLUMN` statement when columns should be removed.
 
     4. **test_make_storage_match_change_column_type**
-       - Ensures that `make_storage_match()` executes an `ALTER TABLE ... ALTER COLUMN` statement when column types need modification.
+       - Ensures that `make_storage_match()` executes an
+         `ALTER TABLE ... ALTER COLUMN` statement when column types need modification.
 
     5. **test_make_storage_match_create_table**
-       - Simulates a missing table and verifies that `make_storage_match(allow_table_create=True)` executes a `CREATE TABLE` statement.
+       - Simulates a missing table and verifies that
+         `make_storage_match(allow_table_create=True)`
+         executes a `CREATE TABLE` statement.
 
     6. **test_make_storage_match_multiple_changes**
-       - Ensures `make_storage_match()` correctly applies multiple changes (adding, dropping, altering columns) in a single run.
+       - Ensures `make_storage_match()` correctly applies multiple
+         changes (adding, dropping, altering columns) in a single run.
 
-    Each test mocks Spark SQL execution to verify that the correct SQL statements are generated and executed.
+    Each test mocks Spark SQL execution to verify that the correct
+    SQL statements are generated and executed.
     """
 
     def setUp(self):
@@ -145,7 +153,8 @@ class TestDeltaTableSpecMakeStorageMatch(unittest.TestCase):
     def test_make_storage_match_multiple_changes(
         self, mock_compare_to_name, mock_spark_get
     ):
-        """Test that make_storage_match() executes multiple SQL alterations when needed."""
+        """Test that make_storage_match() executes multiple
+        SQL alterations when needed."""
 
         mock_compare_to_name.return_value.is_different.return_value = True
         mock_compare_to_name.return_value.alter_statements.return_value = [

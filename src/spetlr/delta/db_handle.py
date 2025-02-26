@@ -33,9 +33,11 @@ class DbHandle:
         )
 
     def _validate(self):
-        # name is either `db`.`table` or just `table`
+        # This is valid: db or catalog.db
+        # Which means, if there is a dot - only a single dot is allowed
         if "." in self._name:
-            raise DbHandleInvalidName(f"Invalid DB name {self._name}")
+            if len(self._name.split(".")) != 2:
+                raise DbHandleInvalidName(f"Invalid DB name {self._name}")
 
         # only format db is supported.
         if self._data_format != "db":
@@ -48,7 +50,8 @@ class DbHandle:
         Spark.get().sql(f"DROP DATABASE IF EXISTS {self._name} CASCADE;")
 
     def create(self) -> None:
-        sql = f"CREATE DATABASE IF NOT EXISTS {self._name} "
+        sql = f"CREATE DATABASE IF NOT EXISTS {self._name}"
         if self._location:
             sql += f" LOCATION '{self._location}'"
+        sql += ";"
         Spark.get().sql(sql)

@@ -11,7 +11,7 @@ if (-not $secrets) {
 $repoRoot = (git rev-parse --show-toplevel)
 $sqlSourceDir = Resolve-Path $PSScriptRoot/sql
 
-$permanentResourceName = "spetlrpermanent"
+$permanentResourceName = "spetlrpermanent2"
 $permanentResourceGroup = "spetlr-permanent"
 $keyVaultName = "spetlrGithubCiCdv2"
 

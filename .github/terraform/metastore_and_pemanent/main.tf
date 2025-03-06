@@ -11,7 +11,7 @@ terraform {
   backend "azurerm" {
     use_azuread_auth     = true
     resource_group_name  = "Terraform-State-Stoarge"
-    storage_account_name = "spetlrtfstate"
+    storage_account_name = "spetlrterraform"
     container_name       = "tfstate"
     key                  = "metastore.tfstate"
   }

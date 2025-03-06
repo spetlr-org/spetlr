@@ -18,13 +18,13 @@ $subscriptionId = az account list --query "[?name=='$subscriptionName'].id" -o t
 Write-Output "Current subscription ID: $subscriptionId"
 
 
-Write-Host "Checkinjg.. correct subsription is selected."
-if ($subscriptionId -ne "f861842b-e686-40fb-8b34-87e8735e8749"){
-  Write-Host "Expected subscription to match f861842b-e686-40fb-8b34-87e8735e8749" -ForegroundColor Red
-  Write-Host "Please change subscription" -ForegroundColor Red
-  Exit 1
-}
-Write-Host "Subscription Id is correct!" -ForegroundColor Green
+# Write-Host "Checkinjg.. correct subsription is selected."
+# if ($subscriptionId -ne "f861842b-e686-40fb-8b34-87e8735e8749"){
+#   Write-Host "Expected subscription to match f861842b-e686-40fb-8b34-87e8735e8749" -ForegroundColor Red
+#   Write-Host "Please change subscription" -ForegroundColor Red
+#   Exit 1
+# }
+# Write-Host "Subscription Id is correct!" -ForegroundColor Green
 
 ####################################################################################
 ## Step 2. Create app registration
@@ -89,6 +89,8 @@ az ad app permission grant --id $appId  --api $graph.appId --scope $account.id
 
 # Add the Privileged Role Administrator to the spn
 # This allows it to add the sql server to the role of Directory Reader
+
+# This next step did not work. Testing with manually assigned graph role "AppRoleAssignment.ReadWrite.All"
 $roleId = "e8611ab8-c189-46e8-94e1-60213ab1f814"
 Graph-CreateRole -principalId $resourceId  -roleDefinitionId $roleId
 

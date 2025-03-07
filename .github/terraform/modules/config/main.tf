@@ -4,7 +4,7 @@ terraform {
 }
 
 output "location" {
-  value = "northeurope"
+  value = "swedencentral"
 }
 
 variable "uniqueRunId" {

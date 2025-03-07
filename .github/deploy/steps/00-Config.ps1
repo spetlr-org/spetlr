@@ -11,7 +11,7 @@ if (-not $secrets) {
 $repoRoot = (git rev-parse --show-toplevel)
 $sqlSourceDir = Resolve-Path $PSScriptRoot/sql
 
-$permanentResourceName = "spetlrpermanent"
+$permanentResourceName = "spetlrpermanent2"
 $permanentResourceGroup = "spetlr-permanent"
 $keyVaultName = "spetlrGithubCiCdv2"
 
@@ -49,7 +49,7 @@ $cosmosName = $permanentResourceName
 
 # Use eastus because of free azure subscription
 # note, we no longer use a free subscription
-$location = "northeurope"
+$location = "swedencentral"
 
 $resourceTags = @{
   "Owner"      = "Auto Deployed"

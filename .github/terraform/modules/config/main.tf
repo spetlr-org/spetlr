@@ -4,7 +4,7 @@ terraform {
 }
 
 output "location" {
-  value = "northeurope"
+  value = "swedencentral"
 }
 
 variable "uniqueRunId" {
@@ -23,7 +23,7 @@ output "tags" {
 output "permanent" {
   value = {
     rg_name                    = "spetlr-permanent"
-    resource_name              = "spetlrpermanent"
+    resource_name              = "spetlrpermanent2"
     metastore_name             = "spetlrmetastore"
     metastore_admin_group_name = "spetlrmetastoreadmins"
     cicd_spn_name              = "SpetlrGithubPipe"

@@ -1,7 +1,9 @@
 import sys
+from functools import wraps
 from typing import List, Optional
 
 import pyspark.sql.functions as f
+from exceptiongroup import ExceptionGroup
 from pyspark.sql import DataFrame
 
 from spetlr.cache.CachedLoaderParameters import CachedLoaderParameters
@@ -9,6 +11,28 @@ from spetlr.etl import Loader
 from spetlr.exceptions import SpetlrKeyError
 from spetlr.functions import get_unique_tempview_name
 from spetlr.spark import Spark
+
+
+def _retry_cache(func):
+    @wraps(func)
+    def wrapper(self: "CachedLoader", *args, **kwargs):
+        if not self.params.retry_cache_writes:
+            return func(self, *args, **kwargs)
+        else:
+            exceptions = []
+            for _ in range(0, self.params.retry_cache_writes + 1):
+                try:
+                    result = func(self, *args, **kwargs)
+                    return result
+                except Exception as e:
+                    exceptions.append(e)
+            raise ExceptionGroup(
+                f"The function {func} failed even "
+                f"after {self.params.retry_cache_writes} retries",
+                exceptions,
+            )
+
+    return wrapper
 
 
 class CachedLoader(Loader):
@@ -178,6 +202,7 @@ class CachedLoader(Loader):
             *self.params.cache_id_cols,
         )
 
+    @_retry_cache
     def _load_cache(self, cache_to_load: DataFrame) -> None:
         view_name = get_unique_tempview_name()
 
@@ -275,6 +300,7 @@ class CachedLoader(Loader):
             raise SpetlrKeyError("The incoming dataframe contains null keys")
         return df
 
+    @_retry_cache
     def _perform_provisional_markup(self, df: DataFrame) -> int:
         """The cache table is updated with a provisional update where all
         *potentially* affected rows have their hash set to zero.
@@ -317,6 +343,7 @@ class CachedLoader(Loader):
         )
         return pre_version
 
+    @_retry_cache
     def _rollback_provisional_markup(self, version: int) -> None:
         Spark.get().sql(
             f"RESTORE TABLE {self.params.cache_table_name} "

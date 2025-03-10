@@ -1,4 +1,5 @@
 import sys
+import time
 from functools import wraps
 from typing import List, Optional
 
@@ -26,6 +27,7 @@ def _retry_cache(func):
                     return result
                 except Exception as e:
                     exceptions.append(e)
+                time.sleep(self.params.retry_cache_wait_seconds)
             raise ExceptionGroup(
                 f"The function {func} failed even "
                 f"after {self.params.retry_cache_writes} retries",

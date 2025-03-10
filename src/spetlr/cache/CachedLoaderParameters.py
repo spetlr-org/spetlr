@@ -11,7 +11,9 @@ class CachedLoaderParameters:
         cache_id_cols: List[str] = None,
         *,
         do_nothing_if_more_rows_than: int = None,
-        provisional_markup_step: bool = True
+        provisional_markup_step: bool = True,
+        retry_cache_writes: int = 0,
+        retry_cache_wait_seconds=10,
     ):
         """
         Args:
@@ -50,3 +52,5 @@ class CachedLoaderParameters:
 
         self.do_nothing_if_more_rows_than = do_nothing_if_more_rows_than
         self.provisional_markup_step = provisional_markup_step
+        self.retry_cache_writes = retry_cache_writes
+        self.retry_cache_wait_seconds = retry_cache_wait_seconds

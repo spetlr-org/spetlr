@@ -234,6 +234,9 @@ class CachedLoaderTests(unittest.TestCase):
             self.too_much_data, schema=target_dh.read().schema
         )
 
+        # change the retries to also test this feature here
+        self.params.retry_cache_writes = 3
+
         # execute the system under test
         self.sut.save(df_new)
 

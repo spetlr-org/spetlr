@@ -590,3 +590,39 @@ df_transformed.show()
 +-------+---+---------+
 +-------+---+---------+
 ```
+
+## ReplaceEmptyStringTransformer
+
+This class replaces any unwanted empty strings with null values.
+
+Usage example:
+
+``` python
+from spetlr.etl.transformers import ReplaceEmptyStringTransformer
+
+df_input.show()
+
+|FirstName |LastName |
++----------+---------+
+|Arne      |Petersen |
++----------+---------+
+|""        |Petersen |
++----------+---------+
+|Arne      |""       |
++----------+---------+
+
+df_transformed = ReplaceEmptyStringTransformer().process(df_input)
+
+df_transformed.show()
+
+|FirstName |LastName |
++----------+---------+
+|Arne      |Petersen |
++----------+---------+
+|None      |Petersen |
++----------+---------+
+|Arne      |None     |
++----------+---------+
+
+
+```

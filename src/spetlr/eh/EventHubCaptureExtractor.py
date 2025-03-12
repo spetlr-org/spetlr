@@ -27,6 +27,7 @@ class EventHubCaptureExtractor:
     @classmethod
     def from_tc(cls, tbl_id: str):
         tc = Configurator()
+        tc.assert_contains(tbl_id)
         assert tc.get(tbl_id, "format") == "avro"
         return cls(
             path=tc.get(tbl_id, "path"),

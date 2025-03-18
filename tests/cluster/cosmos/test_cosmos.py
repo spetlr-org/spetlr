@@ -72,10 +72,13 @@ class CosmosTests(unittest.TestCase):
         # drop and recreate the container
         # we should end up with only the new rows.
         ch.recreate()
+
         # use upsert this time to test it
         ch.upsert(new_df, join_cols=["id", "pk"])
-
-        self.assertEqual(ch.read().count(), 2)
+        # doing it twice will not add more rows because cosmos always upserts by default
+        ch.upsert(new_df, join_cols=["id", "pk"])
+        ch.append(new_df)  # and append is the same as upsert
+        self.assertEqual(ch.read().count(), 2)  # all upserts overwrite the same 2 rows.
 
     @classmethod
     def tearDownClass(cls):

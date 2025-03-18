@@ -220,4 +220,5 @@ class CosmosDb(CosmosBaseServer):
             cosmos_db=self,
             schema=schema,
             rows_per_partition=rows_per_partition,
+            partition_key=tc.get(table_id, "partition_key", None),
         )

@@ -72,7 +72,9 @@ class CosmosTests(unittest.TestCase):
         # drop and recreate the container
         # we should end up with only the new rows.
         ch.recreate()
-        ch.append(new_df)
+        # use upsert this time to test it
+        ch.upsert(new_df, join_cols=["id", "pk"])
+
         self.assertEqual(ch.read().count(), 2)
 
     @classmethod

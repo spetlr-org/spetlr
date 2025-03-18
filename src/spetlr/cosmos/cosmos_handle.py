@@ -27,11 +27,16 @@ class CosmosHandle(TableHandle):
         cosmos_db: CosmosBaseServer,
         rows_per_partition: int = None,
         schema: StructType = None,
+        *,
+        partition_key: str = None,
     ):
         self._name = name
         self._cosmos_db = cosmos_db
         self._rows_per_partition = rows_per_partition
         self._schema = schema
+        # "pk" is the default partition key in all cosmos uses that I have seen.
+        self._partition_key = partition_key or "pk"
+        self._id_key = "id"
 
     def read(self) -> DataFrame:
         return self._cosmos_db.read_table_by_name(
@@ -70,7 +75,14 @@ class CosmosHandle(TableHandle):
         raise NotImplementedError("Method not supported in Cosmos")
 
     def upsert(self, df: DataFrame, join_cols: List[str]) -> Union[DataFrame, None]:
-        raise NotImplementedError("Method not supported in Cosmos")
+        default_join_cols = [self._id_key, self._partition_key]
+        if set(join_cols) != set(default_join_cols):
+            raise NotImplementedError(
+                "Generalized upsert not supported. "
+                f"Cosmos can only upsert by {default_join_cols}"
+            )
+        # upserting by id and pk is the same as appending for cosmos
+        return self.append(df)
 
     def get_tablename(self) -> str:
         return self._name

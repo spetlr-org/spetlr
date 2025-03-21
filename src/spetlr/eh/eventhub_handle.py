@@ -93,7 +93,7 @@ class EventhubHandle(TableHandle):
             "kafka.security.protocol": "SASL_SSL",
             "kafka.sasl.mechanism": "PLAIN",
             # ==== sasl.jass.config start ====
-            "kafka.sasl.jaas.config": f"org.apache.kafka"
+            "kafka.sasl.jaas.config": f"kafkashaded.org.apache.kafka"
             f".common.security.plain"
             f".PlainLoginModule required "
             f'username="$ConnectionString" '

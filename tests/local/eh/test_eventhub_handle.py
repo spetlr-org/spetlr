@@ -171,7 +171,7 @@ class KafkaEventhubHandleTest(DataframeTestCase):
                 "subscribe": "spetlreh",
                 "kafka.security.protocol": "SASL_SSL",
                 "kafka.sasl.mechanism": "PLAIN",
-                "kafka.sasl.jaas.config": "org.apache.kafka.common.security"
+                "kafka.sasl.jaas.config": "kafkashaded.org.apache.kafka.common.security"
                 ".plain.PlainLoginModule "
                 'required username="$ConnectionString" '
                 'password="testConnectionString";',

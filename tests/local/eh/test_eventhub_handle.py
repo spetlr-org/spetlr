@@ -400,3 +400,7 @@ class KafkaEventhubHandleTest(DataframeTestCase):
         )
         with self.assertRaises(IncorrectSchemaException):
             eh.append(df)
+
+    def test_read_eventhub_stream(self):
+        # Streaming locally is not testable at the moment
+        pass

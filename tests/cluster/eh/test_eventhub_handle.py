@@ -90,7 +90,11 @@ class EventHubHandleTests(unittest.TestCase):
         DbHandle.from_tc("MyDb").drop_cascade()
 
     def test_01_publish_and_read(self):
-        eh = EventhubHandle.from_tc("SpetlrEh", connection_str)
+        """
+        Test a simple write to the eventhub
+
+        """
+        eh = EventhubHandle.from_tc("SpetlrEh", connection_str=self.connection_str)
 
         df = Spark.get().createDataFrame(
             [(1, self.UUID_test1), (2, self.UUID_test1)], "id int, name string"
@@ -117,7 +121,16 @@ class EventHubHandleTests(unittest.TestCase):
         )
 
     def test_02_test_streaming_read(self):
-        eh_source = EventhubHandle.from_tc("SpetlrEh")
+        """
+        test_01 should have been runned first,
+        this ensures data for the eventhub.
+
+        This test then streams from the eventhub into a delta table.
+
+        """
+        eh_source = EventhubHandle.from_tc(
+            "SpetlrEh", connection_str=self.connection_str
+        )
         dh_target = DeltaHandle.from_tc("MyTbl")
 
         (
@@ -138,12 +151,20 @@ class EventHubHandleTests(unittest.TestCase):
             .execute()
         )
 
+        # Test that some of the data from the eventhub has been written
         self.assertEqual(self._count_uuid_rows(dh_target.read()), 2)
 
     def test_03_test_streaming_write(self):
-        eh_source = EventhubHandle.from_tc("SpetlrEh")
+        """
+        test_02 should have been runned first.
+        This ensures data for the eventhub.
+
+        This test then streams from the delta table back to the eventhub.
+        """
+        eh_source = EventhubHandle.from_tc("SpetlrEh", self.connection_str)
         dh_target = DeltaHandle.from_tc("MyTbl2")
 
+        # Add two rows to the delta table
         df = Spark.get().createDataFrame(
             [(1, self.UUID_test1), (2, self.UUID_test1)], "id int, name string"
         )
@@ -167,10 +188,19 @@ class EventHubHandleTests(unittest.TestCase):
             .execute()
         )
 
+        # There should now be 4 rows in the eventhub with the unique id
         time.sleep(100)
         self.assertGreaterEqual(self._count_uuid_rows(eh_source.read()), 4)
 
     def _count_uuid_rows(self, df: DataFrame) -> int:
+        """
+        This is a helper test function
+        that checks the number of rows with this test UUID.
+
+        Since multiple tests can add data to the eventhub
+        at the same time - the UUID ensures that we only work within
+        the scope of this test.
+        """
         df = df.select(f.col("value").cast("string").alias("string_value"))
         return df.filter(
             f.col("string_value").like("%" + self.UUID_test1 + "%")

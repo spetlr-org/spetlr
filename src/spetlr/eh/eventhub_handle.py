@@ -178,7 +178,12 @@ class EventhubHandle(TableHandle):
 
         df = self._create_write_dataframe(df)
 
-        writer = df.write.format("kafka").options(**self.kafkaConfigs).mode(mode)
+        writer = (
+            df.write.format("kafka")
+            .options(**self.kafkaConfigs)
+            .mode(mode)
+            .option("topic", self.topic)
+        )
         return writer.save()
 
     def overwrite(

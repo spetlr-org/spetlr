@@ -24,6 +24,8 @@ class KafkaEventhubHandleTest(DataframeTestCase):
         eventhubStreamExtractor = EventhubHandle(
             connection_str="testConnectionString",
             consumer_group="testConsumerGroup",
+            eventhub="hey",
+            namespace="there",
             maxEventsPerTrigger=100000,
         )
 

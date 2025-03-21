@@ -42,6 +42,7 @@ class EventHubHandleTests(unittest.TestCase):
                 "format": "avro",
                 "partitioning": "ymd",
                 "eh_eventhub": eventhub,
+                "eh_namespace": resourceName(),
                 "eh_consumer_group": consumer_group,
             },
         )

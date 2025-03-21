@@ -51,19 +51,16 @@ class EventhubHandle(TableHandle):
 
     def __init__(
         self,
+        namespace: str,
+        eventhub: str,
         consumer_group: str = None,
         connection_str: str = None,
-        namespace: str = None,
-        eventhub: str = None,
         accessKeyName: str = None,
         accessKey: str = None,
         maxEventsPerTrigger: int = None,
         kafkaConfigs: dict = None,
         schema: StructType = None,
     ):
-        self._schema = schema
-        self.bootstrap_servers = f"{namespace}.servicebus.windows.net:9093"
-        self.topic = eventhub
 
         if connection_str is None:
             if (
@@ -85,6 +82,10 @@ class EventhubHandle(TableHandle):
             )
         else:
             self.connectionString = connection_str
+
+        self._schema = schema
+        self.bootstrap_servers = f"{namespace}.servicebus.windows.net:9093"
+        self.topic = eventhub
 
         self.kafkaConfigs = {
             "kafka.bootstrap.servers": self.bootstrap_servers,
@@ -126,10 +127,10 @@ class EventhubHandle(TableHandle):
         )
 
         return cls(
-            consumer_group=tc.get(id, "eh_consumer_group", None),
-            connection_str=connection_str or tc.get(id, "eh_connection_str", None),
             namespace=tc.get(id, "eh_namespace", None),
             eventhub=tc.get(id, "eh_eventhub", None),
+            consumer_group=tc.get(id, "eh_consumer_group", None),
+            connection_str=connection_str or tc.get(id, "eh_connection_str", None),
             accessKeyName=tc.get(id, "eh_accessKeyName", None),
             accessKey=accessKey
             or tc.get(id, "eh_accessKey", None),  # Not recommended to set in .yml

@@ -5,7 +5,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql.types import StringType, StructType
 
 from spetlr import Configurator
-from spetlr.exceptions import IncorrectSchemaException
+from spetlr.exceptions import IncorrectSchemaException, InvalidEventhubHandleParameters
 from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
 from spetlr.tables import TableHandle
@@ -51,11 +51,12 @@ class EventhubHandle(TableHandle):
 
     def __init__(
         self,
-        consumer_group: str,
-        namespace: str,
-        eventhub: str,
-        accessKeyName: str,
-        accessKey: str,
+        consumer_group: str = None,
+        connection_str: str = None,
+        namespace: str = None,
+        eventhub: str = None,
+        accessKeyName: str = None,
+        accessKey: str = None,
         maxEventsPerTrigger: int = None,
         kafkaConfigs: dict = None,
         schema: StructType = None,
@@ -63,6 +64,27 @@ class EventhubHandle(TableHandle):
         self._schema = schema
         self.bootstrap_servers = f"{namespace}.servicebus.windows.net:9093"
         self.topic = eventhub
+
+        if connection_str is None:
+            if (
+                namespace is None
+                or eventhub is None
+                or accessKeyName is None
+                or accessKey is None
+            ):
+                raise InvalidEventhubHandleParameters(
+                    "Either connectionString or "
+                    "(namespace, eventhub, accessKeyName and accessKey) "
+                    "have to be supplied"
+                )
+
+            self.connectionString = (
+                f"Endpoint=sb://{namespace}.servicebus.windows.net/{eventhub};"
+                f"EntityPath={eventhub};SharedAccessKeyName={accessKeyName};"
+                f"SharedAccessKey={accessKey}"
+            )
+        else:
+            self.connectionString = connection_str
 
         self.kafkaConfigs = {
             "kafka.bootstrap.servers": self.bootstrap_servers,
@@ -74,10 +96,7 @@ class EventhubHandle(TableHandle):
             f".common.security.plain"
             f".PlainLoginModule required "
             f'username="$ConnectionString" '
-            f'password="Endpoint=sb://{namespace}'
-            f".servicebus.windows.net/;"
-            f"SharedAccessKeyName={accessKeyName};"
-            f'SharedAccessKey={accessKey}";',
+            f'password="{self.connectionString}";',
             # ==== sasl.jass.config end ====
             "maxOffsetsPerTrigger": str(maxEventsPerTrigger),
         }
@@ -91,27 +110,32 @@ class EventhubHandle(TableHandle):
     from datetime import datetime
 
     @classmethod
-    def from_tc(cls, id: str) -> "EventhubHandle":
+    def from_tc(
+        cls,
+        id: str,
+        connection_str: str = None,
+        accessKey: str = None,
+    ) -> "EventhubHandle":
         tc = Configurator()
 
-        namespace = tc.get(id, "eh_namespace", None)
-        eventhub = tc.get(id, "eh_eventhub", None)
-        accessKeyName = tc.get(id, "eh_accessKeyName", None)
-        accessKey = tc.get(id, "eh_accessKey", None)
-        consumer_group = tc.get(id, "eh_consumer_group", None)
-        maxEventsPerTrigger = int(tc.get(id, "eh_maxEventsPerTrigger", None))
-        schema_id = tc.get(id, "schema", None)
-
-        schema = SchemaManager().get_schema(schema_id, None)
+        _raw_maxEventsPerTrigger = tc.get(id, "eh_maxEventsPerTrigger", None)
+        maxEventsPerTrigger = (
+            int(_raw_maxEventsPerTrigger)
+            if _raw_maxEventsPerTrigger is not None
+            else None
+        )
 
         return cls(
-            consumer_group=consumer_group,
-            namespace=namespace,
-            eventhub=eventhub,
-            accessKeyName=accessKeyName,
-            accessKey=accessKey,
+            consumer_group=tc.get(id, "eh_consumer_group", None),
+            connection_str=connection_str or tc.get(id, "eh_connection_str", None),
+            namespace=tc.get(id, "eh_namespace", None),
+            eventhub=tc.get(id, "eh_eventhub", None),
+            accessKeyName=tc.get(id, "eh_accessKeyName", None),
+            accessKey=accessKey
+            or tc.get(id, "eh_accessKey", None),  # Not recommended to set in .yml
             maxEventsPerTrigger=maxEventsPerTrigger,
-            schema=schema,
+            kafkaConfigs=tc.get(id, "eh_eventhubConfigs", None),
+            schema=SchemaManager().get_schema(id, None),
         )
 
     def read(self) -> DataFrame:

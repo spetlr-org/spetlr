@@ -43,9 +43,6 @@ class EventHubHandleTests(unittest.TestCase):
                 "partitioning": "ymd",
                 "eh_eventhub": eventhub,
                 "eh_consumer_group": consumer_group,
-                "eh_namespace": "<namespace>",  # Replace with actual namespace
-                "eh_accessKeyName": "<accessKeyName>",
-                "eh_accessKey": "<accessKey>",
             },
         )
 
@@ -93,7 +90,7 @@ class EventHubHandleTests(unittest.TestCase):
         DbHandle.from_tc("MyDb").drop_cascade()
 
     def test_01_publish_and_read(self):
-        eh = EventhubHandle.from_tc("SpetlrEh")
+        eh = EventhubHandle.from_tc("SpetlrEh", connection_str)
 
         df = Spark.get().createDataFrame(
             [(1, self.UUID_test1), (2, self.UUID_test1)], "id int, name string"

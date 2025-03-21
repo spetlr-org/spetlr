@@ -12,6 +12,43 @@ from spetlr.tables import TableHandle
 
 
 class EventhubHandle(TableHandle):
+    """
+    Kafka-compatible Event Hub handle for reading and writing data in Apache Spark.
+
+    This class provides functionality to interact with Azure Event Hubs through
+    its Kafka-compatible endpoint using PySpark's Kafka source and sink. It allows
+    structured and streaming reads, as well as structured writes, while supporting
+    optional schema parsing of the message payload.
+
+    Attributes:
+        kafkaConfigs (dict): Kafka consumer/producer configuration.
+        _schema (StructType): Optional schema used to parse JSON-encoded values.
+        bootstrap_servers (str): Kafka-compatible Event Hub bootstrap server URL.
+        topic (str): Event Hub name used as the Kafka topic.
+
+    Methods:
+        from_tc(id):
+           Create an instance from configuration using the Configurator.
+        read():
+           Perform a batch read from the Event Hub.
+        read_stream():
+           Perform a streaming read from the Event Hub.
+        write_or_append(df, mode, mergeSchema, overwriteSchema):
+           Write data to the Event Hub.
+        overwrite(df, mergeSchema, overwriteSchema):
+           Alias for write_or_append in overwrite mode.
+        append(df, mergeSchema):
+           Alias for write_or_append in append mode.
+        set_options_dict(options):
+           Set the Kafka options dictionary.
+        get_options_dict():
+           Retrieve the Kafka options dictionary.
+        get_schema():
+           Retrieve the configured schema.
+        set_schema(schema):
+           Set a new schema for parsing incoming data.
+    """
+
     def __init__(
         self,
         consumer_group: str,
@@ -63,7 +100,6 @@ class EventhubHandle(TableHandle):
         accessKey = tc.get(id, "eh_accessKey", None)
         consumer_group = tc.get(id, "eh_consumer_group", None)
         maxEventsPerTrigger = int(tc.get(id, "eh_maxEventsPerTrigger", None))
-        _start_time = tc.get(id, "eh_startEnqueuedTime", None)
         schema_id = tc.get(id, "schema", None)
 
         schema = SchemaManager().get_schema(schema_id, None)

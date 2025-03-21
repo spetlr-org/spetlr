@@ -21,7 +21,7 @@ from spetlr.spark import Spark
 
 class KafkaEventhubHandleTest(DataframeTestCase):
     def test_create_with_connectionString(self):
-        eventhubStreamExtractor = EventhubHandle(
+        eh = EventhubHandle(
             connection_str="testConnectionString",
             consumer_group="testConsumerGroup",
             eventhub="hey",
@@ -29,12 +29,10 @@ class KafkaEventhubHandleTest(DataframeTestCase):
             maxEventsPerTrigger=100000,
         )
 
-        self.assertEqual(
-            eventhubStreamExtractor.connectionString, "testConnectionString"
-        )
+        self.assertEqual(eh.connectionString, "testConnectionString")
 
     def test_create_without_connectionString(self):
-        eventhubStreamExtractor = EventhubHandle(
+        eh = EventhubHandle(
             namespace="testNamespace",
             eventhub="testEventhub",
             accessKeyName="testAccessKeyName",
@@ -44,7 +42,7 @@ class KafkaEventhubHandleTest(DataframeTestCase):
         )
 
         self.assertEqual(
-            eventhubStreamExtractor.connectionString,
+            eh.connectionString,
             "Endpoint=sb://testNamespace.servicebus.windows.net/testEventhub;"
             "EntityPath=testEventhub;SharedAccessKeyName=testAccessKeyName;"
             "SharedAccessKey=testAccessKey",
@@ -301,11 +299,11 @@ class KafkaEventhubHandleTest(DataframeTestCase):
                 "eh_accessKeyName": "d",
             },
         )
-
-        with patch.object(EventhubHandle, "read", return_value=None):
-            eh = EventhubHandle.from_tc("SpetlrEh", accessKey="2")
-            eh.read()
-            self.assertEqual(eh.get_options_dict()["maxOffsetsPerTrigger"], str(None))
+        with self.assertRaises(KeyError):
+            with patch.object(EventhubHandle, "read", return_value=None):
+                eh = EventhubHandle.from_tc("SpetlrEh", accessKey="2")
+                eh.read()
+                eh.get_options_dict()["maxOffsetsPerTrigger"]
 
     def test_read_with_schema(self):
         schema = StructType([StructField("colA", IntegerType(), True)])

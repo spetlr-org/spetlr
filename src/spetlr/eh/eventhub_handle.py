@@ -99,8 +99,10 @@ class EventhubHandle(TableHandle):
             f'username="$ConnectionString" '
             f'password="{self.connectionString}";',
             # ==== sasl.jass.config end ====
-            "maxOffsetsPerTrigger": str(maxEventsPerTrigger),
         }
+
+        if maxEventsPerTrigger is not None:
+            self.kafkaConfigs["maxOffsetsPerTrigger"] = str(maxEventsPerTrigger)
 
         if kafkaConfigs:
             self.kafkaConfigs.update(kafkaConfigs)

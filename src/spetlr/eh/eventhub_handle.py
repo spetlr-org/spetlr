@@ -3,7 +3,7 @@ from typing import Dict
 
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StringType, StructType
+from pyspark.sql.types import StructType
 
 from spetlr import Configurator
 from spetlr.exceptions import IncorrectSchemaException, InvalidEventhubHandleParameters

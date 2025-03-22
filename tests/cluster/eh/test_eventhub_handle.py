@@ -109,9 +109,7 @@ class EventHubHandleTests(unittest.TestCase):
 
         self.assertGreaterEqual(self._count_uuid_rows(df), 2)
 
-        df = eh.read().select(
-            "timestamp"
-        )  # Kafka uses 'timestamp' instead of 'enqueuedTime'
+        df = eh.read().select("enqueuedTime")
         self.assertEqual(
             df.schema.fields[0].dataType.typeName().upper(),
             "TIMESTAMP",
@@ -202,7 +200,6 @@ class EventHubHandleTests(unittest.TestCase):
         at the same time - the UUID ensures that we only work within
         the scope of this test.
         """
-        df = df.select(f.col("value").cast("string").alias("string_value"))
-        return df.filter(
-            f.col("string_value").like("%" + self.UUID_test1 + "%")
-        ).count()
+        df = df.select(f.col("body").cast("string").alias("string_body"))
+
+        return df.filter(f.col("string_body").like("%" + self.UUID_test1 + "%")).count()

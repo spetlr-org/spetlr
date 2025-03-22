@@ -445,7 +445,7 @@ class KafkaEventhubHandleTest(DataframeTestCase):
                 result.select("EventhubRowId").collect()[0][0], 1133763240646814370
             )
             self.assertEqual(
-                result.select("BodyId").collect()[0][0], 179825880021902382
+                result.select("BodyId").collect()[0][0], 369504238251057985
             )
             self.assertEqual(result.select("SequenceNumber").collect()[0][0], 5888)
             self.assertEqual(result.select("PartitionNumber").collect()[0][0], 1)

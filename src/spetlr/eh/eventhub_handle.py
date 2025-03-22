@@ -1,3 +1,4 @@
+import datetime
 from typing import Dict
 
 import pyspark.sql.functions as f
@@ -144,11 +145,10 @@ class EventhubHandle(TableHandle):
     def read(self) -> DataFrame:
         df = Spark.get().read.format("kafka").options(**self.kafkaConfigs).load()
 
-        # Decode and parse value (not body anymore)
-        df = df.withColumn("value", f.col("value").cast(StringType()))
+        df = self._convert_kafka_schema_to_eventhub_schema(df)
 
         if self._schema:
-            df = df.withColumn("value", f.from_json("value", self._schema))
+            df = df.withColumn("Body", f.from_json("Body", self._schema))
         else:
             print(
                 "No schema was detected in the EventhubHandle. "
@@ -157,9 +157,18 @@ class EventhubHandle(TableHandle):
         return df
 
     def read_stream(self):
-        return (
-            Spark.get().readStream.format("kafka").options(**self.kafkaConfigs).load()
-        )
+        df = Spark.get().readStream.format("kafka").options(**self.kafkaConfigs).load()
+
+        df = self._convert_kafka_schema_to_eventhub_schema(df)
+
+        if self._schema:
+            df = df.withColumn("Body", f.from_json("Body", self._schema))
+        else:
+            print(
+                "No schema was detected in the EventhubHandle. "
+                "Body is formatted as string..."
+            )
+        return df
 
     def write_or_append(
         self,
@@ -215,4 +224,62 @@ class EventhubHandle(TableHandle):
             df.withColumn("value", f.struct(df.columns))
             .withColumn("value", f.to_json("value"))
             .selectExpr("CAST(value AS STRING)")
+        )
+
+    @staticmethod
+    def _convert_kafka_schema_to_eventhub_schema(df: DataFrame) -> DataFrame:
+
+        # Generate Unique id for the eventhub rows
+        df = df.withColumn(
+            "EventhubRowId",
+            f.conv(
+                f.concat_ws(
+                    "",
+                    f.lit("0"),
+                    f.substring(
+                        f.concat_ws(
+                            "",
+                            f.sha2(f.col("value").cast("string"), 256),
+                            f.sha2(f.col("timestamp").cast("string"), 256),
+                        ),
+                        -15,
+                        15,
+                    ),
+                ),
+                16,
+                10,
+            ).cast("long"),
+        )
+
+        # Generate id for the eventhub rows using hashed body
+        # Can be used for identify rows with same body
+        df = df.withColumn(
+            "BodyId",
+            f.conv(
+                f.concat_ws(
+                    "",
+                    f.lit("0"),
+                    f.substring(f.sha2(f.col("value").cast("string"), 256), -15, 15),
+                ),
+                16,
+                10,
+            ).cast("long"),
+        )
+
+        # Add streaming time
+        streaming_time = datetime.datetime.now(datetime.timezone.utc).replace(
+            microsecond=0
+        )
+
+        return df.select(
+            f.col("EventhubRowId").cast("long").alias("EventhubRowId"),
+            f.col("BodyId").cast("long").alias("BodyId"),
+            f.col("offset").cast("bigint").alias("SequenceNumber"),
+            f.col("partition").cast("int").alias("PartitionNumber"),
+            f.col("timestamp").cast("DATE").alias("EnqueuedDate"),
+            f.col("timestamp").cast("TIMESTAMP").alias("EnqueuedTime"),
+            f.lit(streaming_time).alias("StreamingTime"),
+            f.lit("{}").alias("Properties"),
+            f.lit("{}").alias("SystemProperties"),
+            f.col("value").cast("string").alias("Body"),
         )

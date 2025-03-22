@@ -1,9 +1,12 @@
 import json
+from datetime import timezone
 from unittest.mock import patch
 
 from pyspark.sql.types import (
     BooleanType,
+    DateType,
     IntegerType,
+    LongType,
     Row,
     StringType,
     StructField,
@@ -11,6 +14,7 @@ from pyspark.sql.types import (
     TimestampType,
 )
 from spetlrtools.testing import DataframeTestCase
+from spetlrtools.time import dt_utc
 
 from spetlr import Configurator
 from spetlr.eh.eventhub_handle import EventhubHandle
@@ -20,6 +24,17 @@ from spetlr.spark import Spark
 
 
 class KafkaEventhubHandleTest(DataframeTestCase):
+
+    _kafka_schema_cols = [
+        "key",
+        "value",
+        "topic",
+        "partition",
+        "offset",
+        "timestamp",
+        "timestampType",
+    ]
+
     def test_create_with_connectionString(self):
         eh = EventhubHandle(
             connection_str="testConnectionString",
@@ -308,7 +323,20 @@ class KafkaEventhubHandleTest(DataframeTestCase):
     def test_read_with_schema(self):
         schema = StructType([StructField("colA", IntegerType(), True)])
         json_data = json.dumps({"colA": 1}).encode()
-        df = Spark.get().createDataFrame([(json_data,)], ["value"])
+        df = Spark.get().createDataFrame(
+            [
+                (
+                    "some_key",
+                    json_data,
+                    "some_topic",
+                    1,
+                    5888,
+                    dt_utc(2000, 1, 1),
+                    0,
+                )
+            ],
+            self._kafka_schema_cols,
+        )
 
         handle = EventhubHandle(
             consumer_group="testGroup",
@@ -320,12 +348,49 @@ class KafkaEventhubHandleTest(DataframeTestCase):
         )
 
         with patch("pyspark.sql.DataFrameReader.load", return_value=df):
-            result = handle.read()
+            resultA = handle.read()
 
-        self.assertEqual(
-            result.schema, StructType([StructField("value", schema, True)])
+        with patch("pyspark.sql.streaming.DataStreamReader.load", return_value=df):
+            resultB = handle.read_stream()
+
+        _expected_schema = StructType(
+            [
+                StructField("EventhubRowId", LongType(), True),
+                StructField("BodyId", LongType(), True),
+                StructField("SequenceNumber", LongType(), True),
+                StructField("PartitionNumber", IntegerType(), True),
+                StructField("EnqueuedDate", DateType(), True),
+                StructField("EnqueuedTime", TimestampType(), True),
+                StructField("StreamingTime", TimestampType(), False),
+                StructField("Properties", StringType(), False),
+                StructField("SystemProperties", StringType(), False),
+                StructField("Body", schema, True),
+            ]
         )
-        self.assertEqual(result.select("value").collect()[0][0], Row(colA=1))
+
+        for result in [resultA, resultB]:
+
+            self.assertEqual(result.schema, _expected_schema)
+            self.assertEqual(
+                result.select("EventhubRowId").collect()[0][0], 1133763240646814370
+            )
+            self.assertEqual(
+                result.select("BodyId").collect()[0][0], 179825880021902382
+            )
+            self.assertEqual(result.select("SequenceNumber").collect()[0][0], 5888)
+            self.assertEqual(result.select("PartitionNumber").collect()[0][0], 1)
+            self.assertEqual(
+                result.select("EnqueuedDate").collect()[0][0], dt_utc(2000, 1, 1).date()
+            )
+            self.assertEqual(
+                result.select("EnqueuedTime").collect()[0][0].astimezone(timezone.utc),
+                dt_utc(2000, 1, 1),
+            )
+            self.assertEqual(result.select("Properties").collect()[0][0], "{}")
+            self.assertEqual(result.select("SystemProperties").collect()[0][0], "{}")
+            self.assertEqual(result.select("PartitionNumber").collect()[0][0], 1)
+            # Not testing StreamingTime
+            self.assertEqual(result.select("Body").collect()[0][0], Row(colA=1))
 
     def test_read_without_schema(self):
         json_data = json.dumps({"colX": 1}).encode()

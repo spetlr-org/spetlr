@@ -19,7 +19,6 @@ from spetlrtools.time import dt_utc
 from spetlr import Configurator
 from spetlr.eh.eventhub_handle import EventhubHandle
 from spetlr.exceptions import (
-    IncorrectSchemaException,
     InvalidEventhubConnectionString,
     InvalidEventhubHandleParameters,
     InvalidEventhubWriteSchema,
@@ -40,7 +39,10 @@ class KafkaEventhubHandleTest(DataframeTestCase):
         "timestampType",
     ]
 
-    _test_cn_string = "Endpoint=sb://NamespaceName.servicebus.windows.net/;SharedAccessKeyName=KeyName;SharedAccessKey=KeyValue"
+    _test_cn_string = (
+        "Endpoint=sb://NamespaceName.servicebus.windows.net/;"
+        "SharedAccessKeyName=KeyName;SharedAccessKey=KeyValue"
+    )
 
     def test_create_with_connectionString(self):
         eh = EventhubHandle(
@@ -468,20 +470,6 @@ class KafkaEventhubHandleTest(DataframeTestCase):
             self.assertEqual(result.select("PartitionNumber").collect()[0][0], 1)
             # Not testing StreamingTime
             self.assertEqual(result.select("Body").collect()[0][0], '{"colX": 1}')
-
-    def test_write_schema_validation(self):
-        handle = EventhubHandle(
-            consumer_group="testGroup",
-            namespace="testNamespace",
-            eventhub="testEventhub",
-            accessKeyName="testKeyName",
-            accessKey="testKey",
-        )
-
-        df = Spark.get().createDataFrame([("1", "2")], ["value", "something_else"])
-
-        with self.assertRaises(IncorrectSchemaException):
-            handle.append(df)
 
     def test_valid_write_dataframe_output(self):
         schema = StructType([StructField("value", StringType())])

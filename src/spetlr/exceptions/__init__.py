@@ -97,10 +97,6 @@ class InvalidEventhubHandleParameters(SpetlrException):
     pass
 
 
-class IncorrectSchemaException(SpetlrException):
-    pass
-
-
 class InvalidEventhubConnectionString(SpetlrException):
     pass
 

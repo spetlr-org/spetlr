@@ -25,6 +25,9 @@ from spetlr.etl.transformers.selectColumnsTransformer import (  # noqa: F401
 from spetlr.etl.transformers.simple_dataframe_filter_transformer import (  # noqa: F401
     DataFrameFilterTransformer,
 )
+from spetlr.etl.transformers.simple_eh_handle_write_transformer import (  # noqa: F401
+    SimpleEventhubHandleTransformer,
+)
 from spetlr.etl.transformers.simple_sql_transformer import (  # noqa: F401
     SimpleSqlServerTransformer,
 )

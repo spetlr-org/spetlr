@@ -22,6 +22,7 @@ from spetlr.exceptions import (
     IncorrectSchemaException,
     InvalidEventhubConnectionString,
     InvalidEventhubHandleParameters,
+    InvalidEventhubWriteSchema,
 )
 from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
@@ -482,8 +483,8 @@ class KafkaEventhubHandleTest(DataframeTestCase):
         with self.assertRaises(IncorrectSchemaException):
             handle.append(df)
 
-    def test_create_write_dataframe_output(self):
-        schema = StructType([StructField("col1", StringType())])
+    def test_valid_write_dataframe_output(self):
+        schema = StructType([StructField("value", StringType())])
         data = [("value1",), ("value2",)]
         df_to_write = Spark.get().createDataFrame(data, schema)
 
@@ -495,11 +496,7 @@ class KafkaEventhubHandleTest(DataframeTestCase):
             accessKey="testKey",
         )
 
-        result = handle._create_write_dataframe(df_to_write)
-        actual = [json.loads(row["value"]) for row in result.collect()]
-        expected = [{"col1": "value1"}, {"col1": "value2"}]
-
-        self.assertEqual(actual, expected)
+        handle._check_write_dataframe(df_to_write)
 
     def test_incorrect_write_schema(self):
         eh = EventhubHandle(
@@ -517,14 +514,10 @@ class KafkaEventhubHandleTest(DataframeTestCase):
                     "2",
                 )
             ],
-            "value string, another string",
+            "key string, another string",
         )
-        with self.assertRaises(IncorrectSchemaException):
+        with self.assertRaises(InvalidEventhubWriteSchema):
             eh.append(df)
-
-    def test_read_eventhub_stream(self):
-        # Streaming locally is not testable at the moment
-        pass
 
     def test_valid_connection_string_parsing(self):
         eh = EventhubHandle(

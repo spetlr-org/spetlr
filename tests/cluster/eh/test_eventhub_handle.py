@@ -10,10 +10,13 @@ from spetlrtools.time import dt_utc
 from spetlr.configurator import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.eh import EventhubHandle
-from spetlr.etl import Orchestrator
+from spetlr.etl import Orchestrator, Transformer
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader
+from spetlr.etl.transformers.simple_eh_handle_write_transformer import (
+    SimpleEventhubHandleTransformer,
+)
 from spetlr.functions import init_dbutils
 from spetlr.spark import Spark
 from tests.cluster.values import resourceName
@@ -101,6 +104,8 @@ class EventHubHandleTests(unittest.TestCase):
             [(1, self.UUID_test1), (2, self.UUID_test1)], "id int, name string"
         )
 
+        df = SimpleEventhubHandleTransformer().process(df)
+
         eh.overwrite(df)
 
         time.sleep(100)
@@ -177,6 +182,7 @@ class EventHubHandleTests(unittest.TestCase):
                     dh_target,
                 )
             )
+            .transform_with(SimpleEventhubHandleTransformer())
             .load_into(
                 StreamLoader(
                     loader=SimpleLoader(handle=eh_source, mode="append"),

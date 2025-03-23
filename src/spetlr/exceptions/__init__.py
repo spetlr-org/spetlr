@@ -103,3 +103,7 @@ class IncorrectSchemaException(SpetlrException):
 
 class InvalidEventhubConnectionString(SpetlrException):
     pass
+
+
+class InvalidEventhubWriteSchema(SpetlrException):
+    pass

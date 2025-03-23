@@ -1,5 +1,4 @@
 import datetime
-from ast import Index
 from typing import Dict
 from urllib.parse import urlparse
 
@@ -9,9 +8,9 @@ from pyspark.sql.types import StructType
 
 from spetlr import Configurator
 from spetlr.exceptions import (
-    IncorrectSchemaException,
     InvalidEventhubConnectionString,
     InvalidEventhubHandleParameters,
+    InvalidEventhubWriteSchema,
 )
 from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
@@ -205,18 +204,22 @@ class EventhubHandle(TableHandle):
         mergeSchema: bool = None,
         overwriteSchema: bool = None,
     ) -> None:
+        """
+        It is up to the user of the EventhubHandle class
+        to provide a schema, that matches the write semantics
+
+        Link: https://spark.apache.org/docs/
+                latest/structured-streaming-kafka-integration.html#writing-data-to-kafka
+
+        """
+
         assert mode in {"append", "overwrite"}
 
         if mode == "overwrite":
             print("Kafka does not support overwrite mode. Switching to append.")
             mode = "append"
 
-        if "value" in df.columns:
-            raise IncorrectSchemaException(
-                "Input DataFrame should only have one column named 'value'."
-            )
-
-        df = self._create_write_dataframe(df)
+        self._check_write_dataframe(df)
 
         writer = (
             df.write.format("kafka")
@@ -247,12 +250,11 @@ class EventhubHandle(TableHandle):
         self._schema = schema
 
     @staticmethod
-    def _create_write_dataframe(df: DataFrame) -> DataFrame:
-        return (
-            df.withColumn("value", f.struct(df.columns))
-            .withColumn("value", f.to_json("value"))
-            .selectExpr("CAST(value AS STRING)")
-        )
+    def _check_write_dataframe(df: DataFrame) -> None:
+        _lower_cols = [col.lower() for col in df.columns]
+
+        if "value" not in _lower_cols:
+            raise InvalidEventhubWriteSchema("You must provide at least a Kafka value!")
 
     @staticmethod
     def _convert_kafka_schema_to_eventhub_schema(df: DataFrame) -> DataFrame:

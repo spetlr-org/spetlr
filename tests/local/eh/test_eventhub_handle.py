@@ -18,7 +18,11 @@ from spetlrtools.time import dt_utc
 
 from spetlr import Configurator
 from spetlr.eh.eventhub_handle import EventhubHandle
-from spetlr.exceptions import IncorrectSchemaException, InvalidEventhubHandleParameters
+from spetlr.exceptions import (
+    IncorrectSchemaException,
+    InvalidEventhubConnectionString,
+    InvalidEventhubHandleParameters,
+)
 from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
 
@@ -35,16 +39,18 @@ class KafkaEventhubHandleTest(DataframeTestCase):
         "timestampType",
     ]
 
+    _test_cn_string = "Endpoint=sb://NamespaceName.servicebus.windows.net/;SharedAccessKeyName=KeyName;SharedAccessKey=KeyValue"
+
     def test_create_with_connectionString(self):
         eh = EventhubHandle(
-            connection_str="testConnectionString",
+            connection_str=self._test_cn_string,
             consumer_group="testConsumerGroup",
             eventhub="hey",
             namespace="there",
             maxEventsPerTrigger=100000,
         )
 
-        self.assertEqual(eh.connectionString, "testConnectionString")
+        self.assertEqual(eh.connectionString, self._test_cn_string)
 
     def test_create_without_connectionString(self):
         eh = EventhubHandle(
@@ -147,7 +153,7 @@ class KafkaEventhubHandleTest(DataframeTestCase):
                 "partitioning": "ymd",
                 "eh_eventhub": eventhub,
                 "eh_consumer_group": consumer_group,
-                "eh_connection_str": "testConnectionString",
+                "eh_connection_str": self._test_cn_string,
                 "eh_namespace": "testNamespace",
                 "eh_accessKeyName": "testAccessKeyName",
                 "eh_accessKey": "testAccessKey",
@@ -187,12 +193,12 @@ class KafkaEventhubHandleTest(DataframeTestCase):
                 "kafka.sasl.jaas.config": "kafkashaded.org.apache.kafka.common.security"
                 ".plain.PlainLoginModule "
                 'required username="$ConnectionString" '
-                'password="testConnectionString";',
+                f'password="{self._test_cn_string}";',
                 "maxOffsetsPerTrigger": "500000",
                 "kafka.group.id": "$Default",
             }
             # Assert that the connectionString is as expected
-            self.assertEqual(eh.connectionString, "testConnectionString")
+            self.assertEqual(eh.connectionString, self._test_cn_string)
             # Assert that the schema matches the expected schema
             self.assertEqual(eh._schema, _expected_schema)
             # Assert that the options dictionary matches the expected values
@@ -222,7 +228,7 @@ class KafkaEventhubHandleTest(DataframeTestCase):
         )
 
         # Define the explicit connection string to be used
-        explicit_connection_str = "explicitConnectionStringOverride"
+        explicit_connection_str = self._test_cn_string
 
         # Patch the 'read' method of EventhubHandle to not perform its actual function
         with patch.object(EventhubHandle, "read", return_value=None):
@@ -519,3 +525,95 @@ class KafkaEventhubHandleTest(DataframeTestCase):
     def test_read_eventhub_stream(self):
         # Streaming locally is not testable at the moment
         pass
+
+    def test_valid_connection_string_parsing(self):
+        eh = EventhubHandle(
+            connection_str=(
+                "Endpoint=sb://testns.servicebus.windows.net/testhub;"
+                "EntityPath=testhub;SharedAccessKeyName=testkey;"
+                "SharedAccessKey=secret"
+            )
+        )
+
+        self.assertEqual(eh.bootstrap_servers, "testns.servicebus.windows.net:9093")
+        self.assertEqual(eh.topic, "testhub")
+
+    def test_invalid_connection_string_raises(self):
+        with self.assertRaises(InvalidEventhubConnectionString):
+            EventhubHandle(connection_str="not a valid conn str")
+
+    def test_minimum_valid_manual_params(self):
+        eh = EventhubHandle(
+            namespace="testns",
+            eventhub="testhub",
+            accessKeyName="testkey",
+            accessKey="secret",
+        )
+
+        self.assertEqual(eh.bootstrap_servers, "testns.servicebus.windows.net:9093")
+        self.assertEqual(eh.topic, "testhub")
+        self.assertIn("SharedAccessKey=secret", eh.connectionString)
+
+    def test_missing_params_raises(self):
+        # Missing one required param
+        with self.assertRaises(InvalidEventhubHandleParameters):
+            EventhubHandle(
+                namespace="testns",
+                eventhub="testhub",
+                accessKeyName="testkey",
+                # Missing accessKey
+            )
+
+    def test_connection_str_overrides_namespace(self):
+        # In current implementation: if namespace is passed, it takes priority
+        conn_str = (
+            "Endpoint=sb://parsedns.servicebus.windows.net/parsedhub;"
+            "EntityPath=parsedhub;SharedAccessKeyName=testkey;"
+            "SharedAccessKey=secret"
+        )
+        eh = EventhubHandle(
+            connection_str=conn_str,
+            namespace="ignoredns",  # <-- actually used
+        )
+
+        self.assertEqual(eh.bootstrap_servers, "ignoredns.servicebus.windows.net:9093")
+        self.assertEqual(eh.topic, "parsedhub")  # this still comes from conn string
+
+    def test_entity_path_from_connection_string(self):
+        # No eventhub argument → should be parsed from conn_str
+        conn_str = (
+            "Endpoint=sb://ns1.servicebus.windows.net/eh1;"
+            "EntityPath=eh1;SharedAccessKeyName=testkey;SharedAccessKey=secret"
+        )
+
+        handle = EventhubHandle(connection_str=conn_str)
+
+        self.assertEqual(handle.topic, "eh1")
+
+    def test_entity_path_from_argument(self):
+        # eventhub argument provided → should override EntityPath from conn_str
+        conn_str = (
+            "Endpoint=sb://ns1.servicebus.windows.net/eh1;"
+            "EntityPath=eh1;SharedAccessKeyName=testkey;SharedAccessKey=secret"
+        )
+
+        handle = EventhubHandle(connection_str=conn_str, eventhub="override_eh")
+
+        self.assertEqual(handle.topic, "override_eh")
+
+    def test_entity_path_with_manual_fields_only(self):
+        handle = EventhubHandle(
+            namespace="ns2", eventhub="eh2", accessKeyName="key", accessKey="secret"
+        )
+
+        self.assertEqual(handle.topic, "eh2")
+
+    def test_missing_entity_path_and_eventhub_raises(self):
+        # Valid conn_str but missing EntityPath → should raise KeyError
+        conn_str = (
+            "Endpoint=sb://ns.servicebus.windows.net/;"  # No EntityPath!
+            "SharedAccessKeyName=key;SharedAccessKey=secret"
+        )
+
+        with self.assertRaises(KeyError):
+            EventhubHandle(connection_str=conn_str)

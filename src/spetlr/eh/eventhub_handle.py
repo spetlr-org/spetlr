@@ -1,12 +1,18 @@
 import datetime
+from ast import Index
 from typing import Dict
+from urllib.parse import urlparse
 
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType
 
 from spetlr import Configurator
-from spetlr.exceptions import IncorrectSchemaException, InvalidEventhubHandleParameters
+from spetlr.exceptions import (
+    IncorrectSchemaException,
+    InvalidEventhubConnectionString,
+    InvalidEventhubHandleParameters,
+)
 from spetlr.schema_manager import SchemaManager
 from spetlr.spark import Spark
 from spetlr.tables import TableHandle
@@ -52,8 +58,8 @@ class EventhubHandle(TableHandle):
 
     def __init__(
         self,
-        namespace: str,
-        eventhub: str,
+        namespace: str = None,
+        eventhub: str = None,
         consumer_group: str = None,
         connection_str: str = None,
         accessKeyName: str = None,
@@ -84,9 +90,31 @@ class EventhubHandle(TableHandle):
         else:
             self.connectionString = connection_str
 
+            # Split up connection string to retrieve relevant info
+
+            try:
+                cstring_parts = {
+                    p.split("=")[0]: p.split("=")[1]
+                    for p in self.connectionString.split(";")
+                }
+            except IndexError:
+                raise InvalidEventhubConnectionString(
+                    "Invalid eventhub connection string!"
+                )
+
+        # The logic trust the explicit setted namespace
+        # over the connectionstring
+        if namespace is None:
+
+            self.bootstrap_servers = (
+                urlparse(cstring_parts["Endpoint"]).netloc + ":9093"
+            )
+        else:
+            self.bootstrap_servers = f"{namespace}.servicebus.windows.net:9093"
+
+        self.topic = eventhub or cstring_parts["EntityPath"]
+
         self._schema = schema
-        self.bootstrap_servers = f"{namespace}.servicebus.windows.net:9093"
-        self.topic = eventhub
 
         self.kafkaConfigs = {
             "kafka.bootstrap.servers": self.bootstrap_servers,

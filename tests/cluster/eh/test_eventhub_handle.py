@@ -32,7 +32,7 @@ class EventHubHandleTests(unittest.TestCase):
 
         cls.connection_str = init_dbutils().secrets.get("secrets", "EventHubConnection")
 
-        eventhub = "spetlreh"
+        # eventhub = "spetlreh"
         consumer_group = "$Default"
 
         cls.tc.register(
@@ -41,8 +41,8 @@ class EventHubHandleTests(unittest.TestCase):
                 "path": f"/mnt/{resourceName()}/silver/{resourceName()}/spetlreh",
                 "format": "avro",
                 "partitioning": "ymd",
-                "eh_eventhub": eventhub,
-                "eh_namespace": resourceName(),
+                # "eh_eventhub": eventhub,
+                # "eh_namespace": resourceName(),
                 "eh_consumer_group": consumer_group,
             },
         )
@@ -200,6 +200,6 @@ class EventHubHandleTests(unittest.TestCase):
         at the same time - the UUID ensures that we only work within
         the scope of this test.
         """
-        df = df.select(f.col("body").cast("string").alias("string_body"))
+        df = df.select(f.col("Body").cast("string").alias("string_body"))
 
         return df.filter(f.col("string_body").like("%" + self.UUID_test1 + "%")).count()

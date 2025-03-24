@@ -561,12 +561,7 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         """
         self._deprecated()
 
-        property_value = self.get_all_details().get(
-            f"{table_id}_{property_name}", default_value
-        )
+        if default_value is None:
+            default_value = self._DEFAULT
 
-        if property_value is None:
-            raise ValueError(
-                f"property '{property_name}' for table identifier '{table_id}' is empty"
-            )
-        return property_value
+        return self.get(table_id, property_name, default=default_value)

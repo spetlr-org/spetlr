@@ -25,6 +25,7 @@ class PowerBi:
         table_names: List[str] = None,
         max_minutes_after_last_refresh: int = 12 * 60,
         timeout_in_seconds: int = 15 * 60,
+        timeout_power_bi_in_seconds: int = None,
         number_of_retries: int = 0,
         max_parallelism: int = None,
         apply_refresh_policy: bool = None,
@@ -59,8 +60,11 @@ class PowerBi:
         :param int max_minutes_after_last_refresh: The number of minutes
             for which the last succeeded refresh is considered valid,
             or 0 to disable time checking. Default is 12 hours.
-        :param bool timeout_in_seconds: The number of seconds after which
+        :param int timeout_in_seconds: The number of seconds after which
             the refresh() method times out. Default is 15 minutes.
+        :param int timeout_power_bi_in_seconds: The number of seconds after which
+            the refresh in PowerBi times out, both with refresh()
+            and start_refresh(). Default is None.
         :param int number_of_retries: The number of retries on transient
             errors when calling refresh() and start_refresh().
             Default is 0 (no retries). (E.g. 1 means two attempts in total.)
@@ -110,6 +114,10 @@ class PowerBi:
             raise ValueError(
                 "The 'timeout_in_seconds' parameter must be greater than zero!"
             )
+        if timeout_power_bi_in_seconds is not None and timeout_power_bi_in_seconds <= 0:
+            raise ValueError(
+                "The 'timeout_power_bi_in_seconds' parameter must be greater than zero!"
+            )
         if number_of_retries is None or number_of_retries < 0:
             raise ValueError(
                 "The 'number_of_retries' parameter "
@@ -134,6 +142,7 @@ class PowerBi:
         self.table_names = table_names
         self.max_minutes_after_last_refresh = max_minutes_after_last_refresh
         self.timeout_in_seconds = timeout_in_seconds
+        self.timeout_power_bi_in_seconds = timeout_power_bi_in_seconds
         self.number_of_retries = number_of_retries
         self.max_parallelism = max_parallelism
         self.mail_on_failure = mail_on_failure
@@ -205,7 +214,9 @@ class PowerBi:
                 "or the dataset doesn't have a user with the required permissions!"
             )
         if api_call.status_code == 401 and ignore_unauthorized:
-            print("Skipping unauthorized: " + additional_message)
+            if additional_message != "":
+                additional_message = additional_message + ": "
+            print("Skipping HTTP 401 Unauthorized" + additional_message)
         else:
             self._raise_base_api_error(
                 message,
@@ -507,6 +518,20 @@ class PowerBi:
                 sorting_columns="TableName",
                 local_timezone_name=self.local_timezone_name,
             )
+        elif api_call.status_code == 400:
+            print(
+                "Microsoft disabled DAX queries through the API for security reasons. "
+                "Verify you have access to DAX queries via the API."
+            )
+            if ignore_unauthorized:
+                return None
+        elif api_call.status_code == 401:
+            print(
+                "You do not have permissions to access DAX queries through the API. "
+                "Verify you have access to DAX queries via the API."
+            )
+            if ignore_unauthorized:
+                return None
         self._raise_api_error(
             "Failed to fetch partition info!",
             api_call,
@@ -606,7 +631,9 @@ class PowerBi:
             if self.table_names is not None and (
                 not self.table_names or not isinstance(self.table_names, list)
             ):
-                tables = self._get_partition_tables(self.workspace_id, self.dataset_id)
+                tables = self._get_partition_tables(
+                    self.workspace_id, self.dataset_id, ignore_unauthorized=True
+                )
                 if tables is not None:
                     tables.show(
                         "Available tables:",
@@ -997,6 +1024,10 @@ class PowerBi:
                     "The 'number_of_retries' parameter is ignored in "
                     "start_refresh() if 'table_names' is not specified!"
                 )
+        if self.timeout_power_bi_in_seconds is not None:
+            result["timeout"] = time.strftime(
+                "%H:%M:%S", time.gmtime(self.timeout_power_bi_in_seconds)
+            )
         if self.max_parallelism is not None:
             result["maxParallelism"] = self.max_parallelism
         if self.apply_refresh_policy is not None:

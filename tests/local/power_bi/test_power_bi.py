@@ -1302,7 +1302,26 @@ class TestPowerBi(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue("objects" in result)
         self.assertFalse("retryCount" in result)
+        self.assertFalse("timeout" in result)
         self.assertEqual(expected_result, result["objects"])
+
+    def test_get_refresh_argument_json_with_power_bi_timeout(self):
+        # Arrange
+        sut = PowerBi(
+            PowerBiClient(),
+            workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
+            dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
+            timeout_power_bi_in_seconds=(5 * 60 * 60 - 5),
+        )
+        expected_result = "04:59:55"
+
+        # Act
+        result = sut._get_refresh_argument_json(with_wait=False)
+
+        # Assert
+        self.assertIsNotNone(result)
+        self.assertTrue("timeout" in result)
+        self.assertEqual(expected_result, result["timeout"])
 
     @patch("requests.post")
     def test_trigger_new_refresh_success(self, mock_post):

@@ -248,6 +248,9 @@ The start_refresh() method starts a new refresh of the given PowerBI
 dataset asynchronously. To verify if the refresh succeeded, you need to
 call the check() method after waiting some sufficiently long time
 (e.g. from a separate monitoring job). 
+With the optional "timeout_power_bi_in_seconds" you can specify a
+time-out in seconds inside PowerBI. If the time-out is exceeded,
+PowerBI will interrupt refreshing and return a time-out error.
 
 If you want to refresh only selected tables in the dataset, you can
 specify the optional "table_names" parameter with a list of table names.
@@ -316,9 +319,12 @@ True
 
 The refresh() method starts a new refresh of the given PowerBI dataset
 synchronously. It waits until the refresh is finished or until a time-out
-occurs. The time-out can be specified using the optional "timeout_in_seconds"
+occurs. The time-out can be specified using the "timeout_in_seconds"
 parameter (default is 15 minutes). 
 If the refresh fails or a time-out occurs, the method casts an exception.
+With the optional "timeout_power_bi_in_seconds" you can specify a similar
+time-out in seconds but inside PowerBI. If the time-out is exceeded,
+PowerBI will interrupt refreshing and return a time-out error.
 
 The wait time between calls to the PowerBI API is synchronized with the
 average execution time of previous dataset refreshes via API (only calls
@@ -378,6 +384,7 @@ PowerBi(client,
         workspace_name="Finance",
         dataset_name="Invoicing",
         timeout_in_seconds=10*60,
+        timeout_power_bi_in_seconds=10*60,
         number_of_retries=2,
         local_timezone_name="Europe/Copenhagen").refresh()
 
@@ -386,6 +393,7 @@ PowerBi(client,
         workspace_id="614850c2-3a5c-4d2d-bcaa-d3f20f32a2e0",
         dataset_id="b1f0a07e-e348-402c-a2b2-11f3e31181ce",
         timeout_in_seconds=10*60,
+        timeout_power_bi_in_seconds=10*60,
         number_of_retries=2,
         local_timezone_name="Europe/Copenhagen").refresh()
 ```

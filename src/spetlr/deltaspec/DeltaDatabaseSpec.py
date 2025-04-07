@@ -61,6 +61,7 @@ class DeltaDatabaseSpec:
         """Build a DeltaDatabaseSpec instance from what is in the Configurator.
         This may have previously been parsed from sql."""
         c = Configurator()
+        c.assert_contains(id)
         try:
             name = c.get(id, "name")
         except NoSuchValueException:

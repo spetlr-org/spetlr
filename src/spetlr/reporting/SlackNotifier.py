@@ -14,6 +14,11 @@ from .JobReflection import JobReflection
 class SlackNotifier:
     """Send exceptions and notifications to slack webhooks
     while including stacktraces and links back to the job results.
+
+    NB - Unity Catalog:
+    Interactive Clusters in Shared Access Mode have issues
+    calling this class. Consider using Personal Access Mode if called
+    from interactive sessions.
     """
 
     def __init__(self, *webhookurl: str):

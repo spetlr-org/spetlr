@@ -124,7 +124,8 @@ class TestDbHandle(unittest.TestCase):
         """ "
         Test creating a database with a specified location.
 
-        Ensures that the correct SQL statement ("CREATE DATABASE IF NOT EXISTS ... LOCATION ...")
+        Ensures that the correct SQL statement
+        ("CREATE DATABASE IF NOT EXISTS ... LOCATION ...")
         is executed when the create() method is called with a location.
         """
         mock_session = MagicMock()

@@ -138,8 +138,6 @@ class EventhubHandle(TableHandle):
         if consumer_group:
             self.kafkaConfigs["kafka.group.id"] = consumer_group
 
-    from datetime import datetime
-
     @classmethod
     def from_tc(
         cls,

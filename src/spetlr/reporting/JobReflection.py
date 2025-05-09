@@ -11,6 +11,15 @@ from spetlr.functions import init_dbutils
 
 
 class JobReflection:
+    """
+
+    NB - Unity Catalog:
+    Interactive Clusters in Shared Access Mode have issues
+    calling this class. Consider using Personal Access Mode if called
+    from interactive sessions.
+
+    """
+
     @classmethod
     @lru_cache
     def get_job_details(cls) -> Dict:

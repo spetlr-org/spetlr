@@ -20,14 +20,16 @@ class DataframeCreatorTest(unittest.TestCase):
             >,
             product_nos ARRAY<STRUCT<
                 no:INTEGER,
-                name:STRING
+                name:STRING,
+                additional_data:MAP<STRING,STRING>
             >>
         """
         )
 
     def test_full_creation(self):
         df = DataframeCreator.make(
-            self.schema, [(1, 3.5, ("otto", "neverland"), [(1, "book")])]
+            self.schema,
+            [(1, 3.5, ("otto", "neverland"), [(1, "book", {"foo": "bar"})])],
         )
         df.show()
         rows = [row.asDict(True) for row in df.collect()]
@@ -37,7 +39,9 @@ class DataframeCreatorTest(unittest.TestCase):
                     Id=1,
                     measured=3.5,
                     customer=dict(name="otto", address="neverland"),
-                    product_nos=[dict(no=1, name="book")],
+                    product_nos=[
+                        dict(no=1, name="book", additional_data=dict(foo="bar"))
+                    ],
                 )
             ],
             rows,
@@ -46,9 +50,13 @@ class DataframeCreatorTest(unittest.TestCase):
     def test_partial_creation(self):
         df = DataframeCreator.make_partial(
             schema=self.schema,
-            columns=["Id", ("customer", ["name"]), ("product_nos", ["no"])],
+            columns=[
+                "Id",
+                ("customer", ["name"]),
+                ("product_nos", ["no", "additional_data"]),
+            ],
             data=[
-                (1, ("otto",), [(1,), (2,)]),
+                (1, ("otto",), [(1, dict(foo="bar")), (2, dict(eggs="bacon"))]),
                 (2, ("max",), []),
             ],
         )
@@ -60,7 +68,10 @@ class DataframeCreatorTest(unittest.TestCase):
                     Id=1,
                     measured=None,
                     customer=dict(name="otto", address=None),
-                    product_nos=[dict(no=1, name=None), dict(no=2, name=None)],
+                    product_nos=[
+                        dict(no=1, name=None, additional_data=dict(foo="bar")),
+                        dict(no=2, name=None, additional_data=dict(eggs="bacon")),
+                    ],
                 ),
                 dict(
                     Id=2,

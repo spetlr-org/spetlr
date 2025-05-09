@@ -91,3 +91,15 @@ class AmbiguousColumnsAfterCleaning(SpetlrException):
 class SchemasNotEqualException(SpetlrException):
     value = "Column names after cleaning are ambiguous!"
     pass
+
+
+class InvalidEventhubHandleParameters(SpetlrException):
+    pass
+
+
+class InvalidEventhubConnectionString(SpetlrException):
+    pass
+
+
+class InvalidEventhubWriteSchema(SpetlrException):
+    pass

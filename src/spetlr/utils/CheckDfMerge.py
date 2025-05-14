@@ -55,7 +55,7 @@ def CheckDfMerge(
     # False if only inserts
     # note: inserts alone happen almost always and can use "append",
     # which is much faster than merge
-    merge_required = len(df.filter(~f.col("is_new")).take(1)) > 0
+    merge_required = df.filter(~f.col("is_new")).limit(1).count() > 0
     df = df.drop("is_new")
 
     return df, merge_required

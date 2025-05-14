@@ -259,7 +259,7 @@ class SqlServer(SqlBaseServer):
         if overwrite_if_target_is_empty:
             df_target = self.read_table_by_name(table_name=table_name)
 
-            if len(df_target.take(1)) == 0:
+            if df_target.limit(1).count() == 0:
                 return self.write_table_by_name(
                     df_source=df_source,
                     table_name=table_name,

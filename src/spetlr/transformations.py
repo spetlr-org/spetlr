@@ -276,7 +276,7 @@ def merge_df_into_target(
     df_target = Spark.get().table(target_table_name)
 
     # If the target is empty, always do faster full load
-    if len(df_target.take(1)) == 0:
+    if df_target.limit(1).count() == 0:
         return (
             df.write.format(table_format)
             .mode("overwrite")
@@ -322,7 +322,7 @@ def merge_df_into_target(
     )
 
     # If merge is not required, the data can just be appended
-    merge_required = len(df.filter(~F.col("is_new")).take(1)) > 0
+    merge_required = df.filter(~F.col("is_new")).limit(1).count() > 0
     df = df.drop("is_new")
 
     if not merge_required:

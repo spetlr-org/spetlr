@@ -251,7 +251,7 @@ class DeltaHandle(TableHandle):
         df_target = self.read()
 
         # If the target is empty, always do faster full load
-        if len(df_target.take(1)) == 0:
+        if df_target.limit(1).count() == 0:
             return self.write_or_append(df, mode="overwrite")
 
         # Find records that need to be updated in the target (happens seldom)

@@ -27,30 +27,31 @@ class SlackNotifier:
     def add_webhook_url(self, url: str):
         self.webhookurls.append(url)
 
-    def notify(self, message: str):
+    def notify(self, message: str, *, source: str = None):
         """Send a notification to a webhook with the following example contents:
         "
         *A message was sent from your job <YOUR JOB NAME HERE>*
 
-        Sent at 2022-11-20 01:03:17
+        Sent 2022-11-20 01:03:17 [from <YOUR SOURCE HERE>]
 
         <YOUR MESSAGE HERE>
         "
         """
-        self.notify_info(message=message, _hide_caller_info=True)
+        self.notify_info(message=message, _source=source, _hide_caller_info=True)
 
     def notify_info(
         self,
         message: str = None,
         _stack_skip: int = 1,
         *,
+        _source: str = None,
         _hide_caller_info: bool = False,
     ):
         """Send a notification to a webhook with the following example contents:
         "
         *A message was sent from your job <YOUR JOB NAME HERE>*
 
-        Sent at 2022-11-20 01:03:17
+        Sent 2022-11-20 01:03:17 [from <YOUR SOURCE HERE>]
 
         <YOUR MESSAGE HERE (IF ANY)>
 
@@ -74,7 +75,10 @@ class SlackNotifier:
         except NoRunId:
             text = "*A message was sent from databricks*\n"
 
-        text += f"\nSent at {self._slack_now()}\n"
+        text += f"\nSent {self._slack_now()}"
+        if _source:
+            text += f" from {_source}"
+        text += "\n"
 
         if message:
             text += f"\n{message}\n"

@@ -70,15 +70,14 @@ class SlackNotifier:
         """
         called_from = "".join(traceback.format_stack()[:-_stack_skip])
         try:
-            job_name = JobReflection.get_job_name()
-            text = f"*A message was sent from your job {job_name}*\n"
+            job_name = "your job " + JobReflection.get_job_name()
         except NoRunId:
-            text = "*A message was sent from databricks*\n"
+            job_name = "Databricks"
 
-        text += f"\nSent {self._slack_now()}"
+        text = f"*A message was sent {self._slack_now()} from {job_name}"
         if _source:
-            text += f" from {_source}"
-        text += "\n"
+            text += f" in {_source}"
+        text += "*\n"
 
         if message:
             text += f"\n{message}\n"

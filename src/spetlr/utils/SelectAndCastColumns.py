@@ -26,7 +26,7 @@ def SelectAndCastColumns(
 
     selectAndCastColumnsList = [
         (
-            F.col(c.name).cast(c.dataType).alias(c.name)
+            F.expr(f"try_cast({c.name} as {c.dataType.simpleString()})").alias(c.name)
             if _lower(c.name, caseInsensitiveMatching) in dfColumns
             else F.lit(None).cast(c.dataType).alias(c.name)
         )

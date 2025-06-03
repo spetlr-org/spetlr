@@ -92,7 +92,7 @@ class SlackNotifierTests(unittest.TestCase):
         self.assertIn("text", self.HTTPHandler.called_data)
         self.assertRegex(
             self.HTTPHandler.called_data["text"],
-            "An exception has occurred in your job tests_cluster",
+            "An exception occurred in your job tests_cluster",
         )
         self.assertRegex(
             self.HTTPHandler.called_data["text"], "test_03_notify_exc_webhook"

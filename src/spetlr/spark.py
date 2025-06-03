@@ -71,13 +71,21 @@ class Spark:
         return cls._spark
 
     @classmethod
+    def is_databricks_connect_enabled(cls) -> bool:
+        """
+        :return:
+        Returns True if the Databricks Connect is enabled.
+        """
+        var = "SPETLR_DATABRICKS_CONNECT"
+        return var in os.environ and os.environ[var].lower() == "true"
+
+    @classmethod
     def _get_db_connect(cls) -> Optional[SparkSession]:
         """
         :return:
         New spark session using databricks.connect if it is installed and enabled
         """
-        var = "SPETLR_DATABRICKS_CONNECT"
-        if var in os.environ and os.environ[var].lower() == "true":
+        if cls.is_databricks_connect_enabled():
             try:
                 dc = importlib.import_module("databricks.connect")
                 spark = dc.DatabricksSession.builder.getOrCreate()

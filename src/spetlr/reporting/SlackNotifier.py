@@ -30,7 +30,7 @@ class SlackNotifier:
     def notify(self, message: str, *, source: str = None):
         """Send a notification to a webhook with the following example contents:
         "
-        *A message was sent from your job <YOUR JOB NAME HERE>*
+        *A message was sent from the <YOUR JOB NAME HERE> job*
 
         Sent 2022-11-20 01:03:17 [from <YOUR SOURCE HERE>]
 
@@ -49,7 +49,7 @@ class SlackNotifier:
     ):
         """Send a notification to a webhook with the following example contents:
         "
-        *A message was sent from your job <YOUR JOB NAME HERE>*
+        *A message was sent from the <YOUR JOB NAME HERE> job*
 
         Sent 2022-11-20 01:03:17 [from <YOUR SOURCE HERE>]
 
@@ -69,12 +69,11 @@ class SlackNotifier:
         "
         """
         called_from = "".join(traceback.format_stack()[:-_stack_skip])
-        try:
-            job_name = "your job " + JobReflection.get_job_name()
-        except NoRunId:
-            job_name = "Databricks"
 
-        text = f"*A message was sent {self._slack_now()} from {job_name}"
+        text = (
+            f"*A message was sent {self._slack_now()} "
+            f"from {self._get_job_description()}"
+        )
         if _source:
             text += f" in {_source}"
         text += "*\n"
@@ -91,7 +90,7 @@ class SlackNotifier:
         """Send a message about an ongoing exception
         to a webhook with the following example contents:
         "
-        *An exception has occurred in your job <YOUR JOB NAME HERE>*
+        *An exception occurred in the <YOUR JOB NAME HERE> job*
 
         The error occurred at 2022-11-20 01:03:17
 
@@ -114,12 +113,7 @@ class SlackNotifier:
                 _hide_caller_info=False,
             )
 
-        try:
-            job_name = JobReflection.get_job_name()
-            text = f"*An exception has occurred in your job {job_name}*\n"
-        except NoRunId:
-            text = "*An exception has occurred in databricks*\n"
-
+        text = f"*An exception occurred in {self._get_job_description()}*\n"
         text += dedent(
             f"""The error occurred at {self._slack_now()}
 
@@ -132,7 +126,17 @@ class SlackNotifier:
 
         self._add_link_and_publish(text)
 
-    def _slack_now(self):
+    @staticmethod
+    def _get_job_description() -> str:
+        """Gets the description of the current job."""
+        try:
+            job_name = f"the {JobReflection.get_job_name()} job"
+        except NoRunId:
+            job_name = "Databricks"
+        return job_name
+
+    @staticmethod
+    def _slack_now():
         timestamp = int(time.time())
         date_format = "{date_long_pretty} {time_secs}"
         alt_text = str(datetime.now())

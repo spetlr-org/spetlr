@@ -56,7 +56,7 @@ class SlackNotifierTests(unittest.TestCase):
         self.assertIn("text", self.HTTPHandler.called_data)
         self.assertRegex(
             self.HTTPHandler.called_data["text"],
-            "A message was sent .* from your job tests_cluster",
+            "message was sent .* from the tests_cluster job",
         )
         self.assertRegex(self.HTTPHandler.called_data["text"], "my nice message")
         print(self.HTTPHandler.called_data["text"])
@@ -71,7 +71,7 @@ class SlackNotifierTests(unittest.TestCase):
         self.assertIn("text", self.HTTPHandler.called_data)
         self.assertRegex(
             self.HTTPHandler.called_data["text"],
-            "A message was sent .* from your job tests_cluster",
+            "message was sent .* from the tests_cluster job",
         )
         self.assertRegex(
             self.HTTPHandler.called_data["text"], "test_02_notify_info_webhook"
@@ -92,7 +92,7 @@ class SlackNotifierTests(unittest.TestCase):
         self.assertIn("text", self.HTTPHandler.called_data)
         self.assertRegex(
             self.HTTPHandler.called_data["text"],
-            "An exception has occurred in your job tests_cluster",
+            "exception occurred in the tests_cluster job",
         )
         self.assertRegex(
             self.HTTPHandler.called_data["text"], "test_03_notify_exc_webhook"

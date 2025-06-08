@@ -57,6 +57,10 @@ class MissingUpsertJoinColumns(SpetlrKeyError):
     pass
 
 
+class IncorrectSchemaException(SpetlrException):
+    pass
+
+
 class OnlyUseInSpetlrDebugMode(SpetlrKeyError):
     value = "Only call this if the configurator is in debug"
 
@@ -90,4 +94,8 @@ class AmbiguousColumnsAfterCleaning(SpetlrException):
 
 class SchemasNotEqualException(SpetlrException):
     value = "Column names after cleaning are ambiguous!"
+    pass
+
+
+class InvalidEventhubHandleParameters(SpetlrException):
     pass

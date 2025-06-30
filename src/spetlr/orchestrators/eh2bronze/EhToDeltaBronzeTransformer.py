@@ -51,40 +51,19 @@ class EhToDeltaBronzeTransformer(Transformer):
         assert set(self._eh_cols).issubset(target_df.columns)
 
         # Generate Unique id for the eventhub rows
+        # xxhash64 accepts multiple columns and returns a BIGINT
         df = df.withColumn(
             "EventhubRowId",
-            f.conv(
-                f.concat_ws(
-                    "",
-                    f.lit("0"),
-                    f.substring(
-                        f.concat_ws(
-                            "",
-                            f.sha2(f.col("Body").cast("string"), 256),
-                            f.sha2(f.col("EnqueuedTimestamp").cast("string"), 256),
-                        ),
-                        -15,
-                        15,
-                    ),
-                ),
-                16,
-                10,
+            f.xxhash64(
+                f.col("Body").cast("string"),
+                f.col("EnqueuedTimestamp").cast("string"),
             ).cast("long"),
         )
 
         # Generate id for the eventhub rows using hashed body
         # Can be used for identify rows with same body
         df = df.withColumn(
-            "BodyId",
-            f.conv(
-                f.concat_ws(
-                    "",
-                    f.lit("0"),
-                    f.substring(f.sha2(f.col("Body").cast("string"), 256), -15, 15),
-                ),
-                16,
-                10,
-            ).cast("long"),
+            "BodyId", f.xxhash64(f.col("Body").cast("string")).cast("long")
         )
 
         # Add streaming time

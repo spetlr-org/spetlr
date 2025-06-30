@@ -94,73 +94,22 @@ resource "azurerm_key_vault_access_policy" "captain_access" {
   ]
 }
 
-# Provision eventhub and its setting ------------------------------------------
-resource "azurerm_eventhub_namespace" "eh" {
-  location             = module.config.location
-  name                 = module.config.integration.resource_name
-  resource_group_name  = azurerm_resource_group.rg.name
-  sku                  = "Standard"
-  auto_inflate_enabled = false
-}
 
-resource "azurerm_eventhub" "eh" {
-  message_retention   = 1
-  name                = module.config.integration.eventhub_name
-  namespace_name      = azurerm_eventhub_namespace.eh.name
-  partition_count     = 1
-  resource_group_name = azurerm_resource_group.rg.name
+resource "azurerm_key_vault_access_policy" "user_access" {
+  key_vault_id = azurerm_key_vault.key_vault.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azurerm_client_config.current.object_id
 
-  capture_description {
-    enabled             = true
-    encoding            = "Avro"
-    skip_empty_archives = true
-    interval_in_seconds = 60
-    destination {
-      name                = "EventHubArchive.AzureBlockBlob"
-      archive_name_format = "{Namespace}/{EventHub}/y={Year}/m={Month}/d={Day}/{Year}_{Month}_{Day}_{Hour}_{Minute}_{Second}_{PartitionId}"
-      blob_container_name = azurerm_storage_container.capture.name
-      storage_account_id  = azurerm_storage_account.storage_account.id
-    }
-  }
-  depends_on = [
-    azurerm_storage_container.capture,
-    azurerm_eventhub_namespace.eh
+  secret_permissions = [
+    "Get",
+    "Set",
+    "List",
+    "Delete",
+    "Purge",
+    "Recover",
+    "Restore",
   ]
 }
-
-resource "azurerm_eventhub_authorization_rule" "root" {
-  eventhub_name       = azurerm_eventhub.eh.name
-  name                = "RootManageSharedAccessKey"
-  namespace_name      = azurerm_eventhub_namespace.eh.name
-  resource_group_name = azurerm_resource_group.rg.name
-  listen              = true
-  send                = true
-  manage              = true
-}
-
-# # Provision sql ----------------------------------------------------------
-# resource "azurerm_mssql_server" "sql" {
-#   name                         = module.config.integration.resource_name
-#   resource_group_name          = azurerm_resource_group.rg.name
-#   location                     = module.config.location
-#   version                      = "12.0"
-#   administrator_login          = "missadministrator"
-#   administrator_login_password = "thisIsKat11"
-#   minimum_tls_version          = "1.2"
-#
-#   azuread_administrator {
-#     azuread_authentication_only = true
-#     login_username              = module.config.integration.captain.display_name
-#     object_id                   = azuread_service_principal.captain.object_id
-#   }
-#
-#   # TODO: maybe missing firewall rules
-# }
-#
-# resource "azurerm_mssql_database" "sql" {
-#   name      = "spetlr"
-#   server_id = azurerm_mssql_server.sql.id
-# }
 
 # Provision access connector and setting its role ------------------------------
 resource "azurerm_databricks_access_connector" "ext_access_connector" {
@@ -197,13 +146,6 @@ resource "azurerm_role_assignment" "account_contributor" {
   role_definition_name = "Storage Account Contributor"
 }
 
-# Provision log analytics workspace -------------------------------------------
-resource "azurerm_log_analytics_workspace" "logs" {
-  location            = module.config.location
-  name                = module.config.integration.resource_name
-  resource_group_name = azurerm_resource_group.rg.name
-  depends_on          = [azurerm_resource_group.rg]
-}
 
 # Provision databricks service ------------------------------------------------
 resource "azurerm_databricks_workspace" "db_workspace" {

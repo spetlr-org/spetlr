@@ -9,8 +9,8 @@ Visit SPETLR official webpage: [https://spetlr.com/](https://spetlr.com/)
 - Cluster test submission with spetlr-tools
 - Upgrade to Python 3.12
 - The spetlr library (probably except SQL connection with ODBC) still supports older LTS versions between 9.1 and 13.3, but only 16.4 is tested.
-- SQL ODBC driver version 18 is suppoetd (this is a breaking change if you haven't upgraded your ODBC driver).
-- Neweset CosmosDB connector is tested for compatibility with DBR LTS 16.4.
+- SQL ODBC driver version 18 is supported (this is a breaking change if you haven't upgraded your ODBC driver).
+- Newest CosmosDB connector is tested for compatibility with DBR LTS 16.4.
 
 # Table of Contents
 

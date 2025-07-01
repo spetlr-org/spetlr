@@ -28,10 +28,17 @@ def generate_keys_file(options):
     from spetlr import Configurator  # prevent circular import
 
     c = Configurator()
-    new_conts = "\n".join(
-        ["# AUTO GENERATED FILE", "# contains all spetlr.Configurator keys", ""]
-        + [f"{key} = {repr(key)}" for key in sorted(c.all_keys())]
-    )
+    c.set_prod()
+    new_conts = "# AUTO GENERATED FILE\n# contains all spetlr.Configurator keys\n\n"
+    for key in sorted(c.all_keys()):
+        new_conts += f"{key} = {repr(key)}"
+        name = c.get(key, "name", None)
+        path = c.get(key, "path", None)
+        if name is not None:
+            new_conts += f"  # name: {name}"
+        elif path is not None:
+            new_conts += f"  # path: {path}"
+        new_conts += "\n"
 
     # if black is installed, use it to format the contents
     try:

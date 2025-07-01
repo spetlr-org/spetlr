@@ -94,22 +94,22 @@ resource "azurerm_key_vault_access_policy" "captain_access" {
   ]
 }
 
-
-resource "azurerm_key_vault_access_policy" "user_access" {
-  key_vault_id = azurerm_key_vault.key_vault.id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = data.azurerm_client_config.current.object_id
-
-  secret_permissions = [
-    "Get",
-    "Set",
-    "List",
-    "Delete",
-    "Purge",
-    "Recover",
-    "Restore",
-  ]
-}
+# when running as local non-spn user comment this in to make it work
+# resource "azurerm_key_vault_access_policy" "user_access" {
+#   key_vault_id = azurerm_key_vault.key_vault.id
+#   tenant_id    = data.azurerm_client_config.current.tenant_id
+#   object_id    = data.azurerm_client_config.current.object_id
+#
+#   secret_permissions = [
+#     "Get",
+#     "Set",
+#     "List",
+#     "Delete",
+#     "Purge",
+#     "Recover",
+#     "Restore",
+#   ]
+# }
 
 # Provision access connector and setting its role ------------------------------
 resource "azurerm_databricks_access_connector" "ext_access_connector" {

@@ -37,18 +37,18 @@ resource "azurerm_storage_account" "storage_account" {
 # Provision containers ---------------------------------------------------------
 
 resource "azurerm_storage_container" "catalog" {
-  name                 = module.config.integration.catalog_container_name
-  storage_account_name = azurerm_storage_account.storage_account.name
+  name               = module.config.integration.catalog_container_name
+  storage_account_id = azurerm_storage_account.storage_account.id
 }
 
 resource "azurerm_storage_container" "capture" {
-  name                 = module.config.integration.capture_container_name
-  storage_account_name = azurerm_storage_account.storage_account.name
+  name               = module.config.integration.capture_container_name
+  storage_account_id = azurerm_storage_account.storage_account.id
 }
 
 resource "azurerm_storage_container" "init" {
-  name                 = module.config.integration.init_container_name
-  storage_account_name = azurerm_storage_account.storage_account.name
+  name               = module.config.integration.init_container_name
+  storage_account_id = azurerm_storage_account.storage_account.id
 }
 
 # Provision keyvault and setting access policies -------------------------------

@@ -8,11 +8,10 @@ resource "azurerm_eventhub_namespace" "eh" {
 }
 
 resource "azurerm_eventhub" "eh" {
-  message_retention   = 1
-  name                = module.config.integration.eventhub_name
-  namespace_name      = azurerm_eventhub_namespace.eh.name
-  partition_count     = 1
-  resource_group_name = azurerm_resource_group.rg.name
+  message_retention = 1
+  name              = module.config.integration.eventhub_name
+  namespace_id      = azurerm_eventhub_namespace.eh.id
+  partition_count   = 1
 
   capture_description {
     enabled             = true
@@ -26,10 +25,6 @@ resource "azurerm_eventhub" "eh" {
       storage_account_id  = azurerm_storage_account.storage_account.id
     }
   }
-  depends_on = [
-    azurerm_storage_container.capture,
-    azurerm_eventhub_namespace.eh
-  ]
 }
 
 resource "azurerm_eventhub_authorization_rule" "root" {

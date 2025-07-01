@@ -94,7 +94,9 @@ resource "azurerm_key_vault_access_policy" "captain_access" {
   ]
 }
 
-# when running as local non-spn user comment this in to make it work
+## when running as local non-spn user comment this in to make it work
+## also comment in all references to it. search for string:
+##    azurerm_key_vault_access_policy.user_access
 # resource "azurerm_key_vault_access_policy" "user_access" {
 #   key_vault_id = azurerm_key_vault.key_vault.id
 #   tenant_id    = data.azurerm_client_config.current.tenant_id

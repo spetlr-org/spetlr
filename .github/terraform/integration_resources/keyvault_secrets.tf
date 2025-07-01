@@ -9,7 +9,7 @@ resource "azurerm_key_vault_secret" "eh_connection" {
   depends_on = [
     azurerm_key_vault.key_vault,
     azurerm_key_vault_access_policy.spn_access,
-    azurerm_key_vault_access_policy.user_access,
+    # azurerm_key_vault_access_policy.user_access,
     azurerm_eventhub_authorization_rule.root
   ]
 }
@@ -22,7 +22,7 @@ resource "azurerm_key_vault_secret" "captain_id" {
   depends_on = [
     azuread_service_principal.captain,
     azurerm_key_vault.key_vault,
-    azurerm_key_vault_access_policy.user_access,
+    # azurerm_key_vault_access_policy.user_access,
     azurerm_key_vault_access_policy.spn_access
   ]
 }
@@ -34,7 +34,7 @@ resource "azurerm_key_vault_secret" "captain_secret" {
   depends_on = [
     azuread_application_password.captain,
     azurerm_key_vault.key_vault,
-    azurerm_key_vault_access_policy.user_access,
+    # azurerm_key_vault_access_policy.user_access,
     azurerm_key_vault_access_policy.spn_access
   ]
 }
@@ -46,7 +46,7 @@ resource "azurerm_key_vault_secret" "captain_tenant_id" {
   value        = azuread_service_principal.captain.application_tenant_id
   depends_on = [
     azuread_service_principal.captain,
-    azurerm_key_vault_access_policy.user_access,
+    # azurerm_key_vault_access_policy.user_access,
     azurerm_key_vault.key_vault,
     azurerm_key_vault_access_policy.spn_access
   ]
@@ -59,7 +59,7 @@ resource "azurerm_key_vault_secret" "cosmos_key" {
   value        = data.azurerm_cosmosdb_account.cosmos.primary_key
   depends_on = [
     data.azurerm_cosmosdb_account.cosmos,
-    azurerm_key_vault_access_policy.user_access,
+    # azurerm_key_vault_access_policy.user_access,
     azurerm_key_vault.key_vault,
     azurerm_key_vault_access_policy.spn_access
   ]
@@ -71,7 +71,7 @@ resource "azurerm_key_vault_secret" "cosmos_endpoint" {
   value        = data.azurerm_cosmosdb_account.cosmos.endpoint
   depends_on = [
     data.azurerm_cosmosdb_account.cosmos,
-    azurerm_key_vault_access_policy.user_access,
+    # azurerm_key_vault_access_policy.user_access,
     azurerm_key_vault.key_vault,
     azurerm_key_vault_access_policy.spn_access
   ]
@@ -85,7 +85,7 @@ resource "azurerm_key_vault_secret" "log_ws_id" {
   value        = azurerm_log_analytics_workspace.logs.workspace_id
   depends_on = [
     azurerm_log_analytics_workspace.logs,
-    azurerm_key_vault_access_policy.user_access,
+    # azurerm_key_vault_access_policy.user_access,
     azurerm_key_vault.key_vault,
     azurerm_key_vault_access_policy.spn_access
   ]
@@ -97,7 +97,7 @@ resource "azurerm_key_vault_secret" "log_ws_key1" {
   value        = azurerm_log_analytics_workspace.logs.primary_shared_key
   depends_on = [
     azurerm_log_analytics_workspace.logs,
-    azurerm_key_vault_access_policy.user_access,
+    # azurerm_key_vault_access_policy.user_access,
     azurerm_key_vault.key_vault,
     azurerm_key_vault_access_policy.spn_access
   ]
@@ -109,7 +109,7 @@ resource "azurerm_key_vault_secret" "log_ws_key2" {
   value        = azurerm_log_analytics_workspace.logs.secondary_shared_key
   depends_on = [
     azurerm_log_analytics_workspace.logs,
-    azurerm_key_vault_access_policy.user_access,
+    # azurerm_key_vault_access_policy.user_access,
     azurerm_key_vault.key_vault,
     azurerm_key_vault_access_policy.spn_access
   ]

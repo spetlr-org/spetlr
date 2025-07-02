@@ -233,3 +233,64 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
             2,
             f"Expected 2 unique EventhubRowIds for same body/different timestamp, got {ids!r}",
         )
+
+    def test_04_eventhubrowid_null_body_and_timestamp(self):
+
+        test_handle = TestHandle(
+            provides=DataframeCreator.make_partial(
+                self._target_schema, self._target_cols, []
+            )
+        )
+
+        # Two rows with Body=NULL and EnqueuedTimestamp=NULL
+        common_pdate = dt_utc(2021, 10, 31, 0, 0, 0)
+        ts = dt_utc(2021, 10, 31, 0, 0, 0)
+        df_in = Spark.get().createDataFrame(
+            [
+                (
+                    40001,  # SequenceNumber
+                    "OffsetA",  # Offset
+                    "SystemPropertiesA",  # SystemProperties
+                    "PropertiesA",  # Properties
+                    None,  # Body
+                    common_pdate,  # pdate
+                    None,  # EnqueuedTimestamp
+                ),
+                (
+                    40002,
+                    "OffsetB",
+                    "SystemPropertiesB",
+                    "PropertiesB",
+                    None,
+                    common_pdate,
+                    None,
+                ),
+                (
+                    40003,
+                    "OffsetC",
+                    "SystemPropertiesC",
+                    "PropertiesC",
+                    None,
+                    common_pdate,
+                    ts,
+                ),
+            ],
+            self._capture_eventhub_output_schema,
+        )
+
+        # Run the transformer
+        df_result = EhToDeltaBronzeTransformer(test_handle).process(df_in)
+
+        # Collect the generated EventhubRowIds
+        ids_row_id = [row["EventhubRowId"] for row in df_result.collect()]
+
+        self.assertIsNone(ids_row_id[0])
+        self.assertIsNone(ids_row_id[1])
+        self.assertIsNotNone(ids_row_id[2])
+
+        # Collect the generated BodyIds
+        ids_body_id = [row["BodyId"] for row in df_result.collect()]
+
+        self.assertIsNone(ids_body_id[0])
+        self.assertIsNone(ids_body_id[1])
+        self.assertIsNone(ids_body_id[2])

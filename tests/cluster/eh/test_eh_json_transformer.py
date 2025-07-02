@@ -1,6 +1,12 @@
 import json
 
-from pyspark.sql.types import BinaryType, StructField, StructType, TimestampType
+from pyspark.sql.types import (
+    BinaryType,
+    StructField,
+    StructType,
+    TimestampType,
+    DateType,
+)
 from spetlrtools.testing import DataframeTestCase
 from spetlrtools.time import dt_utc
 
@@ -17,7 +23,7 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
     capture_eventhub_output_schema = StructType(
         [
             StructField("Body", BinaryType(), True),
-            StructField("pdate", TimestampType(), True),
+            StructField("pdate", DateType(), True),
             StructField("EnqueuedTimestamp", TimestampType(), True),
         ]
     )

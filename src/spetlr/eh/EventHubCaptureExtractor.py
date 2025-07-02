@@ -76,7 +76,7 @@ class EventHubCaptureExtractor:
                 "make_timestamp(y,m,d,"
                 + ("h," if "h" in self.partitioning else "0,")
                 + '0,0,"UTC")'
-            ),
+            ).cast("date"),
         )
         df = df.drop("_parts")
 

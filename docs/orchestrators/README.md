@@ -17,7 +17,7 @@ The arguments to this orchestrator consist of
 All important configurations follow from the schema and partitioning of the delta table.
 - The delta table must use one of the following partitioning sets
   - either "y,m,d" or "y,m,d,h" whichever is used in the eventhub capture
-  - or "pdate" which is the timestamp, constructed from "ymd" or "ymdh"
+  - or "pdate" which is the date, constructed from "ymd" or "ymdh"
   The capture files will be read from the latest partition in delta and forward, 
     only. (The latest partition will be truncated and re-read to ensure complete but 
     non-overlapping reads.) This incremental approach ensures efficiency.
@@ -74,6 +74,7 @@ The bronze schema should "at least" contain the following schema. The columns of
 
 ```python
 from pyspark.sql.types import (
+    DateType,
     LongType,
     StringType,
     StructField,
@@ -92,7 +93,7 @@ schema_bronze = StructType(
             StructField("Offset", StringType(), True),
             StructField("SystemProperties", StringType(), True),
             StructField("Properties", StringType(), True),
-            StructField("pdate", TimestampType(), True),
+            StructField("pdate", DateType(), True),
         ]
     )
 

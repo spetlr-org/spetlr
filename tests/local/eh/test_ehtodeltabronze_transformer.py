@@ -282,15 +282,20 @@ class EhtoDeltaTransformerUnitTests(DataframeTestCase):
         df_result = EhToDeltaBronzeTransformer(test_handle).process(df_in)
 
         # Collect the generated EventhubRowIds
-        ids_row_id = [row["EventhubRowId"] for row in df_result.collect()]
+        ids_row_id = sorted([row["EventhubRowId"] for row in df_result.collect()])
 
-        self.assertIsNone(ids_row_id[0])
-        self.assertIsNone(ids_row_id[1])
+        self.assertIsNotNone(ids_row_id[0])
+        self.assertIsNotNone(ids_row_id[1])
         self.assertIsNotNone(ids_row_id[2])
+        # Row 1 and 2 are the same. Row 3 is another
+        self.assertEqual(len(set(ids_row_id)), 2)
 
         # Collect the generated BodyIds
-        ids_body_id = [row["BodyId"] for row in df_result.collect()]
+        ids_body_id = sorted([row["BodyId"] for row in df_result.collect()])
 
-        self.assertIsNone(ids_body_id[0])
-        self.assertIsNone(ids_body_id[1])
-        self.assertIsNone(ids_body_id[2])
+        self.assertIsNotNone(ids_body_id[0])
+        self.assertIsNotNone(ids_body_id[1])
+        self.assertIsNotNone(ids_body_id[2])
+
+        # All rows have same id
+        self.assertEqual(len(set(ids_body_id)), 1)

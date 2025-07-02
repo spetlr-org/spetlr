@@ -25,12 +25,6 @@ class EhToDeltaBronzeTransformer(Transformer):
 
     Returns:
     A dataframe with the above mentioned schema
-
-
-    This class uses a combination of Body and EnqueuedTimestamp
-    for creating hashed values as Ids.
-
-    NB: The hashed value could potentially become NULL
     """
 
     def __init__(self, target_dh: TableHandle):

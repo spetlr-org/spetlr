@@ -27,6 +27,10 @@ class EhToDeltaBronzeTransformer(Transformer):
     A dataframe with the above mentioned schema
 
 
+    This class uses a combination of Body and EnqueuedTimestamp
+    for creating hashed values as Ids.
+
+    NB: The hashed value could potentially become NULL
     """
 
     def __init__(self, target_dh: TableHandle):
@@ -46,12 +50,14 @@ class EhToDeltaBronzeTransformer(Transformer):
         ]
 
     def process(self, df: DataFrame) -> DataFrame:
+
         target_df = self.target_dh.read()
 
         assert set(self._eh_cols).issubset(target_df.columns)
 
         # Generate Unique id for the eventhub rows
         # xxhash64 accepts multiple columns and returns a BIGINT
+        # NB: Can be NULL
         df = df.withColumn(
             "EventhubRowId",
             f.xxhash64(
@@ -62,6 +68,7 @@ class EhToDeltaBronzeTransformer(Transformer):
 
         # Generate id for the eventhub rows using hashed body
         # Can be used for identify rows with same body
+        # NB: Can be NULL
         df = df.withColumn(
             "BodyId", f.xxhash64(f.col("Body").cast("string")).cast("long")
         )

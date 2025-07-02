@@ -18,7 +18,7 @@ The library itself is not part of the Spetlr package, and it needs to be
 installed separately using pip or poetry. It is loaded by Spetlr
 dynamically, if needed, and can be used instead of the SparkSession class.
 Be sure to install the right version of the "databricks-connect" library
-matching the Databricks runtime on your cluster, e.g. 14.3.
+matching the Databricks runtime on your cluster, e.g. 16.4.
 
 To use Databricks Connect with Spetlr, all you need to do is to set
 the following environment variable in your operating system to "True": 

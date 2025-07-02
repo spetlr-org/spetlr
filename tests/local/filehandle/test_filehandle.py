@@ -62,19 +62,19 @@ class FileHandleTests(DataframeTestCase):
             schema=self.schema,
         )
 
-        self.assertEquals(handle._location, self.file_location)
-        self.assertEquals(handle._data_format, self.data_format)
-        self.assertEquals(handle._schema_location, self.schema_location)
-        self.assertEquals(handle._options, {**self.options, **self.cloud_files_options})
+        self.assertEqual(handle._location, self.file_location)
+        self.assertEqual(handle._data_format, self.data_format)
+        self.assertEqual(handle._schema_location, self.schema_location)
+        self.assertEqual(handle._options, {**self.options, **self.cloud_files_options})
         self.assertEqualSchema(handle._schema, self.schema)
 
     def test_02_create_file_handle_from_tc(self):
         handle = FileHandle.from_tc("FileSource")
 
-        self.assertEquals(handle._location, self.file_location)
-        self.assertEquals(handle._data_format, self.data_format)
-        self.assertEquals(handle._schema_location, self.schema_location)
-        self.assertEquals(handle._options, self.cloud_files_options)
+        self.assertEqual(handle._location, self.file_location)
+        self.assertEqual(handle._data_format, self.data_format)
+        self.assertEqual(handle._schema_location, self.schema_location)
+        self.assertEqual(handle._options, self.cloud_files_options)
         self.assertEqualSchema(handle._schema, self.schema)
 
     def test_03_validate_wrong_format_exception(self):

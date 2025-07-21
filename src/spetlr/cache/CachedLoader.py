@@ -4,7 +4,6 @@ from functools import wraps
 from typing import List, Optional
 
 import pyspark.sql.functions as f
-from exceptiongroup import ExceptionGroup
 from pyspark.sql import DataFrame
 
 from spetlr.cache.CachedLoaderParameters import CachedLoaderParameters
@@ -12,6 +11,9 @@ from spetlr.etl import Loader
 from spetlr.exceptions import SpetlrKeyError
 from spetlr.functions import get_unique_tempview_name
 from spetlr.spark import Spark
+
+if sys.version_info < (3, 11):
+    from exceptiongroup import ExceptionGroup
 
 
 def _retry_cache(func):

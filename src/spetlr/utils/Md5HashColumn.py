@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Optional
 
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import concat_ws, md5
 
 
 def Md5HashColumn(
-    df: DataFrame, colName: str, cols_to_exclude: List[str] = None
+    df: DataFrame, colName: str, cols_to_include: Optional[List[str]] = None, cols_to_exclude: Optional[List[str]] = None
 ) -> DataFrame:
     """
     Generate column with md5 encoding, based on a list of column.
@@ -22,7 +22,8 @@ def Md5HashColumn(
     """
 
     cols_to_exclude = cols_to_exclude or []
+    cols_to_include = cols_to_include or df.columns
 
-    cols = [col for col in df.columns if col not in cols_to_exclude]
+    cols = [col for col in cols_to_include if col not in cols_to_exclude]
     df = df.withColumn(colName, md5(concat_ws("||", *cols)))
     return df

@@ -20,7 +20,6 @@ class RowHash:
         param algorithm: Hash algorithm to use (e.g., "hash", "md5", "sha1", etc.)
         param separator: Separator to use when concatenating columns.
 
-        NB. Note that the `hash`-algorithm does not require a separator.
         """
 
         if separator is None and algorithm.lower() != "hash":
@@ -55,11 +54,11 @@ class RowHash:
 
         algorithm_name = self.algorithm.lower()
 
-        # Special handling for "hash" which takes multiple columns directly
+        # Special handling for "hash"-algorithm. It doesn't compute the hash from a
+        # concatenated string. But it takes multiple columns directly
         if algorithm_name == "hash":
             hash_func = f.hash(*cols)
         else:
-            # For other algorithms, concatenate columns first then apply hash
             concatenated = f.concat_ws(self.separator, *cols)
 
             # Try to get the hash function dynamically from pyspark.sql.functions

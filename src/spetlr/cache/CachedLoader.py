@@ -11,7 +11,6 @@ from spetlr.etl import Loader
 from spetlr.exceptions import SpetlrKeyError
 from spetlr.functions import get_unique_tempview_name
 from spetlr.spark import Spark
-from spetlr.utils import Md5HashColumn
 
 if sys.version_info < (3, 11):
     from exceptiongroup import ExceptionGroup
@@ -191,7 +190,9 @@ class CachedLoader(Loader):
     def _prepare_written_cache_update(self, df: DataFrame, columns_to_hash: List[str]):
         # re-hash the input row
 
-        df = Md5HashColumn(df, self.params.rowHash, cols_to_include=columns_to_hash)
+        df = self.params.row_hasher(
+            df, self.params.rowHash, cols_to_include=columns_to_hash
+        )
 
         return df.select(
             *self.params.key_cols,
@@ -251,7 +252,7 @@ class CachedLoader(Loader):
         )
 
         # prepare hash of row
-        df_hashed = Md5HashColumn(df_in, self.params.rowHash)
+        df_hashed = self.params.row_hasher(df_in, self.params.rowHash)
 
         # add a column to distinguish rows after the join
         df_hashed = df_hashed.withColumn("fromPayload", f.lit(True))

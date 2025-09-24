@@ -223,6 +223,6 @@ class EventHubCapture:
                     'make_timestamp(y,m,d,h,0,0,"UTC")'
                     if "h" in self.partitioning
                     else 'make_timestamp(y,m,d,0,0,0,"UTC")'
-                ),
+                ).cast("date"),
             )
         )

@@ -61,6 +61,7 @@ class FileHandle(TableHandle):
     @classmethod
     def from_tc(cls, id: str) -> "FileHandle":
         tc = Configurator()
+        tc.assert_contains(id)
         sm = SchemaManager()
         return cls(
             file_location=tc.get(id, "path"),

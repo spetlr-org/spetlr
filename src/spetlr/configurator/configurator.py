@@ -515,6 +515,16 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         with self._lock:
             return self._get(table_id, "path")
 
+    def __contains__(self, item):
+        """Returns true if 'item' is available as a key."""
+        # This allows the operation `'key' in Configurator()`
+        return item in self._raw_resource_details
+
+    def assert_contains(self, item):
+        """Asserts that 'item' is available as a key."""
+        if item not in self._raw_resource_details:
+            raise KeyError(f"{item} is not a known key")
+
     def get(self, table_id: str, property: str = "", default: Any = _DEFAULT):
         """return the property of the table_id.
         To get raw strings, specify no property.

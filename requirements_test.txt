@@ -1,3 +1,4 @@
 spetlr-tools>=0.1.66
 pytest
 freezegun
+setuptools

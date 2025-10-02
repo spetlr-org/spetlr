@@ -63,7 +63,7 @@ pip install spetlr
 To prepare for development, please install these additional requirements:
 
 - Java 21
-- `pip install -r test_requirements.txt`
+- `pip install -r requirements_test.txt`
 
 Then install the package locally
 

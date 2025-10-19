@@ -25,7 +25,7 @@ class TimeZoneTransformerTest(DataframeTestCase):
 
         expected_data = [
             (51.519487, -0.083069, "Europe/London"),
-            (55.6761, 12.5683, "Europe/Copenhagen"),
+            (55.6761, 12.5683, "Europe/Paris"),
         ]
 
         self.assertDataframeMatches(

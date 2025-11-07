@@ -1,18 +1,12 @@
-# Defines a class for opening a connection to Cosmos DB,
-# loading and saving tables, and executing SQL.
-import hashlib
+# Updated CosmosDb class with dual auth (Account Key OR AAD Service Principal)
 
-# e.g. usage:
-#   server = CosmosDb()
-#   table_name = CosmosDb.table_name("TableId")
-#   server.execute_sql(
-#       f"CREATE TABLE cosmosCatalog.database_name.table_name using cosmos.oltp"
-#       )
-#   df = server.load_table("TableId")
-#   server.save_table(df, "TableId")
+import hashlib
 from typing import Optional, Union
 
+from azure.core.exceptions import HttpResponseError
 from azure.cosmos import CosmosClient, DatabaseProxy, PartitionKey
+from azure.identity import ClientSecretCredential
+from azure.mgmt.cosmosdb import CosmosDBManagementClient
 from pyspark.sql import DataFrame
 from pyspark.sql.types import DataType
 
@@ -31,55 +25,128 @@ class SpetlrCosmosException(SpetlrException):
 class CosmosDb(CosmosBaseServer):
     def __init__(
         self,
-        account_key: str,
+        # account key mode (default)
         database: str,
+        account_key: str = None,
+        # endpoint selection (either account_name or endpoint required)
         account_name: str = None,
         endpoint: str = None,
+        # AAD Service Principal mode (set all 3 to enable)
+        tenant_id: Optional[str] = None,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        subscription_id: Optional[str] = None,
+        resource_group: Optional[str] = None,
+        # --- misc ---
         catalog_name: Optional[str] = "cosmosCatalog",
     ):
+        """
+        Either provide:
+          - account_key  (key auth), OR
+          - tenant_id + client_id + client_secret (AAD SPN auth)
+
+        Also provide either account_name OR endpoint.
+        """
         if not account_name and not endpoint:
             raise ValueError("account_name or endpoint must be set")
 
-        if not endpoint:
-            endpoint_pattern = "https://{}.documents.azure.com:443/"
-            endpoint = endpoint_pattern.format(account_name)
-
         self.endpoint = endpoint
-        self.account_key = account_key
-        self.database = database
-        self.config = {
-            "spark.cosmos.accountEndpoint": self.endpoint,
-            "spark.cosmos.accountkey": account_key,
-            "spark.cosmos.database": database,
-            "spark.cosmos.container": None,
-        }
-        self.client = CosmosClient(endpoint, credential=account_key)
+        if not self.endpoint:
+            self.endpoint = f"https://{account_name}.documents.azure.com:443/"
 
-        self._db_client: Optional[DatabaseProxy] = None
+        self.database = database
         self.catalog_name = (
             catalog_name
             or hashlib.sha1(f"{endpoint}{self.database}".encode()).hexdigest()
+        )
+
+        if account_key and (tenant_id or client_id or client_secret):
+            raise ValueError(
+                "Both account_key and client credentials are set - "
+                "choose only one method."
+            )
+
+        # Determine auth mode
+        self._auth_mode = "key" if account_key else "aad"
+        if self._auth_mode == "aad":
+            if not (
+                tenant_id
+                and client_id
+                and client_secret
+                and subscription_id
+                and resource_group
+                and account_name
+            ):
+                raise ValueError(
+                    "AAD auth selected but one of tenant_id, client_id, "
+                    "client_secret, subscription_id resource_group, "
+                    "account_name is missing."
+                )
+        else:
+            # key mode must have account_key
+            if not account_key:
+                raise ValueError("account_key must be provided for key auth.")
+
+        # Base Spark options shared by both modes
+        self.config = {
+            "spark.cosmos.accountEndpoint": self.endpoint,
+            "spark.cosmos.database": database,
+            "spark.cosmos.container": None,
+        }
+
+        # Append auth-specific Spark options
+        if self._auth_mode == "key":
+            self.account_key = account_key
+            self.config["spark.cosmos.accountKey"] = account_key  # NOTE: correct casing
+            # Python SDK (key)
+            self.client = CosmosClient(self.endpoint, credential=account_key)
+        else:
+            # AAD (Service Principal)
+            self.tenant_id = tenant_id
+            self.client_id = client_id
+            self.client_secret = client_secret
+            self.subscription_id = subscription_id
+            self.resource_group = resource_group
+            self.account_name = account_name
+
+            self.config.update(
+                {
+                    "spark.cosmos.auth.type": "ServicePrincipal",
+                    "spark.cosmos.account.tenantId": tenant_id,
+                    "spark.cosmos.auth.aad.clientId": client_id,
+                    "spark.cosmos.auth.aad.clientSecret": client_secret,
+                    "spark.cosmos.account.subscriptionId": subscription_id,
+                    "spark.cosmos.account.resourceGroupName": resource_group,
+                }
+            )
+
+            # Python SDK (AAD)
+            aad_cred = ClientSecretCredential(
+                tenant_id=tenant_id, client_id=client_id, client_secret=client_secret
+            )
+            self.client = CosmosClient(self.endpoint, credential=aad_cred)
+
+        self._db_client: Optional[DatabaseProxy] = None
+
+    def _mgmt(self) -> CosmosDBManagementClient:
+        cred = ClientSecretCredential(
+            self.tenant_id, self.client_id, self.client_secret
+        )
+        return CosmosDBManagementClient(
+            credential=cred, subscription_id=self.subscription_id
         )
 
     @property
     def db_client(self):
         if self._db_client is not None:
             return self._db_client
-
         self._db_client = self.client.get_database_client(self.database)
         return self._db_client
 
-    def execute_sql(self, sql: str):
-        # TODO: Deprecate this when UC is enabled
+    def _apply_spark_conf(self, spark):
         """
-        Note that this method is not compatible with UC-enabled clusters.
-        Examples:
-        sql = f"CREATE DATABASE IF NOT EXISTS cosmosCatalog.{database_name};"
-        sql = f"CREATE TABLE IF NOT EXISTS cosmosCatalog.{database_name}.{table_name}"
-            " using cosmos.oltp "
-            "TBLPROPERTIES(partitionKeyPath = '/id', manualThroughput = '1100')"
+        Apply catalog configs according to the chosen auth mode.
         """
-        spark = Spark.get()
         spark.conf.set(
             f"spark.sql.catalog.{self.catalog_name}",
             "com.azure.cosmos.spark.CosmosCatalog",
@@ -88,10 +155,23 @@ class CosmosDb(CosmosBaseServer):
             f"spark.sql.catalog.{self.catalog_name}.spark.cosmos.accountEndpoint",
             self.endpoint,
         )
-        spark.conf.set(
-            f"spark.sql.catalog.{self.catalog_name}.spark.cosmos.accountKey",
-            self.account_key,
-        )
+
+        if self._auth_mode == "key":
+            spark.conf.set(
+                f"spark.sql.catalog.{self.catalog_name}.spark.cosmos.accountKey",
+                self.account_key,
+            )
+        else:
+            base = f"spark.sql.catalog.{self.catalog_name}.spark.cosmos"
+            spark.conf.set(f"{base}.auth.type", "ServicePrincipal")
+            spark.conf.set(f"{base}.account.tenantId", self.tenant_id)
+            spark.conf.set(f"{base}.auth.aad.clientId", self.client_id)
+            spark.conf.set(f"{base}.auth.aad.clientSecret", self.client_secret)
+
+    def execute_sql(self, sql: str):
+        # NOTE: Not compatible with UC-enabled clusters (unchanged behavior).
+        spark = Spark.get()
+        self._apply_spark_conf(spark)
         return spark.sql(sql)
 
     def read_table_by_name(self, table_name: str, schema: DataType = None) -> DataFrame:
@@ -139,7 +219,17 @@ class CosmosDb(CosmosBaseServer):
         does not exist. Also, whether it exists or not, it will create and return the
         cosmos database object that can be used to create containers under that
         database.
+        NOTE: For AAD mode you need appropriate data-plane RBAC on the Cosmos account.
         """
+        if self._auth_mode == "aad":
+            mgmt = self._mgmt()
+            mgmt.sql_resources.begin_create_update_sql_database(
+                self.resource_group,
+                self.account_name,
+                self.database,
+                {"resource": {"id": self.database}, "options": {}},
+            ).result()
+            return self.client.get_database_client(self.database)
         return self.client.create_database_if_not_exists(id=self.database)
 
     def create_table(
@@ -150,6 +240,25 @@ class CosmosDb(CosmosBaseServer):
         class init. Note that, if the database does not exist, it will be created by
         this method
         """
+
+        if self._auth_mode == "aad":
+            self.create_database()
+            mgmt = self._mgmt()
+            mgmt.sql_resources.begin_create_update_sql_container(
+                self.resource_group,
+                self.account_name,
+                self.database,
+                table_name,
+                {
+                    "resource": {
+                        "id": table_name,
+                        "partition_key": {"paths": [partition_key], "kind": "Hash"},
+                    },
+                    "options": {"throughput": offer_throughput},
+                },
+            ).result()
+            return
+
         database = self.create_database()
 
         # Configure the table
@@ -175,14 +284,63 @@ class CosmosDb(CosmosBaseServer):
         self.delete_container_by_name(Configurator().table_name(table_id))
 
     def delete_container_by_name(self, table_name: str):
+        if self._auth_mode == "aad":
+            mgmt = self._mgmt()
+            mgmt.sql_resources.begin_delete_sql_container(
+                self.resource_group, self.account_name, self.database, table_name
+            ).result()
+            return
         self.db_client.delete_container(table_name)
 
     def recreate_container_by_name(self, table_name: str):
-        """
-        Delete and recreate the container while preserving properties as
-        far as possible.
-        """
+        if self._auth_mode == "aad":
+            mgmt = self._mgmt()
 
+            # Read current container definition (partition key, indexing, ttl, etc.)
+            c = mgmt.sql_resources.get_sql_container(
+                self.resource_group, self.account_name, self.database, table_name
+            )
+
+            # Try to preserve throughput (manual or autoscale) via ARM
+            options = {}
+            try:
+                tp = mgmt.sql_resources.get_sql_container_throughput(
+                    self.resource_group, self.account_name, self.database, table_name
+                )
+                if getattr(tp.resource, "throughput", None):
+                    options["throughput"] = tp.resource.throughput
+                elif getattr(tp.resource, "autoscale_settings", None) and getattr(
+                    tp.resource.autoscale_settings, "max_throughput", None
+                ):
+                    options["autoscale_settings"] = {
+                        "maxThroughput": tp.resource.autoscale_settings.max_throughput
+                    }
+            except HttpResponseError:
+                pass  # leave options empty if no dedicated throughput
+
+            # Delete + recreate via ARM
+            mgmt.sql_resources.begin_delete_sql_container(
+                self.resource_group, self.account_name, self.database, table_name
+            ).result()
+
+            mgmt.sql_resources.begin_create_update_sql_container(
+                self.resource_group,
+                self.account_name,
+                self.database,
+                table_name,
+                {
+                    "resource": {
+                        "id": table_name,
+                        "partition_key": c.resource.partition_key,
+                        "indexing_policy": c.resource.indexing_policy,
+                        "default_ttl": c.resource.default_ttl,
+                    },
+                    "options": options,
+                },
+            ).result()
+            return
+
+        # --- key mode (unchanged) ---
         for container in self.db_client.list_containers():
             if container["id"] == table_name:
                 break
@@ -222,3 +380,14 @@ class CosmosDb(CosmosBaseServer):
             rows_per_partition=rows_per_partition,
             partition_key=tc.get(table_id, "partition_key", None),
         )
+
+    def delete_database(self, database: str = None):
+        if not database:
+            database = self.database
+
+        if self._auth_mode == "aad":
+            self._mgmt().sql_resources.begin_delete_sql_database(
+                self.resource_group, self.account_name, database
+            ).result()
+        else:
+            self.client.delete_database(database)

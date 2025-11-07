@@ -43,17 +43,14 @@ class CosmosDb(CosmosBaseServer):
         """
         Either provide:
           - account_key  (key auth), OR
-          - tenant_id + client_id + client_secret (AAD SPN auth)
+          - tenant_id,client_id,client_secret,subscription_id,resource_group
 
         Also provide either account_name OR endpoint.
         """
         if not account_name and not endpoint:
             raise ValueError("account_name or endpoint must be set")
 
-        self.endpoint = endpoint
-        if not self.endpoint:
-            self.endpoint = f"https://{account_name}.documents.azure.com:443/"
-
+        self.endpoint = endpoint or f"https://{account_name}.documents.azure.com:443/"
         self.database = database
         self.catalog_name = (
             catalog_name
@@ -67,25 +64,27 @@ class CosmosDb(CosmosBaseServer):
             )
 
         # Determine auth mode
-        self._auth_mode = "key" if account_key else "aad"
-        if self._auth_mode == "aad":
-            if not (
-                tenant_id
-                and client_id
-                and client_secret
-                and subscription_id
-                and resource_group
-                and account_name
-            ):
-                raise ValueError(
-                    "AAD auth selected but one of tenant_id, client_id, "
-                    "client_secret, subscription_id resource_group, "
-                    "account_name is missing."
-                )
+        aad_ready = all(
+            [
+                tenant_id,
+                client_id,
+                client_secret,
+                subscription_id,
+                resource_group,
+                account_name,
+            ]
+        )
+        if account_key and aad_ready:
+            raise ValueError("Provide either account_key OR AAD credentials, not both.")
+        if aad_ready:
+            self._auth_mode = "aad"
+        elif account_key:
+            self._auth_mode = "key"
         else:
-            # key mode must have account_key
-            if not account_key:
-                raise ValueError("account_key must be provided for key auth.")
+            raise ValueError(
+                "Missing credentials: provide account_key (key auth) "
+                "OR full AAD SP credentials."
+            )
 
         # Base Spark options shared by both modes
         self.config = {
@@ -129,6 +128,9 @@ class CosmosDb(CosmosBaseServer):
         self._db_client: Optional[DatabaseProxy] = None
 
     def _mgmt(self) -> CosmosDBManagementClient:
+        """Create an ARM management client (AAD mode only)."""
+        if self._auth_mode != "aad":
+            raise RuntimeError("ARM management client is only available for AAD auth.")
         cred = ClientSecretCredential(
             self.tenant_id, self.client_id, self.client_secret
         )
@@ -151,18 +153,13 @@ class CosmosDb(CosmosBaseServer):
             f"spark.sql.catalog.{self.catalog_name}",
             "com.azure.cosmos.spark.CosmosCatalog",
         )
-        spark.conf.set(
-            f"spark.sql.catalog.{self.catalog_name}.spark.cosmos.accountEndpoint",
-            self.endpoint,
-        )
+        base = f"spark.sql.catalog.{self.catalog_name}.spark.cosmos"
+        spark.conf.set(f"{base}.accountEndpoint", self.endpoint)
 
         if self._auth_mode == "key":
-            spark.conf.set(
-                f"spark.sql.catalog.{self.catalog_name}.spark.cosmos.accountKey",
-                self.account_key,
-            )
+            spark.conf.set(f"{base}.accountKey", self.account_key)
         else:
-            base = f"spark.sql.catalog.{self.catalog_name}.spark.cosmos"
+
             spark.conf.set(f"{base}.auth.type", "ServicePrincipal")
             spark.conf.set(f"{base}.account.tenantId", self.tenant_id)
             spark.conf.set(f"{base}.auth.aad.clientId", self.client_id)
@@ -285,8 +282,7 @@ class CosmosDb(CosmosBaseServer):
 
     def delete_container_by_name(self, table_name: str):
         if self._auth_mode == "aad":
-            mgmt = self._mgmt()
-            mgmt.sql_resources.begin_delete_sql_container(
+            self._mgmt().sql_resources.begin_delete_sql_container(
                 self.resource_group, self.account_name, self.database, table_name
             ).result()
             return

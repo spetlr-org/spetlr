@@ -85,13 +85,6 @@ df = db.read_table_by_name("tablename")
 
 # Write a DataFrame to a container
 db.write_table_by_name(df, "tablename")
-
-# (Optional) DDL via Cosmos Spark Catalog (not UC-compatible)
-db.execute_sql("""
-CREATE TABLE IF NOT EXISTS cosmosCatalog.something.tablename
-USING cosmos.oltp
-TBLPROPERTIES(partitionKeyPath='/id', manualThroughput='1100')
-""")
 ```
 
 ## Example: AAD Service Principal
@@ -116,7 +109,7 @@ df = db.read_table_by_name("tablename")
 # Write a DataFrame to a container
 db.write_table_by_name(df, "tablename")
 
-# (Optional) create DB/containers through the SDK
+# Create DB/containers through the SDK
 db.create_database()
 db.create_table(table_name="tablename", partition_key="/id", offer_throughput=1100)
 

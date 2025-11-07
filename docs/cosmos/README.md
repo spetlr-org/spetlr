@@ -18,6 +18,56 @@ A tiny convenience wrapper around the Azure Cosmos DB Spark connector (cosmos.ol
 
   * Note: Connector options are case-sensitive (spark.cosmos.accountKey with capital K).
 
+
+## Authentication modes
+### Key-auth (Account Key)
+
+This is a single “master” key for the account.
+
+Packages you use:
+
+* Data plane: azure.cosmos.CosmosClient(credential=<account_key>)
+
+* Spark connector: set spark.cosmos.accountKey=<key>
+
+We can do everything on the data plane with that key—items, queries, and also database/container/throughput (“offers”) operations via the data plane.
+
+
+### AAD-auth (Service Principal)
+
+This is a token-based access via Entra ID (Azure AD) with RBAC.
+
+Packages you use:
+
+* Token: azure.identity.ClientSecretCredential(...)
+
+* Data plane: azure.cosmos.CosmosClient(credential=<TokenCredential>)
+
+* Management plane (a.k.a. control plane / ARM):
+azure.mgmt.cosmosdb.CosmosDBManagementClient(credential=<TokenCredential>, subscription_id=...)
+
+* Spark connector: set spark.cosmos.auth.type=ServicePrincipal plus tenant/clientId/clientSecret
+
+What you can do:
+
+* Data plane (RBAC-scoped): items & queries (read/write/delete documents).
+
+* Management plane (ARM): create/delete databases/containers, and manage throughput.
+(These are not allowed via AAD on the data plane; use the management SDK.)
+
+
+## The planes
+* Data plane = working inside a database/container (items, queries, bulk ingest).
+* SDK: azure.cosmos (and the Spark connector).
+* Management (control) plane / ARM = managing the resources (accounts, databases, containers, throughput, backup, etc.).
+SDK: azure.mgmt.cosmosdb.
+
+When to pick which
+
+* Use Key-auth for quick setups/tests where a single secret is acceptable.
+
+* Use AAD for production: grant Cosmos DB Built-in Data Contributor (data plane) to the SPN, and a Cosmos DB Operator/Contributor role (management plane) where you need to create/delete resources or change RU/throughput.
+
 ## Example: Account key
 
 ```python

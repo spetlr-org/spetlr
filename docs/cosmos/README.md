@@ -56,6 +56,8 @@ db = CosmosDb(
     tenant_id="00000000-0000-0000-0000-000000000000",
     client_id="11111111-1111-1111-1111-111111111111",
     client_secret="super-secret",
+    subscription_id="sub-id",
+    resource_group="rg-name" 
 )
 
 # Read a container into Spark

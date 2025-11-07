@@ -31,7 +31,7 @@ class CosmosDb(CosmosBaseServer):
         # endpoint selection (either account_name or endpoint required)
         account_name: str = None,
         endpoint: str = None,
-        # AAD Service Principal mode (set all 3 to enable)
+        # AAD Service Principal mode (set all 5 to enable)
         tenant_id: Optional[str] = None,
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,

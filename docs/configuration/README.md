@@ -326,7 +326,7 @@ DeltaHandle.from_tc("MyTbl")
 But sometimes you still need to call the table configurator methods
 e.g. when constructing your own sql:
 ```python
-from spetlr.config_master import Configurator
+from spetlr.configurator import Configurator
 f"MERGE INTO {Configurator().table_name('MyTbl')} AS target ..."
 ```
 
@@ -348,7 +348,7 @@ MyTable:
 Extra details are now deprecated. Simply register your extras as simple string resources.
 
 ```python
-from spetlr.config_master import Configurator
+from spetlr.configurator import Configurator
 tc = Configurator()
 tc.register('ENV', 'prod')
 ```

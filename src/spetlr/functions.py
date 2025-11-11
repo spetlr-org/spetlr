@@ -7,7 +7,6 @@ import json
 import uuid as _uuid
 from typing import Any
 
-from deprecated import deprecated
 from pyspark.sql.functions import udf
 from pyspark.sql.types import StringType
 

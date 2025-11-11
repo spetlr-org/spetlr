@@ -7,7 +7,6 @@ from types import ModuleType
 from typing import Any, Dict, Set, Union
 
 import yaml
-from deprecated import deprecated
 
 from spetlr.configurator._cli.ConfiguratorCli import ConfiguratorCli
 from spetlr.configurator.sql import _parse_sql_to_config
@@ -390,17 +389,6 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         with self._lock:
             return self._verify_consistency()
 
-    @deprecated(
-        reason="use .get('ENV') to get literal values.",
-    )
-    def get_extra_details(self) -> Dict[str, str]:
-        """The distinction between extras and normal values was removed.
-        This method will always return an empty dict. Extra settings are now
-        string items. Retrieve them with .get(id)"""
-        self._deprecated()
-
-        return {}
-
     def add_resource_path(
         self, resource_path: Union[str, ModuleType], consistency_check=True
     ) -> None:
@@ -429,18 +417,6 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
             raise DeprecationException(
                 "A deprecated feature was used and deprecation_errors was set to True."
             )
-
-    @deprecated(
-        reason="register literal string values instead.",
-    )
-    def set_extra(self, **kwargs: str):
-        """Use .register(key,value) instead.
-        for example call .register('ENV','prod')"""
-        self._deprecated()
-
-        with self._lock:
-            for key, value in kwargs.items():
-                self._register(key, value)
 
     def set_debug(self, deprecation_errors=False):
         """Select debug tables. {ID} will be replaced with a guid"""
@@ -502,19 +478,6 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
         with self._lock:
             return self._get(table_id, "name")
 
-    @deprecated(
-        reason='Use .get(table_id,"path") instead.',
-    )
-    def table_path(self, table_id: str):
-        """
-        Return the table path for the specified table id.
-        :param table_id: Table id in the .json or .yaml files.
-        :return: str: table path
-        """
-        self._deprecated()
-        with self._lock:
-            return self._get(table_id, "path")
-
     def get(self, table_id: str, property: str = "", default: Any = _DEFAULT):
         """return the property of the table_id.
         To get raw strings, specify no property.
@@ -543,30 +506,3 @@ class Configurator(ConfiguratorCli, metaclass=ConfiguratorSingleton):
     def regenerate_unique_id_and_clear_conf(self):
         with self._lock:
             return self._regenerate_unique_id_and_clear_conf()
-
-    @deprecated(
-        reason="Use .get(table_id,property_name) instead.",
-    )
-    def table_property(
-        self, table_id: str, property_name: str, default_value: str = None
-    ):
-        """
-        Return the table property (e.g. name, path, format, etc.)
-            for the specified table id.
-        :param table_id: Table id in the .json or .yaml files.
-        :param property_name: Name of the property to read (e.g. "name", "path", etc.)
-        :param default_value: Optional default value of the property
-            if the property is missing.
-        :return: str: property value
-        """
-        self._deprecated()
-
-        property_value = self.get_all_details().get(
-            f"{table_id}_{property_name}", default_value
-        )
-
-        if property_value is None:
-            raise ValueError(
-                f"property '{property_name}' for table identifier '{table_id}' is empty"
-            )
-        return property_value

@@ -10,7 +10,7 @@ from typing import Any
 from pyspark.sql.functions import udf
 from pyspark.sql.types import StringType
 
-from spetlr.exceptions import NoDbUtils, NoTableException
+from spetlr.exceptions import NoDbUtils
 from spetlr.spark import Spark
 
 # Pyspark uuid function implemented as recommended here

@@ -118,12 +118,9 @@ class EventhubHandle(TableHandle):
             encrypt=tc.get(id, "eh_encrypt", True),
         )
 
-    def read(self) -> DataFrame:
-
-        df = Spark.get().read.format("eventhubs").options(**self.eventhubConfigs).load()
-
+    def _read_with_schema(self, df: DataFrame):
         if self._schema:
-            df = df.withColumn(
+            return df.withColumn(
                 "body", f.from_json(f.col("body").cast(StringType()), self._schema)
             )
         else:
@@ -131,17 +128,23 @@ class EventhubHandle(TableHandle):
                 "No schema was detected in the EventhubHandle. "
                 "Body is formatted as string..."
             )
-            df = df.withColumn("body", f.col("body").cast(StringType()))
+            return df.withColumn("body", f.col("body").cast(StringType()))
 
-        return df
+    def read(self) -> DataFrame:
+
+        df = Spark.get().read.format("eventhubs").options(**self.eventhubConfigs).load()
+        return self._read_with_schema(df)
 
     def read_stream(self):
-        return (
+
+        df = (
             Spark.get()
             .readStream.format("eventhubs")
             .options(**self.eventhubConfigs)
             .load()
         )
+
+        return self._read_with_schema(df)
 
     def write_or_append(
         self,
@@ -155,10 +158,10 @@ class EventhubHandle(TableHandle):
         if mode == "overwrite":
             print(
                 """
-                     Loading to an event hub has no 'overwrite' mode
-                     Loading mode is changed to 'append'
-                     Consider changing the load mode to 'append' in your configuration
-                     """
+                 Loading to an event hub has no 'overwrite' mode
+                 Loading mode is changed to 'append'
+                 Consider changing the load mode to 'append' in your configuration
+                """
             )
 
         mode = "append"

@@ -315,8 +315,8 @@ Once configured, the table configurator is often not used directly.
 Other classes in the spetlr framework use it when configured with a resource
 ID. You can find examples in the eventhub unittests:
 ```python
-from spetlr.eh import EventHubCapture
-EventHubCapture.from_tc("SpetlrEh")
+from spetlr.eh import EventhubHandle
+EventhubHandle.from_tc("SpetlrDh")
 ```
 or in the delta handle unit-tests:
 ```python

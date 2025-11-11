@@ -122,7 +122,7 @@ Any object with a `.read()` method can be passed to the `SimpleExtractor`.
 Any object with a `.overwrite(df)` of a `.append(df)` method can be passed
 to the `SimpleLoader`. See the following example:
 ```python
-from spetlr.eh import EventHubCapture
+from spetlr.eh import EventhubHandle
 from spetlr.delta import DeltaHandle
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.extractors import SimpleExtractor
@@ -131,6 +131,6 @@ from spetlr.etl import Orchestrator
 class MyOrchestrator(Orchestrator):
   def __init__(self):
     super().__init__()
-    self.extract_from(EventHubCapture.from_tc("MyEhDefinition"))
+    self.extract_from(EventhubHandle.from_tc("MyEhDefinition"))
     self.load_into(DeltaHandle.from_tc("MyDeltaTable"))
 ```

@@ -3,7 +3,6 @@ from datetime import timedelta
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
 
-from spetlr.eh import EventHubCapture
 from spetlr.etl import Extractor
 from spetlr.etl.extractors.simple_extractor import Readable
 
@@ -34,13 +33,6 @@ class IncrementalExtractor(Extractor):
         self._overlap_period = overlap_period
 
     def read(self) -> DataFrame:
-        if isinstance(self.handle_source, EventHubCapture):
-            print(
-                "It is recommended to use EventHubCaptureExtractor "
-                "for extracting eventhub data."
-                "EventHubCaptureExtractor is optimized for reading avro data."
-            )
-
         df = self.handle_source.read()
         df_target = self.handle_target.read()
 

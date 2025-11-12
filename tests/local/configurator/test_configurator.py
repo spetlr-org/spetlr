@@ -101,17 +101,6 @@ class TestConfigurator(unittest.TestCase):
         )
         self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
 
-    def test_08_test_deprecated_import(self):
-        from spetlr import Configurator
-        from spetlr.config_master import TableConfigurator
-
-        tc = TableConfigurator()
-        self.assertEqual(tc.table_name("MyComposite"), "ottoBar")
-
-        c = Configurator()
-
-        self.assertIs(tc, c)
-
     def test_09_configure_from_sql(self):
         c = Configurator()
         c.clear_all_configurations()

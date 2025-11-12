@@ -10,7 +10,7 @@ The class `EhJsonToDeltaOrchestrator` has been designed to carry out this task w
 minimal configuration required.
 
 The arguments to this orchestrator consist of
-- an `EventHubCaptureExtractor` or the key to a TableConfigurator item from which it 
+- an `EventHubCaptureExtractor` or the key to a Configurator item from which it 
   can be initialized
 - a `DeltaHandle`
 
@@ -102,7 +102,7 @@ schema_bronze = StructType(
 ### Example
 
 The arguments to this orchestrator consist of
-- The source handle: an `EventHubCaptureExtractor` or the key to a TableConfigurator item from which it can be initialized
+- The source handle: an `EventHubCaptureExtractor` or the key to a Configurator item from which it can be initialized
 - The target handle: a `DeltaHandle`
 
 There may be cases where only a subset of rows is desired to be extracted in the 

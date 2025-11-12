@@ -9,6 +9,7 @@ from azure.identity import ClientSecretCredential
 from azure.mgmt.cosmosdb import CosmosDBManagementClient
 from pyspark.sql import DataFrame
 from pyspark.sql.types import DataType
+from typing_extensions import deprecated
 
 from spetlr.configurator.configurator import Configurator
 from spetlr.cosmos.cosmos_base_server import CosmosBaseServer
@@ -166,7 +167,6 @@ class CosmosDb(CosmosBaseServer):
             spark.conf.set(f"{base}.auth.aad.clientSecret", self.client_secret)
 
     def execute_sql(self, sql: str):
-        # NOTE: Not compatible with UC-enabled clusters (unchanged behavior).
         spark = Spark.get()
         self._apply_spark_conf(spark)
         return spark.sql(sql)
@@ -210,6 +210,7 @@ class CosmosDb(CosmosBaseServer):
         table_name = Configurator().table_name(table_id)
         self.write_table_by_name(df_source, table_name, rows_per_partition)
 
+    @deprecated("create_database will be deprecated in future release")
     def create_database(self) -> DatabaseProxy:
         """
         This method will create the database that is passed to the class init, if it
@@ -277,9 +278,11 @@ class CosmosDb(CosmosBaseServer):
         cntr = self.db_client.get_container_client(Configurator().table_name(table_id))
         cntr.delete_item(id, partition_key=pk)
 
+    @deprecated("delete_container will be deprecated in future release")
     def delete_container(self, table_id: str):
         self.delete_container_by_name(Configurator().table_name(table_id))
 
+    @deprecated("delete_container_by_name will be deprecated in future release")
     def delete_container_by_name(self, table_name: str):
         if self._auth_mode == "aad":
             self._mgmt().sql_resources.begin_delete_sql_container(
@@ -288,6 +291,7 @@ class CosmosDb(CosmosBaseServer):
             return
         self.db_client.delete_container(table_name)
 
+    @deprecated("recreate_container_by_name will be deprecated in future release")
     def recreate_container_by_name(self, table_name: str):
         if self._auth_mode == "aad":
             mgmt = self._mgmt()
@@ -377,6 +381,7 @@ class CosmosDb(CosmosBaseServer):
             partition_key=tc.get(table_id, "partition_key", None),
         )
 
+    @deprecated("delete_database will be deprecated in future release")
     def delete_database(self, database: str = None):
         if not database:
             database = self.database

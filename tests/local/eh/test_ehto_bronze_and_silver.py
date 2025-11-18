@@ -8,6 +8,7 @@ from pyspark.sql.types import (
     StructField,
     StructType,
     TimestampType,
+    DateType,
 )
 from spetlrtools.testing import DataframeTestCase
 from spetlrtools.testing.TestHandle import TestHandle
@@ -41,7 +42,7 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
             StructField("Offset", StringType(), True),
             StructField("SystemProperties", StringType(), True),
             StructField("Properties", StringType(), True),
-            StructField("pdate", TimestampType(), True),
+            StructField("pdate", DateType(), True),
         ]
     )
 
@@ -62,7 +63,7 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
         [
             StructField("Id", StringType(), True),
             StructField("EnqueuedTimestamp", TimestampType(), True),
-            StructField("pdate", TimestampType(), True),
+            StructField("pdate", DateType(), True),
         ]
     )
 
@@ -75,7 +76,7 @@ class EhtoBronzeAndSilverUnitTests(DataframeTestCase):
             StructField("SystemProperties", StringType(), True),
             StructField("Properties", StringType(), True),
             StructField("Body", BinaryType(), True),
-            StructField("pdate", TimestampType(), True),
+            StructField("pdate", DateType(), True),
             StructField("EnqueuedTimestamp", TimestampType(), True),
         ]
     )

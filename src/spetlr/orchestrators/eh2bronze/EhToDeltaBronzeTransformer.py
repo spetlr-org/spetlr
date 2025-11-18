@@ -104,7 +104,7 @@ class EhToDeltaBronzeTransformer(Transformer):
             f.col("Offset").cast("string").alias("Offset"),
             f.col("SystemProperties").cast("string").alias("SystemProperties"),
             f.col("Properties").cast("string").alias("Properties"),
-            f.col("pdate").cast("timestamp").alias("pdate"),
+            f.col("pdate").cast("date").alias("pdate"),
         )
 
         # Ensure that cols are selected correctly

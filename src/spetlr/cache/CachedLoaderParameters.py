@@ -2,6 +2,8 @@
 
 from typing import List
 
+from spetlr.utils import RowHash
+
 
 class CachedLoaderParameters:
     def __init__(
@@ -14,6 +16,8 @@ class CachedLoaderParameters:
         provisional_markup_step: bool = True,
         retry_cache_writes: int = 0,
         retry_cache_wait_seconds=10,
+        hash_algorithm: str = "hash",
+        hash_separator: str | None = None,
     ):
         """
         Args:
@@ -54,3 +58,5 @@ class CachedLoaderParameters:
         self.provisional_markup_step = provisional_markup_step
         self.retry_cache_writes = retry_cache_writes
         self.retry_cache_wait_seconds = retry_cache_wait_seconds
+
+        self.row_hasher = RowHash(algorithm=hash_algorithm, separator=hash_separator)

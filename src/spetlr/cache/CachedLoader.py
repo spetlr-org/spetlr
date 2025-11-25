@@ -189,9 +189,14 @@ class CachedLoader(Loader):
 
     def _prepare_written_cache_update(self, df: DataFrame, columns_to_hash: List[str]):
         # re-hash the input row
+
+        df = self.params.row_hasher(
+            df, self.params.rowHash, cols_to_include=columns_to_hash
+        )
+
         return df.select(
             *self.params.key_cols,
-            f.hash(*columns_to_hash).alias(self.params.rowHash),
+            self.params.rowHash,
             f.current_timestamp().alias(self.params.loadedTime),
             f.lit(None).cast("timestamp").alias(self.params.deletedTime),
             *self.params.cache_id_cols,
@@ -247,7 +252,7 @@ class CachedLoader(Loader):
         )
 
         # prepare hash of row
-        df_hashed = df_in.withColumn("rowHash", f.hash("*"))
+        df_hashed = self.params.row_hasher(df_in, self.params.rowHash)
 
         # add a column to distinguish rows after the join
         df_hashed = df_hashed.withColumn("fromPayload", f.lit(True))

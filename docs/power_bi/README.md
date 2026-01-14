@@ -17,52 +17,52 @@ class object.
 
 ## PowerBI Permissions
 
-The service principal or AD user or one of its user groups need to be
-assigned to each PowerBI workspace you want to access to (see screen-shot).
+The service principal or AD user or one of its user groups needs to be
+assigned to each PowerBI workspace you want to access (see screenshot).
 
 ![Power BI admin settings](./manage_access.png)
 
-To use the PowerBI API you need to enable the option
+To use the PowerBI API, you need to enable the option
 "Service principals can use Fabric APIs", found under
-"Developer settings" in the Admin portal in Fabric (see screen-shot).
-There, you can also specify the user group that can use the API.
+"Developer settings" in the Admin portal in Fabric (see screenshot).
+There you can also specify the user group that can use the API.
 
 ![Power BI admin settings](./admin_settings.png)
 
-The service principal or AD user mentioned earlier should be part
-of this group, or the group itself needs to be assigned to the workspace
-(unless you enable the API option for the entire organization).
+The service principal or AD user should be part of this group, or the
+group itself needs to be assigned to the workspace (unless you enable
+the API option for the entire organization).
 
 Additionally, to access individual tables and their refresh times in
 PowerBI, the class must be able to execute DAX queries. This requires
-additional permission. The "Semantic Model Execute Queries REST API"
+additional permissions. The "Semantic Model Execute Queries REST API"
 option, found under "Integration settings" in the Admin portal in Fabric
-(see screen-shot), must also be enabled.
+(see screenshot), must also be enabled.
 
 ![Power BI admin settings](./admin_settings2.png)
 
-The same user group, service principal or user must have Read and Build
+The same user group, service principal, or user must have Read and Build
 permissions to workspaces or individual datasets. You can do this either
-on the workspace level or the dataset level. On the workspace level, when
+at the workspace level or the dataset level. At the workspace level, when
 clicking on "Manage access" as shown in the beginning, you can assign
-a role to the user or user group. To assign Build permission to
-on entire workspace to the given user or group, choose
-the "Contributor", "Member", or "Admin" role (see screen-shot).
-"Viewer" role doesn't have Build permission!
+a role to the user or user group. To assign Build permission to an
+entire workspace to the given user or group, choose the "Contributor",
+"Member", or "Admin" role (see screenshot). The "Viewer" role doesn't
+have Build permission!
 
 ![Power BI admin settings](./user_roles.png)
 
-You can do the same on the dataset level as well (see screen-shot).
+You can do the same at the dataset level as well (see screenshot).
 
 ![Power BI admin settings](./grant_access.png)
 
 To start a refresh, the user must either have the "Contributor" role
-on the workspace level, or the permission "Allow recipients to modify
-this dataset" must be set on the dataset level (see screen-shot above).
+at the workspace level, or the permission "Allow recipients to modify
+this dataset" must be set at the dataset level (see screenshot above).
 
 ## Links
 
-[Register an App and give the needed permissions. A very good how-to-guide can be found here.](https://www.sqlshack.com/how-to-access-power-bi-rest-apis-programmatically/)
+[Register an App and grant the needed permissions. A very good how-to guide can be found here.](https://www.sqlshack.com/how-to-access-power-bi-rest-apis-programmatically/)
 
 [How to Refresh a Power BI Dataset with Python.](https://pbi-guy.com/2022/01/07/refresh-a-power-bi-dataset-with-python/)
 
@@ -125,9 +125,9 @@ Available workspaces:
 ```
 
 To get additional information about each workspace, use the 
-show_workspaces() or the get_workspaces() method instead.
+show_workspaces() or get_workspaces() method instead.
 The first method shows a list of workspaces, and the second returns
-a Spark data frame, with the list of workspaces.
+a Spark data frame with the list of workspaces.
 
 ```python
 # example listing of available workspaces
@@ -168,9 +168,9 @@ Available datasets:
 ```
 
 To get additional information about each dataset, use the 
-show_datasets() or the get_datasets() method.
+show_datasets() or get_datasets() method.
 The first method shows a list of datasets, and the second returns
-a Spark data frame, with the list of datasets.
+a Spark data frame with the list of datasets.
 
 If you don't specify any workspace, datasets from all workspaces
 will be collected!
@@ -193,16 +193,16 @@ PowerBi(client).show_datasets()
 ## Step 4: Check the status and time of the last refresh of a given dataset
 
 The check() method can be used to check the status and time of the last
-refresh of an entire dataset, or of individual dataset tables. An exception
-will be cast if the last refresh failed, or if the last refresh finished more
+refresh of an entire dataset or of individual dataset tables. An exception
+will be raised if the last refresh failed, or if the last refresh finished more
 than the given number of minutes ago. The number of minutes can be specified
 in the optional "max_minutes_after_last_refresh" parameter
-(default is 12 hours).
+(the default is 12 hours).
 
 If you want to check only selected tables in the dataset, you can
 specify the optional "table_names" parameter with a list of table names.
 If the list is not empty, only the selected tables will be checked,
-and the table that was refreshed earliest will be used as a reference. 
+and the table that was refreshed earliest will be used as a reference.
 To show the list of available tables, specify an empty array:
   table_names=[]
 
@@ -210,8 +210,7 @@ You can also specify the optional "local_timezone_name" parameter to show
 the last refresh time of the PowerBI dataset in a local time zone.
 It is only used for printing timestamps. The default time zone is UTC.
 
-All parameters can only be specified in the constructor. 
-
+All parameters can only be specified in the constructor.
 
 ```python
 # example last refresh time checking
@@ -246,11 +245,11 @@ at 2024-02-01 10:15 (local time) !
 
 The start_refresh() method starts a new refresh of the given PowerBI
 dataset asynchronously. To verify if the refresh succeeded, you need to
-call the check() method after waiting some sufficiently long time
-(e.g. from a separate monitoring job). 
-With the optional "timeout_power_bi_in_seconds" you can specify a
-time-out in seconds inside PowerBI. If the time-out is exceeded,
-PowerBI will interrupt refreshing and return a time-out error.
+call the check() method after waiting a sufficiently long time
+(e.g., from a separate monitoring job).
+With the optional "timeout_power_bi_in_seconds" parameter, you can specify a
+timeout in seconds inside PowerBI. If the timeout is exceeded,
+PowerBI will interrupt the refresh and return a timeout error.
 
 If you want to refresh only selected tables in the dataset, you can
 specify the optional "table_names" parameter with a list of table names.
@@ -259,16 +258,16 @@ To show the list of available tables, specify an empty array:
   table_names=[]
 
 If you set the optional "mail_on_failure" or "mail_on_completion"
-parameters to True, and e-mail will be sent to the dataset owner when
+parameters to True, an email will be sent to the dataset owner when
 the refresh fails or completes respectively. This is only supported for
 regular Azure AD users. Service principals cannot send emails!
 
 Additionally, you can set the optional "number_of_retries" parameter to
 specify the number of retries on transient errors when calling refresh().
 The "number_of_retries" parameter only works with enhanced API requests
-(i.e. when the "table_names" parameter is also specified), and it will
+(i.e., when the "table_names" parameter is also specified), and it will
 be ignored otherwise.
-Default is 0 (no retries). E.g. 1 means two attempts in total.
+The default is 0 (no retries). For example, 1 means two attempts in total.
 
 Additionally, you can set the following optional parameters in
 the constructor to control the refresh process in PowerBI:
@@ -287,11 +286,10 @@ Default is None.
 If an incremental refresh policy is applied, the effectiveDate parameter
 overrides the current date. Default is None.
 
-Description of values in the above parameters can be found here:
+Descriptions of the values in the above parameters can be found here:
 [Details](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/refresh-dataset-in-group)
 
-All parameters can only be specified in the constructor. 
-
+All parameters can only be specified in the constructor.
 
 ```python
 # example starting of a dataset refresh
@@ -318,18 +316,18 @@ True
 ## Step 6: Start a new refresh of a given dataset and wait for the result
 
 The refresh() method starts a new refresh of the given PowerBI dataset
-synchronously. It waits until the refresh is finished or until a time-out
-occurs. The time-out can be specified using the "timeout_in_seconds"
-parameter (default is 15 minutes). 
-If the refresh fails or a time-out occurs, the method casts an exception.
-With the optional "timeout_power_bi_in_seconds" you can specify a similar
-time-out in seconds but inside PowerBI. If the time-out is exceeded,
-PowerBI will interrupt refreshing and return a time-out error.
+synchronously. It waits until the refresh is finished or until a timeout
+occurs. The timeout can be specified using the "timeout_in_seconds"
+parameter (the default is 15 minutes).
+If the refresh fails or a timeout occurs, the method raises an exception.
+With the optional "timeout_power_bi_in_seconds" parameter, you can specify a similar
+timeout in seconds but inside PowerBI. If the timeout is exceeded,
+PowerBI will interrupt the refresh and return a timeout error.
 
 The wait time between calls to the PowerBI API is synchronized with the
 average execution time of previous dataset refreshes via API (only calls
-refreshing all tables), making sure as few requests to the PowerBI API would
-be made as possible, while ensuring the method finishes as soon as possible.
+refreshing all tables), ensuring as few requests to the PowerBI API are
+made as possible, while ensuring the method finishes as soon as possible.
 
 If you want to refresh only selected tables in the dataset, you can
 specify the optional "table_names" parameter with a list of table names.
@@ -340,13 +338,13 @@ To show the list of available tables, specify an empty array:
 
 Additionally, you can set the optional "number_of_retries" parameter to
 specify the number of retries on transient errors when calling refresh().
-Default is 0 (no retries). E.g. 1 means two attempts in total.
+The default is 0 (no retries). For example, 1 means two attempts in total.
 It is used only when the "timeout_in_seconds" parameter allows it,
 so you need to set the "timeout_in_seconds" parameter high enough.
 The "number_of_retries" parameter is handled in a loop in this class,
 and unlike in the start_refresh() method, it will work both with normal
-refreshes (i.e. when "table_names" is not specified) and with enhanced
-refreshes (i.e. when "table_names" is specified).
+refreshes (i.e., when "table_names" is not specified) and with enhanced
+refreshes (i.e., when "table_names" is specified).
 
 Additionally, you can set the following optional parameters in
 the constructor to control the refresh process in PowerBI:
@@ -365,15 +363,14 @@ Default is None.
 If an incremental refresh policy is applied, the effectiveDate parameter
 overrides the current date. Default is None.
 
-Description of values in the above parameters can be found here:
+Descriptions of the values in the above parameters can be found here:
 [Details](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/refresh-dataset-in-group)
 
 You can also specify the optional "local_timezone_name" parameter to
 show the last refresh time of the PowerBI dataset in a local time zone.
-It is only used for printing timestamps. The default time zone is UTC. 
+It is only used for printing timestamps. The default time zone is UTC.
 
-All parameters can only be specified in the constructor. 
-
+All parameters can only be specified in the constructor.
 
 ```python
 # example starting of a dataset refresh
@@ -410,27 +407,27 @@ True
 
 The show_history() and get_history() methods can be used to show and get
 the refresh history of a given dataset. The show_history() method displays
-a Pandas data frame with the refresh history, and the get_history() method
-returns the actual data frame converted to a Spark data frame. 
+a Pandas DataFrame with the refresh history, and the get_history() method
+returns the actual DataFrame converted to a Spark DataFrame. 
 
 According to MSDN, "there are always between 20–60 available refresh history
 entries for each dataset, depending on the number of refreshes in the last 3 days.
 The most recent 60 are kept if they are all less than 3 days old. Entries
 more than 3 days old are deleted when there are more than 20 entries."
 
-If you don't specify any dataset and/or workspace, the history across all 
+If you don't specify any dataset and/or workspace, the history across all
 datasets/workspaces will be collected. The datasets must be refreshable
 and workspaces cannot be read-only to be included in the combined list.
 To exclude specific PowerBI creators from the list, specify the optional
-"exclude_creators" parameter, e.g.:
+"exclude_creators" parameter, for example:
    exclude_creators=["amelia@contoso.com"]
 
 You can also specify the optional "local_timezone_name" parameter to convert
-refresh times in the data frame to a local timezone. Depending on the parameter,
-the names of the time columns in the data frame will have the suffix
+refresh times in the DataFrame to a local timezone. Depending on the parameter,
+the names of the time columns in the DataFrame will have the suffix
 "Utc" or "Local".
 
-All above parameters can only be specified in the constructor. 
+All the above parameters can only be specified in the constructor.
 
 ```python
 # example show and get refresh history
@@ -473,15 +470,15 @@ ViaEnhancedApi | The refresh was triggered by an enhanced API call, e.g. by usin
 ViaXmlaEndpoint | The refresh was triggered through Power BI public XMLA endpoint.
 
 Only "ViaApi" and "ViaEnhancedApi" refreshes can be triggered by this class.
-"ViaApi" are refreshes without the "table_names" parameter specified,
-and "ViaEnhancedApi" are refreshes with the "table_names" or "max_parallelism" parameter specified.
+"ViaApi" refreshes are those without the "table_names" parameter specified,
+and "ViaEnhancedApi" refreshes are those with the "table_names" or "max_parallelism" parameter specified.
 
-To see what tables were specified with each completed refresh marked as
+To see which tables were specified with each completed refresh marked as
 "ViaEnhancedApi", you can use the show_history_details() and get_history_details()
-methods, as shown below. They work in the same fashion and have the same parameters
+methods, as shown below. They work in the same way and have the same parameters
 as the show_history() and get_history() methods.
 You can then use the "RequestId" column in the "get_history"
-and "get_history_details" datasets to join them together.
+and "get_history_details" DataFrames to join them together.
 
 ```python
 # example show and get refresh history
@@ -516,25 +513,25 @@ df.display()
 
 The show_tables() and get_tables() methods can be used to show and get
 the list of tables used in a given dataset and their last refresh time.
-The show_tables() method displays a Pandas data frame with the list of tables,
-and the get_tables() method returns the actual data frame converted to
-a Spark data frame. 
+The show_tables() method displays a Pandas DataFrame with the list of tables,
+and the get_tables() method returns the actual DataFrame converted to
+a Spark DataFrame. 
 
-If you don't specify any dataset and/or workspace, all tables across all 
+If you don't specify any dataset and/or workspace, all tables across all
 datasets/workspaces will be collected. Datasets requiring an effective
 identity will be automatically skipped from the list (effective
 identity is not supported by this class).
 To exclude specific PowerBI creators from the list, specify the optional
-"exclude_creators" parameter, e.g.
+"exclude_creators" parameter, for example:
    exclude_creators=["amelia@contoso.com"]
- This can prevent "Skipped unauthorized" warnings.
+This can prevent "Skipped unauthorized" warnings.
 
 You can also specify the optional "local_timezone_name" parameter to convert
 table refresh times to a local timezone. Depending on the parameter,
-the names of the time columns in the data frame will have the suffix
+the names of the time columns in the DataFrame will have the suffix
 "Utc" or "Local".
 
-All above parameters can only be specified in the constructor. 
+All the above parameters can only be specified in the constructor.
 
 ```python
 # example show and get the table list

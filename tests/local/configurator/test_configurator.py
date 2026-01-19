@@ -470,3 +470,16 @@ class TestConfigurator(unittest.TestCase):
             c.register("somekey")
 
         self.assertIn("missing 1 required positional argument", str(cm.exception))
+
+    def test_value_types(self):
+        """Test registration and retrieval of arbitrary value types."""
+        c = Configurator()
+        c.clear_all_configurations()
+        c.add_sql_resource_path(views)
+
+        c.register("somekey", ["a", "b", "c"])
+        arr = c.get("somekey")
+        self.assertEqual(arr[0], "a")
+
+        self.assertEqual(c.get("MyArrayObject", "array"), ["hello", "world"])
+        self.assertEqual(c.get("MyArrayObject", "object"), {"nested": "foobar"})

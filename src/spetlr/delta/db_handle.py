@@ -26,6 +26,7 @@ class DbHandle:
     @classmethod
     def from_tc(cls, id: str):
         tc = Configurator()
+        tc.assert_contains(id)
         return cls(
             name=tc.table_name(id),
             location=tc.get(id, "path", ""),

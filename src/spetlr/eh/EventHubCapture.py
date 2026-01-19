@@ -37,6 +37,7 @@ class EventHubCapture:
     @classmethod
     def from_tc(cls, id: str):
         tc = Configurator()
+        tc.assert_contains(id)
         return cls(
             name=tc.get(id, "name"),
             path=tc.get(id, "path"),

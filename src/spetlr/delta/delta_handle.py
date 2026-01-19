@@ -85,6 +85,7 @@ class DeltaHandle(TableHandle):
     @classmethod
     def from_tc(cls, id: str) -> "DeltaHandle":
         tc = Configurator()
+        tc.assert_contains(id)
         return cls(
             name=tc.get(id, "name", ""),
             location=tc.get(id, "path", ""),

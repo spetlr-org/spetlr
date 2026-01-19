@@ -178,6 +178,7 @@ class SqlServer(SqlBaseServer):
         """This method allows an instance of SqlServer to be a drop in for the class
         DeltaHandle. One can call from_tc(id) on either to get a table handle."""
         tc = Configurator()
+        tc.assert_contains(id)
         return SqlHandle(name=tc.table_name(id), sql_server=self)
 
     get_handle = from_tc

@@ -68,6 +68,7 @@ class DeltaTableSpec(DeltaTableSpecBase):
     @classmethod
     def from_tc(cls, id: str) -> "DeltaTableSpec":
         c = Configurator()
+        c.assert_contains(id)
         # schema is required
         item = c._get_item(id)
         schema = get_schema(item["schema"]["sql"])

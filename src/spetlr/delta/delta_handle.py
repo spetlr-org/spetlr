@@ -1,3 +1,4 @@
+import uuid
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Union
 
@@ -232,7 +233,10 @@ class DeltaHandle(TableHandle):
         return self._cluster
 
     def get_tablename(self) -> str:
-        return self._name
+        if self._name:
+            return self._name
+        else:
+            return f"delta.`{self._location}`"
 
     def upsert(
         self,
@@ -306,6 +310,22 @@ class DeltaHandle(TableHandle):
             f" WHERE {comparison_col} {comparison_operator} {limit};"
         )
         Spark.get().sql(sql_str)
+
+    def delete_rows(self, df: DataFrame, join_cols: List[str] = None):
+        join_cols = join_cols or df.columns
+
+        tmp_view_name = str(uuid.uuid4().hex)
+        df.createOrReplaceTempView(tmp_view_name)
+        target_name = self.get_tablename()
+        conditions = " AND ".join(f"a.{col}==b.{col}" for col in join_cols)
+
+        merge_statement = (
+            f"MERGE INTO {target_name} AS a "
+            f"USING {tmp_view_name} AS b "
+            f"ON {conditions} "
+            "WHEN MATCHED THEN DELETE"
+        )
+        return Spark.get().sql(merge_statement)
 
     def read_stream(self) -> DataFrame:
         return (

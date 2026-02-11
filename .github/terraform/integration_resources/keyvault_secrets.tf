@@ -77,6 +77,43 @@ resource "azurerm_key_vault_secret" "cosmos_endpoint" {
   ]
 }
 
+resource "azurerm_key_vault_secret" "cosmos_rg" {
+  key_vault_id = azurerm_key_vault.key_vault.id
+  name         = "Cosmos--Resourcegroup"
+  value        = data.azurerm_cosmosdb_account.cosmos.resource_group_name
+  depends_on = [
+    data.azurerm_cosmosdb_account.cosmos,
+    # azurerm_key_vault_access_policy.user_access,
+    azurerm_key_vault.key_vault,
+    azurerm_key_vault_access_policy.spn_access
+  ]
+}
+
+resource "azurerm_key_vault_secret" "cosmos_subid" {
+  key_vault_id = azurerm_key_vault.key_vault.id
+  name         = "Cosmos--Subscriptionid"
+  value        = data.azurerm_subscription.primary.subscription_id
+  depends_on = [
+    data.azurerm_cosmosdb_account.cosmos,
+    azurerm_key_vault.key_vault,
+    azurerm_key_vault_access_policy.spn_access
+  ]
+}
+
+
+resource "azurerm_key_vault_secret" "cosmos_name" {
+  key_vault_id = azurerm_key_vault.key_vault.id
+  name         = "Cosmos--Accountname"
+  value        = data.azurerm_cosmosdb_account.cosmos.name
+  depends_on = [
+    data.azurerm_cosmosdb_account.cosmos,
+    # azurerm_key_vault_access_policy.user_access,
+    azurerm_key_vault.key_vault,
+    azurerm_key_vault_access_policy.spn_access
+  ]
+}
+
+
 # Create secrets for the log analytics workspace --------------------------
 resource "azurerm_key_vault_secret" "log_ws_id" {
 

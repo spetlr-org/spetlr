@@ -49,7 +49,9 @@ class EhJsonToDeltaTransformer(Transformer):
             else:
                 df = df.select(*direct_cols)
         else:
-            json_options = {"readerCaseSensitive": self.case_sensitive}
+            json_options = {}
+            if not self.case_sensitive:
+                json_options["readerCaseSensitive"] = False
 
             # every column that is in the target delta table and that is not a direct
             # column from the source eventhub DataFrame, is assumed to be a column whose
@@ -60,10 +62,12 @@ class EhJsonToDeltaTransformer(Transformer):
                 if col not in source_df.columns and col != "BodyJson"
             ]
             body_schema = target_df.select(*body_cols).schema
+
+            from_json_kwargs = {"options": json_options} if json_options else {}
             df = df.withColumn(
                 "Body",
                 f.from_json(
-                    f.decode("Body", "utf-8"), body_schema, options=json_options
+                    f.decode("Body", "utf-8"), body_schema, **from_json_kwargs
                 ).alias("Body"),
             )
             if _keep_body_as_json:

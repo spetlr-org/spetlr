@@ -226,12 +226,10 @@ class DeltaStreamTests(unittest.TestCase):
 
     def _create_tbl_mirror(self):
         dh = DeltaHandle.from_tc("MyTblMirror")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
                             CREATE TABLE {dh.get_tablename()}
                             (
                             id int,
                             name string
                             )
-                        """
-        )
+                        """)

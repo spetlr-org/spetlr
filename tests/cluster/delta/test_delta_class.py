@@ -162,8 +162,7 @@ class DeltaTests(DataframeTestCase):
 
     def test_09_partitioning(self):
         dh = DeltaHandle.from_tc("MyTbl4")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
             CREATE TABLE {dh.get_tablename()}
             (
             colA string,
@@ -171,29 +170,25 @@ class DeltaTests(DataframeTestCase):
             payload string
             )
             PARTITIONED BY (colB,colA)
-        """
-        )
+        """)
 
         self.assertEqual(dh.get_partitioning(), ["colB", "colA"])
 
         dh2 = DeltaHandle.from_tc("MyTbl5")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
             CREATE TABLE {dh2.get_tablename()}
             (
             colA string,
             colB int,
             payload string
             )
-        """
-        )
+        """)
 
         self.assertEqual(dh2.get_partitioning(), [])
 
     def test_10_cluster(self):
         dh = DeltaHandle.from_tc("MyTbl6")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
             CREATE TABLE {dh.get_tablename()}
             (
             colA string,
@@ -201,22 +196,19 @@ class DeltaTests(DataframeTestCase):
             payload string
             )
             CLUSTER BY (colB,colA)
-        """
-        )
+        """)
 
         self.assertEqual(dh.get_cluster(), ["colB", "colA"])
 
         dh2 = DeltaHandle.from_tc("MyTbl7")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
             CREATE TABLE {dh2.get_tablename()}
             (
             colA string,
             colB int,
             payload string
             )
-        """
-        )
+        """)
 
         self.assertEqual(dh2.get_cluster(), [])
 

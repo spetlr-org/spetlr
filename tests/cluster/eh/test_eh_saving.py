@@ -81,8 +81,7 @@ class EventHubsTests(unittest.TestCase):
         tc = Configurator()
         tc.set_debug()
         tc.register("CpTblYMD", {"name": "CaptureTableYMD{ID}"})
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
             CREATE TABLE {tc.table_name('CpTblYMD')}
             (
                 id int,
@@ -92,8 +91,7 @@ class EventHubsTests(unittest.TestCase):
                 d int
             )
             PARTITIONED BY (y,m,d)
-        """
-        )
+        """)
 
         eh_orch = EhJsonToDeltaOrchestrator.from_tc("SpetlrEh", "CpTblYMD")
         eh_orch.execute()
@@ -110,8 +108,7 @@ class EventHubsTests(unittest.TestCase):
         # Part 2, pdate partitioned.
 
         tc.register("CpTblDate", {"name": "CaptureTableDate{ID}"})
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
             CREATE TABLE {tc.table_name('CpTblDate')}
             (
                 id INTEGER,
@@ -119,8 +116,7 @@ class EventHubsTests(unittest.TestCase):
                 pdate TIMESTAMP
             )
             PARTITIONED BY (pdate)
-        """
-        )
+        """)
 
         # test the insertion of additional filters
         class IdFilter(Transformer):

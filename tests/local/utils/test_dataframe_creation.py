@@ -10,8 +10,7 @@ class DataframeCreatorTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         Spark.get()
 
-        cls.schema = get_schema(
-            """
+        cls.schema = get_schema("""
             Id INTEGER,
             measured DOUBLE,
             customer STRUCT<
@@ -22,8 +21,7 @@ class DataframeCreatorTest(unittest.TestCase):
                 no:INTEGER,
                 name:STRING
             >>
-        """
-        )
+        """)
 
     def test_full_creation(self):
         df = DataframeCreator.make(

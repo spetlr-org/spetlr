@@ -60,8 +60,7 @@ class TestSchemaManager(DataframeTestCase):
     def test_get_all_spark_sql_schemas(self):
         schemas_dict = SchemaManager().get_all_spark_sql_schemas()
 
-        test_schema1_str = dedent(
-            """\
+        test_schema1_str = dedent("""\
             a int,
               b int COMMENT "really? is that it?",
               c string,
@@ -69,17 +68,14 @@ class TestSchemaManager(DataframeTestCase):
               d timestamp,
               m map<int,string>,
               p decimal(10,3),
-              final string"""
-        )
-        test_schema2_str = dedent(
-            """\
+              final string""")
+        test_schema2_str = dedent("""\
             a int,
               c string,
               d timestamp,
               m map<int,string>,
               p decimal(10,3),
-              final string"""
-        )
+              final string""")
         expected_schemas = {
             "python_test_schema": test_schema1_str,
             "python_test_schema2": test_schema2_str,

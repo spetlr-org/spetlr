@@ -48,15 +48,13 @@ class SqlServerStreamingTests(unittest.TestCase):
 
         dh = DeltaHandle.from_tc("MyTbl")
 
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
                CREATE TABLE {dh.get_tablename()}
                (
                testcolumn int
                )
                LOCATION '{Configurator().get("MyTbl", "path")}'
-           """
-        )
+           """)
 
         df = Spark.get().createDataFrame([(1,), (2,)], "testcolumn int")
 

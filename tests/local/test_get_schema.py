@@ -8,8 +8,7 @@ from spetlr.schema_manager.spark_schema import get_schema
 
 class TestGetSchema(unittest.TestCase):
     def test_01_schema1(self):
-        sql = dedent(
-            r"""
+        sql = dedent(r"""
             a int NOT
             NULL,
             b int COMMENT "really? is that it?",
@@ -25,8 +24,7 @@ class TestGetSchema(unittest.TestCase):
             p decimal(10,3),
             final string,
             gen DATE GENERATED ALWAYS AS (CAST(d AS DATE))
-            """
-        )
+            """)
         struct = get_schema(sql)
         self.assertEqual(
             t.StructType(

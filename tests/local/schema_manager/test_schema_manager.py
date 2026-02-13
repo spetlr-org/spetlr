@@ -90,9 +90,7 @@ class TestSchemaManager(unittest.TestCase):
         )
 
     def test_07_parse_comments(self):
-        d_field = get_schema(
-            """
+        d_field = get_schema("""
             d string COMMENT 'Whatsupp with "you"',
-        """
-        ).fields[0]
+        """).fields[0]
         self.assertEqual(d_field.metadata, {"comment": 'Whatsupp with "you"'})

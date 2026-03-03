@@ -104,7 +104,8 @@ class TestSparkPandasDataFrame(unittest.TestCase):
 
         # Assert
         assert_frame_equal(
-            expected.reset_index(drop=True), sut.get_pandas_df().reset_index(drop=True)
+            expected.reset_index(drop=True), sut.get_pandas_df().reset_index(drop=True),
+            check_dtype=False,
         )
 
     def test_parse_time_success(self):

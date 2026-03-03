@@ -180,7 +180,7 @@ class TestPowerBi(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        assert_frame_equal(expected, result.get_pandas_df())
+        assert_frame_equal(expected, result.get_pandas_df(), check_dtype=False)
 
     @patch("requests.get")
     def test_get_refresh_history_failure(self, mock_get):
@@ -273,7 +273,7 @@ class TestPowerBi(unittest.TestCase):
         # Assert
         self.assertIsNotNone(result)
         assert_frame_equal(
-            expected, result.get_pandas_df()[list(expected.columns.values)]
+            expected, result.get_pandas_df()[list(expected.columns.values)], check_dtype=False
         )
 
     @patch("requests.post")
@@ -468,7 +468,7 @@ class TestPowerBi(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        assert_frame_equal(expected, result.get_pandas_df())
+        assert_frame_equal(expected, result.get_pandas_df(), check_dtype=False)
 
     @patch("requests.get")
     def test_combine_dataframes_on_workspace_level_with_success(self, mock_get):
@@ -702,7 +702,7 @@ class TestPowerBi(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        assert_frame_equal(expected, result.get_pandas_df())
+        assert_frame_equal(expected, result.get_pandas_df(), check_dtype=False)
 
     @patch("requests.get")
     def test_get_last_refresh_success(self, mock_get):

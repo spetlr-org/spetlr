@@ -327,8 +327,7 @@ class CachedLoader(Loader):
 
         (df.select(*p.key_cols).createOrReplaceTempView("provisionalMarkupKeys"))
         other_cols = [p.deletedTime] + p.cache_id_cols
-        spark.sql(
-            f"""
+        spark.sql(f"""
                 MERGE INTO {p.cache_table_name} AS c
                 USING provisionalMarkupKeys AS p
                 ON  {' AND '.join(
@@ -343,8 +342,7 @@ class CachedLoader(Loader):
                     VALUES ( {', '.join(f'p.{c}' for c in p.key_cols)},
                             0, current_timestamp(),
                             {', '.join('NULL' for _ in other_cols)})
-            """
-        )
+            """)
         return pre_version
 
     @_retry_cache

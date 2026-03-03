@@ -94,8 +94,7 @@ class FileHandleTests(unittest.TestCase):
         DbHandle.from_tc("MyDb").create()
 
         dh_sink = DeltaHandle.from_tc("AvroSink")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
                             CREATE TABLE {dh_sink.get_tablename()}
                             (
                             id int,
@@ -104,8 +103,7 @@ class FileHandleTests(unittest.TestCase):
                             )
                             USING DELTA
                             LOCATION '{tc.get("AvroSink","path")}'
-                        """
-        )
+                        """)
 
         self._add_avro_data_to_source([(1, "a", "None"), (2, "b", "None")])
 
@@ -151,8 +149,7 @@ class FileHandleTests(unittest.TestCase):
 
     def _create_tbl_mirror(self):
         dh = DeltaHandle.from_tc("MyTblMirror")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
                             CREATE TABLE {dh.get_tablename()}
                             (
                             id int,
@@ -160,8 +157,7 @@ class FileHandleTests(unittest.TestCase):
                             _rescued_data string
                             )
                             LOCATION '{Configurator().get("MyTblMirror","path")}'
-                        """
-        )
+                        """)
 
     def _add_avro_data_to_source(self, input_data: List[Tuple[int, str, str]]):
         df = Spark.get().createDataFrame(

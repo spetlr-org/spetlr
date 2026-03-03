@@ -114,15 +114,13 @@ class SlackNotifier:
             )
 
         text = f"*An exception occurred in {self._get_job_description()}*\n"
-        text += dedent(
-            f"""The error occurred at {self._slack_now()}
+        text += dedent(f"""The error occurred at {self._slack_now()}
 
         Traceback:
         ```
         {traceback.format_exc()}
         ```
-        """
-        )
+        """)
 
         self._add_link_and_publish(text)
 

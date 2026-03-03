@@ -84,16 +84,14 @@ class EventHubCapture:
                 {"name": "Body", "type": "string"},
             ],
         }
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
             CREATE TABLE {self.name}
             ({", ".join(f"{c} STRING" for c in self.partitioning)})
             STORED AS AVRO
             PARTITIONED BY ({",".join(self.partitioning)})
             LOCATION "{self.path}"
             TBLPROPERTIES ('avro.schema.literal'='{json.dumps(avro_schema)}');
-        """
-        )
+        """)
 
     def _discover_first_partition(self) -> PartitionSpec:
         """Add the first partition by discovering it from filesystem."""

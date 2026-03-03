@@ -121,8 +121,7 @@ class CachedLoaderTests(unittest.TestCase):
         )
         DbHandle.from_tc("TestDb").create()
         spark = Spark.get()
-        spark.sql(
-            """
+        spark.sql("""
             CREATE TABLE IF NOT EXISTS {CachedTest_name}
             (
                 a STRING,
@@ -134,13 +133,9 @@ class CachedLoaderTests(unittest.TestCase):
             )
             USING DELTA
             COMMENT "Caching Test"
-        """.format(
-                **tc.get_all_details()
-            )
-        )
+        """.format(**tc.get_all_details()))
 
-        spark.sql(
-            """
+        spark.sql("""
             CREATE TABLE IF NOT EXISTS {CachedTestTarget_name}
             (
                 a STRING,
@@ -149,10 +144,7 @@ class CachedLoaderTests(unittest.TestCase):
             )
             USING DELTA
             COMMENT "Caching target"
-        """.format(
-                **tc.get_all_details()
-            )
-        )
+        """.format(**tc.get_all_details()))
 
         cls.params = CachedLoaderParameters(
             cache_table_name=tc.table_name("CachedTest"),

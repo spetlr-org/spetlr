@@ -29,27 +29,21 @@ class JsonEhOrchestratorUnitTests(unittest.TestCase):
         spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblYMDH')}")
         spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblPdate')}")
 
-        spark.sql(
-            f"""
+        spark.sql(f"""
             CREATE TABLE {cls.tc.table_name('TblYMD')}
             (id int, name string, y int, m int, d int)
             PARTITIONED BY (y,m,d)
-        """
-        )
-        spark.sql(
-            f"""
+        """)
+        spark.sql(f"""
             CREATE TABLE {cls.tc.table_name('TblYMDH')}
             (id int, name string, y int, m int, d int, h int)
             PARTITIONED BY (y,m,d,h)
-        """
-        )
-        spark.sql(
-            f"""
+        """)
+        spark.sql(f"""
             CREATE TABLE {cls.tc.table_name('TblPdate')}
             (id int, name string, pdate timestamp)
             PARTITIONED BY (pdate)
-        """
-        )
+        """)
 
     def test_reading_YMD(self):
         dh = DeltaHandle.from_tc("TblYMD")

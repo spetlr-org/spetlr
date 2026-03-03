@@ -10,7 +10,7 @@ from spetlrtools.time import dt_utc
 from spetlr.configurator import Configurator
 from spetlr.delta import DbHandle, DeltaHandle
 from spetlr.eh import EventhubHandle
-from spetlr.etl import Orchestrator, Transformer
+from spetlr.etl import Orchestrator
 from spetlr.etl.extractors.stream_extractor import StreamExtractor
 from spetlr.etl.loaders import SimpleLoader
 from spetlr.etl.loaders.stream_loader import StreamLoader

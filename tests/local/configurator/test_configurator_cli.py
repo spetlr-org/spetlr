@@ -34,8 +34,7 @@ class TestConfiguratorCli(unittest.TestCase):
             # file written. clean exit
 
             conts = open(name).read()
-            expected = dedent(
-                """\
+            expected = dedent("""\
                 # AUTO GENERATED FILE
                 # contains all spetlr.Configurator keys
 
@@ -46,8 +45,7 @@ class TestConfiguratorCli(unittest.TestCase):
                 MyForked = "MyForked"  # name: first
                 MyRecursing = "MyRecursing"  # name: recursing
                 MySecond = "MySecond"  # name: first
-            """
-            )
+            """)
             self.assertEqual(conts, expected)
 
             # repeat the test

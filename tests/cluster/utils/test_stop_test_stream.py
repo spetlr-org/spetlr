@@ -55,24 +55,20 @@ class TestStopTestStreamsOnCluster(DataframeTestCase):
         )
 
         dh = DeltaHandle.from_tc("MyTbl")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
                 CREATE TABLE {dh.get_tablename()}
                 (
                 id int,
                 name string
-                )"""
-        )
+                )""")
 
         dh_mirror = DeltaHandle.from_tc("MyTblMirror")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
                 CREATE TABLE {dh_mirror.get_tablename()}
                 (
                 id int,
                 name string
-                )"""
-        )
+                )""")
         _query_name = Configurator().get("MyTblMirror", "query_name")
 
         (

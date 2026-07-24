@@ -130,7 +130,6 @@ class TestPowerBi(unittest.TestCase):
         }
 
         def requests_get(url, headers):
-            nonlocal mock_response
             if url.endswith("refreshes") and headers == "api_header":
                 return mock_response
             raise ValueError("Unknown URL!")
@@ -1425,7 +1424,7 @@ class TestPowerBi(unittest.TestCase):
         counter = 0
 
         def get_last_refresh():
-            nonlocal sut, counter
+            nonlocal counter
             sut.table_name = None
             sut.last_refresh_str = None
             sut.is_enhanced = False
@@ -1465,7 +1464,7 @@ class TestPowerBi(unittest.TestCase):
         counter = 0
 
         def get_last_refresh():
-            nonlocal sut, counter
+            nonlocal counter
             sut.table_name = None
             sut.last_refresh_str = None
             sut.is_enhanced = True
@@ -1509,7 +1508,7 @@ class TestPowerBi(unittest.TestCase):
         counter = 0
 
         def get_last_refresh():
-            nonlocal sut, counter
+            nonlocal counter
             sut.table_name = None
             sut.last_refresh_str = None
             counter += 1
@@ -1547,7 +1546,7 @@ class TestPowerBi(unittest.TestCase):
         counter = 0
 
         def get_last_refresh():
-            nonlocal sut, counter
+            nonlocal counter
             sut.table_name = None
             sut.last_refresh_str = None
             sut.is_enhanced = True
@@ -1589,7 +1588,7 @@ class TestPowerBi(unittest.TestCase):
         counter = 0
 
         def get_last_refresh():
-            nonlocal sut, counter
+            nonlocal counter
             sut.table_name = None
             sut.last_refresh_str = None
             sut.is_enhanced = True
@@ -1631,7 +1630,7 @@ class TestPowerBi(unittest.TestCase):
         counter = 0
 
         def get_last_refresh():
-            nonlocal sut, counter
+            nonlocal counter
             sut.table_name = None
             sut.last_refresh_str = None
             sut.is_enhanced = True

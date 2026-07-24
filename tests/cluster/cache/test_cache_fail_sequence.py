@@ -29,15 +29,13 @@ class ChildCacher(CachedLoader):
         target_name = Configurator().table_name("CachedTestTarget")
 
         df.createOrReplaceTempView("to_be_deleted")
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
             MERGE INTO {target_name} AS t
             USING to_be_deleted AS d
             ON t.a==d.a
             WHEN MATCHED
             THEN DELETE
-        """
-        )
+        """)
         if self.fail_delete:
             raise TestError("intended fail point")
         return df
@@ -63,8 +61,7 @@ class CachedLoaderProvisionalMarkupTests(unittest.TestCase):
         )
         DbHandle.from_tc("TestDb").create()
         spark = Spark.get()
-        spark.sql(
-            """
+        spark.sql("""
             CREATE TABLE IF NOT EXISTS {CachedTest_name}
             (
                 a STRING,
@@ -72,22 +69,15 @@ class CachedLoaderProvisionalMarkupTests(unittest.TestCase):
                 loadedTime TIMESTAMP,
                 deletedTime TIMESTAMP
             )
-        """.format(
-                **tc.get_all_details()
-            )
-        )
+        """.format(**tc.get_all_details()))
 
-        spark.sql(
-            """
+        spark.sql("""
             CREATE TABLE IF NOT EXISTS {CachedTestTarget_name}
             (
                 a STRING,
                 payload STRING
             )
-        """.format(
-                **tc.get_all_details()
-            )
-        )
+        """.format(**tc.get_all_details()))
 
         cls.params = CachedLoaderParameters(
             cache_table_name=tc.table_name("CachedTest"),

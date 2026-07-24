@@ -275,12 +275,10 @@ class SqlServer(SqlBaseServer):
 
         with self.connect_to_db() as conn:
             # Create temp staging table for merge based source table
-            conn.execute(
-                f"""
+            conn.execute(f"""
                 SELECT * INTO {staging_table_name}
                 FROM {table_name} WHERE 1 = 0;
-                """
-            )
+                """)
 
             self.write_table_by_name(
                 df_source=df_source,
@@ -306,24 +304,20 @@ class SqlServer(SqlBaseServer):
         self.execute_sql(f"TRUNCATE TABLE {table_name}")
 
     def drop_table_by_name(self, table_name: str):
-        self.execute_sql(
-            f"""
+        self.execute_sql(f"""
                 IF OBJECT_ID('{table_name}', 'U') IS NOT NULL
                 BEGIN
                   DROP TABLE {table_name}
                 END
-            """
-        )
+            """)
 
     def drop_view_by_name(self, table_name: str):
-        self.execute_sql(
-            f"""
+        self.execute_sql(f"""
                 IF OBJECT_ID('{table_name}', 'V') IS NOT NULL
                 BEGIN
                     DROP view {table_name}
                 END
-            """
-        )
+            """)
 
     def test_odbc_connection(self):
         """

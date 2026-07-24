@@ -475,8 +475,7 @@ class TestSCD2Loader(DataframeTestCase):
         # Create a DataFrame from the test data
         df_in = Spark.get().createDataFrame(data=data_start, schema=schema_start)
 
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
                     CREATE TABLE {dh_source.get_tablename()}
                     (
                     Id integer,
@@ -484,11 +483,9 @@ class TestSCD2Loader(DataframeTestCase):
                     Col2 string,
                     TimeCol timestamp
                     )
-                """
-        )
+                """)
 
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
                     CREATE TABLE {dh_sink.get_tablename()}
                     (
                     Id integer,
@@ -500,8 +497,7 @@ class TestSCD2Loader(DataframeTestCase):
                     IsCurrent boolean,
                     HashValue string
                     )
-                """
-        )
+                """)
 
         # Define the columns for joining and time column for the SCD2 process
         _join_cols = ["Id"]
@@ -643,8 +639,7 @@ class TestSCD2Loader(DataframeTestCase):
         dbh.create()
         dh = DeltaHandle.from_tc("MyTbl")
 
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
                     CREATE TABLE {dh.get_tablename()}
                     (
                     Id integer,
@@ -656,8 +651,7 @@ class TestSCD2Loader(DataframeTestCase):
                     IsCurrent boolean,
                     HashValue string
                     )
-                """
-        )
+                """)
 
         """
         First test takes this input data:

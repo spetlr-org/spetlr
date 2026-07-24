@@ -30,7 +30,7 @@ data "azurerm_cosmosdb_sql_role_definition" "data_contributor" {
   resource_group_name = data.azurerm_resource_group.permanent.name
   account_name        = data.azurerm_cosmosdb_account.cosmos.name
   role_definition_id  = "00000000-0000-0000-0000-000000000002"
-  depends_on = [time_sleep.wait_for_spn  ]
+  depends_on          = [time_sleep.wait_for_spn]
 }
 
 resource "azurerm_cosmosdb_sql_role_assignment" "cosmos_spn_access" {
@@ -39,7 +39,7 @@ resource "azurerm_cosmosdb_sql_role_assignment" "cosmos_spn_access" {
   role_definition_id  = data.azurerm_cosmosdb_sql_role_definition.data_contributor.id
   principal_id        = azuread_service_principal.captain.object_id
   scope               = data.azurerm_cosmosdb_account.cosmos.id
-  depends_on = [time_sleep.wait_for_spn  ]
+  depends_on          = [time_sleep.wait_for_spn]
 }
 
 # Control-plane operator for cosmos
@@ -52,7 +52,7 @@ resource "azurerm_role_assignment" "captain_cosmos_account_operator" {
   scope              = data.azurerm_cosmosdb_account.cosmos.id
   role_definition_id = data.azurerm_role_definition.cosmos_account_operator.id
   principal_id       = azuread_service_principal.captain.object_id
-  depends_on = [time_sleep.wait_for_spn  ]
+  depends_on         = [time_sleep.wait_for_spn]
 }
 
 

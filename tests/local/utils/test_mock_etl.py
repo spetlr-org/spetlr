@@ -13,12 +13,10 @@ class MockEtlTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         Spark.get()
 
-        cls.schema = get_schema(
-            """
+        cls.schema = get_schema("""
             Id INTEGER,
             measured DOUBLE
-        """
-        )
+        """)
 
     def test_full_etl(self):
         df = DataframeCreator.make(self.schema, [(1, 3.5)])

@@ -113,15 +113,13 @@ class UpsertLoaderTestsDeltaStream(DataframeTestCase):
 
         dh = DeltaHandle.from_tc(tableid)
 
-        Spark.get().sql(
-            f"""
+        Spark.get().sql(f"""
             CREATE TABLE IF NOT EXISTS {dh.get_tablename()}
             (
             id int,
             name string
             )
-            """
-        )
+            """)
 
         df_source = DataframeCreator.make_partial(
             self.dummy_schema, self.dummy_columns, data

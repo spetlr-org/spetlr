@@ -41,7 +41,7 @@ class SimpleSqlTransformerTest(DataframeTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        Spark.get().sql(f"""DROP DATABASE {Configurator().get('db','name')} CASCADE""")
+        Spark.get().sql(f"""DROP DATABASE {Configurator().get('db', 'name')} CASCADE""")
 
     def test_all(self):
         o = Orchestrator()

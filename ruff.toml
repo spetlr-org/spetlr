@@ -1,7 +1,7 @@
 # this file configures ruff, if the spetlr project gets a pyproject.toml,
 # then the following configuration can be moved to that file
 
-line-length = 88
+line-length = 100
 indent-width = 4
 
 [format]

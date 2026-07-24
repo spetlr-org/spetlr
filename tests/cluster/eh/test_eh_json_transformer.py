@@ -61,39 +61,31 @@ class JsonEhTransformerUnitTests(DataframeTestCase):
         spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblPdate3')}")
         spark.sql(f"DROP TABLE IF EXISTS {cls.tc.table_name('TblPdate4')}")
 
-        spark.sql(
-            f"""
+        spark.sql(f"""
                 CREATE TABLE {cls.tc.table_name('TblPdate1')}
                 (id int, name string, BodyJson string, pdate timestamp,
                 EnqueuedTimestamp timestamp)
                 PARTITIONED BY (pdate)
-            """
-        )
+            """)
 
-        spark.sql(
-            f"""
+        spark.sql(f"""
                 CREATE TABLE {cls.tc.table_name('TblPdate2')}
                 (id int, name string, pdate timestamp, EnqueuedTimestamp timestamp)
                 PARTITIONED BY (pdate)
-            """
-        )
+            """)
 
-        spark.sql(
-            f"""
+        spark.sql(f"""
                 CREATE TABLE {cls.tc.table_name('TblPdate3')}
                 (id int, name string, pdate timestamp, EnqueuedTimestamp timestamp,
                 Unknown string)
                 PARTITIONED BY (pdate)
-            """
-        )
+            """)
 
-        spark.sql(
-            f"""
+        spark.sql(f"""
                 CREATE TABLE {cls.tc.table_name('TblPdate4')}
                 (id int, Name string, pdate timestamp, EnqueuedTimestamp timestamp)
                 PARTITIONED BY (pdate)
-            """
-        )
+            """)
 
     def test_01_transformer_w_body(self):
         """Tests whether the body is saved as BodyJson"""

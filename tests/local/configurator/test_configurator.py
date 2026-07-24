@@ -163,8 +163,7 @@ class TestConfigurator(unittest.TestCase):
         self.assertEqual(len(statements), 3)
         self.assertEqual(
             statements[1],
-            dedent(
-                """\
+            dedent("""\
 
 
                         -- spetlr.Configurator key: MyDetailsTable
@@ -179,8 +178,7 @@ class TestConfigurator(unittest.TestCase):
                         )
                         USING DELTA
                         COMMENT "Dummy Database 1 details"
-                        LOCATION "/mnt/foo/bar/my_db1/details/";"""
-            ),
+                        LOCATION "/mnt/foo/bar/my_db1/details/";"""),
         )
 
     def test_10_generate_new_UUID_debug(self):

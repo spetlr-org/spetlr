@@ -26,11 +26,9 @@ class CheckSchemaExtractor(Extractor):
         self.handle.set_schema(expected_schema)
 
         if not data_schema.__eq__(expected_schema):
-            raise SchemasNotEqualException(
-                f"""Schemas have different number of columns.
+            raise SchemasNotEqualException(f"""Schemas have different number of columns.
                 Data schema:
                 {data_schema.json()}
                 Expected schema:
                 {expected_schema.json()}
-                """
-            )
+                """)
